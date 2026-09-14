@@ -8,13 +8,14 @@ import { loadRuntimeAsset } from '../common/runtime-assets.js';
 
 export const COPILOT_CONFIG_FILE = '.github/hooks/context-brake.json';
 export const COPILOT_HOOK_FILE = '.github/hooks/context-brake.mjs';
+const REPOSITORY_ROOT = '.';
 
 function buildHookEntry(event: string) {
   return {
     type: 'command',
     exec: 'node',
     args: [COPILOT_HOOK_FILE, event],
-    command: `node ${COPILOT_HOOK_FILE} ${event}`,
+    cwd: REPOSITORY_ROOT,
   };
 }
 

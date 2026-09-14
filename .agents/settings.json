@@ -6,7 +6,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/context-brake.mjs PreToolUse"
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs",
+              "PreToolUse"
+            ]
           }
         ]
       }
@@ -17,7 +21,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/context-brake.mjs PostToolUse"
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs",
+              "PostToolUse"
+            ]
           }
         ]
       }
@@ -28,7 +36,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/context-brake.mjs SessionStart"
+            "command": "node",
+            "args": [
+              "${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs",
+              "SessionStart"
+            ]
           }
         ]
       }

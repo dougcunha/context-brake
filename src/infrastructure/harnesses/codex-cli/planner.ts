@@ -9,9 +9,10 @@ import { loadRuntimeAsset } from '../common/runtime-assets.js';
 
 export const CODEX_CONFIG_FILE = '.codex/hooks.json';
 export const CODEX_HOOK_FILE = '.codex/hooks/context-brake.mjs';
+const GIT_ROOT_EXPANSION = '$(git rev-parse --show-toplevel)';
 
 function buildHookGroup(event: string, matcher: string) {
-  return { matcher, hooks: [{ type: 'command', command: `node ${CODEX_HOOK_FILE} ${event}` }] };
+  return { matcher, hooks: [{ type: 'command', command: `node "${GIT_ROOT_EXPANSION}/${CODEX_HOOK_FILE}" ${event}` }] };
 }
 
 export function buildCodexEntries(): ManagedEntry[] {

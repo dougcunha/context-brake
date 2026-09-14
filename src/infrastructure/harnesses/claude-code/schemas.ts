@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const claudeHookItemSchema = z.object({
   type: z.string().optional(),
   command: z.string().optional(),
+  args: z.array(z.string()).optional(),
 }).passthrough();
 
 export const claudeHookGroupSchema = z.object({

@@ -1,12 +1,24 @@
 import { CLAUDE_HOOK_FILE } from './planner.js';
 
-export type ClaudeHookEntry = { type: string; command: string };
+export type ClaudeHookEntry = { type: string; command: string; args: string[] };
 export type ClaudeHookGroup = { matcher: string; hooks: ClaudeHookEntry[] };
+
+const HOOK_EXECUTABLE = 'node';
+const PROJECT_DIR_PLACEHOLDER = '${CLAUDE_PROJECT_DIR}';
+
+function buildHookEntry(event: string): ClaudeHookEntry {
+  return { type: 'command', command: HOOK_EXECUTABLE, args: [`${PROJECT_DIR_PLACEHOLDER}/${CLAUDE_HOOK_FILE}`, event] };
+}
+
+function hookInvocation(entry: Record<string, unknown>): string {
+  const parts = [entry.command, ...(Array.isArray(entry.args) ? entry.args : [])];
+  return parts.filter((part): part is string => typeof part === 'string').join(' ');
+}
 
 export function isTargetHook(entry: unknown, event: string): boolean {
   if (!entry || typeof entry !== 'object') return false;
-  const command = (entry as Record<string, unknown>).command;
-  return typeof command === 'string' && command.includes(CLAUDE_HOOK_FILE) && command.includes(event);
+  const invocation = hookInvocation(entry as Record<string, unknown>);
+  return invocation.includes(CLAUDE_HOOK_FILE) && invocation.includes(event);
 }
 
 export function isTargetGroup(group: unknown, event: string): boolean {
@@ -28,10 +40,7 @@ export function mergeHookGroups(
       }
     }
   }
-  preserved.push({
-    matcher,
-    hooks: [{ type: 'command', command: `node ${CLAUDE_HOOK_FILE} ${event}` }],
-  });
+  preserved.push({ matcher, hooks: [buildHookEntry(event)] });
   return preserved;
 }
 

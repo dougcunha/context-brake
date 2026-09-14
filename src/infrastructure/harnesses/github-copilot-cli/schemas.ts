@@ -5,6 +5,7 @@ export const copilotHookItemSchema = z.object({
   exec: z.string().optional(),
   args: z.array(z.string()).optional(),
   command: z.string().optional(),
+  cwd: z.string().optional(),
 }).passthrough();
 
 export const copilotHooksFileSchema = z.object({

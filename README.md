@@ -194,4 +194,4 @@ New-Item -ItemType Junction -Path .claude -Target .agents
 
 ## 📄 License
 
-MIT © [Douglas Cunha](https://github.com/context-brake)
+[MIT](./LICENSE) © [Douglas Cunha](https://github.com/dougcunha)

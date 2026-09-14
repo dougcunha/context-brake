@@ -512,7 +512,7 @@ Integration fixtures live under `tests/fixtures/harnesses/<harness>/` and includ
 | E2E-07 | Remove uninstalls owned integration only by default | CA-12 | Doctor changes from installed to absent while user content and state files remain; a second fixture verifies explicit `--remove-state`. |
 | E2E-08 | Doctor JSON validates against published schema | CA-14, CA-15, CA-16, CA-17, CA-18 | Stdout is one JSON document with text-equivalent findings, version limitation, and overhead result. |
 | E2E-09 | Quick-start workflow meets user-time target | CA-19 | Scripted `init --yes` plus `doctor --json` completes well below two minutes; core work excluding benchmark is separately asserted below five seconds. |
-| E2E-10 | Cross-platform critical scenarios | CA-20 | CA-01, CA-05, and CA-07 fixture workflows pass on Linux, macOS, and Windows; Windows enables symlink privilege and both PowerShell/Git Bash launch coverage. |
+| E2E-10 | Cross-platform critical scenarios | CA-20 | CA-01, CA-05, and CA-07 fixture workflows pass on Linux, macOS, and Windows; Windows enables symlink privilege and both PowerShell/Git Bash launch coverage. Per `DEC-01`, acceptance evidence for this PRD covers Linux (Ubuntu on WSL 2) and Windows; macOS stays in CI but is not verified. |
 
 There is no browser or visual test layer. E2E tests spawn the built CLI with argument arrays in isolated temporary directories and assert stdout, stderr, exit code, file identity, exact bytes, and cleanup.
 
@@ -527,7 +527,7 @@ There is no browser or visual test layer. E2E tests spawn the built CLI with arg
 5. Implement adapters in two groups: dedicated/config JSON process hooks (Claude, Codex, Cursor, Copilot, Antigravity), then in-process plugins/extensions (OpenCode, Pi, Oh-My-Pi). Each adapter change rechecks and updates its research section and ships fixtures in the same task.
 6. Implement installation and removal orchestration around the immutable plan, followed by `init`/`remove` command parsing, confirmation, text output, and JSON output.
 7. Implement read-only doctor aggregation, runtime self-tests, overhead measurement, support limitations, output schema, and severity exit mapping.
-8. Complete built-CLI E2E coverage, package-content checks, `npm pack` smoke tests, and Linux/macOS/Windows CI. Run lint, typecheck, tests, and coverage before declaring the feature complete.
+8. Complete built-CLI E2E coverage, package-content checks, `npm pack` smoke tests, and Linux/macOS/Windows CI. Run lint, typecheck, tests, and coverage before declaring the feature complete. Under `DEC-01`, completion evidence for PRD-01 comes from Linux (WSL 2) and Windows runs; macOS evidence is waived.
 
 Each sequence item should be decomposed by `sdd-create-tasks`; this document does not implement or mark those tasks complete.
 
@@ -567,6 +567,11 @@ ContextBrake sends no telemetry and opens no network connection. Observability i
 - **Honest version compatibility:** numeric floors are stored only with release or binary-fixture evidence. Missing evidence yields a warning and never a false “supported version” claim.
 - **Benchmark the integration, not the vendor UI:** synthetic fixtures exercise the exact installed asset path without launching an authenticated harness or performing tool side effects. This keeps doctor local, deterministic, and automatable.
 - **Prefer built-ins over frameworks:** `node:util.parseArgs` is stable in Node 20 and is sufficient for three commands; Zod, JSONC parsing, and semantic versions are retained because reimplementing them would add material correctness risk.
+- **DEC-01 — macOS acceptance evidence is waived for PRD-01 (HIL decision, 2026-09-14; PRD CA-20, E2E-10):** the product owner has no macOS machine and no Linux environment other than WSL 2.
+  - CA-20 and E2E-10 are accepted with evidence from Ubuntu on WSL 2 and from Windows (PowerShell and Git Bash), each on Node 20, 22, and 24, from one immutable revision. These runs are recorded as equivalent runs instead of CI job URLs; the T16 handoff holds the evidence for revision `58082e5`.
+  - macOS remains a supported target and stays in `.github/workflows/ci.yml`, but it has no acceptance evidence.
+  - A review treats the missing macOS slice as covered by this decision, not as missing essential evidence. A defect later found on macOS is a new finding, not a reopening of CA-20.
+  - Rejected for now: a GitHub-hosted macOS runner and a physical or cloud Mac, neither of which is available to the product owner.
 
 Rejected alternatives include rewriting entire vendor JSON documents, editing existing Codex TOML through serialization, depending on globally installed `context-brake`, running `npx` from each hook, adding ContextBrake to an arbitrary project's dependencies, treating `AGENTS.md`/`.agents/` as harness proof, silently migrating legacy blocks, or reporting undocumented capabilities as working.
 
@@ -584,6 +589,7 @@ Rejected alternatives include rewriting entire vendor JSON documents, editing ex
 - Atomic rename semantics and symlink privileges differ on Windows. Mitigation: resolve and validate targets, write beside the target, test PowerShell/Git Bash, enable CI symlink privilege, and skip local symlink tests only with an explicit reason.
 - `jsonc-parser` has known comment/edit edge cases. Mitigation: use its scanner/AST offsets rather than blind `modify`, and lock regression fixtures for inline comments, array removal, duplicate keys, and line endings.
 - Runtime bundling can duplicate shared code across in-process adapters. This is accepted to guarantee standalone durability; package-content and overhead tests constrain size/startup instead of introducing runtime dependency resolution.
+- macOS behavior is unverified under `DEC-01`: filesystem case sensitivity, link semantics, and the POSIX shell used by E2E-10 may differ from the verified Linux and Windows runs. Mitigation: `macos-latest` stays in the CI matrix for when a runner becomes available, and any macOS defect is handled as a new finding.
 
 ### Compliance With AGENTS.md and Rules
 

@@ -13,7 +13,7 @@ O público são desenvolvedores que usam agentes de código de terminal em repos
 - **Idempotência:** três execuções seguidas da instalação resultam em exatamente uma integração por harness, um bloco de referência por arquivo de instrução, um bloco no `.gitignore` e nenhuma alteração fora das entradas do ContextBrake.
 - **Pegada mínima no contexto:** a referência adicionada aos arquivos de instrução tem no máximo 10 linhas.
 - **Diagnóstico confiável:** o diagnóstico identifica 100% das falhas introduzidas nos cenários de teste: integração removida, configuração inválida, marcador corrompido, arquivo de protocolo ausente e harness abaixo da versão mínima.
-- **Transparência de garantias:** todo harness configurado aparece com nível de suporte e com as capacidades que faltam, e nenhum harness aparece como "completo" quando o bloqueio não é garantido.
+- **Transparência de garantias:** todo harness configurado aparece com nível de suporte, com as capacidades que faltam e com as limitações de falha e timeout, e nenhum harness aparece como "completo" sem respeitar a negação explícita da integração em todas as chamadas de ferramenta.
 
 ## Histórias de usuário
 
@@ -93,7 +93,7 @@ Mantém o protocolo fora do contexto sempre carregado, conforme decidido para o 
 - CA-12 (US7, RF19): Dado um repositório com o ContextBrake instalado, quando o usuário executa a remoção, então integrações, bloco de referência e arquivo de protocolo deixam de existir, o restante do conteúdo dos arquivos permanece e plano e checkpoint continuam no disco e ignorados pelo git.
 - CA-13 (RF16): Dada uma configuração com o limite da zona amarela menor que o da zona verde, quando qualquer comando é executado, então a CLI termina com código de erro e aponta campo, valor e regra.
 - CA-14 (US5, RF20): Dada uma integração removida manualmente da configuração do harness, quando o usuário executa `doctor`, então o harness aparece com integração ausente e o comando termina com código de erro.
-- CA-15 (RF8, RF20): Dado o GitHub Copilot CLI configurado, quando o usuário executa `doctor`, então o harness aparece com nível parcial e o motivo informa que um timeout da integração libera a chamada de ferramenta.
+- CA-15 (RF8, RF20): Dado o GitHub Copilot CLI configurado, quando o usuário executa `doctor`, então o harness aparece com nível completo e com a limitação de que um timeout da integração libera a chamada de ferramenta, conforme a regra de níveis do [PRD 1.1](../prd-01.1-pendencias-da-instalacao/prd.md).
 - CA-16 (RF9): Dado um harness em versão anterior à mínima suportada, quando o usuário executa `doctor`, então a saída mostra versão detectada, versão mínima e capacidade afetada.
 - CA-17 (US6, RF23): Dado qualquer estado de instalação, quando o usuário executa `doctor --json`, então a saída é JSON válido conforme o schema publicado e contém os mesmos achados da saída legível.
 - CA-18 (RF22): Dado um harness configurado, quando o usuário executa `doctor`, então a saída mostra o overhead p95 medido e se ele cumpre a meta.
@@ -134,16 +134,16 @@ Mantém o protocolo fora do contexto sempre carregado, conforme decidido para o 
 
 | Harness | Execução da integração | Bloquear antes da ferramenta | Contexto após a ferramenta | Contexto no início da sessão | Uso de contexto disponível | Nível previsto |
 | --- | --- | --- | --- | --- | --- | --- |
-| Claude Code | Processo por evento ou HTTP | Sim | Sim | Sim | Só no status line | Completo |
+| Claude Code | Processo por evento ou HTTP | Sim; timeout ou falha sem negação explícita libera a chamada | Sim | Sim | Só no status line | Completo |
 | Codex CLI | Processo por evento | Sim, exceto ferramentas hospedadas | Sim | Sim | Não | Parcial |
 | Cursor | Processo por evento | Sim, com falha fechada opcional | Sim | Sim | Só antes da compactação | Completo |
-| GitHub Copilot CLI | Processo por evento ou HTTP | Sim, mas timeout libera a chamada | Sim | Sim | Não | Parcial |
+| GitHub Copilot CLI | Processo por evento ou HTTP | Sim; timeout libera a chamada | Sim | Sim | Não | Completo |
 | OpenCode | Plugin em processo | Sim | A confirmar | Sim, por recurso experimental | A confirmar | Parcial |
 | Pi | Extensão em processo | Sim | Sim | Sim | Sim | Completo |
 | Oh-My-Pi | Extensão em processo | Sim | Sim | Sim | Sim | Completo |
 | Antigravity CLI | Processo por evento | Sim | Indireto, antes da chamada ao modelo | Indireto, antes da chamada ao modelo | Não | Parcial |
 
-- **Níveis de suporte:** completo quando há bloqueio garantido acima do teto, telemetria junto aos resultados de ferramenta e boot no início da sessão; parcial quando alguma dessas capacidades falta, é indireta ou não tem garantia; cooperativo quando não há bloqueio e só o protocolo atua. A documentação do Antigravity descreve hooks para o Antigravity 2.0, e a cobertura específica do CLI precisa ser confirmada.
+- **Níveis de suporte:** completo quando o harness respeita a negação explícita da integração em todas as chamadas de ferramenta e entrega telemetria junto aos resultados de ferramenta e boot no início da sessão; parcial quando o harness bloqueia por negação explícita, mas alguma dessas capacidades falta, é indireta, não está confirmada ou não cobre todas as ferramentas; cooperativo quando não há bloqueio e só o protocolo atua. Timeout e falha da integração que liberam a chamada aparecem como limitação e não rebaixam o nível (regra atualizada pelo [PRD 1.1](../prd-01.1-pendencias-da-instalacao/prd.md), FR-02). A documentação do Antigravity descreve hooks para o Antigravity 2.0, e a cobertura específica do CLI precisa ser confirmada.
 - **Fontes da matriz:** [Claude Code hooks](https://code.claude.com/docs/en/hooks), [Claude Code status line](https://code.claude.com/docs/en/statusline), [Codex hooks](https://learn.chatgpt.com/docs/hooks), [Cursor hooks](https://cursor.com/docs/hooks), [GitHub Copilot hooks](https://docs.github.com/en/copilot/reference/hooks-reference), [OpenCode plugins](https://opencode.ai/docs/plugins/), [issue do OpenCode sobre saída de ferramenta](https://github.com/anomalyco/opencode/issues/13574), [Pi extensions](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md), [Oh-My-Pi hooks](https://github.com/can1357/oh-my-pi/blob/main/docs/hooks.md) e [Antigravity hooks](https://antigravity.google/docs/hooks/).
 - **Runtime e distribuição:** Node.js 20 ou superior, TypeScript, pacote npm `context-brake` e execução via `npx`.
 - **Plataformas:** Linux, macOS e Windows, em PowerShell e Git Bash. As três plataformas têm evidência de aceitação no CI; ver CA-20.

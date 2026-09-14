@@ -189,13 +189,13 @@ Validation derives the red band as values above `yellowMaxPercentage` and turns 
 | `harness` | `HarnessId` | yes | Harness being described. |
 | `supportLevel` | `full | partial | cooperative` | yes | Derived, never supplied by CLI presentation code. |
 | `minimumVersion` | `string | null` | yes | Earliest verified version for the registered mechanisms. |
-| `capabilities` | `CapabilityState[]` | yes | State and evidence for block, telemetry, boot, context usage, and failure behavior. |
+| `capabilities` | `CapabilityState[]` | yes | State and evidence for block, tool coverage (added by PRD 1.1), telemetry, boot, context usage, and failure behavior. |
 | `limitations` | `CapabilityLimitation[]` | yes | Missing/indirect capabilities and user-visible impact. |
 
 ```text
 {
   "harness": "github-copilot-cli",
-  "supportLevel": "partial",
+  "supportLevel": "full",
   "minimumVersion": null,
   "capabilities": [
     {"id": "pre_tool_block", "state": "supported"},
@@ -449,10 +449,10 @@ All integrations are local and project-scoped. The adapter descriptor records st
 
 | Harness | Strong project evidence | Registration and owned runtime asset | Capability decision |
 | --- | --- | --- | --- |
-| Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/`, or `CLAUDE.md`; never `AGENTS.md` alone | Surgically add exact handlers to `.claude/settings.json`; copy `.claude/hooks/context-brake.mjs`. Use `PreToolUse`, `PostToolUse`, and `SessionStart`. | Full when the verified version supports all three registered events. The hook catches internal errors and emits explicit deny at the critical ceiling; undeliberate hook failures remain a documented risk. |
+| Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/`, or `CLAUDE.md`; never `AGENTS.md` alone | Surgically add exact handlers to `.claude/settings.json`; copy `.claude/hooks/context-brake.mjs`. Use `PreToolUse`, `PostToolUse`, and `SessionStart`. | Full when the verified version supports all three registered events. The hook catches internal errors and emits explicit deny at the critical ceiling; undeliberate hook failures remain a documented risk. A hook timeout or failure without explicit deny releases the call and is reported as a limitation (PRD 1.1 FR-03). |
 | Codex CLI | `.codex/hooks.json` or `.codex/config.toml`; never `AGENTS.md` alone | Prefer surgical entries in `.codex/hooks.json`; copy `.codex/hooks/context-brake.mjs` and register platform-specific command variants. If inline TOML hooks already exist, preserve them and report `MIXED_HOOK_REPRESENTATIONS` because current Codex loads both with a warning. | Partial because hosted tools bypass local tool hooks and project hooks require trust review. Doctor reports disabled hooks and unverified trust as limitations when observable. |
 | Cursor | `.cursor/hooks.json`, `.cursor/cli.json`, or `.cursor/` | Surgically update `.cursor/hooks.json`; copy `.cursor/hooks/context-brake.mjs`; set `failClosed: true` on blocking handlers. | Full only for versions/CLI surfaces verified to run `preToolUse`, `postToolUse`, and `sessionStart`; fire-and-forget session start and CLI coverage remain version-gated. |
-| GitHub Copilot CLI | `.github/copilot/settings.json`, `.github/copilot/settings.local.json`, `.github/hooks/*.json`, or `copilot-instructions.md` | Create the dedicated `.github/hooks/context-brake.json` plus `.github/hooks/context-brake.mjs`, using `exec` and `args` where supported to avoid shell interpolation. | Partial because command-hook timeouts always fail open, although current non-timeout `preToolUse` failures fail closed. |
+| GitHub Copilot CLI | `.github/copilot/settings.json`, `.github/copilot/settings.local.json`, `.github/hooks/*.json`, or `copilot-instructions.md` | Create the dedicated `.github/hooks/context-brake.json` plus `.github/hooks/context-brake.mjs`, using `exec` and `args` where supported to avoid shell interpolation. | Full since PRD 1.1: the documented explicit deny covers every tool call. Command-hook timeouts fail open and are reported as a limitation, while non-timeout `preToolUse` failures fail closed. |
 | OpenCode | `opencode.json`, `opencode.jsonc`, or `.opencode/` | Copy self-contained `.opencode/plugins/context-brake.js`; do not add dependencies or trigger Bun installation. | Partial: `tool.execute.before` blocking is documented; model-visible post-tool context and stable boot injection must stay unsupported until a versioned integration fixture proves them. |
 | Pi | `.pi/settings.json` or `.pi/extensions/` | Copy self-contained `.pi/extensions/context-brake.js`, which registers `tool_call`, `tool_result`, and session/before-agent handlers. | Full after a versioned fixture confirms loading, context usage, blocking, result preservation, and boot. |
 | Oh-My-Pi | `.omp/config.yml`, `.omp/settings.json`, or `.omp/extensions/` | Copy self-contained `.omp/extensions/context-brake.js`, using the current extension API rather than legacy `hooks/pre` and `hooks/post`. | Full after a versioned fixture confirms the native extension path and failure-closed `tool_call`; known vendor regressions are handled by version gates. |
@@ -491,7 +491,7 @@ Vitest runs unit, integration, and end-to-end suites with global thresholds of a
 | UT-11 | Removal targets exact owned content | CA-12 | Exact entries and unchanged assets are removed; plan/checkpoint and modified assets remain. |
 | UT-12 | Cross-field zone validation reports the source value | CA-13 | A yellow limit below green returns field, received value, and violated increasing-order rule. |
 | UT-13 | Missing integration is an error finding | CA-14 | Expected-but-absent entry produces `INTEGRATION_MISSING` and report exit code 2. |
-| UT-14 | Copilot timeout limitation prevents full support | CA-15 | Support is `partial` and impact says a timeout releases the tool call. |
+| UT-14 | Copilot timeout limitation is reported without lowering support | CA-15 | Support is `full`, and a limitation says a timeout releases the tool call (PRD 1.1 FR-02 and FR-03). |
 | UT-15 | Version gates identify an old harness | CA-16 | Injected old/current versions report detected version, minimum, and affected capability. |
 | UT-16 | Text and JSON use one finding model | CA-17 | Both projections contain identical codes, severities, harnesses, impacts, and remediation. |
 | UT-17 | Nearest-rank overhead p95 is deterministic | CA-18 | Sorted synthetic samples select `ceil(0.95*n)` and compare against 100 ms or 15 ms. |
@@ -562,7 +562,7 @@ There is no browser or visual test layer. E2E tests spawn the built CLI with arg
 7. Implement read-only doctor aggregation, runtime self-tests, overhead measurement, support limitations, output schema, and severity exit mapping.
 8. Complete built-CLI E2E coverage, package-content checks, `npm pack` smoke tests, and Linux/macOS/Windows CI. Run lint, typecheck, tests, and coverage before declaring the feature complete. GitHub Actions run 34881898428 on `1d4bbb5` provides the completion evidence on Ubuntu, macOS, and Windows × Node 20/22/24; the `DEC-01` waiver is superseded.
 
-9. RF24 follow-up (2026-09-14): add the `ignore_block` owner and regenerate `schemas/install-report.schema.json`; implement the `.gitignore` service, markers, and doctor check; snapshot `.gitignore` and wire it into installation, removal, and doctor; then run UT-21 to UT-25, IT-17, IT-18, and E2E-11 on the CI matrix. This step extends the accepted scope with RF24 and CA-21 and does not reopen CA-01 to CA-20.
+9. RF24 follow-up (2026-09-14), delivered by PRD 1.1 FR-01: add the `ignore_block` owner and regenerate `schemas/install-report.schema.json`; implement the `.gitignore` service, markers, and doctor check; snapshot `.gitignore` and wire it into installation, removal, and doctor; then run UT-21 to UT-25, IT-17, IT-18, and E2E-11 on the CI matrix. This step extends the accepted scope with RF24 and CA-21 and does not reopen CA-01 to CA-20.
 
 Each sequence item should be decomposed by `sdd-create-tasks`; this document does not implement or mark those tasks complete.
 
@@ -623,7 +623,7 @@ Rejected alternatives include rewriting entire vendor JSON documents, editing ex
 - Codex project hooks require hash-based trust review. Mitigation: installation output and doctor remediation instruct the user to review `/hooks`; lack of a stable non-interactive trust query remains a limitation.
 - Cursor `sessionStart` is documented as fire-and-forget, and CLI event coverage may vary. Mitigation: a versioned E2E fixture must prove boot delivery before full support is advertised.
 - OpenCode post-tool mutations may not become model-visible. Mitigation: retain partial support and mark post-tool telemetry unsupported until an integration fixture proves otherwise.
-- Copilot timeouts are always fail-open. Mitigation: keep the runtime well below the deadline, report partial support, and never claim a guaranteed critical brake.
+- Claude Code and Copilot hook timeouts fail open. Mitigation: keep the runtime well below the deadline and report the limitation; since PRD 1.1, support levels depend on the honored explicit deny, so both stay `full`.
 - Pi and Oh-My-Pi extensions execute in-process with full permissions. Mitigation: self-contained async handlers, no synchronous I/O, no background raw timers, bounded work, and exhaustive failure fixtures.
 - Antigravity uses `.agents/hooks.json`, which shares a directory name with common agent rules. Mitigation: only an exact schema-recognized hooks file is evidence, and the adapter edits only its named `context-brake` object.
 - Atomic rename semantics and symlink privileges differ on Windows. Mitigation: resolve and validate targets, write beside the target, test PowerShell/Git Bash, enable CI symlink privilege, and skip local symlink tests only with an explicit reason.

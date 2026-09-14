@@ -44,20 +44,20 @@ Default limits. A turn is one completed tool call, and when several conditions m
 | 🔴 `RED` | above 65% | 11 or more | Save plan and checkpoint, commit the code with `checkpoint: <step title>` if validation passes, and end with `[REQUEST_SESSION_RESET]`. |
 | ⛔ `CRITICAL` | 75% or more | 12 or more | Only state-saving calls run: reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, and `git commit`. |
 
-Blocking is guaranteed only on harnesses with **Full** support. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
+Blocking is enforced only on harnesses with **Full** support; `doctor` lists hook timeouts or crashes that can still release a call as limitations. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
 
 ---
 
 ## 🧩 Supported Harnesses
 
-Support levels come from each vendor's documentation, checked in September 2026. **Full** means a guaranteed block above the ceiling, telemetry alongside tool results, and a boot summary at session start. **Partial** means one of these is missing, indirect, or not guaranteed.
+Support levels come from each vendor's documentation, checked in September 2026. **Full** means the harness honors ContextBrake's explicit deny on every tool call, delivers telemetry alongside tool results, and injects a boot summary at session start. **Partial** means one of these is missing, indirect, unconfirmed, or does not cover every tool.
 
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
 | Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage reaches the status line, not hooks |
 | Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Partial | Hosted tools such as web search bypass hooks |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
-| GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Partial | A hook timeout lets the tool call proceed |
+| GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | A hook timeout lets the tool call proceed |
 | OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Changing tool output from a plugin is unconfirmed |
 | Pi (`pi`) | Extensions in `.pi/extensions/` | Full | None documented |
 | Oh-My-Pi (`oh-my-pi`) | Hooks in `.omp/hooks/` | Full | None documented |

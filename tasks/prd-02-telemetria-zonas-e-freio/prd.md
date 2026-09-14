@@ -13,7 +13,7 @@ O público são os desenvolvedores descritos no [PRD de instalação](../prd-01-
 - **Medição honesta:** 100% dos blocos de telemetria indicam se o uso de contexto foi medido pelo harness ou estimado; em sessões simuladas com uso medido, a estimativa fica a no máximo 10 pontos percentuais do valor medido.
 - **Custo baixo por injeção:** cada bloco de telemetria ocupa no máximo 60 tokens, e, no modo padrão, nenhum bloco é injetado enquanto a sessão está na zona verde e abaixo do limiar de ativação.
 - **Overhead contido:** p95 de até 100 ms por chamada de ferramenta nos harnesses cuja integração roda como processo por evento, e de até 15 ms nos harnesses com extensão em processo.
-- **Falha previsível:** abaixo do teto crítico, uma falha da integração nunca bloqueia o trabalho; acima dele, bloqueia sempre que o harness permitir falha fechada.
+- **Falha previsível:** abaixo do teto crítico, uma falha da integração nunca bloqueia o trabalho; acima dele, bloqueia por negação explícita sempre que a integração ainda responde e, quando ela não responde, sempre que o harness oferecer falha fechada.
 
 ## Histórias de usuário
 
@@ -65,9 +65,9 @@ A barreira determinística para quando o agente não obedece.
 
 - RF17: Acima do teto crítico, bloquear chamadas de ferramenta com mensagem que instrui a salvar o estado e pedir reinício.
 - RF18: Permitir, mesmo acima do teto, leitura e escrita nos arquivos de plano e checkpoint, execução do comando de validação do passo e os comandos `git status`, `git add` e `git commit`, com lista configurável de comandos adicionais.
-- RF19: Abaixo do teto, falhas da integração não bloqueiam; acima, bloqueiam sempre que o harness oferecer falha fechada.
+- RF19: Abaixo do teto, falhas da integração não bloqueiam; acima, bloqueiam por negação explícita enquanto a integração ainda responde e, quando ela não responde, sempre que o harness oferecer falha fechada.
 - RF20: Registrar localmente cada bloqueio com sessão, ferramenta, zona e motivo, sem gravar o conteúdo das ferramentas.
-- RF21: Nos harnesses sem bloqueio garantido, marcar o freio da sessão como cooperativo e expor esse estado no diagnóstico.
+- RF21: Nos harnesses sem bloqueio garantido, isto é, que não respeitam a negação explícita da integração em todas as chamadas de ferramenta, marcar o freio da sessão como cooperativo e expor esse estado no diagnóstico.
 
 ### Sinal de reinício
 
@@ -90,8 +90,8 @@ A barreira determinística para quando o agente não obedece.
 - CA-13 (RF15, Objetivo de custo): Dado qualquer bloco gerado com valores padrão, quando seu tamanho é medido, então ele ocupa no máximo 60 tokens.
 - CA-14 (US3, RF17): Dada uma sessão acima do teto crítico em harness de nível completo, quando o agente tenta ler um arquivo de código, então a chamada não é executada e o agente recebe a instrução de salvar o estado e pedir reinício.
 - CA-15 (US3, RF18): Dada a mesma sessão, quando o agente grava o checkpoint, roda o comando de validação, adiciona as mudanças com `git add` e faz commit, então as quatro chamadas são executadas.
-- CA-16 (RF19): Dada uma falha da integração com uso de 40%, quando o agente chama uma ferramenta, então a chamada é executada; dada a mesma falha acima do teto crítico em harness com falha fechada, então a chamada é bloqueada.
-- CA-17 (US6, RF21): Dada uma sessão no GitHub Copilot CLI, quando o usuário consulta o diagnóstico, então a sessão aparece com freio cooperativo e o motivo.
+- CA-16 (RF19): Dada uma falha da integração com uso de 40%, quando o agente chama uma ferramenta, então a chamada é executada; dada a mesma falha acima do teto crítico em harness de nível completo, então a chamada fora da lista de permissão é bloqueada.
+- CA-17 (US6, RF21): Dada uma sessão no Codex CLI, quando o usuário consulta o diagnóstico, então a sessão aparece com freio cooperativo e o motivo: ferramentas hospedadas não passam pelos hooks.
 - CA-18 (US8, RF20): Dado um bloqueio ocorrido, quando o usuário consulta o registro local, então encontra sessão, ferramenta, zona e motivo, e nenhum conteúdo de saída de ferramenta.
 - CA-19 (US7, RF22): Dada uma resposta do agente terminada com `[REQUEST_SESSION_RESET]` em harness com evento de fim de resposta, quando a resposta termina, então o usuário vê o comando de nova sessão daquele harness.
 - CA-20 (Objetivo de overhead): Dada uma sequência simulada de chamadas de ferramenta, quando o overhead por chamada é medido na integração de cada harness, então o p95 fica em até 100 ms nas integrações por processo e em até 15 ms nas integrações em processo.
@@ -123,7 +123,7 @@ A barreira determinística para quando o agente não obedece.
 
 ## Restrições técnicas de alto nível
 
-- **Capacidades por harness:** telemetria, bloqueio e medição dependem da matriz de capacidades do [PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md). Na documentação consultada, nenhum hook pós-ferramenta de Claude Code, Codex CLI, Cursor ou GitHub Copilot CLI recebe o uso de contexto; nesses harnesses o valor é estimado ou obtido por outro canal local do próprio harness.
+- **Capacidades por harness:** telemetria, bloqueio e medição dependem da matriz de capacidades do [PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md) e da regra de níveis do [PRD 1.1](../prd-01.1-pendencias-da-instalacao/prd.md), que deve estar concluído antes deste PRD. Na documentação consultada, nenhum hook pós-ferramenta de Claude Code, Codex CLI, Cursor ou GitHub Copilot CLI recebe o uso de contexto; nesses harnesses o valor é estimado ou obtido por outro canal local do próprio harness.
 - **Execução isolada:** nas integrações por processo, cada evento roda em um processo novo; as contagens precisam sobreviver entre invocações sem depender de serviço externo.
 - **Falha aberta dos harnesses:** o Claude Code libera a ação quando a integração falha sem negar explicitamente; o Cursor libera salvo configuração de falha fechada; o GitHub Copilot CLI libera sempre em timeout; o Codex CLI não passa ferramentas hospedadas pela integração.
 - **Offline:** medição e estimativa funcionam sem rede, e nenhum dado de sessão sai da máquina.

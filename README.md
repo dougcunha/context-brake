@@ -67,29 +67,59 @@ Aider is not supported because it has no hook mechanism. The full capability mat
 
 ---
 
-## 🚀 Quick Start
+## 📦 Installation
 
-Requires Node.js 20 or later. Reaches an error-free diagnosis within two minutes on a supported repository.
+ContextBrake requires **Node.js 20 or later**. You can run or install it in three ways:
+
+### Option 1: Zero-Install via `npx` (Recommended)
+Best for repositories of any tech stack (Python, Rust, Go, TypeScript, etc.) without polluting local dependencies:
+```bash
+npx context-brake init --yes
+```
+
+### Option 2: Global Installation
+Best if you use ContextBrake across multiple repositories and prefer a persistent global CLI:
+```bash
+npm install -g context-brake
+context-brake init --yes
+```
+
+### Option 3: Local Dev Dependency
+Best for Node.js projects where your team wants to lock the exact version in `package.json`:
+```bash
+npm install -D context-brake
+npx context-brake init --yes
+```
+
+---
+
+## 🚀 Quick Start & Project Setup
+
+Reaches an error-free diagnosis within two minutes on any supported repository:
 
 ```bash
-# Preview every file change before writing
+# 1. Preview every planned file change before writing to disk
 npx context-brake init --dry-run
 
-# Detect harnesses, register integrations, and initialize configuration
+# 2. Detect harnesses, register integrations, and initialize configuration
 npx context-brake init --yes
 
-# Diagnose integrations, configurations, versions, and overhead
+# 3. Diagnose integrations, configurations, versions, and overhead
 npx context-brake doctor
 ```
 
-What `context-brake init` does:
+### What `context-brake init` does:
 
-1. Detects the harnesses used by the project.
-2. Registers the ContextBrake integration in each harness's own configuration, preserving existing entries and never rewriting an invalid file.
-3. Creates `docs/context-brake-protocol.md` and `context-brake.config.json`.
-4. Adds a short reference between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` markers to existing `CLAUDE.md` and `AGENTS.md` files. Content outside the markers is left untouched. Legacy `CONTEXTOPS` blocks are detected and shown as a preview; they are migrated only when you pass `--migrate-legacy`, and unmatched text inside the block is preserved.
+1. **Detects coding-agent harnesses:** Identifies Claude Code, Cursor, Codex CLI, GitHub Copilot CLI, Antigravity CLI, OpenCode, Pi, and Oh-My-Pi from repository signals and machine configuration.
+2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments.
+3. **Initializes protocol & config:** Creates `docs/context-brake-protocol.md` and `context-brake.config.json`.
+4. **Adds reference markers:** Inserts a short 4-line pointer between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` in existing `CLAUDE.md` and `AGENTS.md` instruction files without modifying any other content.
 
-Running `init` again changes nothing that is already installed, and `context-brake remove` undoes the installation while keeping your plan and checkpoint.
+### Updating and Removal
+
+- **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and protocol references without touching your custom settings.
+- **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
+- **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations.
 
 ---
 

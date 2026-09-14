@@ -1,2 +1,6 @@
+# Check out text files with LF everywhere, including Windows runners that set core.autocrlf=true.
+* text=auto eol=lf
+*.png binary
+*.ico binary
 # Fixtures are byte-exact test inputs (CRLF, missing final newline); never normalize them.
 tests/fixtures/** -text

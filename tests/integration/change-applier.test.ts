@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, readdir, realpath, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import { snapshotFiles } from '../../src/infrastructure/storage/node-file-system
 
 describe('filesystem dry-run side-effect free guarantee (IT-08, CA-11)', () => {
   it('leaves directory snapshot completely identical in dry-run mode', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'cb-dryrun-'));
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'cb-dryrun-')));
     try {
       const fileA = join(dir, 'a.txt');
       await writeFile(fileA, 'original content', 'utf8');
@@ -35,7 +35,7 @@ describe('filesystem dry-run side-effect free guarantee (IT-08, CA-11)', () => {
 
 describe('optimistic concurrency rejection (IT-15, CA-05, CA-11)', () => {
   it('rejects a concurrent edit when precondition hash changes', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'cb-concurrent-'));
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'cb-concurrent-')));
     try {
       const targetPath = join(dir, 'CLAUDE.md');
       await writeFile(targetPath, '# Initial Content\n', 'utf8');
@@ -61,7 +61,7 @@ describe('optimistic concurrency rejection (IT-15, CA-05, CA-11)', () => {
 
 describe('deletion and warnings outcome (CA-12)', () => {
   it('handles file deletion, conflicts, and warnings correctly', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'cb-delete-'));
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'cb-delete-')));
     try {
       const toDelete = join(dir, 'del.txt');
       await writeFile(toDelete, 'delete me', 'utf8');

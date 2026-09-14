@@ -35,10 +35,16 @@ describe('process harness schemas: Claude Code and Codex CLI (RF5, RF6)', () => 
     expect(pre.tool_name).toBe('Bash');
     const post = claudePostToolUsePayloadSchema.parse({ session_id: 's1', tool_output: 'out' });
     expect(post.tool_output).toBe('out');
-    const preResp = claudePreToolUseResponseSchema.parse({ hookSpecificOutput: { permissionDecision: 'allow' } });
-    expect(preResp.hookSpecificOutput?.permissionDecision).toBe('allow');
-    const postResp = claudePostToolUseResponseSchema.parse({ hookSpecificOutput: { additionalContext: 'ctx' } });
+    const preResp = claudePreToolUseResponseSchema.parse({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny' } });
+    expect(preResp.hookSpecificOutput?.permissionDecision).toBe('deny');
+    const postResp = claudePostToolUseResponseSchema.parse({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: 'ctx' } });
     expect(postResp.hookSpecificOutput?.additionalContext).toBe('ctx');
+  });
+
+  it('rejects Claude Code hook-specific output without the matching hookEventName', () => {
+    expect(claudePreToolUseResponseSchema.safeParse({ hookSpecificOutput: { permissionDecision: 'deny' } }).success).toBe(false);
+    expect(claudePreToolUseResponseSchema.safeParse({ hookSpecificOutput: { hookEventName: 'PostToolUse' } }).success).toBe(false);
+    expect(claudePostToolUseResponseSchema.safeParse({ hookSpecificOutput: { additionalContext: 'ctx' } }).success).toBe(false);
   });
 
   it('parses Codex CLI hooks and payloads non-strictly', () => {

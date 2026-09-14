@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { loadRuntimeAsset } from '../../src/infrastructure/harnesses/common/runtime-assets.js';
 
+const PROCESS_HOOK_ASSETS: readonly string[] = [
+  'claude-code-hook.mjs',
+  'codex-cli-hook.mjs',
+  'cursor-hook.mjs',
+  'github-copilot-cli-hook.mjs',
+  'antigravity-cli-hook.mjs',
+];
+
 describe('standalone runtime asset loader (RF5, RF22)', () => {
-  it('loads process-hook asset with error handling and fallback', async () => {
-    const content = await loadRuntimeAsset('process-hook.mjs');
-    expect(content.length).toBeGreaterThan(0);
+  it.each(PROCESS_HOOK_ASSETS)('loads the %s process hook asset', async (asset) => {
+    const content = await loadRuntimeAsset(asset);
     expect(content).toContain('runProcessHook');
   });
 

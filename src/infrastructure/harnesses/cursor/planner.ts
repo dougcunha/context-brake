@@ -52,7 +52,7 @@ export async function planCursorInstall(projectRoot: string): Promise<AdapterPla
     const detail = error instanceof Error ? error.message : String(error);
     return { harness: 'cursor', changes: [], conflicts: [{ path: CURSOR_CONFIG_FILE, code: 'INVALID_HARNESS_CONFIG', detail }], entries: [] };
   }
-  const assetContent = await loadRuntimeAsset('process-hook.mjs');
+  const assetContent = await loadRuntimeAsset('cursor-hook.mjs');
   const changes: PlannedChange[] = [
     { path: CURSOR_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Register Cursor hooks' } },
     { path: CURSOR_HOOK_FILE, realPath: await resolveChangeTarget(projectRoot, CURSOR_HOOK_FILE), kind: 'create', owner: 'runtime_asset', content: assetContent, preview: { summary: 'Install ContextBrake hook script' } },

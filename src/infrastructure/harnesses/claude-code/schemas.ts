@@ -30,13 +30,15 @@ export const claudePostToolUsePayloadSchema = z.object({
 
 export const claudePreToolUseResponseSchema = z.object({
   hookSpecificOutput: z.object({
-    permissionDecision: z.enum(['allow', 'deny']).optional(),
+    hookEventName: z.literal('PreToolUse'),
+    permissionDecision: z.enum(['allow', 'deny', 'ask', 'defer']).optional(),
     permissionDecisionReason: z.string().optional(),
   }).passthrough().optional(),
 }).passthrough();
 
 export const claudePostToolUseResponseSchema = z.object({
   hookSpecificOutput: z.object({
+    hookEventName: z.literal('PostToolUse'),
     additionalContext: z.string().optional(),
   }).passthrough().optional(),
 }).passthrough();

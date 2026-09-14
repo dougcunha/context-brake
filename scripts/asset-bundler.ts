@@ -6,7 +6,11 @@ export type AssetEntry = { readonly source: string; readonly destination: string
 
 export const ASSET_ENTRIES: readonly AssetEntry[] = [
   { source: 'assets/runtime/entry.ts', destination: 'dist/assets/runtime/context-brake-runtime.mjs' },
-  { source: 'assets/runtime/process-hook.ts', destination: 'dist/assets/runtime/process-hook.mjs' },
+  { source: 'assets/runtime/claude-code-hook.ts', destination: 'dist/assets/runtime/claude-code-hook.mjs' },
+  { source: 'assets/runtime/codex-cli-hook.ts', destination: 'dist/assets/runtime/codex-cli-hook.mjs' },
+  { source: 'assets/runtime/cursor-hook.ts', destination: 'dist/assets/runtime/cursor-hook.mjs' },
+  { source: 'assets/runtime/github-copilot-cli-hook.ts', destination: 'dist/assets/runtime/github-copilot-cli-hook.mjs' },
+  { source: 'assets/runtime/antigravity-cli-hook.ts', destination: 'dist/assets/runtime/antigravity-cli-hook.mjs' },
   { source: 'assets/runtime/opencode-plugin.ts', destination: 'dist/assets/runtime/opencode-plugin.js' },
   { source: 'assets/runtime/pi-extension.ts', destination: 'dist/assets/runtime/pi-extension.js' },
   { source: 'assets/runtime/omp-extension.ts', destination: 'dist/assets/runtime/omp-extension.js' },

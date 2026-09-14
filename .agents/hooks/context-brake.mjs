@@ -1,5 +1,6 @@
 // assets/runtime/process-hook.ts
 import process from "node:process";
+var NO_OUTPUT = null;
 function readStdin() {
   return new Promise((resolve) => {
     let data = "";
@@ -15,52 +16,31 @@ function readStdin() {
     });
   });
 }
+function parsePayload(raw) {
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+}
 function resolveEvent(argEvent, payload) {
   if (argEvent) return argEvent;
   const raw = payload.hook_event_name ?? payload.event ?? payload.hookName ?? "";
   return typeof raw === "string" ? raw : "";
 }
-function buildResponse(event) {
-  const norm = event.toLowerCase();
-  if (norm === "pretooluse") {
-    return JSON.stringify({
-      hookSpecificOutput: { permissionDecision: "allow" },
-      permission: "allow",
-      permissionDecision: "allow",
-      decision: "allow"
-    });
-  }
-  if (norm === "posttooluse") {
-    return JSON.stringify({
-      hookSpecificOutput: { additionalContext: "" },
-      additional_context: "",
-      additionalContext: ""
-    });
-  }
-  if (norm === "preinvocation") {
-    return JSON.stringify({ injectSteps: [] });
-  }
-  return JSON.stringify({});
+function findResponse(responses, event) {
+  return Object.hasOwn(responses, event) ? responses[event] ?? NO_OUTPUT : NO_OUTPUT;
 }
-async function runProcessHook() {
-  try {
-    const raw = await readStdin();
-    let payload = {};
-    if (raw.trim().length > 0) {
-      try {
-        payload = JSON.parse(raw);
-      } catch {
-        payload = {};
-      }
-    }
-    const event = resolveEvent(process.argv[2], payload);
-    const response = buildResponse(event);
-    process.stdout.write(response);
-  } catch {
-    process.stdout.write("{}");
-  }
+async function runProcessHook(responses) {
+  const payload = parsePayload(await readStdin());
+  const response = findResponse(responses, resolveEvent(process.argv[2], payload));
+  if (response !== NO_OUTPUT) process.stdout.write(JSON.stringify(response));
 }
-void runProcessHook();
-export {
-  runProcessHook
-};
+
+// assets/runtime/claude-code-hook.ts
+void runProcessHook({
+  PreToolUse: NO_OUTPUT,
+  PostToolUse: NO_OUTPUT,
+  SessionStart: NO_OUTPUT
+});

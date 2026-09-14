@@ -56,7 +56,7 @@ export async function planAntigravityInstall(projectRoot: string): Promise<Adapt
     const detail = error instanceof Error ? error.message : String(error);
     return { harness: 'antigravity-cli', changes: [], conflicts: [{ path: ANTIGRAVITY_CONFIG_FILE, code: 'INVALID_HARNESS_CONFIG', detail }], entries: [] };
   }
-  const assetContent = await loadRuntimeAsset('process-hook.mjs');
+  const assetContent = await loadRuntimeAsset('antigravity-cli-hook.mjs');
   const changes: PlannedChange[] = [
     { path: ANTIGRAVITY_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Register Antigravity hooks' } },
     { path: ANTIGRAVITY_HOOK_FILE, realPath: await resolveChangeTarget(projectRoot, ANTIGRAVITY_HOOK_FILE), kind: 'create', owner: 'runtime_asset', content: assetContent, preview: { summary: 'Install ContextBrake hook script' } },

@@ -53,7 +53,7 @@ export async function planCopilotInstall(projectRoot: string): Promise<AdapterPl
       return { harness: 'github-copilot-cli', changes: [], conflicts: [{ path: COPILOT_CONFIG_FILE, code: 'INVALID_HARNESS_CONFIG', detail: msg }], entries: [] };
     }
   }
-  const assetContent = await loadRuntimeAsset('process-hook.mjs');
+  const assetContent = await loadRuntimeAsset('github-copilot-cli-hook.mjs');
   const realHook = await resolveChangeTarget(projectRoot, COPILOT_HOOK_FILE);
   const changes: PlannedChange[] = [
     { path: COPILOT_CONFIG_FILE, realPath: realConfig, kind: 'create', owner: 'harness_entry', content: buildConfigFile(), preview: { summary: 'Create Copilot hooks config' } },

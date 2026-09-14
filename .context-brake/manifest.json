@@ -15,7 +15,7 @@
     {
       "path": ".claude/hooks/context-brake.mjs",
       "kind": "runtime_asset",
-      "sha256": "596d8532174ba910ac6f800165805572e0c9bcdd8a5d9790b045c9b110b8120c"
+      "sha256": "cc9062cecba5110a3c80815eb55f666edd3b82ff8c80807506e89866adadeadd"
     }
   ],
   "entries": [

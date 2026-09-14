@@ -55,7 +55,7 @@ export async function planCodexInstall(projectRoot: string): Promise<AdapterPlan
     const detail = error instanceof Error ? error.message : String(error);
     return { harness: 'codex-cli', changes: [], conflicts: [{ path: CODEX_CONFIG_FILE, code: 'INVALID_HARNESS_CONFIG', detail }], entries: [] };
   }
-  const assetContent = await loadRuntimeAsset('process-hook.mjs');
+  const assetContent = await loadRuntimeAsset('codex-cli-hook.mjs');
   const changes: PlannedChange[] = [
     { path: CODEX_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Register Codex hooks' } },
     { path: CODEX_HOOK_FILE, realPath: await resolveChangeTarget(projectRoot, CODEX_HOOK_FILE), kind: 'create', owner: 'runtime_asset', content: assetContent, preview: { summary: 'Install ContextBrake hook script' } },

@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const RUNTIME_ASSET_DIR = 'dist/assets/runtime';
-const PROCESS_HOOK_ASSET = 'process-hook.mjs';
+const PROCESS_HOOK_ASSET = 'claude-code-hook.mjs';
+const RUNTIME_ASSET_COUNT = 9;
 const STALE_MARKER = '\n// stale marker\n';
 
 async function describeRuntimeAssets(): Promise<string> {
@@ -22,7 +23,7 @@ describe('T18/OBS-01: importing the asset bundler has no side effects', () => {
   it('leaves built runtime assets untouched when the module is imported', async () => {
     const before = await describeRuntimeAssets();
     const bundler = await import('../../scripts/asset-bundler.js');
-    expect(bundler.ASSET_ENTRIES).toHaveLength(5);
+    expect(bundler.ASSET_ENTRIES).toHaveLength(RUNTIME_ASSET_COUNT);
     expect(await describeRuntimeAssets()).toBe(before);
   });
 });
@@ -45,6 +46,6 @@ describe('T18/OBS-02: stale runtime assets are detected without being rebuilt', 
 
   it('rejects missing assets with the file names and the corrective command', async () => {
     const { verifyAssets } = await import('../../scripts/asset-bundler.js');
-    await expect(verifyAssets(root)).rejects.toThrow(/process-hook\.mjs.*npm run build/);
+    await expect(verifyAssets(root)).rejects.toThrow(/claude-code-hook\.mjs.*npm run build/);
   });
 });

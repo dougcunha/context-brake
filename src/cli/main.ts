@@ -1,0 +1,61 @@
+#!/usr/bin/env node
+import { realpath } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { parseCliArgs, CliArgumentError } from './argument-parser.js';
+import { dispatchCommand } from './composition-root.js';
+import { buildCliErrorDocument } from '../core/services/report-service.js';
+import { renderJsonOutput } from './output/json.js';
+import { renderCliErrorText } from './output/text.js';
+
+let signalRegistered = false;
+
+function onSignal(): void {
+  process.exit(130);
+}
+
+function setupSignalHandlers(): void {
+  if (signalRegistered) return;
+  signalRegistered = true;
+  process.on('SIGINT', onSignal);
+  process.on('SIGTERM', onSignal);
+}
+
+function handleParseError(err: CliArgumentError, argsList: readonly string[]): number {
+  const isJson = argsList.includes('--json');
+  const first = argsList[0];
+  const cmd = first === 'doctor' || first === 'remove' ? first : 'init';
+  const doc = buildCliErrorDocument({ command: cmd, code: 'INVALID_ARGUMENTS', message: err.message });
+  if (isJson) {
+    renderJsonOutput(doc);
+  } else {
+    renderCliErrorText(doc);
+  }
+  return doc.exitCode;
+}
+
+export async function main(argumentsList: readonly string[] = process.argv.slice(2)): Promise<number> {
+  setupSignalHandlers();
+  try {
+    const parsed = parseCliArgs(argumentsList);
+    const projectRoot = await realpath(process.cwd()).catch(() => process.cwd());
+    const env = { projectRoot };
+    return await dispatchCommand(parsed, env);
+  } catch (err) {
+    if (err instanceof CliArgumentError) return handleParseError(err, argumentsList);
+    const isJson = argumentsList.includes('--json');
+    const msg = err instanceof Error ? err.message : String(err);
+    const doc = buildCliErrorDocument({ command: 'init', code: 'UNEXPECTED_ERROR', message: msg });
+    if (isJson) {
+      renderJsonOutput(doc);
+    } else {
+      renderCliErrorText(doc);
+    }
+    return doc.exitCode;
+  }
+}
+
+const entrypoint = process.argv[1];
+if (entrypoint && import.meta.url === pathToFileURL(resolve(entrypoint)).href) {
+  main().then((code) => { process.exitCode = code; });
+}

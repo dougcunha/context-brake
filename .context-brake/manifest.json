@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "packageVersion": "1.0.0",
+  "assets": [
+    {
+      "path": "context-brake.config.json",
+      "kind": "config",
+      "sha256": "1043d2dc62f89550838d02ec77267836cda2b8a92cbcb39b70f14fe8e27a17a5"
+    },
+    {
+      "path": "docs/context-brake-protocol.md",
+      "kind": "protocol",
+      "sha256": "c3538b70c162ca22c42630066a43fbcbb3bca85a11a3834ed4ac1b004b27d2cc"
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "kind": "runtime_asset",
+      "sha256": "596d8532174ba910ac6f800165805572e0c9bcdd8a5d9790b045c9b110b8120c"
+    }
+  ],
+  "entries": [
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "PreToolUse|*|.claude/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "PostToolUse|*|.claude/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "SessionStart|startup|resume|clear|compact|.claude/hooks/context-brake.mjs"
+    }
+  ]
+}

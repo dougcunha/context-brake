@@ -1,0 +1,7 @@
+{
+  "session_id": "codex-sess-1",
+  "hook_event_name": "PostToolUse",
+  "tool_response": {
+    "status": "success"
+  }
+}

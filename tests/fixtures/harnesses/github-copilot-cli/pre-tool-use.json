@@ -1,0 +1,7 @@
+{
+  "sessionId": "copilot-s-1",
+  "toolName": "shell",
+  "toolArgs": {
+    "command": "dir"
+  }
+}

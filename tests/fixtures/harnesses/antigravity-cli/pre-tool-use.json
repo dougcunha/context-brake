@@ -1,0 +1,5 @@
+{
+  "hookName": "PreToolUse",
+  "conversationId": "agy-conv-1",
+  "toolName": "bash"
+}

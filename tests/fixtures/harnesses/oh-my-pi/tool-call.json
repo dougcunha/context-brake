@@ -1,0 +1,6 @@
+{
+  "name": "run_command",
+  "input": {
+    "command": "vitest"
+  }
+}

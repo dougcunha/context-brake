@@ -1,0 +1,6 @@
+{
+  "tool": "bash",
+  "input": {
+    "command": "npm test"
+  }
+}

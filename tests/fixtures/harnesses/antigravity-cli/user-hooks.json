@@ -1,0 +1,9 @@
+{
+  "hooks": {
+    "PreToolUse": {
+      "user-hook": {
+        "command": "echo 'user antigravity hook'"
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+[hooks]
+pre_tool = "echo 1"

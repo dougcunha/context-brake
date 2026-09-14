@@ -1,0 +1,34 @@
+{
+  "$schema": "https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json",
+  "schemaVersion": 1,
+  "activeHarnesses": [
+    "claude-code"
+  ],
+  "telemetry": {
+    "injectionMode": "threshold_only",
+    "activationThresholdPercentage": 50,
+    "contextWindowCeiling": 128000,
+    "turnCeiling": 12,
+    "zones": {
+      "greenMaxPercentage": 49,
+      "yellowMaxPercentage": 65,
+      "criticalPercentage": 75,
+      "greenMaxTurn": 7,
+      "yellowMaxTurn": 10,
+      "criticalTurn": 12
+    }
+  },
+  "stateStorage": {
+    "planFile": "task_plan.json",
+    "checkpointFile": "state_checkpoint.json",
+    "instructCheckpointCommit": true,
+    "bootMaxTokens": 1000
+  },
+  "instructionFiles": {
+    "targets": [
+      "CLAUDE.md",
+      "AGENTS.md"
+    ],
+    "protocolFile": "docs/context-brake-protocol.md"
+  }
+}

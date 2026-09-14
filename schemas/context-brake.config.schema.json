@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "activeHarnesses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "claude-code",
+          "codex-cli",
+          "cursor",
+          "github-copilot-cli",
+          "opencode",
+          "pi",
+          "oh-my-pi",
+          "antigravity-cli"
+        ]
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "properties": {
+        "injectionMode": {
+          "type": "string",
+          "enum": [
+            "threshold_only",
+            "always"
+          ]
+        },
+        "activationThresholdPercentage": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "contextWindowCeiling": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "turnCeiling": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "zones": {
+          "type": "object",
+          "properties": {
+            "greenMaxPercentage": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "yellowMaxPercentage": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "criticalPercentage": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "greenMaxTurn": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "yellowMaxTurn": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "criticalTurn": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "greenMaxPercentage",
+            "yellowMaxPercentage",
+            "criticalPercentage",
+            "greenMaxTurn",
+            "yellowMaxTurn",
+            "criticalTurn"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "injectionMode",
+        "activationThresholdPercentage",
+        "contextWindowCeiling",
+        "turnCeiling",
+        "zones"
+      ],
+      "additionalProperties": false
+    },
+    "stateStorage": {
+      "type": "object",
+      "properties": {
+        "planFile": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
+        },
+        "checkpointFile": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
+        },
+        "instructCheckpointCommit": {
+          "type": "boolean"
+        },
+        "bootMaxTokens": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "planFile",
+        "checkpointFile",
+        "instructCheckpointCommit",
+        "bootMaxTokens"
+      ],
+      "additionalProperties": false
+    },
+    "instructionFiles": {
+      "type": "object",
+      "properties": {
+        "targets": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
+          }
+        },
+        "protocolFile": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
+        }
+      },
+      "required": [
+        "targets",
+        "protocolFile"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "activeHarnesses",
+    "telemetry",
+    "stateStorage",
+    "instructionFiles"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "echo 'user pre-tool hook'"
+      }
+    ]
+  }
+}

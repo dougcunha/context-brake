@@ -1,0 +1,6 @@
+{
+  "name": "edit_file",
+  "input": {
+    "path": "src/main.ts"
+  }
+}

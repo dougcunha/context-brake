@@ -1,0 +1,6 @@
+{
+  "session_id": "session-claude-1",
+  "hook_event_name": "PostToolUse",
+  "tool_name": "Bash",
+  "tool_output": "On branch main\nnothing to commit, working tree clean"
+}

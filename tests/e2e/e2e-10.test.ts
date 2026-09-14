@@ -15,6 +15,6 @@ for (const shell of SHELLS) {
 
     it('executes Claude installation (CA-01, CA-20)', () => testClaudeInstall((a) => runInShell(shell, a, tempDir), tempDir));
     it('preserves idempotency over 3 runs (CA-05, CA-20)', () => testIdempotency((a) => runInShell(shell, a, tempDir), tempDir));
-    it('preserves symbolic link (CA-07, CA-20)', () => testSymlinkTarget((a) => runInShell(shell, a, tempDir), tempDir));
+    it('preserves symbolic link (CA-07, CA-20)', (ctx) => testSymlinkTarget((a) => runInShell(shell, a, tempDir), tempDir, ctx));
   });
 }

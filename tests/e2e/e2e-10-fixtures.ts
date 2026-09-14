@@ -1,6 +1,9 @@
-import { lstat, mkdir, readFile, stat, symlink, writeFile } from 'node:fs/promises';
+import { lstat, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { expect } from 'vitest';
+import { attemptLink, requireLink } from '../helpers/link-capability.js';
+
+type LinkContext = Parameters<typeof requireLink>[0];
 
 export async function setupClaudeFixture(dir: string): Promise<void> {
   await mkdir(join(dir, '.claude'), { recursive: true });
@@ -18,15 +21,6 @@ export async function verifyClaudeInstalled(dir: string): Promise<void> {
   const settings = JSON.parse(content) as { hooks: Record<string, unknown> };
   expect(settings.hooks.UserHook).toBe('node custom.js');
   expect(settings.hooks.PreToolUse).toBeDefined();
-}
-
-export async function tryCreateSymlink(target: string, link: string): Promise<boolean> {
-  try {
-    await symlink(target, link);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export async function verifySymlinkScenario(dir: string): Promise<void> {
@@ -56,12 +50,11 @@ export async function testIdempotency(runner: (args: string[]) => Promise<{ code
   expect(claudeMd.match(/<!-- CONTEXTBRAKE:START -->/g)).toHaveLength(1);
 }
 
-export async function testSymlinkTarget(runner: (args: string[]) => Promise<{ code: number | null }>, dir: string): Promise<void> {
-  const claudePath = join(dir, 'CLAUDE.md');
+export async function testSymlinkTarget(runner: (args: string[]) => Promise<{ code: number | null }>, dir: string, ctx: LinkContext): Promise<void> {
   const agentsPath = join(dir, 'AGENTS.md');
-  await writeFile(claudePath, '# Instructions\n', 'utf8');
-  const created = await tryCreateSymlink('CLAUDE.md', agentsPath);
-  if (!created) return;
+  await writeFile(join(dir, 'CLAUDE.md'), '# Instructions\n', 'utf8');
+  await requireLink(ctx, await attemptLink('CLAUDE.md', agentsPath, 'file'), agentsPath);
+  expect((await lstat(agentsPath)).isSymbolicLink()).toBe(true);
   const res = await runner(['init', '--yes']);
   expect(res.code).toBe(0);
   await verifySymlinkScenario(dir);

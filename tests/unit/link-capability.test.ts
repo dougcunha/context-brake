@@ -35,6 +35,7 @@ describe('T14/CR-04: link attempts and skip/failure routing', () => {
 
   it('skips locally but fails in CI when the required link is unavailable', async () => {
     const skip = vi.fn((note?: string): never => { throw new Error(`skipped: ${note}`); });
+    vi.stubEnv('CI', 'false');
     await expect(requireLink({ skip }, { created: false, reason: 'no link privilege' }, 'some/link')).rejects.toThrow('skipped: no link privilege');
     const ciReason = `unavailable dir link capability on ${process.platform}: EPERM`;
     vi.stubEnv('CI', 'true');

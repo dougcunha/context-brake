@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { ASSET_ENTRIES } from '../../scripts/build-assets.js';
+import { ASSET_ENTRIES } from '../../scripts/asset-bundler.js';
 
 function execHook(args: string[], stdinData: string): Promise<{ code: number | null; stdout: string }> {
   return new Promise((res) => {

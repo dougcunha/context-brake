@@ -8,6 +8,8 @@ import { doctorReportSchema } from '../../src/core/contracts/diagnostics.js';
 
 const MAX_CORE_COMMAND_MS = 5000;
 const MAX_USER_WORKFLOW_MS = 120000;
+const WORKFLOW_TIMEOUT_MARGIN_MS = 30000;
+const WORKFLOW_TEST_TIMEOUT_MS = MAX_USER_WORKFLOW_MS + WORKFLOW_TIMEOUT_MARGIN_MS;
 
 async function createTestDir(): Promise<string> {
   const tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-09-'));
@@ -58,7 +60,7 @@ describe('E2E-09: Quick-start workflow meets user-time target (CA-19)', () => {
 
   it('completes quick-start workflow under two minutes with error-free diagnosis', async () => {
     await testQuickStartWorkflow(tempDir);
-  });
+  }, WORKFLOW_TEST_TIMEOUT_MS);
 
   it('executes core dry-run inspection under five seconds', async () => {
     await testDryRunSpeed(tempDir);

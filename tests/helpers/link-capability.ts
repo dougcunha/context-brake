@@ -4,7 +4,6 @@ export type LinkKind = 'dir' | 'file';
 export type LinkAttempt = { readonly created: boolean; readonly reason: string };
 export type LinkPolicy = { readonly action: 'proceed' } | { readonly action: 'skip' | 'fail'; readonly reason: string };
 
-/** CI declares link creation mandatory, so an unavailable capability must fail there instead of skipping. */
 export function ciRequiresLinks(): boolean {
   return process.env.CI === 'true' || process.env.CI === '1';
 }
@@ -29,7 +28,6 @@ export function linkExists(link: string): Promise<boolean> {
   return lstat(link).then(() => true).catch(() => false);
 }
 
-/** Proceeds only when the requested link exists; otherwise skips locally with a reason or fails in CI. */
 export async function requireLink(ctx: { skip: (note?: string) => never }, attempt: LinkAttempt, link: string): Promise<void> {
   const policy = linkPolicy(attempt, ciRequiresLinks());
   if (policy.action === 'fail') throw new Error(policy.reason);

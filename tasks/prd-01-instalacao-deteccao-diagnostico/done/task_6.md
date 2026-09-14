@@ -95,7 +95,7 @@ Run the complete mapped integration suite and package-content checks as regressi
   - `tests/e2e/shell-runner.ts` (child process shell runner for PowerShell, Git Bash, and native POSIX shells)
   - `tests/e2e/e2e-10-fixtures.ts` (fixture setup and assertion helpers for cross-platform scenarios)
   - `tests/e2e/e2e-10.test.ts` (E2E-10 cross-platform critical scenarios covering PowerShell and Git Bash on Windows, native shells on POSIX)
-  - `tasks/prd-01-instalacao-deteccao-diagnostico/task_6.md`
+  - `tasks/prd-01-instalacao-deteccao-diagnostico/done/task_6.md`
 - **Executed Commands & Results:**
   - `npm run schemas:check`: Exit 0 (all schemas up to date)
   - `npm run dependencies:check`: Exit 0 (zero install scripts in runtime dependencies)

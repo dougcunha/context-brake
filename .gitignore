@@ -5,3 +5,6 @@ coverage/
 
 # graft's local graph cache — regenerable, not committed (run `graft build`).
 /graft/
+
+# Local link to .agents for Claude Code (see README, Contributing). No trailing slash, so a symlink is ignored too.
+/.claude

@@ -86,9 +86,9 @@ Esta funcionalidade resolve esse problema implementando um pipeline de entrega c
 - Assumption: O repositório no GitHub possui permissões administrativas para adicionar Repository Secrets (`NPM_TOKEN`) e executar GitHub Actions.
 - External source: [npm Provenance documentation](https://docs.npmjs.com/generating-provenance-statements) — requisitos para geração de atestação criptográfica via GitHub Actions.
 - External source: [GitHub Actions OIDC with npm](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/about-security-hardening-with-openid-connect) — configuração de permissões seguras.
-- Project source: [`package.json`](file:///D:/MyProjects/ContextBrake/package.json) — mapeamento de arquivos e scripts.
-- Project source: [`scripts/check-package.ts`](file:///D:/MyProjects/ContextBrake/scripts/check-package.ts) — regras de sanidade do pacote npm.
-- Project source: [`.github/workflows/ci.yml`](file:///D:/MyProjects/ContextBrake/.github/workflows/ci.yml) — matriz de validação e lintegers existentes.
+- Project source: [`package.json`](../../package.json) — mapeamento de arquivos e scripts.
+- Project source: [`scripts/check-package.ts`](../../scripts/check-package.ts) — regras de sanidade do pacote npm.
+- Project source: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) — matriz de validação e linters existentes.
 
 ## PRD acceptance gate
 

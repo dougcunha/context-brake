@@ -1,0 +1,39 @@
+export const TEST_FILE_PATTERN = 'tests/**/*.test.ts';
+export const TEST_FILE_SUFFIX = '.test.ts';
+
+export const PROCESS_LANE_DIRECTORIES: readonly string[] = ['tests/e2e/'];
+
+export const PROCESS_LANE_FILES: readonly string[] = [
+  'tests/integration/doctor-benchmark.test.ts',
+  'tests/integration/doctor-manual-removal.test.ts',
+  'tests/integration/invalid-config.test.ts',
+  'tests/integration/linked-project-root.test.ts',
+  'tests/integration/node-process-runner.test.ts',
+  'tests/integration/package-assets.test.ts',
+  'tests/integration/package-contents.test.ts',
+  'tests/integration/safe-removal.test.ts',
+];
+
+export const PROCESS_MARKERS: readonly string[] = [
+  'node:child_process',
+  'cli-runner',
+  'shell-runner',
+  'NodeOverheadMeasurer',
+  'NodeProcessRunner',
+  '/cli/commands/',
+  'composition-root',
+  'npm pack',
+];
+
+export function processLaneGlobs(): string[] {
+  const directoryGlobs = PROCESS_LANE_DIRECTORIES.map((directory) => `${directory}**/*${TEST_FILE_SUFFIX}`);
+  return [...directoryGlobs, ...PROCESS_LANE_FILES];
+}
+
+export function isProcessLaneFile(file: string): boolean {
+  return PROCESS_LANE_DIRECTORIES.some((directory) => file.startsWith(directory)) || PROCESS_LANE_FILES.includes(file);
+}
+
+export function hasProcessMarker(source: string): boolean {
+  return PROCESS_MARKERS.some((marker) => source.includes(marker));
+}

@@ -2,7 +2,9 @@
 
 ## Outcome
 
-One immutable revision containing T12–T15 has reviewable, green evidence for the full Node 20/22/24 matrix on Ubuntu, macOS, and Windows, including E2E-10 execution for CA-01, CA-05, and CA-07 plus Windows PowerShell and Git Bash coverage. The task remains pending until that external evidence exists.
+Current state, closed under `DEC-01` (2026-09-14): revision `58082e5`, which contains T12–T15 and T17–T22, has green, SHA-bound evidence for six matrix cells, Ubuntu on WSL 2 and Windows, each on Node 20, 22, and 24. The evidence includes E2E-10 execution of CA-01, CA-05, and CA-07 and Windows PowerShell and Git Bash coverage. The three macOS cells were waived by `DEC-01` and not run; they are not passing evidence.
+
+> Superseded by `DEC-01` (2026-09-14), original outcome: "One immutable revision containing T12–T15 has reviewable, green evidence for the full Node 20/22/24 matrix on Ubuntu, macOS, and Windows, including E2E-10 execution for CA-01, CA-05, and CA-07 plus Windows PowerShell and Git Bash coverage. The task remains pending until that external evidence exists."
 
 ## Dependencies and boundaries
 
@@ -10,73 +12,94 @@ One immutable revision containing T12–T15 has reviewable, green evidence for t
 - Unblocks: `codereview_04/CR-01`, `codereview_05/CR-01`, and the PRD-01 approval decision.
 - In scope: identifying one immutable corrected revision, running the existing CI matrix or equivalent recorded platform runs, proving E2E-10 executed rather than skipped, and recording durable job/artifact references in this task's Handoff.
 - Out of scope: claiming success from workflow declaration or local Windows output, weakening link tests, changing product behavior or CI workflow configuration, creating a remote without explicit authorization, or treating an uncommitted worktree as immutable evidence.
+- Scope note (`DEC-01`, 2026-09-14): SHA-bound runs on local Windows and on WSL 2 are accepted as equivalent recorded runs. Unbound local output still does not count.
 
 ## Traceability
 
 | Source | Section | Finding covered |
 | --- | --- | --- |
-| `codereview_04/CR-01` | `codereview.md#findings` | The repository has no commit, remote, or CI artifact; current execution proves only Windows PowerShell and Scoop Git Bash, so Linux/macOS CA-20 evidence is missing. |
-| `codereview_05/CR-01` | `codereview.md#findings` | Same obligation, still open at the `codereview_05` review: no commit, remote, or CI artifact; T16 pending. Added by `codereview_05` correction planning, which reuses this task instead of creating a duplicate. |
-| PRD | CA-20 and platform restriction | CA-01, CA-05, and CA-07 must pass on Linux, macOS, and Windows with the required shell coverage. |
-| TechSpec | E2E-10 and build-order item 8 | Critical built-CLI scenarios and the full Linux/macOS/Windows CI matrix must pass before feature completion. |
+| `codereview_04/CR-01` | `codereview.md#findings` | State at that review: the repository has no commit, remote, or CI artifact; current execution proves only Windows PowerShell and Scoop Git Bash, so Linux/macOS CA-20 evidence is missing. Resolved under `DEC-01` by the recorded Linux (WSL 2) and Windows runs; macOS waived. |
+| `codereview_05/CR-01` | `codereview.md#findings` | State at that review: same obligation, still open at the `codereview_05` review, with no commit, remote, or CI artifact and T16 pending. Added by `codereview_05` correction planning, which reuses this task instead of creating a duplicate. Resolved under `DEC-01`; `codereview_06` records it as resolved by decision and accepted evidence. |
+| PRD | CA-20 and platform restriction | CA-01, CA-05, and CA-07 must pass on Linux, macOS, and Windows with the required shell coverage. Accepted scope under the CA-20 exception and `DEC-01`: Linux (WSL 2) and Windows; macOS waived. |
+| TechSpec | E2E-10 and build-order item 8 | Critical built-CLI scenarios and the full Linux/macOS/Windows CI matrix must pass before feature completion. Accepted scope under `DEC-01`: Linux (WSL 2) and Windows; macOS waived. |
 
 ## Requirements
 
 - Use a commit SHA or equivalent immutable revision that contains the completed T12–T15 corrections and exactly matches every recorded run.
 - That revision must also contain the completed `codereview_05` corrections T17–T22 (added by `codereview_05` planning). Runs from the initial commit `8401e7f` predate them and do not satisfy this task.
-- Execute Node 20, 22, and 24 on Ubuntu, macOS, and Windows: nine successful matrix combinations with install, schema, dependency, build, typecheck, lint, test, coverage, and package-smoke gates.
+- Under `DEC-01`: execute Node 20, 22, and 24 on Ubuntu (WSL 2) and Windows, six successful combinations with install, schema, dependency, build, typecheck, lint, test, coverage, and package-smoke gates. The three macOS combinations are waived and not run.
 - In every required platform slice, retain evidence that E2E-10 CA-01/CA-05/CA-07 test bodies executed. After T14, any required CI link-capability failure must fail the job rather than produce a misleading green result.
-- Retain Windows evidence for both PowerShell and Git Bash launch variants and record runner OS/image, Node version, shell variant, immutable revision, timestamps, job URL/artifact identifier, and outcome.
-- Do not mark T16 complete when any matrix cell is missing, rerun against a different revision, skipped at the required link boundary, or accessible only as an unbound local log.
+- Retain Windows evidence for both PowerShell and Git Bash launch variants. For every executed job, record runner OS/image, Node version, shell variant, immutable revision, timestamps, evidence location (job URL, artifact identifier, or a `DEC-01` equivalent-run log path and hash), and outcome.
+- Do not mark T16 complete when any executed cell fails, runs against a different revision, skips at the required link boundary, or is accessible only as an unbound local log. Under `DEC-01`, the unexecuted macOS cells do not block completion.
+
+> Superseded by `DEC-01` (2026-09-14): "Execute Node 20, 22, and 24 on Ubuntu, macOS, and Windows: nine successful matrix combinations with install, schema, dependency, build, typecheck, lint, test, coverage, and package-smoke gates."
+> Superseded by `DEC-01` (2026-09-14): "Retain Windows evidence for both PowerShell and Git Bash launch variants and record runner OS/image, Node version, shell variant, immutable revision, timestamps, job URL/artifact identifier, and outcome."
+> Superseded by `DEC-01` (2026-09-14): "Do not mark T16 complete when any matrix cell is missing, rerun against a different revision, skipped at the required link boundary, or accessible only as an unbound local log."
 
 ## Context to recover on demand
 
-- TechSpec: `tasks/prd-01-instalacao-deteccao-diagnostico/techspec.md` — E2E-10 and build-order item 8.
+- TechSpec: `tasks/prd-01-instalacao-deteccao-diagnostico/techspec.md` — E2E-10, build-order item 8, and `DEC-01` in Key Decisions.
 - Rules and skills: `.agents/rules/node.md`, `.agents/rules/tests.md`, `AGENTS.md`, `sdd-execute-task`, `sdd-review-code` evidence/status rules.
-- Code: `.github/workflows/ci.yml` — declared 3×3 matrix and gates; `tests/e2e/e2e-10.test.ts` and its cross-platform helpers — CA-01/CA-05/CA-07 and shell execution; T14 — enforced link-scenario execution.
+- Code: `.github/workflows/ci.yml` — declared matrix and gates; `tests/e2e/e2e-10.test.ts` and its cross-platform helpers — CA-01/CA-05/CA-07 and shell execution; T14 — enforced link-scenario execution.
 
 ## Work
 
 - [x] T16.1 Confirm T12–T15 are complete and all local gates are green, then identify the immutable revision to validate; record the exact SHA and clean/dirty state.
-- [x] T16.2 With explicit repository/CI authorization in place, run the 3×3 Node/platform matrix from that revision using `.github/workflows/ci.yml` or an equivalent recorded runner setup.
-- [x] T16.3 Inspect all nine jobs for complete gate execution and retain per-platform E2E-10 output proving CA-01, CA-05, and CA-07 ran; retain separate Windows PowerShell and Git Bash evidence.
-- [x] T16.4 Record job URLs or durable artifacts, revision, runner details, shell variants, timestamps, and outcomes in the Handoff; leave the task pending and name every missing cell if evidence is incomplete.
+- [x] T16.2 With explicit authorization, run the Node/platform matrix from that revision using `.github/workflows/ci.yml` or an equivalent recorded runner setup. Under `DEC-01`, six cells ran (Ubuntu on WSL 2 and Windows × Node 20/22/24); the macOS cells are waived.
+- [x] T16.3 Inspect every executed job for complete gate execution and retain per-platform E2E-10 output proving CA-01, CA-05, and CA-07 ran; retain separate Windows PowerShell and Git Bash evidence. Under `DEC-01`, six jobs were inspected; no macOS job exists.
+- [x] T16.4 Record evidence locations, revision, runner details, shell variants, timestamps, and outcomes in the Handoff, and name every cell that was not executed. Under `DEC-01`, the three macOS cells are named as waived.
 
-> HIL closure (2026-09-14): the product owner has no macOS machine and no Linux environment other than WSL 2, and decided to close T16 with the available evidence plus a recorded observation. T16.2 and T16.3 cover six of the nine cells: Ubuntu × Node 20/22/24 on WSL 2, and Windows × Node 20/22/24 locally, both as equivalent recorded runners from revision `58082e5`. The three macOS cells were not executed. They are closed as an observation, not as passing evidence: the acceptance criteria that name macOS are waived by this decision, not met.
+> Superseded by `DEC-01` (2026-09-14), original T16.2 wording: "With explicit repository/CI authorization in place, run the 3×3 Node/platform matrix from that revision using `.github/workflows/ci.yml` or an equivalent recorded runner setup."
+> Superseded by `DEC-01` (2026-09-14), original T16.3 wording: "Inspect all nine jobs for complete gate execution and retain per-platform E2E-10 output proving CA-01, CA-05, and CA-07 ran; retain separate Windows PowerShell and Git Bash evidence."
+> Superseded by `DEC-01` (2026-09-14), original T16.4 wording: "Record job URLs or durable artifacts, revision, runner details, shell variants, timestamps, and outcomes in the Handoff; leave the task pending and name every missing cell if evidence is incomplete."
+
+> HIL closure (2026-09-14): the product owner has no macOS machine and no Linux environment other than WSL 2, and decided to close T16 with the available evidence plus a recorded observation. T16.2 and T16.3 cover six of the nine cells: Ubuntu × Node 20/22/24 on WSL 2, and Windows × Node 20/22/24 locally, both as equivalent recorded runners from revision `58082e5`. The three macOS cells were not executed. They are closed as an observation, not as passing evidence: the acceptance criteria that name macOS are waived by this decision, not met. The governing decision is `DEC-01` in the TechSpec.
+
+> State reconciliation (`codereview_06/CR-02`, T24, 2026-09-14): statements that required nine cells, macOS execution, or a pending or open state are kept verbatim above and below as lines labeled "Superseded by `DEC-01`" or "Historical", each next to the current `DEC-01` state. Handoff `Checks` and `Validated state` are unchanged.
 
 ## Acceptance criteria
 
-- All nine combinations of Node 20/22/24 and Ubuntu/macOS/Windows pass from one immutable corrected revision.
+- Under `DEC-01`: all six executed combinations of Node 20/22/24 on Ubuntu (WSL 2) and Windows pass from one immutable corrected revision. The three macOS combinations are waived and not run.
 - Each required runner executes E2E-10 CA-01, CA-05, and CA-07 without a silent link-capability return; Windows evidence covers both PowerShell and Git Bash.
-- The recorded SHA matches the source used by every job, and the Handoff provides durable, reviewable references plus runner and timestamp metadata.
-- No result is inferred from YAML configuration alone; missing infrastructure or authorization leaves the task explicitly pending.
+- The recorded SHA matches the source used by every executed job, and the Handoff provides reviewable evidence locations plus runner and timestamp metadata.
+- No result is inferred from YAML configuration alone.
+
+> Superseded by `DEC-01` (2026-09-14): "All nine combinations of Node 20/22/24 and Ubuntu/macOS/Windows pass from one immutable corrected revision."
+> Superseded by `DEC-01` (2026-09-14): "The recorded SHA matches the source used by every job, and the Handoff provides durable, reviewable references plus runner and timestamp metadata."
+> Superseded by `DEC-01` (2026-09-14): "No result is inferred from YAML configuration alone; missing infrastructure or authorization leaves the task explicitly pending."
 
 ## Verification
 
 - Unit: not applicable; T16 validates previously tested code.
-- Integration: included in every matrix job through `npm test` and `npm run coverage`.
-- End-to-end: E2E-10 executes CA-01, CA-05, and CA-07 on Linux, macOS, and Windows; Windows uses PowerShell and Git Bash variants.
-- Manual: verify the immutable SHA and inspect every job/artifact for actual E2E-10 execution and absence of required skips.
-- Platforms: Ubuntu, macOS, and Windows × Node 20, 22, and 24; Windows PowerShell and Git Bash.
-- Environment dependency: **PENDING** — the current repository has zero commits, no `HEAD`, no remote, and no CI run artifact. Execution requires explicit authority and access to create/use an immutable revision and multi-platform runners.
-- Environment update (added by `codereview_05` planning, 2026-09-14): **still PENDING**.
-  - A local initial commit `8401e7f` exists, with no remote; it predates T17–T22.
-  - Linux runner available: WSL 2 Ubuntu 26.04 (kernel `6.18.33.2-microsoft-standard-WSL2`), nvm v0.40.7, Node 20.20.2, 22.23.2, and 24.21.0.
-  - That WSL PATH includes 50 Windows `/mnt` entries, which make Windows `node.exe` and `npm.cmd` reachable. Linux runs must strip `/mnt` entries from PATH and clone the SHA into the Linux filesystem.
-  - Open HIL decision: whether a SHA-bound WSL log counts as a durable equivalent recorded run instead of a CI job URL.
-  - Still unavailable: any macOS runner, and Windows runs on Node 20 and 22.
-- Commands: `npm ci --ignore-scripts`, `npm run schemas:check`, `npm run dependencies:check`, `npm run build`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run coverage`, `npm run package:smoke` in every matrix job.
-- Expected evidence: nine green, SHA-bound job records; E2E-10 case output for each platform; Windows shell-variant output; no required link skips.
+- Integration: included in every executed job through `npm test` and `npm run coverage`.
+- End-to-end: under `DEC-01`, E2E-10 executes CA-01, CA-05, and CA-07 on Linux (WSL 2) and Windows; Windows uses PowerShell and Git Bash variants.
+- Manual: verify the immutable SHA and inspect every executed job log for actual E2E-10 execution and absence of required skips.
+- Platforms under `DEC-01`: Ubuntu (WSL 2) and Windows × Node 20, 22, and 24; Windows PowerShell and Git Bash. macOS is waived.
+
+> Superseded by `DEC-01` (2026-09-14): "End-to-end: E2E-10 executes CA-01, CA-05, and CA-07 on Linux, macOS, and Windows; Windows uses PowerShell and Git Bash variants."
+> Superseded by `DEC-01` (2026-09-14): "Platforms: Ubuntu, macOS, and Windows × Node 20, 22, and 24; Windows PowerShell and Git Bash."
+> Historical (`codereview_04` planning, superseded by `DEC-01`): "Environment dependency: **PENDING** — the current repository has zero commits, no `HEAD`, no remote, and no CI run artifact. Execution requires explicit authority and access to create/use an immutable revision and multi-platform runners."
+> Historical (`codereview_05` planning, superseded by `DEC-01`): "Environment update: still PENDING." At that point only the local initial commit `8401e7f` existed, with no remote, and it predated T17–T22. WSL 2 Ubuntu 26.04 (kernel `6.18.33.2-microsoft-standard-WSL2`) with nvm v0.40.7 and Node 20.20.2, 22.23.2, and 24.21.0 was available. Its PATH included 50 Windows `/mnt` entries, so Linux runs had to strip them and clone the SHA into the Linux filesystem. Whether a SHA-bound WSL log counted as a durable equivalent recorded run was still an open HIL question. No macOS runner and no Windows runs on Node 20 and 22 were available.
+
+- Environment dependency (current, `DEC-01`): closed. Revision `58082e5` exists locally without a remote; WSL 2 Ubuntu and Windows served as equivalent recorded runners, with `/mnt` entries stripped from the WSL PATH; no macOS runner is required.
+- Commands: `npm ci --ignore-scripts`, `npm run schemas:check`, `npm run dependencies:check`, `npm run build`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run coverage`, `npm run package:smoke` in every executed job.
+- Expected evidence (current, `DEC-01`): six green, SHA-bound job records; E2E-10 case output for each executed platform; Windows shell-variant output; no required link skips.
+
+> Superseded by `DEC-01` (2026-09-14): "Expected evidence: nine green, SHA-bound job records; E2E-10 case output for each platform; Windows shell-variant output; no required link skips."
 
 ## Affected files
 
-- Modify: this task's Handoff only after external evidence exists.
-- Create: external CI run records/artifacts; no new repository artifact is required.
+- Modify: this task's state text and Handoff (evidence recorded by `sdd-execute-corrections`; `DEC-01` reconciliation by T24).
+- Create: no repository artifact; evidence logs live outside the repository (see Handoff).
+
+> Superseded by `DEC-01` (2026-09-14): "Modify: this task's Handoff only after external evidence exists." and "Create: external CI run records/artifacts; no new repository artifact is required."
 
 ## Observability and recovery
 
-- Operational signal: immutable job URLs/artifact IDs map one SHA to all matrix cells and show E2E-10 execution.
-- Recovery: failed or incomplete jobs leave T16 pending with exact missing evidence; rerun the same SHA after correcting runner infrastructure, never relabel a partial run as complete.
+- Operational signal: one SHA maps to every executed cell's log and hash, and each log shows E2E-10 execution.
+- Recovery: a failed executed job reopens T16 for that cell, to be rerun against the same SHA. The macOS cells stay waived under `DEC-01` and are never reported as passed.
+
+> Superseded by `DEC-01` (2026-09-14): "Operational signal: immutable job URLs/artifact IDs map one SHA to all matrix cells and show E2E-10 execution." and "Recovery: failed or incomplete jobs leave T16 pending with exact missing evidence; rerun the same SHA after correcting runner infrastructure, never relabel a partial run as complete."
 
 ## Handoff
 
@@ -102,7 +125,7 @@ One immutable revision containing T12–T15 has reviewable, green evidence for t
   - No required link scenario skipped in any job; with `CI=true`, an unavailable link capability would have failed the job.
 - Validated state: revision `58082e5`; Ubuntu (WSL 2) and Windows × Node 20, 22, and 24; the macOS cells were not executed.
 - Open items and observations:
-  - HIL decision recorded: macOS and Linux distributions other than WSL 2 Ubuntu are not verifiable with the available infrastructure. CA-20 therefore has no macOS evidence, and a later review may still report that slice as not verifiable unless the PRD or TechSpec records this exception.
+  - HIL decision recorded and formalized: macOS and Linux distributions other than WSL 2 Ubuntu are not verifiable with the available infrastructure. The exception is recorded in PRD CA-20 and TechSpec `DEC-01`, and `codereview_06` accepts CA-20 as conformant by `DEC-01`.
   - HIL decision recorded: the WSL 2 and Windows runs are accepted as equivalent recorded runners instead of CI job URLs. The evidence exists only on this machine, and the Windows copy lives under `%TEMP%`, which the operating system may clean.
-  - Carried from T19, not corrected: benchmark-heavy E2E tests other than E2E-09 (`tests/e2e/e2e-linked-project-root.test.ts`, E2E-08) still use the 30,000 ms runner timeout. None timed out in these six jobs, but one timed out in an earlier, slower Windows run.
-  - Still pending: the IT-14 cause from `codereview_05/CR-03`, and formal findings for OBS-01 and OBS-02 in the next review.
+  - Test-suite repeatability, including the IT-14 zero-sample result and the benchmark-heavy E2E timeouts carried from T19, is now tracked as `codereview_06/CR-01` (T23).
+  - OBS-01 and OBS-02 were resolved by T18, and `codereview_06` records them as resolved.

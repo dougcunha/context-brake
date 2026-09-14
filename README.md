@@ -27,9 +27,9 @@ Long-horizon tasks run by coding agents degrade as the session grows:
 ContextBrake plugs into the extension mechanism each harness already documents, hooks or plugins, and adds:
 
 - 🔍 **Detection and setup:** `context-brake init` finds the harnesses a project uses, registers the integration in each one's own configuration, and reports the support level it can guarantee.
-- 🚦 **Telemetry:** once a threshold is crossed, tool results reach the agent with the session turn, context usage (measured by the harness or estimated), zone, and recommended action.
+- 🚦 **Telemetry:** as soon as the session leaves `GREEN`, or context usage reaches the activation threshold, tool results reach the agent with the session turn, context usage (measured by the harness or estimated), zone, and recommended action.
 - 🪓 **Brake:** above a critical ceiling, tool calls are blocked except the ones needed to save state.
-- 💾 **Checkpoint and boot:** the agent saves progress to `task_plan.json` and `state_checkpoint.json`. After you run `/clear` or `/new`, the new session starts with a boot summary and validates the inherited state before editing code.
+- 💾 **Checkpoint and boot:** the agent saves progress to `task_plan.json` and `state_checkpoint.json`, local files that `init` adds to `.gitignore`. After you run `/clear` or `/new`, the new session starts with a boot summary and validates the inherited state before editing code.
 
 ---
 
@@ -41,8 +41,8 @@ Default limits. A turn is one completed tool call, and when several conditions m
 | :--- | :--- | :--- | :--- |
 | 🟢 `GREEN` | below 50% | up to 7 | Normal work. No telemetry is injected in the default mode. |
 | 🟡 `YELLOW` | 50% to 65% | 8 to 10 | Finish the current edit, start no new plan step, run the step's validation command. |
-| 🔴 `RED` | above 65% | 11 or more | Save plan and checkpoint, commit with `checkpoint: <step title>` if validation passes, and end with `[REQUEST_SESSION_RESET]`. |
-| ⛔ `CRITICAL` | 75% or more | 12 or more | Only state-saving calls run: plan and checkpoint writes, the validation command, and `git status` or `git commit`. |
+| 🔴 `RED` | above 65% | 11 or more | Save plan and checkpoint, commit the code with `checkpoint: <step title>` if validation passes, and end with `[REQUEST_SESSION_RESET]`. |
+| ⛔ `CRITICAL` | 75% or more | 12 or more | Only state-saving calls run: reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, and `git commit`. |
 
 Blocking is guaranteed only on harnesses with **Full** support. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
 
@@ -114,12 +114,13 @@ npx context-brake doctor
 2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments.
 3. **Initializes protocol & config:** Creates `docs/context-brake-protocol.md` and `context-brake.config.json`.
 4. **Adds reference markers:** Inserts a short 4-line pointer between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` in existing `CLAUDE.md` and `AGENTS.md` instruction files without modifying any other content.
+5. **Ignores local state (planned):** Adds the plan and checkpoint paths to `.gitignore` between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END`, creating the file when needed. Plans and checkpoints stay on your machine and are never committed.
 
 ### Updating and Removal
 
 - **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and protocol references without touching your custom settings.
 - **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
-- **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations.
+- **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations; the state files stay git-ignored. Add `--remove-state` to also delete them and their `.gitignore` block.
 
 ---
 
@@ -159,7 +160,7 @@ npx context-brake doctor
 }
 ```
 
-`contextWindowCeiling` is used only when the harness does not report the active model's window. With `instructCheckpointCommit`, the protocol tells the agent to commit; ContextBrake never commits on its own.
+`contextWindowCeiling` is used only when the harness does not report the active model's window. `turnCeiling` must equal `zones.criticalTurn`; change both to move the turn ceiling. With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
 
 ---
 
@@ -189,7 +190,7 @@ npx context-brake doctor
 - **`task_plan.json`:** task id and title, current step, and steps with status (`PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`), a validation command, and produced artifacts.
 - **`state_checkpoint.json`:** active step, git state (branch, last commit, clean tree), discovered constraints, decisions, blocked items, breaking changes, and modified files.
 
-Both files are validated before every use. An invalid file is reported instead of being passed to the agent, and discovered constraints are never trimmed from the boot summary.
+Both files are local state: `init` lists them in `.gitignore`, and the red-zone commit records code changes only. If a state file was committed earlier, untrack it once with `git rm --cached <file>`. Both files are validated before every use. An invalid file is reported instead of being passed to the agent, and discovered constraints are never trimmed from the boot summary.
 
 ---
 

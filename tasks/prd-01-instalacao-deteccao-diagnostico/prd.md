@@ -10,7 +10,7 @@ O público são desenvolvedores que usam agentes de código de terminal em repos
 
 - **Instalação rápida:** em um repositório com um harness suportado, o usuário chega a um diagnóstico sem erros em até 2 minutos, com um comando de instalação e nenhuma edição manual de arquivo.
 - **Detecção correta:** 100% de acerto na detecção dos oito harnesses do MVP nos cenários de teste, e nenhum harness configurado em repositório que só tenha arquivos de instrução compartilhados.
-- **Idempotência:** três execuções seguidas da instalação resultam em exatamente uma integração por harness, um bloco de referência por arquivo de instrução e nenhuma alteração fora das entradas do ContextBrake.
+- **Idempotência:** três execuções seguidas da instalação resultam em exatamente uma integração por harness, um bloco de referência por arquivo de instrução, um bloco no `.gitignore` e nenhuma alteração fora das entradas do ContextBrake.
 - **Pegada mínima no contexto:** a referência adicionada aos arquivos de instrução tem no máximo 10 linhas.
 - **Diagnóstico confiável:** o diagnóstico identifica 100% das falhas introduzidas nos cenários de teste: integração removida, configuração inválida, marcador corrompido, arquivo de protocolo ausente e harness abaixo da versão mínima.
 - **Transparência de garantias:** todo harness configurado aparece com nível de suporte e com as capacidades que faltam, e nenhum harness aparece como "completo" quando o bloqueio não é garantido.
@@ -63,11 +63,12 @@ Mantém o protocolo fora do contexto sempre carregado, conforme decidido para o 
 - RF15: Criar `context-brake.config.json` com valores padrão para harnesses ativos, janela de contexto, tetos de turnos, zonas, arquivos de estado e arquivos de instrução.
 - RF16: Validar a configuração em toda execução e, quando inválida, indicar campo, valor recebido e regra violada.
 - RF17: Publicar com o pacote um schema da configuração que editores possam usar para validação e autocompletar.
+- RF24: Adicionar ao `.gitignore` da raiz do projeto, entre marcadores próprios do ContextBrake, os caminhos de plano e checkpoint definidos na configuração, criando o arquivo quando não existir, atualizando os caminhos quando a configuração mudar e preservando o restante do conteúdo. Plano e checkpoint são estado local e não devem ser comitados.
 
 ### Pré-visualização e remoção
 
 - RF18: Oferecer modo de pré-visualização da instalação que lista cada arquivo e trecho a criar ou alterar sem gravar nada.
-- RF19: Oferecer comando de remoção que retira integrações, referência e arquivo de protocolo, preservando o restante do conteúdo; plano e checkpoint só são removidos com confirmação explícita.
+- RF19: Oferecer comando de remoção que retira integrações, referência e arquivo de protocolo, preservando o restante do conteúdo; plano e checkpoint só são removidos com confirmação explícita, e as entradas do ContextBrake no `.gitignore` saem apenas junto com eles.
 
 ### Diagnóstico
 
@@ -89,7 +90,7 @@ Mantém o protocolo fora do contexto sempre carregado, conforme decidido para o 
 - CA-09 (RF12): Dado um repositório sem `CLAUDE.md` e sem `AGENTS.md`, quando o usuário executa a instalação sem a opção de criação, então nenhum arquivo de instrução é criado e a saída informa a opção disponível.
 - CA-10 (US8, RF14): Dado um `AGENTS.md` cujo bloco `CONTEXTOPS` contém conteúdo além do protocolo, quando o usuário executa a instalação sem confirmar a migração, então o arquivo permanece byte a byte igual e a saída mostra a mudança proposta.
 - CA-11 (US4, RF18): Dado qualquer repositório, quando o usuário executa a instalação em modo de pré-visualização, então nenhum arquivo muda e a saída lista cada criação e alteração prevista.
-- CA-12 (US7, RF19): Dado um repositório com o ContextBrake instalado, quando o usuário executa a remoção, então integrações, bloco de referência e arquivo de protocolo deixam de existir, o restante do conteúdo dos arquivos permanece e plano e checkpoint continuam no disco.
+- CA-12 (US7, RF19): Dado um repositório com o ContextBrake instalado, quando o usuário executa a remoção, então integrações, bloco de referência e arquivo de protocolo deixam de existir, o restante do conteúdo dos arquivos permanece e plano e checkpoint continuam no disco e ignorados pelo git.
 - CA-13 (RF16): Dada uma configuração com o limite da zona amarela menor que o da zona verde, quando qualquer comando é executado, então a CLI termina com código de erro e aponta campo, valor e regra.
 - CA-14 (US5, RF20): Dada uma integração removida manualmente da configuração do harness, quando o usuário executa `doctor`, então o harness aparece com integração ausente e o comando termina com código de erro.
 - CA-15 (RF8, RF20): Dado o GitHub Copilot CLI configurado, quando o usuário executa `doctor`, então o harness aparece com nível parcial e o motivo informa que um timeout da integração libera a chamada de ferramenta.
@@ -100,6 +101,7 @@ Mantém o protocolo fora do contexto sempre carregado, conforme decidido para o 
 - CA-20 (Restrição de plataforma): Dados Linux, macOS e Windows, em PowerShell e Git Bash, quando os cenários CA-01, CA-05 e CA-07 são executados, então todos passam.
   - Verificação (2026-09-14): a execução [34881898428](https://github.com/dougcunha/context-brake/actions/runs/34881898428) do GitHub Actions no commit `1d4bbb5` passou em Ubuntu, macOS e Windows com Node 20, 22 e 24. Em todas as combinações, o E2E-10 executou CA-01, CA-05 e CA-07; no Windows, em PowerShell e Git Bash. O CA-20 está verificado sem exceção.
   - Histórico: no mesmo dia, antes da publicação do repositório, o responsável pelo produto registrou uma exceção, porque não havia máquina macOS nem distribuição Linux além do WSL 2. A aceitação usaria evidência de Linux (Ubuntu no WSL 2) e de Windows, e o macOS ficaria como não verificado. A verificação acima encerrou essa exceção; o registro completo está em `DEC-01` na [TechSpec](./techspec.md).
+- CA-21 (RF24): Dado um repositório com `.gitignore` do usuário, quando a instalação é executada três vezes, então o arquivo contém um único bloco do ContextBrake com os caminhos de plano e checkpoint da configuração e o conteúdo do usuário permanece byte a byte igual; sem `.gitignore`, o arquivo é criado apenas com o bloco.
 
 ## Experiência do usuário
 
@@ -114,7 +116,7 @@ Mantém o protocolo fora do contexto sempre carregado, conforme decidido para o 
 
 1. `npx context-brake init` detecta os harnesses e mostra a lista com a origem de cada sinal.
 2. A CLI mostra o resumo das alterações previstas e pede confirmação; `--yes` pula a confirmação.
-3. A instalação registra integrações, cria protocolo e configuração e adiciona a referência curta.
+3. A instalação registra integrações, cria protocolo e configuração, adiciona a referência curta e inclui plano e checkpoint no `.gitignore`.
 4. O resumo final mostra, por harness, nível de suporte, capacidades ausentes e o próximo passo sugerido, `context-brake plan init`.
 5. `context-brake doctor` confirma o estado e aponta como corrigir cada problema.
 

@@ -4,7 +4,7 @@
 
 This feature establishes the ContextBrake package, CLI composition root, core installation model, safe file-change engine, and eight harness adapters required by [the installation PRD](./prd.md). The design follows the repository's hexagonal architecture: pure core services derive detections, support profiles, installation/removal plans, and diagnostic findings; infrastructure adapters translate those plans to vendor-specific files and processes; CLI commands parse input, request confirmation, apply a previously computed plan, and render one canonical report as either text or JSON.
 
-Installation is durable after a transient `npx context-brake init` invocation. Build-time generated, self-contained runtime assets are copied into harness-native project directories and registered there; installed hooks never depend on a global ContextBrake binary, a network request, or the original `npx` cache. Every mutation is represented first as a hash-preconditioned `ChangePlan`, preserves bytes outside ContextBrake-owned spans, resolves symlinks before writing, and is applied with same-directory temporary files plus atomic rename. Machine-only detections are reported as candidates and require explicit `--harness`; only project evidence is activated automatically.
+Installation is durable after a transient `npx context-brake init` invocation. Build-time generated, self-contained runtime assets are copied into harness-native project directories and registered there; installed hooks never depend on a global ContextBrake binary, a network request, or the original `npx` cache. Every mutation is represented first as a hash-preconditioned `ChangePlan`, preserves bytes outside ContextBrake-owned spans, resolves symlinks before writing, and is applied with same-directory temporary files plus atomic rename. Machine-only detections are reported as candidates and require explicit `--harness`; only project evidence is activated automatically. Plan and checkpoint files are local state: `init` lists their configured paths in the project `.gitignore` inside a ContextBrake-owned block (RF24), and `remove` takes that block out only together with the state files.
 
 ## System Architecture
 
@@ -25,6 +25,8 @@ The implementation introduces the following components. Names are logical module
 | Core service | `src/core/services/installation-service.ts` | Orchestrate config validation, detection, adapter plans, protocol generation, instruction edits, runtime assets, and the installation manifest into one deterministic plan. |
 | Core service | `src/core/services/removal-service.ts` | Plan removal of exact registered entries and unchanged owned assets while preserving modified or unowned content. |
 | Core service | `src/core/services/instruction-service.ts` | Upsert the three-line reference block, detect malformed/current/legacy markers, deduplicate physical files, and plan confirmed legacy migration. |
+| Core service | `src/core/services/gitignore-service.ts`, `src/core/services/gitignore-markers.ts` | Render the `.gitignore` block for the configured plan and checkpoint paths, plan its creation, update, or removal, and refuse duplicated, unbalanced, or out-of-order markers (RF24, DEC-02). |
+| Core service | `src/core/services/gitignore-checks.ts` | Report a missing, outdated, or malformed `.gitignore` block as doctor findings (RF21, RF24). |
 | Core service | `src/core/services/protocol-service.ts` | Render the protocol from the same normalized zone and state-file configuration consumed by PRD 02 and PRD 03 services. |
 | Core service | `src/core/services/doctor-service.ts` | Aggregate configuration, integration, marker, protocol, state-file, version, capability, and overhead findings into a severity-ordered report. |
 | Core service | `src/core/services/report-service.ts` | Produce canonical command result models used by both text and JSON renderers, preventing output drift. |
@@ -50,7 +52,7 @@ The principal data flow is:
 1. The CLI resolves the project root to the explicit command working directory and validates an existing ContextBrake configuration before any other write-capable action.
 2. Adapters collect project evidence and machine evidence independently. Version probes run only for executable candidates and receive a short timeout.
 3. `DetectionService` automatically activates strong project detections, lists machine-only detections as candidates, adds explicit `--harness` selections, and removes explicit exclusions. Supplying the same ID to include and exclude is a usage error.
-4. `InstallationService` asks adapters and the instruction/protocol services for changes, combines changes by physical file identity, and returns an immutable `ChangePlan`. Invalid vendor files become per-harness conflicts and do not suppress safe plans for other harnesses.
+4. `InstallationService` asks adapters and the instruction, protocol, and `.gitignore` services for changes, combines changes by physical file identity, and returns an immutable `ChangePlan`. Invalid vendor files become per-harness conflicts and do not suppress safe plans for other harnesses.
 5. Dry-run renders that exact plan. A real run confirms it, then the applier rechecks every precondition hash and atomically applies each independent file change. A concurrent change rejects that file rather than overwriting it.
 6. `doctor` reads the same descriptors and schemas, never repairs state, and emits one `DoctorReport`; text and JSON are projections of that report.
 
@@ -99,9 +101,9 @@ The public command surface is fixed for this feature:
 
 | Command | Options | Rules |
 | --- | --- | --- |
-| `context-brake init` | `--dry-run`, `--yes`, `--json`, repeatable `--harness <id>`, repeatable `--exclude-harness <id>`, repeatable `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy` | Dry-run never confirms or writes. `--yes` authorizes the displayed ordinary plan, not legacy migration. Missing instruction files are created only with `--create-instructions`. |
+| `context-brake init` | `--dry-run`, `--yes`, `--json`, repeatable `--harness <id>`, repeatable `--exclude-harness <id>`, repeatable `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy` | Dry-run never confirms or writes. `--yes` authorizes the displayed ordinary plan, not legacy migration. Missing instruction files are created only with `--create-instructions`. A missing `.gitignore` is created with the state-file block (RF24). |
 | `context-brake doctor` | `--json`, repeatable `--harness <id>` | Read-only and non-interactive. Explicit harnesses include machine-only candidates in the expected-integration checks. Overhead is measured for configured integrations as required by RF22. |
-| `context-brake remove` | `--dry-run`, `--yes`, `--json`, `--remove-state` | Default removal retains plan/checkpoint. `--remove-state` is the separate explicit decision required by RF19; in an interactive TTY it is also shown in the confirmation plan, and in non-TTY use it requires `--yes`. |
+| `context-brake remove` | `--dry-run`, `--yes`, `--json`, `--remove-state` | Default removal retains plan/checkpoint and their `.gitignore` block. `--remove-state` is the separate explicit decision required by RF19 and also removes that block, deleting `.gitignore` when nothing else remains; in an interactive TTY it is also shown in the confirmation plan, and in non-TTY use it requires `--yes`. |
 
 Repeated values preserve user order for diagnostics and are deduplicated before planning. Unknown harness IDs, out-of-root instruction paths, or the same ID in include/exclude produce `INVALID_ARGUMENTS` before filesystem mutation.
 
@@ -214,7 +216,7 @@ Exact numeric minimums must come from a vendor release note or a fixture verifie
 | `path` | `string` | yes | Display path relative to project root. |
 | `realPath` | `string` | yes | Canonical target used for deduplication and writing. |
 | `kind` | `create | update | delete` | yes | Planned operation. |
-| `owner` | `config | protocol | instruction_block | harness_entry | runtime_asset | manifest` | yes | Ownership category. |
+| `owner` | `config | protocol | instruction_block | ignore_block | harness_entry | runtime_asset | manifest` | yes | Ownership category. `ignore_block` was added for RF24 (DEC-02). |
 | `beforeSha256` | `string | null` | yes | Optimistic concurrency precondition; `null` requires absence. |
 | `afterSha256` | `string | null` | yes | Expected resulting content; `null` means deletion. |
 | `preview` | `ChangePreview` | yes | Human/JSON-safe created/deleted range or unified snippet. |
@@ -282,6 +284,29 @@ Exact numeric minimums must come from a vendor release note or a fixture verifie
 ```
 
 The manifest is stored at `.context-brake/manifest.json` and contains no user content, prompts, tool outputs, credentials, or full before-images. Removal deletes an owned asset only when its current hash matches the manifest. Modified assets are left in place with an error unless an explicitly designed future force workflow is added; this PRD does not add a destructive force flag.
+
+#### `IgnoreBlock` - git-ignored local state (RF24)
+
+`init` keeps one ContextBrake-owned block in the project-root `.gitignore`. With the default configuration it is:
+
+```text
+# CONTEXTBRAKE:START
+/task_plan.json
+/state_checkpoint.json
+# CONTEXTBRAKE:END
+```
+
+| Rule | Behavior |
+| --- | --- |
+| Paths | One line each for `stateStorage.planFile` and `stateStorage.checkpointFile`, in that order, anchored to the root with a leading `/`. Characters with gitignore meaning (`*`, `?`, `[`, `!`, `#`, and a trailing space) are escaped with a backslash; configuration validation already rejects backslashes, absolute paths, and paths that escape the root. |
+| Missing file | Created with LF line endings and only the block. |
+| File without the block | The block is appended at the end, preserving the file's line-ending style and final-newline state, as for instruction blocks. |
+| File with the block | The block is replaced in place when its lines differ from the configuration and left untouched otherwise, so repeated runs are no-ops. |
+| Malformed markers | Duplicated, unbalanced, or out-of-order markers produce the `DUPLICATE_GITIGNORE_MARKERS` or `MALFORMED_GITIGNORE_MARKERS` conflict; the file stays byte-identical and the other changes proceed. |
+| Symbolic link | Written through the resolved target, like every other planned change. |
+| Removal | Only `remove --remove-state` removes the block; when the remaining content is empty or blank, `.gitignore` is deleted. |
+| Ownership | `FileChange.owner` is `ignore_block`. Like instruction blocks, the block is not recorded in the manifest. |
+| Doctor | With a valid configuration, a missing block or one that lists other paths yields `STATE_FILES_NOT_IGNORED` (warning); malformed markers yield `MALFORMED_GITIGNORE_MARKERS` (error). |
 
 #### `InstallReport` - canonical init/remove result
 
@@ -473,6 +498,11 @@ Vitest runs unit, integration, and end-to-end suites with global thresholds of a
 | UT-18 | Support levels are exhaustive | CA-01, CA-15 | Every capability combination maps to one literal support level; no unknown capability is treated as supported. |
 | UT-19 | JSONC token-span edits preserve trivia | CA-05, CA-06 | Key order, comments including trailing inline comments, CRLF/LF, indentation, and final newline remain byte-identical outside the owned edit. |
 | UT-20 | Exit severity is stable | CA-03, CA-14, CA-17 | Healthy is 0, any warning without error is 1, and any error is 2 regardless of finding order. |
+| UT-21 | `.gitignore` block renders configured, escaped state paths | CA-21 | Default and custom paths, including `#`, `!`, `*`, and a trailing space, render the exact block with root-anchored, escaped lines. |
+| UT-22 | `.gitignore` planning is idempotent and preserves user bytes | CA-21 | Absent file, file without the block, file with the current block, file with an outdated block, CRLF, and no-final-newline fixtures plan create, append, no-op, and in-place update; bytes outside the block are unchanged. |
+| UT-23 | Malformed `.gitignore` markers become conflicts | CA-06, CA-21 | Duplicated, unbalanced, and out-of-order markers yield their conflict code and no planned change. |
+| UT-24 | Removal keeps the block unless state removal is confirmed | CA-12 | Default removal plans no `.gitignore` change; `--remove-state` removes the block and deletes a file left empty. |
+| UT-25 | Doctor reports unignored state files | RF21, RF24 | Missing and outdated blocks produce `STATE_FILES_NOT_IGNORED`; malformed markers produce `MALFORMED_GITIGNORE_MARKERS`; a current block produces no finding. |
 
 Unit tests use fakes only at core ports. Parser/schema tests may exercise concrete pure infrastructure helpers without filesystem access.
 
@@ -496,6 +526,8 @@ Unit tests use fakes only at core ports. Parser/schema tests may exercise concre
 | IT-14 | Doctor benchmark exercises installed assets | CA-18 | Process and in-process fixtures return sample count, p95, target, and pass/fail without changing project files. |
 | IT-15 | Atomic writer rejects a concurrent edit | CA-05, CA-11 | A changed precondition hash leaves the user's newer bytes intact and reports `FILE_CHANGED_SINCE_PREVIEW`. |
 | IT-16 | All eight detection descriptors avoid cross-signals | CA-02, CA-03 | Each fixture detects exactly its intended harness; `.agents/` and `AGENTS.md` generic fixtures produce no Antigravity/Codex activation. |
+| IT-17 | `.gitignore` survives three installations | CA-21 | A fixture with user patterns and comments ends with one block and identical user bytes after three `init` runs; a repository without `.gitignore` gets a file containing only the block; a symlinked `.gitignore` stays a link. |
+| IT-18 | State files are ignored by git | CA-12, CA-21 | In a temporary git repository, plan and checkpoint files created after `init` are absent from `git status --porcelain`; after default `remove` they are still ignored; after `remove --remove-state --yes` the files and the block are gone. Skipped with the reason when `git` is unavailable. |
 
 Integration fixtures live under `tests/fixtures/harnesses/<harness>/` and include valid empty config, existing user integrations, current ContextBrake entry, invalid syntax, duplicate keys, old/new version output, and vendor payload examples. Instruction fixtures cover LF, CRLF, no final newline, symlink, junction, dangling/out-of-root link, current markers, corrupted markers, and legacy markers.
 
@@ -513,6 +545,7 @@ Integration fixtures live under `tests/fixtures/harnesses/<harness>/` and includ
 | E2E-08 | Doctor JSON validates against published schema | CA-14, CA-15, CA-16, CA-17, CA-18 | Stdout is one JSON document with text-equivalent findings, version limitation, and overhead result. |
 | E2E-09 | Quick-start workflow meets user-time target | CA-19 | Scripted `init --yes` plus `doctor --json` completes well below two minutes; core work excluding benchmark is separately asserted below five seconds. |
 | E2E-10 | Cross-platform critical scenarios | CA-20 | CA-01, CA-05, and CA-07 fixture workflows pass on Linux, macOS, and Windows; Windows enables symlink privilege and both PowerShell/Git Bash launch coverage. Verified on Ubuntu, macOS, and Windows × Node 20/22/24 by GitHub Actions run 34881898428 on `1d4bbb5`; the `DEC-01` waiver is superseded. |
+| E2E-11 | Built CLI ignores state files idempotently | CA-11, CA-21 | `init --dry-run` lists the `.gitignore` change without writing; `init --yes` run three times on a fixture with a user `.gitignore` leaves one block and unchanged user lines. |
 
 There is no browser or visual test layer. E2E tests spawn the built CLI with argument arrays in isolated temporary directories and assert stdout, stderr, exit code, file identity, exact bytes, and cleanup.
 
@@ -529,6 +562,8 @@ There is no browser or visual test layer. E2E tests spawn the built CLI with arg
 7. Implement read-only doctor aggregation, runtime self-tests, overhead measurement, support limitations, output schema, and severity exit mapping.
 8. Complete built-CLI E2E coverage, package-content checks, `npm pack` smoke tests, and Linux/macOS/Windows CI. Run lint, typecheck, tests, and coverage before declaring the feature complete. GitHub Actions run 34881898428 on `1d4bbb5` provides the completion evidence on Ubuntu, macOS, and Windows × Node 20/22/24; the `DEC-01` waiver is superseded.
 
+9. RF24 follow-up (2026-09-14): add the `ignore_block` owner and regenerate `schemas/install-report.schema.json`; implement the `.gitignore` service, markers, and doctor check; snapshot `.gitignore` and wire it into installation, removal, and doctor; then run UT-21 to UT-25, IT-17, IT-18, and E2E-11 on the CI matrix. This step extends the accepted scope with RF24 and CA-21 and does not reopen CA-01 to CA-20.
+
 Each sequence item should be decomposed by `sdd-create-tasks`; this document does not implement or mark those tasks complete.
 
 ### Technical Dependencies
@@ -536,7 +571,7 @@ Each sequence item should be decomposed by `sdd-create-tasks`; this document doe
 - Node.js 20+ and npm are required. npm package contents must include CLI output, schemas, protocol source, and all standalone runtime assets.
 - Runtime libraries: Zod 4, `jsonc-parser`, and `semver`, pinned by `package-lock.json` and verified to have no install scripts in their dependency closure.
 - Development tooling: TypeScript, ESLint, Vitest with V8 coverage, and a deterministic esbuild-based bundling step for standalone assets. Exact versions are pinned when the package skeleton is created.
-- Vendor binaries, credentials, network access, and Git are not test dependencies. Git is optional at runtime for this PRD; no-git repositories use the command working directory as root and still support install/doctor/remove.
+- Vendor binaries, credentials, and network access are not test dependencies. Git is used only by IT-18, which is skipped with the reason when `git` is unavailable. Git is optional at runtime for this PRD; no-git repositories use the command working directory as root and still support install/doctor/remove.
 - A harness adapter cannot move from experimental/unsupported capability state to advertised support until its current official documentation, minimum-version evidence, runtime fixture, and `docs/research/harness-integrations.md` agree.
 - OpenCode post-result visibility, Cursor CLI event coverage, Codex failure/trust observability, and Antigravity failure behavior are research gates, not assumptions that may be reported as guarantees.
 
@@ -572,6 +607,12 @@ ContextBrake sends no telemetry and opens no network connection. Observability i
   - **What the first macOS run exposed:** `tests/integration/change-applier.test.ts` built planned paths under the non-canonical temporary directory (`/var` is a symlink to `/private/var`), and `createChangePlan` silently dropped the deletion. The test now uses the canonical directory, and a planned change without a matching snapshot is a conflict rather than a silent skip.
   - **Historical waiver:** the product owner had no macOS machine and no Linux environment other than WSL 2. CA-20 and E2E-10 were accepted with evidence from Ubuntu on WSL 2 and from Windows (PowerShell and Git Bash), each on Node 20, 22, and 24, from revision `58082e5`, recorded as equivalent runs in the T16 handoff. macOS had no acceptance evidence, and a review was to treat the missing macOS slice as covered by the waiver. A GitHub-hosted macOS runner and a physical or cloud Mac were then unavailable.
 
+- **DEC-02 — Local state is git-ignored through an owned `.gitignore` block (HIL decision, 2026-09-14; PRD RF24, RF19, RF21, CA-12, CA-21):**
+  - Plan and checkpoint files belong to the machine that runs the task and are never committed. `init` owns a block between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END` in the project-root `.gitignore`, rendered from the configured paths. `remove` takes it out only with `--remove-state`, so kept state files never reappear as untracked.
+  - The block follows the instruction-block rules: planned before writing, byte-preserving, idempotent, refused on malformed markers, and written through symbolic links (`file-changes.md`). A new `ignore_block` owner keeps previews and reports truthful. The owner enum grows inside `InstallReport` schema version 1, which is acceptable because no release has been tagged yet.
+  - Rejected: `.git/info/exclude`, because it is not shared with collaborators and does not exist without git; a nested `.gitignore` next to the state files, because they live at the repository root by default; and no block at all, because agents would commit local state and the PRD-03 clean-tree check would flag every checkpoint update.
+  - Absorbed preparation: `installation-service.ts` is at 92 lines and gains the `.gitignore` plan, so the conflict-to-finding mapping moves to a helper in the same task and the file stays within 100 lines.
+
 Rejected alternatives include rewriting entire vendor JSON documents, editing existing Codex TOML through serialization, depending on globally installed `context-brake`, running `npx` from each hook, adding ContextBrake to an arbitrary project's dependencies, treating `AGENTS.md`/`.agents/` as harness proof, silently migrating legacy blocks, or reporting undocumented capabilities as working.
 
 ### Known Risks
@@ -589,6 +630,41 @@ Rejected alternatives include rewriting entire vendor JSON documents, editing ex
 - `jsonc-parser` has known comment/edit edge cases. Mitigation: use its scanner/AST offsets rather than blind `modify`, and lock regression fixtures for inline comments, array removal, duplicate keys, and line endings.
 - Runtime bundling can duplicate shared code across in-process adapters. This is accepted to guarantee standalone durability; package-content and overhead tests constrain size/startup instead of introducing runtime dependency resolution.
 - macOS path semantics differ from Linux and Windows: the default temporary directory sits under `/var`, a symlink to `/private/var`, and the filesystem is usually case-insensitive. The first macOS CI run exposed a test that planned non-canonical paths, which `createChangePlan` silently dropped. Mitigation: `macos-latest` runs in the CI matrix; a planned change without a matching canonical snapshot becomes a `SNAPSHOT_MISSING` conflict; tests that plan paths use canonical temporary directories.
+- A state file committed before RF24 stays tracked, because `.gitignore` does not untrack files. Mitigation: the README tells users to run `git rm --cached <file>` for state files already in the repository; doctor does not run git for this check.
+- A user pattern placed after the block, such as `!task_plan.json`, re-includes a state file. Mitigation: `init` appends the block at the end of the file, and later user negations are the user's decision and stay untouched.
+
+### RF24 Update: Quality Profile and Terrain Baseline
+
+Rules the RF24 follow-up can violate, verified on the TypeScript files in its task diff (`files`) and the subset under `src/core/` (`core_files`). A blocking hit prevents task completion; a reservation is an optional improvement.
+
+| ID | Rule | Class | Verification command | Prior justification |
+| --- | --- | --- | --- | --- |
+| QA-01 | `any` in any form | blocking | `rg -n --type ts ':\s*any\b\|\bas any\b\|<any>' "${files[@]}"` | — |
+| QA-02 | `@ts-ignore`, `@ts-nocheck`, `eslint-disable` | blocking | `rg -n --type ts '@ts-ignore\|@ts-nocheck\|eslint-disable' "${files[@]}"` | — |
+| QA-03 | Empty `catch` or `.catch(() => {})` | blocking | `rg -n --type ts -U 'catch\s*(\([^)]*\))?\s*\{\s*\}\|\.catch\(\s*\(\)\s*=>\s*\{\s*\}\s*\)' "${files[@]}"` | — |
+| QA-04 | `core` importing `infrastructure` or `cli` | blocking | `rg -n --type ts "from '(\.\./)+(infrastructure\|cli)/" "${core_files[@]}"` | — |
+| QA-05 | Generic `throw new Error(` | reservation | `rg -n --type ts 'throw new Error\(' "${files[@]}"` | — |
+| QA-06 | 4+ parameters in one declaration, or a `.ts` file above 100 lines | reservation | `rg -n --type ts '\((?:[^(),]+,){3,}[^()]*\)\s*(?::\s*[^={]+)?\s*(?:\{\|=>)' "${files[@]}"; rg -c -H '^' "${files[@]}" \| awk -F: '$2 > 100'` | `DEC-02` (absorbed split of `installation-service.ts`) |
+
+In the table, `\|` stands for a literal pipe. Escalation trigger: eight or more reservation hits, a touched file above 200 lines, or the same block duplicated in three or more places; the `.gitignore` marker handling must reuse the instruction-marker helpers rather than add a third copy.
+
+Terrain baseline measured on 2026-09-14 at `99643a5`. No target has a declaration with 4+ parameters, a `case` statement, or a pre-existing QA hit.
+
+| File | Lines | Exported members | Max parameters | Cases | Pre-existing hits | Destination |
+| --- | --- | --- | --- | --- | --- | --- |
+| `src/core/contracts/changes.ts` | 33 | 24 | ≤ 3 | 0 | structural: 24 exported members | recorded (one enum value added, no new export) |
+| `src/core/contracts/diagnostics.ts` | 37 | 11 | ≤ 3 | 0 | structural: 11 exported members | recorded (one enum value added, no new export) |
+| `src/core/services/installation-service.ts` | 92 | 3 | ≤ 3 | 0 | — | absorbed in `DEC-02` |
+| `src/core/services/removal-service.ts` | 85 | 3 | ≤ 3 | 0 | — | recorded |
+| `src/core/services/removal-helper.ts` | 54 | 3 | ≤ 3 | 0 | — | recorded |
+| `src/core/services/doctor-service.ts` | 86 | 2 | ≤ 3 | 0 | — | recorded |
+| `src/cli/snapshot-helper.ts` | 33 | 1 | ≤ 3 | 0 | — | recorded |
+| `src/cli/commands/doctor.ts` | 52 | 1 | ≤ 3 | 0 | — | recorded |
+| `tests/unit/removal-service.test.ts` | 58 | 0 | ≤ 3 | 0 | — | recorded |
+| `tests/unit/diagnostics.test.ts` | 14 | 0 | ≤ 3 | 0 | — | recorded |
+| `tests/unit/schemas.test.ts` | 16 | 0 | ≤ 3 | 0 | — | recorded |
+
+- Preparatory refactoring: not recommended. `changes.ts` and `diagnostics.ts` cross the export threshold, but the change adds one enum value and no export; the only file with intense contact, `installation-service.ts`, is healthy and its split is absorbed in `DEC-02`.
 
 ### Compliance With AGENTS.md and Rules
 
@@ -629,5 +705,7 @@ Rejected alternatives include rewriting entire vendor JSON documents, editing ex
 - `docs/research/contextops-spec-review.md`
 - `README.md`
 - `.agents/skills/sdd-create-techspec/references/TEMPLATE.md`
+- RF24 follow-up (2026-09-14), modify: `src/core/contracts/changes.ts`, `src/core/contracts/diagnostics.ts`, `src/core/services/installation-service.ts`, `src/core/services/removal-service.ts`, `src/core/services/removal-helper.ts`, `src/core/services/doctor-service.ts`, `src/cli/snapshot-helper.ts`, `src/cli/commands/doctor.ts`, `schemas/install-report.schema.json`, `README.md`
+- RF24 follow-up (2026-09-14), create: `src/core/services/gitignore-service.ts`, `src/core/services/gitignore-markers.ts`, `src/core/services/gitignore-checks.ts`, and their unit, integration, and end-to-end tests
 
 No source, package, test, or generated-schema file exists yet; every implementation path named in this specification is new.

@@ -8,7 +8,7 @@ O público são desenvolvedores que querem deixar uma tarefa longa em execução
 
 ## Objetivos
 
-- **Autonomia:** no cenário de referência, um plano de 10 passos que exige várias janelas de contexto é concluído sem intervenção humana em pelo menos 90% de 20 execuções.
+- **Autonomia:** com um harness simulado que reproduz o modo não interativo documentado, um plano de 10 passos que exige várias sessões é concluído sem intervenção humana em todas as execuções simuladas sem falha injetada.
 - **Validação independente:** 100% dos avanços de passo são precedidos pela execução bem-sucedida do comando de validação pelo próprio runner.
 - **Parada segura:** 100% das execuções interrompidas por sinal do usuário, falha do harness ou condição de parada terminam com plano e checkpoint válidos e sem processo do harness em execução.
 - **Limites respeitados:** nenhuma execução ultrapassa os tetos configurados de sessões, duração e tokens.
@@ -82,7 +82,7 @@ Automatiza o reinício que o MVP deixa para a pessoa.
 - CA-11 (RF15): Dada a configuração padrão, quando o runner abre uma sessão, então o modo de permissão do harness é o padrão do próprio harness.
 - CA-12 (US8, RF16): Dada uma sessão iniciada pelo runner, quando o agente executa `context-brake wrap -- npm test`, então a saída do comando vem acompanhada do bloco de telemetria daquela sessão.
 - CA-13 (US7, RF17, RF18): Dada uma execução concluída, quando o usuário consulta o registro e o resumo JSON, então cada sessão tem duração, motivo do encerramento, passo, resultado da validação e tokens com origem da medição.
-- CA-14 (Objetivo de autonomia): Dado o cenário de referência de 10 passos executado 20 vezes, quando as execuções terminam, então pelo menos 18 concluem o plano sem intervenção humana.
+- CA-14 (Objetivo de autonomia): Dado um plano simulado de 10 passos executado 20 vezes com o harness simulado, sem falhas injetadas, quando as execuções terminam, então todas concluem o plano sem intervenção humana.
 
 ## Experiência do usuário
 
@@ -114,6 +114,7 @@ Automatiza o reinício que o MVP deixa para a pessoa.
 - **Permissões:** respeitar os modos de permissão e de sandbox de cada harness.
 - **Privacidade:** registros locais sem conteúdo de prompts, respostas ou saídas completas de ferramentas; nenhum dado sai da máquina além do que o próprio harness já envia ao provedor do modelo.
 - **Plataformas:** Linux, macOS e Windows, em PowerShell e Git Bash.
+- **Verificação por simulação:** os critérios de execução longa usam um harness simulado que reproduz o modo não interativo documentado; a adesão de modelos reais ao protocolo não é medida.
 
 ## Fora do escopo
 

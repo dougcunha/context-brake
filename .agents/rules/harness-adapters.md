@@ -30,5 +30,5 @@ A harness adapter translates between one harness and the ports in `src/core/cont
 
 - A hook never ends with an uncaught exception.
 - Below the critical ceiling, an internal failure lets the tool call proceed.
-- At or above the critical ceiling, an internal failure denies the call wherever the harness supports failing closed, while plan and checkpoint writes, the validation command, and `git status` or `git commit` stay allowed.
+- At or above the critical ceiling, an internal failure denies the call wherever the harness supports failing closed, while reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, `git commit`, and the configured additional commands stay allowed.
 - Keep each hook invocation within the overhead target of the telemetry PRD.

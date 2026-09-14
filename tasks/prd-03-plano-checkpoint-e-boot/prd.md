@@ -8,12 +8,12 @@ O público são desenvolvedores que conduzem tarefas longas com agentes e reinic
 
 ## Objetivos
 
-- **Retomada rápida:** no cenário de referência, a sessão nova executa o comando de validação do passo ativo em até 3 chamadas de ferramenta após o início.
+- **Retomada rápida:** em sessões simuladas, um agente que usa apenas o boot executa o comando de validação do passo ativo em até 3 chamadas de ferramenta após o início.
 - **Estado íntegro:** 100% dos planos e checkpoints inválidos são detectados antes do boot, e nenhum conteúdo inválido é entregue ao agente.
 - **Restrições preservadas:** 100% das restrições descobertas registradas no checkpoint aparecem no boot sem resumo.
 - **Boot enxuto:** o conteúdo injetado no início da sessão ocupa no máximo 1.000 tokens para um plano de até 20 passos e um checkpoint com até 20 restrições e decisões, com limite configurável.
 - **Divergências visíveis:** 100% dos casos de commit do checkpoint ausente, fora do histórico da branch atual ou com árvore de trabalho alterada são apontados no boot.
-- **Adoção do protocolo:** no cenário de referência, pelo menos 90% das sessões que chegam à zona vermelha deixam checkpoint válido e commit com o prefixo `checkpoint:`.
+- **Protocolo executável:** em sessões simuladas que chegam à zona vermelha, um agente que segue o protocolo deixa checkpoint válido e commit com o prefixo `checkpoint:` em todas as sessões, sem bloqueio do freio.
 
 ## Histórias de usuário
 
@@ -21,7 +21,7 @@ O público são desenvolvedores que conduzem tarefas longas com agentes e reinic
 - US2: Como agente iniciando uma sessão nova, quero receber o passo ativo, as restrições, as decisões e os bloqueios sem abrir os arquivos inteiros.
 - US3: Como desenvolvedor, quero que, depois de `/clear` ou `/new`, a sessão continue do passo pendente sem eu repetir o contexto.
 - US4: Como desenvolvedor, quero que a sessão nova confirme com o comando de validação que o estado herdado está íntegro antes de editar código.
-- US5: Como desenvolvedor, quero identificar no histórico do git os commits de checkpoint e poder desligar a instrução de commit.
+- US5: Como desenvolvedor, quero identificar no histórico do git os commits com prefixo `checkpoint:` e poder desligar a instrução de commit.
 - US6: Como desenvolvedor, quero ver o progresso da tarefa e a validade dos arquivos de estado com um comando.
 - US7: Como desenvolvedor usando um harness sem injeção no início da sessão, quero que o agente ainda encontre a rotina de boot pelo arquivo de protocolo.
 - Casos de borda: plano com todos os passos concluídos; passo marcado como falho; passo sem comando de validação; checkpoint com JSON inválido escrito pelo agente; commit do checkpoint que não pertence à branch atual; árvore de trabalho com mudanças não comitadas; repositório sem git; duas sessões usando o mesmo plano.
@@ -66,7 +66,7 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 
 ### Checkpoint e commit
 
-- RF17: O protocolo instrui o agente, na zona vermelha, a atualizar plano e checkpoint e, se a validação passar, a comitar com o prefixo `checkpoint:` seguido do título do passo.
+- RF17: O protocolo instrui o agente, na zona vermelha, a atualizar plano e checkpoint e, se a validação passar, a comitar as mudanças de código com o prefixo `checkpoint:` seguido do título do passo; plano e checkpoint não entram no commit.
 - RF18: Permitir desligar a instrução de commit pela configuração.
 
 ### Status da tarefa
@@ -86,13 +86,13 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 - CA-08 (Objetivo de tamanho): Dado um plano com 20 passos e um checkpoint com 20 restrições e decisões, quando o boot é gerado com a configuração padrão, então ele ocupa no máximo 1.000 tokens.
 - CA-09 (RF14): Dado um checkpoint cujo commit não pertence ao histórico da branch atual, quando o boot é gerado, então a divergência aparece com o commit registrado e o atual.
 - CA-10 (RF14): Dada uma árvore de trabalho com mudanças não comitadas, quando o boot é gerado, então o agente é avisado das mudanças pendentes.
-- CA-11 (US4, RF15): Dado um boot entregue no cenário de referência, quando o agente inicia a sessão, então o comando de validação indicado é executado em até 3 chamadas de ferramenta, antes de qualquer edição.
+- CA-11 (US4, RF15): Dado um boot entregue em uma sessão simulada, quando um agente simulado que usa apenas o conteúdo do boot inicia a sessão, então o comando de validação indicado é executado em até 3 chamadas de ferramenta, antes de qualquer edição.
 - CA-12 (RF16): Dado um repositório sem git, quando o boot é gerado, então ele não traz verificações de repositório e informa que foram omitidas.
 - CA-13 (US7, RF13): Dado um harness sem injeção no início da sessão, quando o agente segue a referência do arquivo de instrução, então encontra no arquivo de protocolo a rotina de boot completa.
 - CA-14 (US5, RF17, RF18): Dada a configuração padrão, quando o arquivo de protocolo é gerado, então a rotina da zona vermelha instrui o commit com prefixo `checkpoint:`; com a instrução de commit desligada, a rotina não menciona commit.
 - CA-15 (US6, RF19, RF20): Dado um plano com 5 passos e 2 concluídos, quando o usuário executa `plan status --json`, então a saída é JSON válido com os 5 passos, o passo ativo e a validade dos arquivos.
 - CA-16 (RF8): Dado um checkpoint gravado em versão anterior do schema, quando o boot é gerado, então o arquivo é aceito ou a saída indica a migração necessária.
-- CA-17 (Objetivo de adoção): Dado o cenário de referência executado 20 vezes em harness de nível completo, quando as sessões chegam à zona vermelha, então pelo menos 18 deixam checkpoint válido e commit com prefixo `checkpoint:`.
+- CA-17 (Objetivo de protocolo executável): Dadas 20 sessões simuladas em harness de nível completo, quando um agente simulado que segue o protocolo chega à zona vermelha, então todas deixam checkpoint válido e commit com prefixo `checkpoint:`, e a árvore de trabalho continua limpa com plano e checkpoint atualizados.
 
 ## Experiência do usuário
 
@@ -100,7 +100,7 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 
 - Desenvolvedor que conduz a tarefa: cria o plano, acompanha o progresso e reinicia a sessão quando o agente pede.
 - Agente em sessão nova: precisa do estado mínimo para agir sem reler arquivos inteiros.
-- Revisor: lê os commits de checkpoint e o plano para entender o que foi feito entre sessões.
+- Revisor: lê os commits com prefixo `checkpoint:` para entender o que foi feito entre sessões; plano e checkpoint ficam só na máquina de quem conduz a tarefa.
 
 **Fluxo principal**
 
@@ -121,7 +121,8 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 - **Injeção no início da sessão:** depende da matriz de capacidades do [PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md). Claude Code, Codex CLI, Cursor, GitHub Copilot CLI, Pi e Oh-My-Pi oferecem esse ponto; o OpenCode, por recurso experimental; o Antigravity CLI, de forma indireta, antes da chamada ao modelo.
 - **Git:** as verificações de repositório exigem git instalado; sem git, o restante funciona.
 - **Estado escrito pelo agente:** plano e checkpoint são tratados como proposta e validados antes de cada uso.
-- **Formato:** arquivos locais em JSON, versionáveis no repositório e legíveis por pessoas.
+- **Formato:** arquivos locais em JSON, legíveis por pessoas e ignorados pelo git desde a instalação ([PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md), RF24); não são comitados nem compartilhados no repositório.
+- **Verificação por simulação:** os critérios que dependem de sessões longas usam sessões simuladas que reproduzem os formatos documentados de cada harness; a adesão de modelos reais ao protocolo não é medida.
 - **Privacidade:** o protocolo instrui a não registrar segredos no checkpoint, e a CLI não envia os arquivos para fora da máquina.
 - **Plataformas:** Linux, macOS e Windows, em PowerShell e Git Bash.
 
@@ -131,6 +132,7 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 - Commits feitos pela própria CLI; quem comita é o agente, seguindo o protocolo.
 - Geração automática do plano a partir de uma especificação.
 - Bloqueio de concorrência entre duas sessões ou agentes usando o mesmo plano.
-- Armazenamento remoto ou sincronização de plano e checkpoint.
+- Armazenamento remoto, versionamento no git ou sincronização de plano e checkpoint.
 - Integração com gerenciadores de tarefas, como GitHub Issues ou Jira.
 - Varredura de segredos no conteúdo do checkpoint.
+- Medir a adesão de modelos reais ao protocolo em execuções repetidas.

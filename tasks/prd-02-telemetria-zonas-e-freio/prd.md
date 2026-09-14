@@ -9,9 +9,9 @@ O público são os desenvolvedores descritos no [PRD de instalação](../prd-01-
 ## Objetivos
 
 - **Zonas coerentes:** 0 divergências entre a zona informada ao agente e a zona descrita no protocolo, verificadas em testes nos valores de fronteira de uso (49%, 50%, 65%, 66%, 74% e 75%) e de turnos (7, 8, 10, 11 e 12).
-- **Freio eficaz:** no cenário de referência de tarefa longa, pelo menos 95% das sessões que atingem o teto crítico terminam com checkpoint válido, e nenhuma chamada fora da lista de permissão é executada acima do teto nos harnesses de nível completo.
-- **Medição honesta:** 100% dos blocos de telemetria indicam se o uso de contexto foi medido pelo harness ou estimado; onde os dois valores estão disponíveis, a estimativa fica a no máximo 10 pontos percentuais do valor medido.
-- **Custo baixo por injeção:** cada bloco de telemetria ocupa no máximo 60 tokens, e nenhum bloco é injetado abaixo do limiar de ativação no modo padrão.
+- **Freio eficaz:** em sessões simuladas de tarefa longa nos harnesses de nível completo, nenhuma chamada fora da lista de permissão é executada acima do teto crítico, e todas as sessões que atingem o teto conseguem salvar plano e checkpoint e comitar o código.
+- **Medição honesta:** 100% dos blocos de telemetria indicam se o uso de contexto foi medido pelo harness ou estimado; em sessões simuladas com uso medido, a estimativa fica a no máximo 10 pontos percentuais do valor medido.
+- **Custo baixo por injeção:** cada bloco de telemetria ocupa no máximo 60 tokens, e, no modo padrão, nenhum bloco é injetado enquanto a sessão está na zona verde e abaixo do limiar de ativação.
 - **Overhead contido:** p95 de até 100 ms por chamada de ferramenta nos harnesses cuja integração roda como processo por evento, e de até 15 ms nos harnesses com extensão em processo.
 - **Falha previsível:** abaixo do teto crítico, uma falha da integração nunca bloqueia o trabalho; acima dele, bloqueia sempre que o harness permitir falha fechada.
 
@@ -19,7 +19,7 @@ O público são os desenvolvedores descritos no [PRD de instalação](../prd-01-
 
 - US1: Como agente em execução, quero receber turno, uso de contexto e zona junto ao resultado das ferramentas para decidir quando finalizar o passo.
 - US2: Como desenvolvedor, quero que o agente pare de iniciar passos novos ao entrar na zona amarela e conclua a edição em andamento.
-- US3: Como desenvolvedor, quero que, se o agente ignorar a zona vermelha, as chamadas de ferramenta sejam bloqueadas acima do teto crítico, exceto as que salvam plano, checkpoint e commit.
+- US3: Como desenvolvedor, quero que, se o agente ignorar a zona vermelha, as chamadas de ferramenta sejam bloqueadas acima do teto crítico, exceto as necessárias para salvar plano e checkpoint e comitar o código.
 - US4: Como desenvolvedor, quero ajustar janela, tetos e zonas por projeto e ter a configuração rejeitada quando os limites forem incoerentes.
 - US5: Como desenvolvedor preocupado com custo, quero que a telemetria não gaste tokens enquanto a sessão está folgada.
 - US6: Como desenvolvedor usando um harness de nível parcial, quero ser avisado de quais garantias do freio não valem.
@@ -49,22 +49,22 @@ Dá ao freio uma noção de progresso que o modelo não tem.
 
 - RF9: Derivar zonas e tetos de uma única configuração, usada tanto pela integração quanto pelo texto de zonas do arquivo de protocolo.
 - RF10: Classificar a sessão, com valores padrão, em: verde quando o uso está abaixo de 50% e há até 7 turnos; amarela quando o uso vai de 50% a 65% ou há de 8 a 10 turnos; vermelha quando o uso passa de 65% ou há 11 turnos ou mais; teto crítico a partir de 75% de uso ou 12 turnos.
-- RF11: Validar que os limites são crescentes e cobrem todos os valores de uso e de turnos, sem lacunas nem sobreposições.
+- RF11: Validar que os limites são crescentes e cobrem todos os valores de uso e de turnos, sem lacunas nem sobreposições, e que o teto de turnos é o mesmo valor que inicia o teto crítico.
 
 ### Bloco de telemetria
 
 - RF12: Entregar ao agente, junto ao resultado de cada ferramenta ou pelo canal equivalente do harness, um bloco com turno e teto, uso e janela com porcentagem, origem da medição, zona e ação recomendada.
-- RF13: Oferecer modo de injeção contínua e modo a partir de um limiar, com limiar padrão de 50% de uso.
+- RF13: Oferecer modo de injeção contínua e modo padrão, que injeta assim que a sessão sai da zona verde ou o uso atinge o limiar de ativação, o que ocorrer primeiro, com limiar padrão de 50% de uso.
 - RF14: Não alterar a saída original da ferramenta quando o harness permitir acrescentar contexto separado.
 - RF15: Manter o formato do bloco versionado e documentado, com nomes de campos estáveis.
-- RF16: Na zona vermelha, a ação recomendada instrui gravar plano e checkpoint, comitar se a validação passar e emitir o sinal de reinício.
+- RF16: Na zona vermelha, a ação recomendada instrui gravar plano e checkpoint, comitar as mudanças de código se a validação passar e emitir o sinal de reinício.
 
 ### Bloqueio acima do teto crítico
 
 A barreira determinística para quando o agente não obedece.
 
 - RF17: Acima do teto crítico, bloquear chamadas de ferramenta com mensagem que instrui a salvar o estado e pedir reinício.
-- RF18: Permitir, mesmo acima do teto, escrita nos arquivos de plano e checkpoint, execução do comando de validação do passo e comandos git de status e commit, com lista configurável.
+- RF18: Permitir, mesmo acima do teto, leitura e escrita nos arquivos de plano e checkpoint, execução do comando de validação do passo e os comandos `git status`, `git add` e `git commit`, com lista configurável de comandos adicionais.
 - RF19: Abaixo do teto, falhas da integração não bloqueiam; acima, bloqueiam sempre que o harness oferecer falha fechada.
 - RF20: Registrar localmente cada bloqueio com sessão, ferramenta, zona e motivo, sem gravar o conteúdo das ferramentas.
 - RF21: Nos harnesses sem bloqueio garantido, marcar o freio da sessão como cooperativo e expor esse estado no diagnóstico.
@@ -75,8 +75,8 @@ A barreira determinística para quando o agente não obedece.
 
 ## Critérios de aceitação
 
-- CA-01 (US1, RF12, RF13): Dada uma sessão com uso de 55% no modo a partir do limiar, quando uma ferramenta termina, então o agente recebe um bloco com turno, uso, janela, origem, zona amarela e ação recomendada.
-- CA-02 (US5, RF13): Dada uma sessão com uso de 30% no modo a partir do limiar, quando uma ferramenta termina, então nenhum bloco é entregue ao agente.
+- CA-01 (US1, RF12, RF13): Dada uma sessão com uso de 55% no modo padrão, quando uma ferramenta termina, então o agente recebe um bloco com turno, uso, janela, origem, zona amarela e ação recomendada.
+- CA-02 (US5, RF13): Dada uma sessão na zona verde, com uso de 30% e 5 turnos no modo padrão, quando uma ferramenta termina, então nenhum bloco é entregue ao agente.
 - CA-03 (RF10): Dados os valores padrão, quando a sessão está com uso de 49% e 7 turnos, então a zona é verde; com 50% ou 8 turnos, amarela; com 66% ou 11 turnos, vermelha; com 75% ou 12 turnos, teto crítico.
 - CA-04 (RF9): Dada uma configuração personalizada de zonas, quando a instalação gera o arquivo de protocolo e a integração classifica a sessão, então os limites do texto e da classificação são iguais.
 - CA-05 (US4, RF11): Dada uma configuração em que a zona vermelha começa antes da amarela, quando qualquer comando é executado, então a configuração é rejeitada com campo e regra violada.
@@ -85,17 +85,19 @@ A barreira determinística para quando o agente não obedece.
 - CA-08 (RF4): Dado um subagente executando ferramentas, quando a sessão principal recebe telemetria, então as contagens do subagente não são somadas às da sessão principal.
 - CA-09 (RF5, RF8): Dado um harness que informa o uso de contexto à integração, quando uma ferramenta termina, então o bloco marca a origem como medida e o valor coincide com o do harness.
 - CA-10 (RF6, RF8): Dado um harness que não informa o uso de contexto, quando uma ferramenta termina, então o bloco marca a origem como estimada.
-- CA-11 (Objetivo de medição): Dado o cenário de referência em um harness com uso medido, quando a estimativa é calculada em paralelo, então a diferença para o valor medido fica em até 10 pontos percentuais em todas as leituras.
+- CA-11 (Objetivo de medição): Dadas sessões simuladas de tarefa longa em uma integração com uso medido, quando a estimativa é calculada em paralelo, então a diferença para o valor medido fica em até 10 pontos percentuais em todas as leituras.
 - CA-12 (RF14): Dado um harness que aceita contexto separado, quando o bloco é entregue, então o resultado original da ferramenta chega ao agente sem alteração.
 - CA-13 (RF15, Objetivo de custo): Dado qualquer bloco gerado com valores padrão, quando seu tamanho é medido, então ele ocupa no máximo 60 tokens.
 - CA-14 (US3, RF17): Dada uma sessão acima do teto crítico em harness de nível completo, quando o agente tenta ler um arquivo de código, então a chamada não é executada e o agente recebe a instrução de salvar o estado e pedir reinício.
-- CA-15 (US3, RF18): Dada a mesma sessão, quando o agente grava o checkpoint, roda o comando de validação e faz commit, então as três chamadas são executadas.
+- CA-15 (US3, RF18): Dada a mesma sessão, quando o agente grava o checkpoint, roda o comando de validação, adiciona as mudanças com `git add` e faz commit, então as quatro chamadas são executadas.
 - CA-16 (RF19): Dada uma falha da integração com uso de 40%, quando o agente chama uma ferramenta, então a chamada é executada; dada a mesma falha acima do teto crítico em harness com falha fechada, então a chamada é bloqueada.
 - CA-17 (US6, RF21): Dada uma sessão no GitHub Copilot CLI, quando o usuário consulta o diagnóstico, então a sessão aparece com freio cooperativo e o motivo.
 - CA-18 (US8, RF20): Dado um bloqueio ocorrido, quando o usuário consulta o registro local, então encontra sessão, ferramenta, zona e motivo, e nenhum conteúdo de saída de ferramenta.
 - CA-19 (US7, RF22): Dada uma resposta do agente terminada com `[REQUEST_SESSION_RESET]` em harness com evento de fim de resposta, quando a resposta termina, então o usuário vê o comando de nova sessão daquele harness.
-- CA-20 (Objetivo de overhead): Dado o cenário de referência, quando o overhead por chamada é medido em cada harness, então o p95 fica em até 100 ms nas integrações por processo e em até 15 ms nas integrações em processo.
-- CA-21 (Objetivo de eficácia): Dado o cenário de referência de tarefa longa executado 20 vezes em harness de nível completo, quando as sessões atingem o teto crítico, então pelo menos 19 terminam com checkpoint válido.
+- CA-20 (Objetivo de overhead): Dada uma sequência simulada de chamadas de ferramenta, quando o overhead por chamada é medido na integração de cada harness, então o p95 fica em até 100 ms nas integrações por processo e em até 15 ms nas integrações em processo.
+- CA-21 (Objetivo de eficácia): Dadas 20 sessões simuladas de tarefa longa em cada harness de nível completo, com agentes que seguem e que ignoram as zonas, quando as sessões atingem o teto crítico, então nenhuma chamada fora da lista de permissão é executada e todas salvam plano e checkpoint e comitam o código.
+- CA-22 (US1, RF13): Dada uma sessão com uso de 30% e 8 turnos no modo padrão, quando uma ferramenta termina, então o agente recebe o bloco com zona amarela.
+- CA-23 (US4, RF11): Dada uma configuração em que o teto de turnos difere do número de turnos que inicia o teto crítico, quando qualquer comando é executado, então a configuração é rejeitada com campo e regra violada.
 
 ## Experiência do usuário
 
@@ -108,8 +110,8 @@ A barreira determinística para quando o agente não obedece.
 **Fluxo principal**
 
 1. Na zona verde, o agente trabalha sem blocos de telemetria.
-2. Ao cruzar o limiar, cada resultado de ferramenta chega com o bloco; na zona amarela, o agente conclui a edição atual e valida.
-3. Na zona vermelha, o agente grava plano e checkpoint, comita e emite o sinal de reinício.
+2. Assim que a sessão sai da zona verde, ou o uso atinge o limiar de ativação, cada resultado de ferramenta chega com o bloco; na zona amarela, o agente conclui a edição atual e valida.
+3. Na zona vermelha, o agente grava plano e checkpoint, comita as mudanças de código e emite o sinal de reinício.
 4. Se o agente continuar, acima do teto crítico as chamadas fora da lista de permissão são bloqueadas com instrução de salvar o estado.
 5. O usuário vê o sinal de reinício e o comando de nova sessão do harness; o boot da sessão seguinte é tratado no PRD de plano, checkpoint e boot.
 
@@ -127,6 +129,8 @@ A barreira determinística para quando o agente não obedece.
 - **Offline:** medição e estimativa funcionam sem rede, e nenhum dado de sessão sai da máquina.
 - **Privacidade:** registros locais não guardam conteúdo de ferramentas, prompts nem segredos.
 - **Desempenho:** metas de overhead definidas nos objetivos.
+- **Arquivos de estado locais:** plano e checkpoint ficam só na máquina, ignorados pelo git conforme o [PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md); o commit da zona vermelha registra apenas o código.
+- **Verificação por simulação:** os critérios que dependem de tarefas longas usam sessões simuladas que reproduzem os formatos documentados de cada harness; a adesão de modelos reais ao protocolo não é medida.
 
 ## Fora do escopo
 
@@ -136,3 +140,4 @@ A barreira determinística para quando o agente não obedece.
 - Tokenizadores exatos para todos os provedores de modelo; a estimativa pode ser aproximada dentro da meta de erro.
 - Bloqueio na chamada à API do modelo, fora do mecanismo de extensão do harness.
 - Harnesses fora da lista do MVP.
+- Medir a adesão de modelos reais ao protocolo em execuções repetidas de tarefas longas.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { FileSnapshot, PlannedChange } from '../../src/core/contracts/changes.js';
-import { createChangePlan, hashString } from '../../src/core/services/change-plan-service.js';
+import { createChangePlan, hashString, SNAPSHOT_MISSING_CODE } from '../../src/core/services/change-plan-service.js';
 
 const root = '/repo';
 const hashB1 = hashString('{"v":1}');
@@ -37,5 +37,32 @@ describe('conflict isolation and idempotence (UT-05, CA-05, CA-06)', () => {
     const plan = createChangePlan({ projectRoot: root, plannedChanges: [unchangedPlan], snapshots: [snapA] });
     expect(plan.changes).toHaveLength(0);
     expect(plan.requiresConfirmation).toBe(false);
+  });
+});
+
+describe('planned changes without a matching snapshot become conflicts (UT-11, CA-11, CA-12)', () => {
+  it('reports a delete whose target has no matching snapshot instead of dropping it', () => {
+    const strayDelete: PlannedChange = { path: 'b.json', realPath: '/linked/repo/b.json', kind: 'delete', owner: 'manifest', content: null, preview: { summary: 'Delete b.json' } };
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [strayDelete], snapshots: [snapA, snapB] });
+    expect(plan.changes).toHaveLength(0);
+    expect(plan.conflicts).toEqual([expect.objectContaining({ path: 'b.json', code: SNAPSHOT_MISSING_CODE })]);
+  });
+
+  it('reports an update and a create without a matching snapshot as conflicts', () => {
+    const strayUpdate: PlannedChange = { ...planA, realPath: '/linked/repo/b.json' };
+    const strayCreate: PlannedChange = { ...planB, realPath: '/linked/repo/a.json' };
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [strayUpdate, strayCreate], snapshots: [snapA, snapB] });
+    expect(plan.changes).toHaveLength(0);
+    expect(plan.conflicts.map((conflict) => conflict.code)).toEqual([SNAPSHOT_MISSING_CODE, SNAPSHOT_MISSING_CODE]);
+    expect(plan.requiresConfirmation).toBe(false);
+  });
+});
+
+describe('deletes of files already absent stay silent (UT-11, CA-12)', () => {
+  it('skips a delete whose matching snapshot records an absent file', () => {
+    const absentDelete: PlannedChange = { path: 'a.json', realPath: '/repo/a.json', kind: 'delete', owner: 'manifest', content: null, preview: { summary: 'Delete a.json' } };
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [absentDelete], snapshots: [snapB] });
+    expect(plan.changes).toHaveLength(0);
+    expect(plan.conflicts).toHaveLength(0);
   });
 });

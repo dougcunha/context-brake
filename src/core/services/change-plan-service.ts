@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
 import type { ChangePlan, FileChange, FileSnapshot, HarnessInstallPlan, PlannedChange, PlanConflict } from '../contracts/changes.js';
 
+export const SNAPSHOT_MISSING_CODE = 'SNAPSHOT_MISSING' as const;
+
 export type MergePlanInput = {
   projectRoot: string;
   plannedChanges: readonly PlannedChange[];
@@ -23,6 +25,10 @@ function matchSnapshot(snapshots: readonly FileSnapshot[], realPath: string): Fi
   return snapshots.find((s) => normalizePath(s.realPath) === target);
 }
 
+function missingSnapshotConflict(item: PlannedChange): PlanConflict {
+  return { path: item.path, code: SNAPSHOT_MISSING_CODE, detail: `No snapshot matches the planned ${item.kind} target, so the change was not planned.` };
+}
+
 function processPlannedChanges(planned: readonly PlannedChange[], snapshots: readonly FileSnapshot[]): { changes: FileChange[]; conflicts: PlanConflict[] } {
   const changes: FileChange[] = [];
   const conflicts: PlanConflict[] = [];
@@ -38,8 +44,12 @@ function processPlannedChanges(planned: readonly PlannedChange[], snapshots: rea
     }
     seen.set(key, item);
     const snap = matchSnapshot(snapshots, item.realPath);
-    if (!snap?.exists && item.kind === 'delete') continue;
-    const beforeSha256 = snap?.exists ? snap.sha256 : null;
+    if (!snap) {
+      conflicts.push(missingSnapshotConflict(item));
+      continue;
+    }
+    if (!snap.exists && item.kind === 'delete') continue;
+    const beforeSha256 = snap.exists ? snap.sha256 : null;
     const afterSha256 = item.kind === 'delete' || item.content === null ? null : hashString(item.content);
     if (beforeSha256 !== null && beforeSha256 === afterSha256) continue;
     changes.push({ path: item.path, realPath: item.realPath, kind: item.kind, owner: item.owner, beforeSha256, afterSha256, preview: item.preview, content: item.content });

@@ -28,6 +28,7 @@ export type AdapterPlan = {
 export type BenchmarkFixture = {
   readonly harness: HarnessId;
   readonly executionModel: 'process' | 'in_process';
+  readonly event: string;
   readonly targetMilliseconds: 100 | 15;
   readonly samplePayload: unknown;
 };

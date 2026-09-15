@@ -5,6 +5,7 @@ import type { DiagnosticFinding } from '../../src/core/contracts/diagnostics.js'
 import type { DetectionSources } from '../../src/core/contracts/harness.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import { diagnoseProject } from '../../src/core/services/doctor-service.js';
+import { renderIgnoreBlock } from '../../src/core/services/gitignore-markers.js';
 import { renderProtocol } from '../../src/core/services/protocol-service.js';
 
 const missingFinding: DiagnosticFinding = { code: 'INTEGRATION_MISSING', severity: 'error', scope: 'harness', harness: 'claude-code', path: '.claude/settings.json', message: 'The claude-code integration is missing from .claude/settings.json.', impact: 'ContextBrake cannot stop or annotate tool calls in this harness.', remediation: 'Run context-brake init --harness claude-code --yes.' };
@@ -19,17 +20,18 @@ function makeAdapter(id: HarnessAdapter['id'], minimumVersion: string | null, fi
     planInstall: async () => ({ harness: id, changes: [], conflicts: [], entries: [] }),
     planRemove: async () => ({ harness: id, changes: [], conflicts: [], entries: [] }),
     diagnose: async () => findings,
-    benchmarkFixture: () => ({ harness: id, executionModel, targetMilliseconds: 100, samplePayload: {} }),
+    benchmarkFixture: () => ({ harness: id, executionModel, event: 'PreToolUse', targetMilliseconds: 100, samplePayload: {} }),
   };
 }
 
 const protocolSnapshot: FileSnapshot = { path: 'docs/context-brake-protocol.md', realPath: '/test-repo/docs/context-brake-protocol.md', exists: true, content: renderProtocol(DEFAULT_CONFIG), sha256: 'proto', isSymlink: false, fileIdentity: 'proto' };
+const gitignoreSnapshot: FileSnapshot = { path: '.gitignore', realPath: '/test-repo/.gitignore', exists: true, content: `${renderIgnoreBlock('task_plan.json', 'state_checkpoint.json')}\n`, sha256: 'gitignore', isSymlink: false, fileIdentity: 'gitignore' };
 const projectEvidence = [{ origin: 'project' as const, kind: 'config', value: '.claude/settings.json' }];
 
 function diagnose(adapters: readonly HarnessAdapter[], sources: Partial<DetectionSources> = { 'claude-code': { project: projectEvidence } }) {
   return diagnoseProject({
     projectRoot: '/test-repo', config: { ...DEFAULT_CONFIG, activeHarnesses: adapters.map((a) => a.id) },
-    adapters, context: { projectRoot: '/test-repo' }, sources, instructionSnapshots: [], protocolSnapshot,
+    adapters, context: { projectRoot: '/test-repo' }, sources, instructionSnapshots: [], protocolSnapshot, gitignoreSnapshot,
   });
 }
 

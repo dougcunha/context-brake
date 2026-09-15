@@ -37,9 +37,10 @@ function outputReport(report: InstallReport, json: boolean): number {
 async function loadInitSnapshots(root: string, config: ContextBrakeConfig | null, userFiles: readonly string[]) {
   const allSnapshots = await collectProjectSnapshots(root, config, userFiles);
   const protocolSnap = allSnapshots.find((s) => s.path === (config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md'))!;
+  const gitignoreSnap = allSnapshots.find((s) => s.path === '.gitignore')!;
   const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
   const instSnaps = allSnapshots.filter((s) => instTargets.includes(s.path) || userFiles.includes(s.path));
-  return { allSnapshots, protocolSnap, instSnaps };
+  return { allSnapshots, protocolSnap, gitignoreSnap, instSnaps };
 }
 
 function emitLegacyPreview(findings: readonly DiagnosticFinding[], json: boolean): void {
@@ -52,7 +53,7 @@ function emitLegacyPreview(findings: readonly DiagnosticFinding[], json: boolean
 export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<number> {
   const config = await loadExistingConfig(env.projectRoot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
-  const { allSnapshots, protocolSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
+  const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest);
   const sources = await collectHarnessSources(adapters, ctx);
@@ -62,7 +63,7 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   };
   const result = await planInstallation({
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection,
-    instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, allSnapshots,
+    instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
   });
   if (args.dryRun) {

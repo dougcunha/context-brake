@@ -4,9 +4,9 @@ import { buildDoctorReport, buildInstallReport, sortFindings } from '../../src/c
 
 const sampleFindings: readonly DiagnosticFinding[] = [
   {
-    code: 'COPILOT_TIMEOUT_LIMITATION', severity: 'warning', scope: 'harness', harness: 'github-copilot-cli',
+    code: 'HARNESS_WARNING', severity: 'warning', scope: 'harness', harness: 'github-copilot-cli',
     path: null, message: 'Harness github-copilot-cli has an active limitation.',
-    impact: 'A timed-out hook lets the tool call continue.', remediation: null,
+    impact: 'A hook timeout lets the tool call proceed.', remediation: null,
   },
   {
     code: 'INTEGRATION_MISSING', severity: 'error', scope: 'harness', harness: 'claude-code',
@@ -40,6 +40,24 @@ describe('UT-16: Finding severity sorting (CA-17)', () => {
     const sorted = sortFindings(sampleFindings);
     expect(sorted[0]?.severity).toBe('error');
     expect(sorted[1]?.severity).toBe('warning');
+  });
+});
+
+describe('TC-03: limitations create no finding and never change the exit code', () => {
+  it('keeps a success install report when the only content is a harness limitation', () => {
+    const report = buildInstallReport({
+      command: 'init', mode: 'applied', detections: [], outcomes: [], findings: [],
+      plan: {
+        schemaVersion: 1, projectRoot: '/test', changes: [], conflicts: [], requiresConfirmation: false,
+        harnesses: [{
+          harness: 'github-copilot-cli', outcome: 'planned', supportLevel: 'full',
+          limitations: [{ capability: 'timeout_fail_closed', impact: 'A hook timeout lets the tool call proceed.' }],
+        }],
+      },
+    });
+    expect(report.status).toBe('success');
+    expect(report.exitCode).toBe(0);
+    expect(report.findings).toEqual([]);
   });
 });
 

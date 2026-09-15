@@ -12,10 +12,13 @@ export function renderInstallText(report: InstallReport): void {
   const stream = report.status === 'errors' ? process.stderr : process.stdout;
   const label = report.status === 'errors' ? '[ERROR]' : report.status === 'warnings' ? '[WARN]' : '[OK]';
   stream.write(`${label} ContextBrake ${report.command} (${report.mode})\n`);
-  for (const h of report.plan.harnesses) stream.write(`  - ${h.harness}: ${h.supportLevel} support (${h.outcome})\n`);
+  for (const h of report.plan.harnesses) {
+    stream.write(`  - ${h.harness}: ${h.supportLevel} support (${h.outcome})\n`);
+    for (const lim of h.limitations) stream.write(`    * ${lim.capability}: ${lim.impact}\n`);
+  }
   if (report.plan.changes.length > 0) {
     stream.write('  Planned changes:\n');
-    for (const c of report.plan.changes) stream.write(`    [${c.kind}] ${c.path}\n`);
+    for (const c of report.plan.changes) stream.write(`    [${c.kind}] ${c.path} (${c.owner})\n`);
   }
   if (report.plan.conflicts.length > 0) {
     stream.write('  Conflicts:\n');

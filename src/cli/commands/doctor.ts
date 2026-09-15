@@ -28,6 +28,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const allSnapshots = await collectProjectSnapshots(env.projectRoot, config);
   const protocolSnap = allSnapshots.find((s) => s.path === (config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md'))!;
+  const gitignoreSnap = allSnapshots.find((s) => s.path === '.gitignore')!;
   const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
   const instSnaps = allSnapshots.filter((s) => instTargets.includes(s.path));
   const planSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.planFile ?? 'task_plan.json'));
@@ -39,7 +40,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const report = await diagnoseProject({
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,
     ...(args.harness.length > 0 ? { explicitHarnesses: args.harness } : {}), measurer,
-    instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap,
+    instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap,
     ...(planSnap ? { planSnapshot: planSnap } : {}),
     ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
   });

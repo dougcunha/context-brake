@@ -89,8 +89,15 @@ Installing and removing ContextBrake from Codex CLI or Cursor restores every byt
 
 > Updated by `sdd-execute-corrections` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: Implemented CR-01. `insertIntoContainer` now splits the pre-close gap into trivia (comments and interior whitespace) and the closing whitespace, adds the separator comma before the trivia, and emits the owned item after the trivia so it stays attached to the existing last item. `removeNodeSpan` now locates the inserted comma by scanning the region between the previous sibling and the owned node, skipping `//` and `/* */` comments, and removes only that comma plus the owned node. Result: `afterRemove === initial` byte-for-byte for LF, CRLF, final/no-final newline, compact and multiline containers, with and without trailing comments; three installs are byte-identical; all six registered events (Codex `PreToolUse`/`PostToolUse`/`SessionStart`, Cursor `preToolUse`/`postToolUse`/`sessionStart`) carry a distinct user entry plus a trailing comment.
+- Changed files: `src/infrastructure/storage/json-span-utils.ts`; `tests/unit/json-span-safety.test.ts`; `tests/unit/json-document-editor.test.ts`; `tests/integration/codex-cursor-user-hooks.test.ts`; `tests/e2e/e2e-user-hook-preservation.test.ts`; new `tests/fixtures/harnesses/codex-cli/user-hooks-trailing.json` and `tests/fixtures/harnesses/cursor/user-hooks-trailing.json`. `src/infrastructure/storage/json-document-editor.ts` is unchanged; its public API, `jsonc-parser`, unrelated property behavior, and whole-document formatting are untouched.
+- Checks: failing-then-passing regression confirmed (before the fix: 6 failures across the two unit files; after: all green).
+  - `npm run build`: passed.
+  - Focused `vitest` (`json-span-safety`, `json-document-editor`, `codex-cursor-user-hooks`, `e2e-user-hook-preservation`): 4 files, 26 passed.
+  - `npm run lint`: passed (0 errors); `npm run typecheck`: passed.
+  - `npm test`: 74 files, 283 passed, 1 skipped (POSIX-only shell test on Windows).
+  - `npm run coverage`: passed, 91.96% statements / 84.33% branches / 95.91% functions / 91.96% lines.
+  - QA-01..QA-06 `rg` scans over the five changed TypeScript files: 0 hits each; `json-span-utils.ts` is 99 physical lines (<=100) and all functions <=30 lines.
+  - CR-01 probe over the built modules: `codex: commentAfterInstall=true commentAfterRemove=true userAfterRemove=true exactRoundTrip=true`; `cursor: commentAfterInstall=true commentAfterRemove=true userAfterRemove=true exactRoundTrip=true`.
+- Validated state: Windows 11 Pro, PowerShell 7, Node v24.19.0, npm 11.17.0. Code state: uncommitted worktree over `2a26a3e` with `dist/` rebuilt from this change; only the files above are modified/added, and no report or other task file was touched.
+- Open items: None. Trailing-comma inputs (for example `[1,]`) are rejected by `parseAndValidateJson` as invalid documents, so there is no removal path for them. Cross-platform completion evidence remains with T35.

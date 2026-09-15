@@ -48,3 +48,30 @@ describe('minified idempotency (CR-01, CA-05)', () => {
     expect(JSON.parse(appendJsonArrayItem(once, ['items'], 3))).toEqual({ items: [1, 2, 3] });
   });
 });
+
+function expectArrayRoundTrip(input: string, installed: string): void {
+  expect(appendJsonArrayItem(input, ['items'], 2)).toBe(installed);
+  expect(removeJsonArrayItem(installed, ['items'], (v) => v === 2)).toBe(input);
+}
+
+describe('trailing comment ownership round trips (CR-01, T29.1)', () => {
+  it('keeps a final line comment attached to the previous item (LF)', () => {
+    expectArrayRoundTrip('{\n  "items": [\n    1 // keep\n  ]\n}\n', '{\n  "items": [\n    1, // keep\n    2\n  ]\n}\n');
+  });
+
+  it('keeps a final block comment attached to the previous item (compact)', () => {
+    expectArrayRoundTrip('{"items":[1 /* keep */]}', '{"items":[1, /* keep */2]}');
+  });
+
+  it('keeps a final line comment attached to the previous item (CRLF)', () => {
+    expectArrayRoundTrip('{\r\n  "items": [\r\n    1 // keep\r\n  ]\r\n}\r\n', '{\r\n  "items": [\r\n    1, // keep\r\n    2\r\n  ]\r\n}\r\n');
+  });
+
+  it('keeps a final block comment attached without a final newline', () => {
+    expectArrayRoundTrip('{"items":[\n  1 /* keep */\n]}', '{"items":[\n  1, /* keep */\n    2\n]}');
+  });
+
+  it('round-trips an array whose final item has no trailing comment', () => {
+    expectArrayRoundTrip('{\n  "items": [\n    1\n  ]\n}\n', '{\n  "items": [\n    1,\n    2\n  ]\n}\n');
+  });
+});

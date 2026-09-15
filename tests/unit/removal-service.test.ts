@@ -10,6 +10,7 @@ const planSnap: FileSnapshot = { path: 'task_plan.json', realPath: '/test-repo/t
 const checkpointSnap: FileSnapshot = { path: 'state_checkpoint.json', realPath: '/test-repo/state_checkpoint.json', exists: true, content: '{}', sha256: 'chk-hash', isSymlink: false, fileIdentity: 'chk' };
 const instContent = `# Instructions\n\n${CURRENT_START_MARKER}\nWhen task_plan.json exists follow docs/protocol.md.\n${CURRENT_END_MARKER}\n\n# User Section\nKeep this.`;
 const instSnap: FileSnapshot = { path: 'CLAUDE.md', realPath: '/test-repo/CLAUDE.md', exists: true, content: instContent, sha256: 'inst-hash', isSymlink: false, fileIdentity: 'inst' };
+const gitignoreSnap: FileSnapshot = { path: '.gitignore', realPath: '/test-repo/.gitignore', exists: true, content: '# CONTEXTBRAKE:START\n/task_plan.json\n/state_checkpoint.json\n# CONTEXTBRAKE:END\n', sha256: 'gi-hash', isSymlink: false, fileIdentity: 'gi' };
 
 describe('UT-11: Default removal targets exact owned content (CA-12)', () => {
   it('removes exact owned content and retains plan/checkpoint by default', async () => {
@@ -19,10 +20,10 @@ describe('UT-11: Default removal targets exact owned content (CA-12)', () => {
       entries: [{ harness: 'claude-code', path: '.claude/settings.json', identity: 'hook-id' }],
     };
     const hookSnap: FileSnapshot = { path: '.claude/hooks/context-brake.mjs', realPath: '/test-repo/.claude/hooks/context-brake.mjs', exists: true, content: 'code', sha256: 'valid-hash', isSymlink: false, fileIdentity: 'hook' };
-    const allSnaps = [protocolSnap, planSnap, checkpointSnap, instSnap, hookSnap];
+    const allSnaps = [protocolSnap, planSnap, checkpointSnap, instSnap, hookSnap, gitignoreSnap];
     const result = await planRemoval({
       projectRoot: '/test-repo', config: null, adapters: [], context: dummyContext,
-      instructionSnapshots: [instSnap], protocolSnapshot: protocolSnap, allSnapshots: allSnaps,
+      instructionSnapshots: [instSnap], protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots: allSnaps,
       manifest, removeState: false, planSnapshot: planSnap, checkpointSnapshot: checkpointSnap,
     });
     const deletedPaths = result.plan.changes.filter((c) => c.kind === 'delete').map((c) => c.path);
@@ -43,10 +44,10 @@ describe('UT-11: Modified assets and explicit state removal (CA-12)', () => {
       entries: [],
     };
     const modifiedHookSnap: FileSnapshot = { path: '.claude/hooks/context-brake.mjs', realPath: '/test-repo/.claude/hooks/context-brake.mjs', exists: true, content: 'user modified', sha256: 'modified-hash', isSymlink: false, fileIdentity: 'hook' };
-    const allSnaps = [protocolSnap, planSnap, checkpointSnap, instSnap, modifiedHookSnap];
+    const allSnaps = [protocolSnap, planSnap, checkpointSnap, instSnap, modifiedHookSnap, gitignoreSnap];
     const result = await planRemoval({
       projectRoot: '/test-repo', config: null, adapters: [], context: dummyContext,
-      instructionSnapshots: [instSnap], protocolSnapshot: protocolSnap, allSnapshots: allSnaps,
+      instructionSnapshots: [instSnap], protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots: allSnaps,
       manifest, removeState: true, planSnapshot: planSnap, checkpointSnapshot: checkpointSnap,
     });
     expect(result.plan.conflicts.some((c) => c.code === 'MODIFIED_OWNED_ASSET')).toBe(true);

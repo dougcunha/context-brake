@@ -19,10 +19,11 @@ import { CODEX_CONFIG_FILE, CODEX_HOOK_FILE, planCodexInstall, planCodexRemove }
 
 const CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'pre_tool_block', state: 'supported' },
+  { id: 'tool_coverage', state: 'unsupported', impact: 'Hosted tools such as web search bypass Codex CLI hooks.' },
   { id: 'post_tool_telemetry', state: 'supported' },
   { id: 'session_boot', state: 'supported' },
   { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to Codex CLI hooks.' },
-  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'Hosted tools bypass local tool hooks and hook failures are not guaranteed to fail closed.' },
+  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook error, invalid output, or timeout lets the tool call proceed.' },
 ];
 
 async function checkCodexConfig(configPath: string): Promise<DiagnosticFinding | null> {
@@ -91,8 +92,16 @@ export class CodexAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
+      event: 'PreToolUse',
       targetMilliseconds: 100,
-      samplePayload: { hook_event_name: 'PreToolUse', session_id: 'bench-codex', tool_name: 'Bash' },
+      samplePayload: {
+        session_id: 'bench-codex',
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Bash',
+        tool_input: { command: 'ls' },
+        tool_use_id: 'toolu_bench',
+        cwd: '/repo',
+      },
     };
   }
 }

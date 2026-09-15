@@ -35,11 +35,12 @@ function outputReport(report: InstallReport, json: boolean): number {
 async function loadRemoveSnapshots(root: string, config: ContextBrakeConfig | null) {
   const allSnapshots = await collectProjectSnapshots(root, config);
   const protocolSnap = allSnapshots.find((s) => s.path === (config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md'))!;
+  const gitignoreSnap = allSnapshots.find((s) => s.path === '.gitignore')!;
   const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
   const instSnaps = allSnapshots.filter((s) => instTargets.includes(s.path));
   const planSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.planFile ?? 'task_plan.json'));
   const checkpointSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.checkpointFile ?? 'state_checkpoint.json'));
-  return { allSnapshots, protocolSnap, instSnaps, planSnap, checkpointSnap };
+  return { allSnapshots, protocolSnap, gitignoreSnap, instSnaps, planSnap, checkpointSnap };
 }
 
 export async function runRemove(args: ParsedRemoveArgs, env: CommandEnv): Promise<number> {
@@ -50,7 +51,7 @@ export async function runRemove(args: ParsedRemoveArgs, env: CommandEnv): Promis
   const ctx = buildHarnessContext(env, manifest);
   const result = await planRemoval({
     projectRoot: env.projectRoot, config, adapters, context: ctx,
-    instructionSnapshots: snaps.instSnaps, protocolSnapshot: snaps.protocolSnap, allSnapshots: snaps.allSnapshots,
+    instructionSnapshots: snaps.instSnaps, protocolSnapshot: snaps.protocolSnap, gitignoreSnapshot: snaps.gitignoreSnap, allSnapshots: snaps.allSnapshots,
     manifest, removeState: args.removeState,
     ...(snaps.planSnap ? { planSnapshot: snaps.planSnap } : {}),
     ...(snaps.checkpointSnap ? { checkpointSnapshot: snaps.checkpointSnap } : {}),

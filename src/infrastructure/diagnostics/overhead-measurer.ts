@@ -1,13 +1,18 @@
 import { spawn } from 'node:child_process';
 import { stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import type { BenchmarkFixture } from '../../core/contracts/adapter.js';
 import type { HarnessId } from '../../core/contracts/harness.js';
 import type { OverheadMeasurement, OverheadMeasurer } from '../../core/contracts/diagnostics.js';
 import { getAdapter } from '../harnesses/registry.js';
+import { sampleInProcess } from './in-process-sampler.js';
 import { calculateNearestRankP95 } from './p95.js';
 
 export { calculateNearestRankP95 } from './p95.js';
+
+const PROCESS_TIMEOUT_MS = 2000;
+const PROCESS_WARMUP_COUNT = 3;
+const PROCESS_SAMPLE_COUNT = 20;
 
 const ASSET_PATHS: Record<HarnessId, string> = {
   'claude-code': '.claude/hooks/context-brake.mjs',
@@ -20,11 +25,11 @@ const ASSET_PATHS: Record<HarnessId, string> = {
   'oh-my-pi': '.omp/extensions/context-brake.js',
 };
 
-function runProcessSample(path: string, payload: string): Promise<number> {
+function runProcessSample(path: string, event: string, payload: string): Promise<number> {
   return new Promise((res, rej) => {
     const start = performance.now();
-    const child = spawn(process.execPath, [path], { stdio: ['pipe', 'pipe', 'pipe'] });
-    const timer = setTimeout(() => { child.kill(); rej(new Error('timeout')); }, 2000);
+    const child = spawn(process.execPath, [path, event], { stdio: ['pipe', 'pipe', 'pipe'] });
+    const timer = setTimeout(() => { child.kill(); rej(new Error('timeout')); }, PROCESS_TIMEOUT_MS);
     child.on('close', (code) => {
       clearTimeout(timer);
       if (code === 0) res(performance.now() - start); else rej(new Error(`Exit ${code}`));
@@ -35,47 +40,42 @@ function runProcessSample(path: string, payload: string): Promise<number> {
   });
 }
 
-async function measureProcess(path: string, payload: unknown): Promise<number[]> {
+async function measureProcess(path: string, event: string, payload: unknown): Promise<number[]> {
   const json = JSON.stringify(payload);
-  for (let i = 0; i < 3; i++) await runProcessSample(path, json);
+  for (let index = 0; index < PROCESS_WARMUP_COUNT; index++) await runProcessSample(path, event, json);
   const samples: number[] = [];
-  for (let i = 0; i < 20; i++) samples.push(await runProcessSample(path, json));
+  for (let index = 0; index < PROCESS_SAMPLE_COUNT; index++) samples.push(await runProcessSample(path, event, json));
   return samples;
 }
 
-async function measureInProcess(path: string, payload: unknown): Promise<number[]> {
-  const mod = await import(pathToFileURL(path).href);
-  let handler: ((d: unknown) => Promise<unknown>) | null = null;
-  const mockApi = { on: (_: string, fn: (d: unknown) => Promise<unknown>) => { handler = fn; } };
-  const res = mod.default(mockApi);
-  if (!handler && typeof res === 'object' && res && 'tool.execute.before' in res) handler = res['tool.execute.before'];
-  const fn = handler ?? (() => Promise.resolve());
-  for (let i = 0; i < 10; i++) await fn(payload);
-  const samples: number[] = [];
-  for (let i = 0; i < 100; i++) {
-    const start = performance.now();
-    await fn(payload);
-    samples.push(performance.now() - start);
-  }
-  return samples;
+function unavailable(fixture: BenchmarkFixture): OverheadMeasurement {
+  return { harness: fixture.harness, executionModel: fixture.executionModel, sampleCount: 0, p95Milliseconds: null, targetMilliseconds: fixture.targetMilliseconds, status: 'unavailable' };
+}
+
+async function sampleAsset(path: string, fixture: BenchmarkFixture): Promise<number[] | null> {
+  if (fixture.executionModel === 'process') return measureProcess(path, fixture.event, fixture.samplePayload);
+  return sampleInProcess({ assetPath: path, event: fixture.event, payload: fixture.samplePayload });
+}
+
+function toMeasurement(harness: HarnessId, fixture: BenchmarkFixture, samples: number[]): OverheadMeasurement {
+  const p95Milliseconds = calculateNearestRankP95(samples);
+  const status = p95Milliseconds === null ? 'unavailable' : p95Milliseconds <= fixture.targetMilliseconds ? 'pass' : 'fail';
+  return { harness, executionModel: fixture.executionModel, sampleCount: samples.length, p95Milliseconds, targetMilliseconds: fixture.targetMilliseconds, status };
 }
 
 export class NodeOverheadMeasurer implements OverheadMeasurer {
   constructor(private readonly projectRoot: string) {}
 
   async measure(harness: HarnessId): Promise<OverheadMeasurement> {
-    const adapter = getAdapter(harness);
-    const fixture = adapter.benchmarkFixture();
+    const fixture = getAdapter(harness).benchmarkFixture();
     const fullPath = resolve(this.projectRoot, ASSET_PATHS[harness]);
-    const exists = await stat(fullPath).then((s) => s.isFile()).catch(() => false);
-    if (!exists) return { harness, executionModel: fixture.executionModel, sampleCount: 0, p95Milliseconds: null, targetMilliseconds: fixture.targetMilliseconds, status: 'unavailable' };
+    const exists = await stat(fullPath).then((stats) => stats.isFile()).catch(() => false);
+    if (!exists) return unavailable(fixture);
     try {
-      const samples = fixture.executionModel === 'process' ? await measureProcess(fullPath, fixture.samplePayload) : await measureInProcess(fullPath, fixture.samplePayload);
-      const p95 = calculateNearestRankP95(samples);
-      const status = p95 === null ? 'unavailable' : p95 <= fixture.targetMilliseconds ? 'pass' : 'fail';
-      return { harness, executionModel: fixture.executionModel, sampleCount: samples.length, p95Milliseconds: p95, targetMilliseconds: fixture.targetMilliseconds, status };
+      const samples = await sampleAsset(fullPath, fixture);
+      return samples === null ? unavailable(fixture) : toMeasurement(harness, fixture, samples);
     } catch {
-      return { harness, executionModel: fixture.executionModel, sampleCount: 0, p95Milliseconds: null, targetMilliseconds: fixture.targetMilliseconds, status: 'unavailable' };
+      return unavailable(fixture);
     }
   }
 }

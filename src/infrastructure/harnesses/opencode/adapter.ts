@@ -13,10 +13,11 @@ import { OPENCODE_PLUGIN_FILE, planOpenCodeInstall, planOpenCodeRemove } from '.
 
 const CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'pre_tool_block', state: 'supported' },
+  { id: 'tool_coverage', state: 'unknown', impact: 'Whether tool.execute.before runs for every OpenCode tool is not documented.' },
   { id: 'post_tool_telemetry', state: 'unsupported', impact: 'Model visibility of post-tool output modification is unconfirmed in OpenCode.' },
   { id: 'session_boot', state: 'unsupported', impact: 'Stable boot injection is experimental in OpenCode.' },
-  { id: 'context_usage', state: 'unsupported', impact: 'Context usage reading by in-process plugins is unconfirmed.' },
-  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'Plugin failure behavior outside tool.execute.before is undocumented.' },
+  { id: 'context_usage', state: 'unsupported', impact: 'No documented API exposes context usage to OpenCode plugins.' },
+  { id: 'timeout_fail_closed', state: 'unknown', impact: 'Failure and timeout behavior of OpenCode plugins is not documented.' },
 ];
 
 export class OpenCodeAdapter implements HarnessAdapter {
@@ -69,8 +70,12 @@ export class OpenCodeAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'in_process',
+      event: 'tool.execute.before',
       targetMilliseconds: 15,
-      samplePayload: { tool: 'bash', input: { command: 'ls' } },
+      samplePayload: {
+        input: { tool: 'bash', sessionID: 'bench-opencode', callID: 'call_bench' },
+        output: { args: { command: 'ls' } },
+      },
     };
   }
 }

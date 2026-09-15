@@ -5,7 +5,9 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/manifest.js';
 import { createChangePlan } from './change-plan-service.js';
+import { planGitignoreRemoval } from './gitignore-service.js';
 import { createRemovalFinding, planAssetDeletions, planInstructionRemoval } from './removal-helper.js';
+import { planStateDeletions } from './state-removal.js';
 
 export type RemovalInput = {
   projectRoot: string;
@@ -14,6 +16,7 @@ export type RemovalInput = {
   context: HarnessContext;
   instructionSnapshots: readonly FileSnapshot[];
   protocolSnapshot: FileSnapshot;
+  gitignoreSnapshot: FileSnapshot;
   allSnapshots: readonly FileSnapshot[];
   manifest: InstallationManifest | null;
   removeState?: boolean;
@@ -25,16 +28,6 @@ export type RemovalResult = {
   plan: ChangePlan;
   findings: readonly DiagnosticFinding[];
 };
-
-function planStateDeletions(input: RemovalInput): PlannedChange[] {
-  const changes: PlannedChange[] = [];
-  if (!input.removeState) return changes;
-  for (const snap of [input.planSnapshot, input.checkpointSnapshot]) {
-    if (!snap?.exists) continue;
-    changes.push({ path: snap.path, realPath: snap.realPath, kind: 'delete', owner: 'config', content: null, preview: { summary: `Delete ${snap.path}` } });
-  }
-  return changes;
-}
 
 function planCoreDeletions(input: RemovalInput, hasConflicts: boolean): PlannedChange[] {
   const changes: PlannedChange[] = [];
@@ -68,7 +61,8 @@ async function planAdapterRemovals(input: RemovalInput) {
       for (const c of aPlan.conflicts) findings.push(createRemovalFinding(c, adapter.id));
     }
     const outcome = aPlan.conflicts.length > 0 ? 'conflict' : 'planned';
-    harnesses.push({ harness: adapter.id, outcome, supportLevel: adapter.capabilityProfile().supportLevel });
+    const profile = adapter.capabilityProfile();
+    harnesses.push({ harness: adapter.id, outcome, supportLevel: profile.supportLevel, limitations: [...profile.limitations] });
   }
   return { changes, conflicts, harnesses, findings, conflictedAssetPaths };
 }
@@ -81,17 +75,20 @@ export async function planRemoval(input: RemovalInput): Promise<RemovalResult> {
     excludedAssetPaths.add(MANIFEST_RELATIVE_PATH);
   }
   const assetPlan = planAssetDeletions(input.manifest, input.allSnapshots, excludedAssetPaths);
+  const gitignorePlan = planGitignoreRemoval({ snapshot: input.gitignoreSnapshot, removeState: Boolean(input.removeState) });
   const hasConflicts = adapterResult.conflicts.length > 0 || assetPlan.conflicts.length > 0;
   const plannedChanges: PlannedChange[] = [
     ...adapterResult.changes,
     ...assetPlan.changes,
     ...planInstructionRemoval(input.instructionSnapshots),
     ...planStateDeletions(input),
+    ...gitignorePlan.changes,
     ...planCoreDeletions(input, hasConflicts),
   ];
-  const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts];
+  const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts, ...gitignorePlan.conflicts];
   const assetFindings = assetPlan.conflicts.map((c) => createRemovalFinding(c, null));
-  const findings: DiagnosticFinding[] = [...adapterResult.findings, ...assetFindings];
+  const gitignoreFindings = gitignorePlan.conflicts.map((c) => createRemovalFinding(c, null));
+  const findings: DiagnosticFinding[] = [...adapterResult.findings, ...assetFindings, ...gitignoreFindings];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: adapterResult.harnesses });
   return { plan, findings };
 }

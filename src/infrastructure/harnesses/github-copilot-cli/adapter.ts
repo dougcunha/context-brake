@@ -5,20 +5,19 @@ import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
 import type { CapabilityDefinition, CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
-import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding, createLimitationFinding } from '../common/diagnostic-helpers.js';
+import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { COPILOT_EXECUTABLES, detectCopilot } from './detector.js';
 import { COPILOT_CONFIG_FILE, COPILOT_HOOK_FILE, planCopilotInstall, planCopilotRemove } from './planner.js';
 
-const TIMEOUT_IMPACT = 'A timed-out hook lets the tool call continue.';
-
 const CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'pre_tool_block', state: 'supported' },
+  { id: 'tool_coverage', state: 'supported' },
   { id: 'post_tool_telemetry', state: 'supported' },
   { id: 'session_boot', state: 'supported' },
   { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to GitHub Copilot CLI hooks.' },
-  { id: 'timeout_fail_closed', state: 'unsupported', impact: TIMEOUT_IMPACT },
+  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook timeout lets the tool call proceed; a command failure without a timeout denies it.' },
 ];
 
 export class CopilotAdapter implements HarnessAdapter {
@@ -57,8 +56,6 @@ export class CopilotAdapter implements HarnessAdapter {
         const validation = validateJsonDocument(raw);
         if (!validation.valid) {
           findings.push(createInvalidConfigFinding(this.id, COPILOT_CONFIG_FILE, validation.errors.join('; ')));
-        } else {
-          findings.push(createLimitationFinding(this.id, 'COPILOT_TIMEOUT_LIMITATION', TIMEOUT_IMPACT));
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
@@ -73,8 +70,15 @@ export class CopilotAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
+      event: 'preToolUse',
       targetMilliseconds: 100,
-      samplePayload: { event: 'preToolUse', sessionId: 'copilot-bench', toolName: 'run_command' },
+      samplePayload: {
+        sessionId: 'bench-copilot',
+        timestamp: 0,
+        cwd: '/repo',
+        toolName: 'bash',
+        toolArgs: { command: 'ls' },
+      },
     };
   }
 }

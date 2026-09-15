@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
-import { CAPABILITY_IDS, type CapabilityDefinition, type CapabilityProfile, type DetectionEvidence, type VersionProbe } from '../../../core/contracts/harness.js';
+import { type CapabilityDefinition, type CapabilityProfile, type DetectionEvidence, type VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
@@ -12,7 +12,14 @@ import { isTargetGroup } from './claude-merger.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
 import { CLAUDE_CONFIG_FILE, CLAUDE_HOOK_FILE, planClaudeInstall, planClaudeRemove } from './planner.js';
 
-const CAPABILITIES: readonly CapabilityDefinition[] = CAPABILITY_IDS.map((id) => ({ id, state: 'supported' }));
+const CAPABILITIES: readonly CapabilityDefinition[] = [
+  { id: 'pre_tool_block', state: 'supported' },
+  { id: 'tool_coverage', state: 'supported' },
+  { id: 'post_tool_telemetry', state: 'supported' },
+  { id: 'session_boot', state: 'supported' },
+  { id: 'context_usage', state: 'unsupported', impact: 'Context usage reaches the Claude Code status line, not hooks, so ContextBrake estimates it.' },
+  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.' },
+];
 
 export class ClaudeAdapter implements HarnessAdapter {
   readonly id = 'claude-code';
@@ -70,8 +77,16 @@ export class ClaudeAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
+      event: 'PreToolUse',
       targetMilliseconds: 100,
-      samplePayload: { hook_event_name: 'PreToolUse', session_id: 'bench-1', tool_name: 'Bash' },
+      samplePayload: {
+        session_id: 'bench-claude',
+        hook_event_name: 'PreToolUse',
+        tool_name: 'Bash',
+        tool_input: { command: 'ls' },
+        tool_use_id: 'toolu_bench',
+        cwd: '/repo',
+      },
     };
   }
 }

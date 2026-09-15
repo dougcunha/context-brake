@@ -98,8 +98,14 @@ The registered Codex command is exercised under `sh -lc`, `bash -lc`, and `cmd.e
 
 > Updated by `sdd-execute-corrections` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending HIL authorization/access for a current GitHub Actions run.
+- Produced result: Local hardening complete for CR-06. `tests/integration/codex-hook-command-shells.test.ts` now runs the registered POSIX `command` under both `sh -lc` and `bash -lc` on POSIX and the registered `commandWindows` under `cmd.exe /C` on Windows, using the hook strings from `planCodexInstall` and the built asset `dist/assets/runtime/codex-cli-hook.mjs` (no duplicated constants). New `tests/helpers/process-capability.ts` detects `git`, `sh`, and `bash` by spawning them without a shell wrapper, handles child `error`, nonzero exit, and a bounded probe timeout, and applies the local-skip/CI-fail policy (`MissingPrerequisiteError` when `CI` is set). Non-applicable platform cases are not registered, so CI has no skipped shell cases. CI publication (commit + nine-job matrix) is pending in this Handoff.
+- Changed files: `tests/integration/codex-hook-command-shells.test.ts`; new `tests/helpers/process-capability.ts` and `tests/unit/process-capability.test.ts`. `tests/test-lanes.ts` already keeps the shell test in the process lane, so no lane membership change was needed.
+- Checks:
+  - `npm run build`: passed; `npm run lint`: passed (0 errors); `npm run typecheck`: passed.
+  - `npm run schemas:check`, `npm run dependencies:check` (3 runtime deps, no install scripts), `npm run package:smoke` (212 files, CLI smoke): passed.
+  - Focused Vitest (`process-capability`, `codex-hook-command-shells`, `test-lanes`): 3 files, 12 passed; the Windows `cmd.exe /C` case executed, the POSIX `sh -lc`/`bash -lc` cases are not registered on Windows.
+  - Five consecutive `npm test` runs on the local executor: each 85 files / 350 passed / 0 failed, 0 timed out, 0 unhandled errors; durations 202.71s, 174.70s, 287.74s, 153.62s, 158.11s.
+  - `npm run coverage`: 85 files / 350 passed; 92.33% statements, 86.00% branches, 95.68% functions, 92.33% lines (threshold 80%).
+  - QA-01..QA-06 over changed TS files: 0 hits; changed files <=100 lines and functions <=30 lines.
+- Validated state: Windows 11 Pro, PowerShell 7, Node v24.19.0, npm 11.17.0; uncommitted worktree over `2a26a3e` with `dist/` rebuilt. Local missing prerequisites follow the skip policy; `CI=true` turns the same condition into a failure.
+- Open items: HIL-authorized publication is in progress; the correction commit SHA, the nine-job GitHub Actions run ID/URL, and the per-job matrix result are recorded in the follow-up entry below once the run completes. Historical runs are not accepted as substitutes.

@@ -74,9 +74,10 @@ describe('removal-service with conflicted harness (CR-06)', () => {
       makeSnap(tempDir, 'docs/context-brake-protocol.md', 'p-hash'),
     ];
     const adapters = [getAdapter('codex-cli'), getAdapter('cursor')];
+    const gitignoreSnap: FileSnapshot = { path: '.gitignore', realPath: join(tempDir, '.gitignore'), exists: false, content: null, sha256: null, isSymlink: false, fileIdentity: '.gitignore' };
     const result = await planRemoval({
       projectRoot: tempDir, config: null, adapters, context: { projectRoot: tempDir },
-      instructionSnapshots: [], protocolSnapshot: allSnaps[2]!, allSnapshots: allSnaps, manifest: createTestManifest(),
+      instructionSnapshots: [], protocolSnapshot: allSnaps[2]!, gitignoreSnapshot: gitignoreSnap, allSnapshots: allSnaps, manifest: createTestManifest(),
     });
     assertRemovalFinding(result.findings);
     const deleted = result.plan.changes.filter((c) => c.kind === 'delete').map((c) => c.path);

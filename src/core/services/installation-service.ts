@@ -6,10 +6,12 @@ import type { DetectionSelection, DetectionSources, HarnessDetection, HarnessId 
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
 import { createChangePlan, hashString } from './change-plan-service.js';
 import { detectHarnesses } from './detection-service.js';
+import { planGitignoreInstall } from './gitignore-service.js';
+import { buildManagedAssets, conflictFindings } from './installation-findings.js';
 import { detectLegacyFindings, legacyFinding } from './legacy-preview.js';
 import { planConfigChange, planManifestChange } from './installation-builder.js';
 import { planInstructionChanges } from './instruction-service.js';
-import { planProtocolChange, renderProtocol } from './protocol-service.js';
+import { planProtocolChange } from './protocol-service.js';
 
 export type InstallationInput = {
   projectRoot: string;
@@ -20,6 +22,7 @@ export type InstallationInput = {
   selection?: DetectionSelection;
   instructionSnapshots: readonly FileSnapshot[];
   protocolSnapshot: FileSnapshot;
+  gitignoreSnapshot: FileSnapshot;
   allSnapshots: readonly FileSnapshot[];
   createInstructions?: boolean;
   migrateLegacy?: boolean;
@@ -57,7 +60,8 @@ async function planAdapters(adapters: readonly HarnessAdapter[], active: readonl
     for (const c of aPlan.changes) if (c.owner === 'runtime_asset' && c.content) assets.push({ path: c.path, kind: 'runtime_asset', sha256: hashString(c.content) });
     if (aPlan.assets) assets.push(...aPlan.assets);
     const outcome = aPlan.conflicts.length > 0 ? 'conflict' : aPlan.changes.length > 0 ? 'planned' : 'skipped';
-    harnesses.push({ harness: d.harness, outcome, supportLevel: adapter.capabilityProfile().supportLevel });
+    const profile = adapter.capabilityProfile();
+    harnesses.push({ harness: d.harness, outcome, supportLevel: profile.supportLevel, limitations: [...profile.limitations] });
   }
   return { changes, conflicts, entries, assets, harnesses };
 }
@@ -70,21 +74,15 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json') });
   const proto = planProtocolChange(cfg.config, input.protocolSnapshot, Boolean(input.previousManifest?.assets.some((a) => a.kind === 'protocol')));
   const inst = planInstructionChanges({ snapshots: input.instructionSnapshots, config: cfg.config, createInstructions: input.createInstructions, migrateLegacy: input.migrateLegacy });
+  const gi = planGitignoreInstall({ snapshot: input.gitignoreSnapshot, config: cfg.config });
   const ap = await planAdapters(input.adapters, active, input.context);
-  const allAssets: ManagedAsset[] = [
-    { path: 'context-brake.config.json', kind: 'config', sha256: hashString(cfg.change.content!) },
-    { path: cfg.config.instructionFiles.protocolFile, kind: 'protocol', sha256: hashString(renderProtocol(cfg.config)) },
-    ...ap.assets,
-  ];
+  const allAssets = buildManagedAssets(cfg.config, cfg.change.content ?? '', ap.assets);
   const manifestChange = planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) });
-  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...inst.changes, ...ap.changes];
+  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...inst.changes, ...gi.changes, ...ap.changes];
   if (proto.change) plannedChanges.push(proto.change);
-  const conflicts = [...inst.conflicts, ...(proto.conflict ? [proto.conflict] : []), ...ap.conflicts];
+  const conflicts = [...inst.conflicts, ...gi.conflicts, ...(proto.conflict ? [proto.conflict] : []), ...ap.conflicts];
   const findings: DiagnosticFinding[] = [
-    ...conflicts.map((c) => ({
-      code: c.code, severity: 'error' as const, scope: 'file' as const, harness: null, path: c.path,
-      message: c.detail, impact: 'This file could not be modified.', remediation: `Fix syntax or structure in ${c.path}.`,
-    })),
+    ...conflictFindings(conflicts),
     ...inst.legacyDetected.map((path) => legacyFinding(path, cfg.config)),
   ];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: ap.harnesses });

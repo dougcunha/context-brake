@@ -104,7 +104,7 @@ Flow:
 | OpenCode | S | ? | U | U | U | ? | partial |
 | Pi | S | S | S | S | S | ? | full |
 | Oh-My-Pi | S | S | S | S | S | ? | full |
-| Antigravity CLI | S | ? | U | U | U | ? | partial |
+| Antigravity CLI | U | ? | U | U | U | ? | cooperative |
 
 Impact texts (English, exact):
 
@@ -125,6 +125,7 @@ Impact texts (English, exact):
 | OpenCode | `timeout_fail_closed` | Failure and timeout behavior of OpenCode plugins is not documented. |
 | Pi | `timeout_fail_closed` | Timeout behavior of Pi extension handlers is not documented, and a throwing handler is logged without blocking. |
 | Oh-My-Pi | `timeout_fail_closed` | Timeout behavior of Oh-My-Pi extension handlers is not documented. |
+| Antigravity CLI | `pre_tool_block` | PRD-01 installs only the Antigravity CLI PreInvocation hook; selective pre-tool blocking arrives with PRD-02. |
 | Antigravity CLI | `tool_coverage` | Hook coverage in the Antigravity CLI is not confirmed by its documentation. |
 | Antigravity CLI | `post_tool_telemetry` | Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation. |
 | Antigravity CLI | `session_boot` | Session boot is indirect via PreInvocation. |

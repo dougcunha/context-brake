@@ -193,6 +193,7 @@
                       "type": "string",
                       "enum": [
                         "pre_tool_block",
+                        "tool_coverage",
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",
@@ -224,6 +225,7 @@
                       "type": "string",
                       "enum": [
                         "pre_tool_block",
+                        "tool_coverage",
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",

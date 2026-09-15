@@ -81,3 +81,19 @@ describe('single-line document edits (CR-01, RF6)', () => {
     expect(parsed.items).toEqual([1, 2, 3]);
   });
 });
+
+describe('property trailing comment ownership (CR-01, T29.1)', () => {
+  it('keeps a final property comment attached when adding a property', () => {
+    const input = '{\n  "a": 1 // keep\n}\n';
+    const output = setJsonProperty(input, ['b'], 2);
+    expect(output).toBe('{\n  "a": 1, // keep\n  "b": 2\n}\n');
+    expect(removeJsonProperty(output, ['b'])).toBe(input);
+  });
+
+  it('keeps a final property block comment attached on a compact document', () => {
+    const input = '{"a":1 /* keep */}';
+    const output = setJsonProperty(input, ['b'], 2);
+    expect(output).toBe('{"a":1, /* keep */"b": 2}');
+    expect(removeJsonProperty(output, ['b'])).toBe(input);
+  });
+});

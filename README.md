@@ -44,24 +44,24 @@ Default limits. A turn is one completed tool call, and when several conditions m
 | 🔴 `RED` | above 65% | 11 or more | Save plan and checkpoint, commit the code with `checkpoint: <step title>` if validation passes, and end with `[REQUEST_SESSION_RESET]`. |
 | ⛔ `CRITICAL` | 75% or more | 12 or more | Only state-saving calls run: reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, and `git commit`. |
 
-Blocking is enforced only on harnesses with **Full** support; `doctor` lists hook timeouts or crashes that can still release a call as limitations. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
+Blocking is available on harnesses with **Full** or **Partial** support, but only where the installed hook honors an explicit deny; on **Cooperative** harnesses the protocol only advises. `doctor` lists each harness's hook timeouts, missing tool coverage, and crashes as limitations. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
 
 ---
 
 ## 🧩 Supported Harnesses
 
-Support levels come from each vendor's documentation, checked in September 2026. **Full** means the harness honors ContextBrake's explicit deny on every tool call, delivers telemetry alongside tool results, and injects a boot summary at session start. **Partial** means one of these is missing, indirect, unconfirmed, or does not cover every tool.
+Support levels come from each vendor's documentation, checked in September 2026. **Full** means the harness honors ContextBrake's explicit deny on every tool call, delivers telemetry alongside tool results, and injects a boot summary at session start. **Partial** means one of these is missing, indirect, unconfirmed, or does not cover every tool. **Cooperative** means the harness does not honor a pre-tool deny, so only the protocol acts.
 
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
-| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage reaches the status line, not hooks |
-| Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Partial | Hosted tools such as web search bypass hooks |
+| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage reaches the status line, not hooks; a hook timeout or failure without an explicit deny lets the call proceed |
+| Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Partial | Hosted tools such as web search bypass hooks; hook errors and timeouts let the call proceed |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | A hook timeout lets the tool call proceed |
-| OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Changing tool output from a plugin is unconfirmed |
-| Pi (`pi`) | Extensions in `.pi/extensions/` | Full | None documented |
-| Oh-My-Pi (`oh-my-pi`) | Hooks in `.omp/hooks/` | Full | None documented |
-| Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Partial | Context can only be injected before model calls |
+| OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Whether the pre-tool hook runs for every tool is unconfirmed, and post-tool output visibility is unconfirmed |
+| Pi (`pi`) | Extensions in `.pi/extensions/` | Full | Timeout behavior of extension handlers is not documented |
+| Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Timeout behavior of extension handlers is not documented |
+| Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Cooperative | Only the `PreInvocation` hook is installed, so there is no pre-tool denial; failure and timeout behavior is not documented |
 
 Aider is not supported because it has no hook mechanism. The full capability matrix and its sources are in the [installation PRD](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md).
 
@@ -113,14 +113,14 @@ npx context-brake doctor
 1. **Detects coding-agent harnesses:** Identifies Claude Code, Cursor, Codex CLI, GitHub Copilot CLI, Antigravity CLI, OpenCode, Pi, and Oh-My-Pi from repository signals and machine configuration.
 2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments.
 3. **Initializes protocol & config:** Creates `docs/context-brake-protocol.md` and `context-brake.config.json`.
-4. **Adds reference markers:** Inserts a short 4-line pointer between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` in existing `CLAUDE.md` and `AGENTS.md` instruction files without modifying any other content.
-5. **Ignores local state (planned):** Adds the plan and checkpoint paths to `.gitignore` between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END`, creating the file when needed. Plans and checkpoints stay on your machine and are never committed.
+4. **Adds reference markers:** Inserts a short three-line pointer between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` in existing `CLAUDE.md` and `AGENTS.md` instruction files without modifying any other content.
+5. **Ignores local state:** Adds the plan and checkpoint paths to `.gitignore` between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END`, creating the file when needed, updating the paths when the configuration changes, and leaving the rest of the file untouched. Plans and checkpoints stay on your machine and are never committed.
 
 ### Updating and Removal
 
 - **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and protocol references without touching your custom settings.
 - **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
-- **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations; the state files stay git-ignored. Add `--remove-state` to also delete them and their `.gitignore` block.
+- **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations. Default removal keeps both state files and their `.gitignore` block, so the state stays ignored; add `--remove-state` to delete the plan, checkpoint, and that block together. `remove --remove-state` deletes `.gitignore` only when the ContextBrake block was its only content.
 
 ---
 
@@ -190,7 +190,7 @@ npx context-brake doctor
 - **`task_plan.json`:** task id and title, current step, and steps with status (`PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`), a validation command, and produced artifacts.
 - **`state_checkpoint.json`:** active step, git state (branch, last commit, clean tree), discovered constraints, decisions, blocked items, breaking changes, and modified files.
 
-Both files are local state: `init` lists them in `.gitignore`, and the red-zone commit records code changes only. If a state file was committed earlier, untrack it once with `git rm --cached <file>`. Both files are validated before every use. An invalid file is reported instead of being passed to the agent, and discovered constraints are never trimmed from the boot summary.
+Both files are local state: `init` lists them in `.gitignore` between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END`, creating the file when needed and updating the paths when the configuration changes, and default `remove` keeps that block. `remove --remove-state` deletes the plan, checkpoint, and block together. The red-zone commit records code changes only. If a state file was committed earlier, untrack it once with `git rm --cached <file>`. Both files are validated before every use. An invalid file is reported instead of being passed to the agent, and discovered constraints are never trimmed from the boot summary.
 
 ---
 

@@ -42,10 +42,13 @@ describe('IT-12: Copilot failure policy and diagnosis (CA-15)', () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  it('reports partial support and timeout limitation during diagnosis', async () => {
-    expect(adapter.capabilityProfile().supportLevel).toBe('partial');
+  it('reports full support with a timeout limitation and no warning finding (TC-03, CA-15)', async () => {
+    const profile = adapter.capabilityProfile();
+    expect(profile.supportLevel).toBe('full');
+    const timeoutLimitation = profile.limitations.find((limitation) => limitation.capability === 'timeout_fail_closed');
+    expect(timeoutLimitation?.impact).toContain('a command failure without a timeout denies it');
     const findings = await adapter.diagnose({ projectRoot: tempDir });
-    const timeoutFinding = findings.find((f) => f.code === 'COPILOT_TIMEOUT_LIMITATION');
-    expect(timeoutFinding?.impact).toBe('A timed-out hook lets the tool call continue.');
+    expect(findings.find((f) => f.code === 'COPILOT_TIMEOUT_LIMITATION')).toBeUndefined();
+    expect(findings.find((f) => f.code === 'INVALID_HARNESS_CONFIG')).toBeUndefined();
   });
 });

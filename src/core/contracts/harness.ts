@@ -16,6 +16,7 @@ export const SUPPORT_LEVELS = ['full', 'partial', 'cooperative'] as const;
 export const CAPABILITY_STATES = ['supported', 'unsupported', 'unknown'] as const;
 export const CAPABILITY_IDS = [
   'pre_tool_block',
+  'tool_coverage',
   'post_tool_telemetry',
   'session_boot',
   'context_usage',

@@ -167,6 +167,7 @@
                   "config",
                   "protocol",
                   "instruction_block",
+                  "ignore_block",
                   "harness_entry",
                   "runtime_asset",
                   "manifest"
@@ -279,12 +280,40 @@
                   "partial",
                   "cooperative"
                 ]
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "capability": {
+                      "type": "string",
+                      "enum": [
+                        "pre_tool_block",
+                        "tool_coverage",
+                        "post_tool_telemetry",
+                        "session_boot",
+                        "context_usage",
+                        "timeout_fail_closed"
+                      ]
+                    },
+                    "impact": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "capability",
+                    "impact"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
               "harness",
               "outcome",
-              "supportLevel"
+              "supportLevel",
+              "limitations"
             ],
             "additionalProperties": false
           }

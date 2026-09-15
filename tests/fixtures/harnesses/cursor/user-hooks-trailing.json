@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      { "command": "echo preToolUse" } // keep preToolUse
+    ],
+    "postToolUse": [
+      { "command": "echo postToolUse" } /* keep postToolUse */
+    ],
+    "sessionStart": [
+      { "command": "echo sessionStart" } // keep sessionStart
+    ]
+  }
+}

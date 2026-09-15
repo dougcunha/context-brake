@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { CHANGE_OWNERS } from './changes.js';
 import { configurationSchema } from './configuration.js';
 import { CAPABILITY_IDS, CAPABILITY_STATES, DETECTION_ORIGINS, DETECTION_STATES, HARNESS_IDS, SUPPORT_LEVELS } from './harness.js';
 
@@ -12,9 +13,9 @@ const profile = z.object({ harness: z.enum(HARNESS_IDS), supportLevel: z.enum(SU
 const overhead = z.object({ harness: z.enum(HARNESS_IDS), executionModel: z.enum(['process', 'in_process']), sampleCount: z.number().int().nonnegative(), p95Milliseconds: z.number().nonnegative().nullable(), targetMilliseconds: z.union([z.literal(100), z.literal(15)]), status: z.enum(['pass', 'fail', 'unavailable']) }).strict();
 const integration = z.object({ harness: z.enum(HARNESS_IDS), state: z.enum(['installed', 'missing', 'broken']), version: z.string().nullable(), support: profile, overhead: overhead.nullable() }).strict();
 const preview = z.object({ summary: z.string(), startLine: z.number().int().positive().optional(), endLine: z.number().int().positive().optional(), snippet: z.string().optional() }).strict();
-const fileChange = z.object({ path: z.string(), realPath: z.string(), kind: z.enum(['create', 'update', 'delete']), owner: z.enum(['config', 'protocol', 'instruction_block', 'harness_entry', 'runtime_asset', 'manifest']), beforeSha256: z.string().nullable(), afterSha256: z.string().nullable(), preview }).strict();
+const fileChange = z.object({ path: z.string(), realPath: z.string(), kind: z.enum(['create', 'update', 'delete']), owner: z.enum(CHANGE_OWNERS), beforeSha256: z.string().nullable(), afterSha256: z.string().nullable(), preview }).strict();
 const conflict = z.object({ path: z.string(), code: z.string().regex(/^[A-Z0-9_]+$/), detail: z.string() }).strict();
-const harnessPlan = z.object({ harness: z.enum(HARNESS_IDS), outcome: z.enum(['planned', 'skipped', 'conflict']), supportLevel: z.enum(SUPPORT_LEVELS) }).strict();
+const harnessPlan = z.object({ harness: z.enum(HARNESS_IDS), outcome: z.enum(['planned', 'skipped', 'conflict']), supportLevel: z.enum(SUPPORT_LEVELS), limitations: z.array(limitation) }).strict();
 const outcome = z.object({ path: z.string(), status: z.enum(['planned', 'applied', 'unchanged', 'skipped', 'failed']), detail: z.string().nullable() }).strict();
 const plan = z.object({ schemaVersion: z.literal(1), projectRoot: z.string(), changes: z.array(fileChange), conflicts: z.array(conflict), harnesses: z.array(harnessPlan), requiresConfirmation: z.boolean() }).strict();
 export const installReportSchema = z.object({ schemaVersion: z.literal(1), command: z.enum(['init', 'remove']), mode: z.enum(['dry_run', 'applied']), status: z.enum(['success', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), plan, outcomes: z.array(outcome), findings: z.array(finding) }).strict();

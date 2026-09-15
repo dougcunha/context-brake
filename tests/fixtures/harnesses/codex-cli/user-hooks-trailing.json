@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      { "matcher": "user-PreToolUse", "hooks": [{ "type": "command", "command": "echo PreToolUse" }] } // keep PreToolUse
+    ],
+    "PostToolUse": [
+      { "matcher": "user-PostToolUse", "hooks": [{ "type": "command", "command": "echo PostToolUse" }] } /* keep PostToolUse */
+    ],
+    "SessionStart": [
+      { "matcher": "user-SessionStart", "hooks": [{ "type": "command", "command": "echo SessionStart" }] } // keep SessionStart
+    ]
+  }
+}

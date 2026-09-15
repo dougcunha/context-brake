@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
-import { CAPABILITY_IDS, type CapabilityDefinition, type CapabilityProfile, type DetectionEvidence, type VersionProbe } from '../../../core/contracts/harness.js';
+import { type CapabilityDefinition, type CapabilityProfile, type DetectionEvidence, type VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
@@ -11,7 +11,14 @@ import { probeExecutableVersion } from '../common/version-probes.js';
 import { detectPi, PI_EXECUTABLES } from './detector.js';
 import { PI_EXTENSION_FILE, planPiInstall, planPiRemove } from './planner.js';
 
-const CAPABILITIES: readonly CapabilityDefinition[] = CAPABILITY_IDS.map((id) => ({ id, state: 'supported' }));
+const CAPABILITIES: readonly CapabilityDefinition[] = [
+  { id: 'pre_tool_block', state: 'supported' },
+  { id: 'tool_coverage', state: 'supported' },
+  { id: 'post_tool_telemetry', state: 'supported' },
+  { id: 'session_boot', state: 'supported' },
+  { id: 'context_usage', state: 'supported' },
+  { id: 'timeout_fail_closed', state: 'unknown', impact: 'Timeout behavior of Pi extension handlers is not documented, and a throwing handler is logged without blocking.' },
+];
 
 export class PiAdapter implements HarnessAdapter {
   readonly id = 'pi';
@@ -63,8 +70,9 @@ export class PiAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'in_process',
+      event: 'tool_call',
       targetMilliseconds: 15,
-      samplePayload: { name: 'read_file', input: { path: 'file.txt' } },
+      samplePayload: { toolName: 'read', toolCallId: 'call_bench', input: { path: 'file.txt' } },
     };
   }
 }

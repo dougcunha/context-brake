@@ -21,6 +21,7 @@ export async function collectProjectSnapshots(root: string, config: ContextBrake
   const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
   const paths = Array.from(new Set([
     'context-brake.config.json',
+    '.gitignore',
     MANIFEST_RELATIVE_PATH,
     protocol,
     plan,

@@ -5,6 +5,7 @@ import type { FileSnapshot } from '../contracts/changes.js';
 import { type CapabilityProfile, type DetectionSources, type HarnessId } from '../contracts/harness.js';
 import { detectHarnesses } from './detection-service.js';
 import { checkConfig, checkInstructionFiles, checkProtocolFile, checkStateFiles } from './doctor-checks.js';
+import { checkGitignore } from './gitignore-checks.js';
 import { buildDoctorReport } from './report-service.js';
 
 export type DoctorInput = {
@@ -18,6 +19,7 @@ export type DoctorInput = {
   measurer?: OverheadMeasurer;
   instructionSnapshots: readonly FileSnapshot[];
   protocolSnapshot: FileSnapshot;
+  gitignoreSnapshot: FileSnapshot;
   planSnapshot?: FileSnapshot;
   checkpointSnapshot?: FileSnapshot;
 };
@@ -82,5 +84,6 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
   allFindings.push(...checkInstructionFiles(input.instructionSnapshots));
   allFindings.push(...checkProtocolFile(input.protocolSnapshot, effective));
   allFindings.push(...checkStateFiles(input.planSnapshot, input.checkpointSnapshot));
+  if (input.config && !input.configError) allFindings.push(...checkGitignore(input.gitignoreSnapshot, input.config));
   return buildDoctorReport({ detections, integrations, findings: allFindings });
 }

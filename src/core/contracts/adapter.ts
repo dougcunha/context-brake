@@ -22,6 +22,7 @@ export type AdapterPlan = {
   readonly conflicts: readonly PlanConflict[];
   readonly entries: readonly ManagedEntry[];
   readonly assets?: readonly ManagedAsset[];
+  readonly assetPaths?: readonly string[];
 };
 
 export type BenchmarkFixture = {

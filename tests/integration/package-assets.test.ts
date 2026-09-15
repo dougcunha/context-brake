@@ -24,7 +24,7 @@ const HOOK_CASES: readonly HookCase[] = [
   { asset: 'cursor-hook.mjs', event: 'preToolUse', stdout: CURSOR_ALLOW },
   { asset: 'cursor-hook.mjs', event: 'postToolUse', stdout: EMPTY_RESPONSE },
   { asset: 'cursor-hook.mjs', event: 'sessionStart', stdout: EMPTY_RESPONSE },
-  { asset: 'antigravity-cli-hook.mjs', event: 'PreToolUse', stdout: '{"decision":"allow"}' },
+  { asset: 'antigravity-cli-hook.mjs', event: 'PreToolUse', stdout: NO_OUTPUT },
   { asset: 'antigravity-cli-hook.mjs', event: 'PreInvocation', stdout: '{"injectSteps":[]}' },
 ];
 

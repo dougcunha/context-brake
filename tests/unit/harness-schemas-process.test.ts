@@ -72,8 +72,8 @@ describe('process harness schemas: Cursor, Copilot, and Antigravity (RF5, RF6)',
     expect(copilot.version).toBe(1);
     expect(copilotPreToolUsePayloadSchema.parse({ sessionId: 'cp1' }).sessionId).toBe('cp1');
     expect(copilotPostToolUsePayloadSchema.parse({ sessionId: 'cp1' }).sessionId).toBe('cp1');
-    const agy = antigravityHooksFileSchema.parse({ hooks: { PreToolUse: { 'context-brake': { command: 'node' } } } });
-    expect(agy.hooks?.PreToolUse?.['context-brake']?.command).toBe('node');
+    const agy = antigravityHooksFileSchema.parse({ 'context-brake': { PreInvocation: [{ command: 'node' }] } });
+    expect(agy['context-brake']?.PreInvocation).toBeDefined();
     expect(antigravityPreToolUsePayloadSchema.parse({ conversationId: 'a1' }).conversationId).toBe('a1');
     expect(antigravityPreInvocationPayloadSchema.parse({ invocationNum: 2 }).invocationNum).toBe(2);
   });

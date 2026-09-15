@@ -19,6 +19,18 @@ const CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'timeout_fail_closed', state: 'unsupported', impact: 'Failure and timeout guarantees are undocumented for Antigravity CLI.' },
 ];
 
+function hasInstalledIntegration(raw: string): boolean {
+  try {
+    const obj = JSON.parse(raw) as Record<string, unknown>;
+    const cb = obj['context-brake'] as Record<string, unknown> | undefined;
+    const inv = cb?.PreInvocation;
+    if (!Array.isArray(inv)) return false;
+    return inv.some((h) => typeof h === 'object' && h !== null && typeof (h as { command?: unknown }).command === 'string' && (h as { command: string }).command.includes(ANTIGRAVITY_HOOK_FILE));
+  } catch {
+    return false;
+  }
+}
+
 export class AntigravityAdapter implements HarnessAdapter {
   readonly id = 'antigravity-cli';
   readonly executionModel = 'process' as const;
@@ -55,11 +67,8 @@ export class AntigravityAdapter implements HarnessAdapter {
         const validation = validateJsonDocument(raw);
         if (!validation.valid) {
           findings.push(createInvalidConfigFinding(this.id, ANTIGRAVITY_CONFIG_FILE, validation.errors.join('; ')));
-        } else {
-          const obj = JSON.parse(raw) as { hooks?: { PreToolUse?: Record<string, unknown> } };
-          if (!obj.hooks?.PreToolUse?.['context-brake']) {
-            findings.push(createIntegrationMissingFinding(this.id, ANTIGRAVITY_CONFIG_FILE));
-          }
+        } else if (!hasInstalledIntegration(raw)) {
+          findings.push(createIntegrationMissingFinding(this.id, ANTIGRAVITY_CONFIG_FILE));
         }
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

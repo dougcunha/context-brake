@@ -46,7 +46,11 @@ describe('process hook commands locate the script from the project root (RF5)', 
 
   it('resolves the Codex hook script from the git root', async () => {
     const config = await planConfig('codex-cli', root, '.codex/hooks.json');
-    const entry = { type: 'command', command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" PreToolUse' };
+    const entry = {
+      type: 'command',
+      command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" PreToolUse',
+      commandWindows: 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i/.codex/hooks/context-brake.mjs" PreToolUse',
+    };
     expect(config.hooks.PreToolUse).toEqual([{ matcher: '*', hooks: [entry] }]);
   });
 

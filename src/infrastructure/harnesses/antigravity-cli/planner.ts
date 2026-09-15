@@ -2,9 +2,10 @@ import { readFile } from 'node:fs/promises';
 import type { AdapterPlan } from '../../../core/contracts/adapter.js';
 import type { PlannedChange } from '../../../core/contracts/changes.js';
 import type { ManagedEntry } from '../../../core/contracts/manifest.js';
-import { removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
+import { removeAntigravityHooks, updateAntigravityHooks } from '../common/antigravity-hooks-updater.js';
 import { resolveChangeTarget } from '../common/change-target.js';
+import { validateRemovalConfig } from '../common/removal-config-validator.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
 
 export const ANTIGRAVITY_CONFIG_FILE = '.agents/hooks.json';
@@ -12,30 +13,13 @@ export const ANTIGRAVITY_HOOK_FILE = '.agents/hooks/context-brake.mjs';
 
 export function buildAntigravityEntries(): ManagedEntry[] {
   return [
-    { harness: 'antigravity-cli', path: ANTIGRAVITY_CONFIG_FILE, identity: `PreToolUse|context-brake|${ANTIGRAVITY_HOOK_FILE}` },
     { harness: 'antigravity-cli', path: ANTIGRAVITY_CONFIG_FILE, identity: `PreInvocation|context-brake|${ANTIGRAVITY_HOOK_FILE}` },
   ];
 }
 
-function updateHooks(content: string): string {
-  let text = content;
-  text = setJsonProperty(text, ['hooks', 'PreToolUse', 'context-brake'], {
-    command: `node ${ANTIGRAVITY_HOOK_FILE} PreToolUse`,
-  });
-  return setJsonProperty(text, ['hooks', 'PreInvocation', 'context-brake'], {
-    command: `node ${ANTIGRAVITY_HOOK_FILE} PreInvocation`,
-  });
-}
-
-function removeHooks(content: string): string {
-  let text = content;
-  text = removeJsonProperty(text, ['hooks', 'PreToolUse', 'context-brake']);
-  return removeJsonProperty(text, ['hooks', 'PreInvocation', 'context-brake']);
-}
-
 export async function planAntigravityInstall(projectRoot: string): Promise<AdapterPlan> {
   const realConfig = await resolveChangeTarget(projectRoot, ANTIGRAVITY_CONFIG_FILE);
-  let content = '{\n  "hooks": {}\n}\n';
+  let content = '{\n}\n';
   try {
     content = await readFile(realConfig, 'utf8');
     const validation = validateJsonDocument(content);
@@ -51,7 +35,7 @@ export async function planAntigravityInstall(projectRoot: string): Promise<Adapt
   }
   let updated: string;
   try {
-    updated = updateHooks(content);
+    updated = updateAntigravityHooks(content);
   } catch (error: unknown) {
     const detail = error instanceof Error ? error.message : String(error);
     return { harness: 'antigravity-cli', changes: [], conflicts: [{ path: ANTIGRAVITY_CONFIG_FILE, code: 'INVALID_HARNESS_CONFIG', detail }], entries: [] };
@@ -66,14 +50,17 @@ export async function planAntigravityInstall(projectRoot: string): Promise<Adapt
 
 export async function planAntigravityRemove(projectRoot: string): Promise<AdapterPlan> {
   const realConfig = await resolveChangeTarget(projectRoot, ANTIGRAVITY_CONFIG_FILE);
-  const changes: PlannedChange[] = [];
   const raw = await readFile(realConfig, 'utf8').catch(() => null);
+  const conflict = validateRemovalConfig(raw, ANTIGRAVITY_CONFIG_FILE);
+  if (conflict) {
+    return { harness: 'antigravity-cli', changes: [], conflicts: [conflict], entries: buildAntigravityEntries(), assetPaths: [ANTIGRAVITY_HOOK_FILE] };
+  }
+  const changes: PlannedChange[] = [];
   if (raw !== null) {
-    validateJsonDocument(raw);
-    const updated = removeHooks(raw);
+    const updated = removeAntigravityHooks(raw);
     changes.push({ path: ANTIGRAVITY_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Remove Antigravity hooks' } });
   }
   const realHook = await resolveChangeTarget(projectRoot, ANTIGRAVITY_HOOK_FILE);
   changes.push({ path: ANTIGRAVITY_HOOK_FILE, realPath: realHook, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete ContextBrake hook script' } });
-  return { harness: 'antigravity-cli', changes, conflicts: [], entries: buildAntigravityEntries() };
+  return { harness: 'antigravity-cli', changes, conflicts: [], entries: buildAntigravityEntries(), assetPaths: [ANTIGRAVITY_HOOK_FILE] };
 }

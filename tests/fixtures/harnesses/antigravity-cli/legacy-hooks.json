@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "PreToolUse": {
+      "context-brake": {
+        "command": "node .agents/hooks/context-brake.mjs PreToolUse"
+      }
+    },
+    "PreInvocation": {
+      "context-brake": {
+        "command": "node .agents/hooks/context-brake.mjs PreInvocation"
+      }
+    }
+  }
+}

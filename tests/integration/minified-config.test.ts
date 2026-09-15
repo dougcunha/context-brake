@@ -73,8 +73,9 @@ describe('minified JSON config failures (CR-01, RF7)', () => {
   it('keeps a minified Antigravity hooks document valid and preserves user hooks', async () => {
     await withMinified(async (dir) => {
       const parsed = await planMinified(dir, { configPath: '.agents/hooks.json', harness: 'antigravity-cli', file: 'minified-hooks.json', planner: planAntigravityInstall });
-      const pre = hooksOf(parsed).PreToolUse as Record<string, unknown> | undefined;
-      expect(pre?.['context-brake']).toBeDefined();
+      const cb = parsed['context-brake'] as Record<string, unknown> | undefined;
+      expect(cb?.PreInvocation).toBeDefined();
+      expect(parsed['user-hook']).toBeDefined();
     });
   });
 

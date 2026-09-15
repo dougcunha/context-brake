@@ -1,1 +1,1 @@
-{"hooks":{"PreToolUse":{"user-hook":{"command":"echo user"}}}}
+{"user-hook":{"PreInvocation":[{"type":"command","command":"echo user"}]}}

@@ -2,17 +2,29 @@ import { readFile } from 'node:fs/promises';
 import type { AdapterPlan } from '../../../core/contracts/adapter.js';
 import type { PlannedChange } from '../../../core/contracts/changes.js';
 import type { ManagedEntry } from '../../../core/contracts/manifest.js';
-import { setJsonProperty } from '../../storage/json-document-editor.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { resolveChangeTarget } from '../common/change-target.js';
+import { validateRemovalConfig } from '../common/removal-config-validator.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
+import { updateCodexHooks } from '../common/codex-hooks-updater.js';
 
 export const CODEX_CONFIG_FILE = '.codex/hooks.json';
 export const CODEX_HOOK_FILE = '.codex/hooks/context-brake.mjs';
 const GIT_ROOT_EXPANSION = '$(git rev-parse --show-toplevel)';
+const CMD_GIT_ROOT = 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i';
 
-function buildHookGroup(event: string, matcher: string) {
-  return { matcher, hooks: [{ type: 'command', command: `node "${GIT_ROOT_EXPANSION}/${CODEX_HOOK_FILE}" ${event}` }] };
+function buildHookGroup(event: string) {
+  const matcher = event === 'SessionStart' ? 'startup|resume|clear|compact' : '*';
+  return {
+    matcher,
+    hooks: [
+      {
+        type: 'command',
+        command: `node "${GIT_ROOT_EXPANSION}/${CODEX_HOOK_FILE}" ${event}`,
+        commandWindows: `${CMD_GIT_ROOT}/${CODEX_HOOK_FILE}" ${event}`,
+      },
+    ],
+  };
 }
 
 export function buildCodexEntries(): ManagedEntry[] {
@@ -24,13 +36,7 @@ export function buildCodexEntries(): ManagedEntry[] {
 }
 
 function updateHooks(content: string, clear: boolean): string {
-  let text = content;
-  const pre = clear ? [] : [buildHookGroup('PreToolUse', '*')];
-  const post = clear ? [] : [buildHookGroup('PostToolUse', '*')];
-  const session = clear ? [] : [buildHookGroup('SessionStart', 'startup|resume|clear|compact')];
-  text = setJsonProperty(text, ['hooks', 'PreToolUse'], pre);
-  text = setJsonProperty(text, ['hooks', 'PostToolUse'], post);
-  return setJsonProperty(text, ['hooks', 'SessionStart'], session);
+  return updateCodexHooks(content, clear, buildHookGroup);
 }
 
 export async function planCodexInstall(projectRoot: string): Promise<AdapterPlan> {
@@ -66,14 +72,17 @@ export async function planCodexInstall(projectRoot: string): Promise<AdapterPlan
 
 export async function planCodexRemove(projectRoot: string): Promise<AdapterPlan> {
   const realConfig = await resolveChangeTarget(projectRoot, CODEX_CONFIG_FILE);
-  const changes: PlannedChange[] = [];
   const raw = await readFile(realConfig, 'utf8').catch(() => null);
+  const conflict = validateRemovalConfig(raw, CODEX_CONFIG_FILE);
+  if (conflict) {
+    return { harness: 'codex-cli', changes: [], conflicts: [conflict], entries: buildCodexEntries(), assetPaths: [CODEX_HOOK_FILE] };
+  }
+  const changes: PlannedChange[] = [];
   if (raw !== null) {
-    validateJsonDocument(raw);
     const updated = updateHooks(raw, true);
     changes.push({ path: CODEX_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Remove Codex hooks' } });
   }
   const realHook = await resolveChangeTarget(projectRoot, CODEX_HOOK_FILE);
   changes.push({ path: CODEX_HOOK_FILE, realPath: realHook, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete ContextBrake hook script' } });
-  return { harness: 'codex-cli', changes, conflicts: [], entries: buildCodexEntries() };
+  return { harness: 'codex-cli', changes, conflicts: [], entries: buildCodexEntries(), assetPaths: [CODEX_HOOK_FILE] };
 }

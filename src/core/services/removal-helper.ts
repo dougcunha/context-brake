@@ -1,4 +1,6 @@
 import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
+import type { DiagnosticFinding } from '../contracts/diagnostics.js';
+import type { HarnessId } from '../contracts/harness.js';
 import type { InstallationManifest } from '../contracts/manifest.js';
 import { CURRENT_END_MARKER, CURRENT_START_MARKER } from './instruction-markers.js';
 
@@ -37,11 +39,16 @@ export function planInstructionRemoval(snapshots: readonly FileSnapshot[]): Plan
   return changes;
 }
 
-export function planAssetDeletions(manifest: InstallationManifest | null, snapshots: readonly FileSnapshot[]): { changes: PlannedChange[]; conflicts: PlanConflict[] } {
+export function planAssetDeletions(
+  manifest: InstallationManifest | null,
+  snapshots: readonly FileSnapshot[],
+  excludedPaths?: ReadonlySet<string>,
+): { changes: PlannedChange[]; conflicts: PlanConflict[] } {
   const changes: PlannedChange[] = [];
   const conflicts: PlanConflict[] = [];
   if (!manifest) return { changes, conflicts };
   for (const asset of manifest.assets) {
+    if (excludedPaths?.has(asset.path)) continue;
     const snap = snapshots.find((s) => s.path === asset.path);
     if (!snap || !snap.exists) continue;
     if (snap.sha256 !== asset.sha256) {
@@ -51,4 +58,29 @@ export function planAssetDeletions(manifest: InstallationManifest | null, snapsh
     changes.push({ path: asset.path, realPath: snap.realPath, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: `Delete ${asset.path}` } });
   }
   return { changes, conflicts };
+}
+
+export function createRemovalFinding(conflict: PlanConflict, harness: HarnessId | null): DiagnosticFinding {
+  if (conflict.code === 'INVALID_HARNESS_CONFIG') {
+    return {
+      code: 'INVALID_HARNESS_CONFIG',
+      severity: 'error',
+      scope: 'file',
+      harness,
+      path: conflict.path,
+      message: conflict.detail,
+      impact: 'ContextBrake left this harness installed because its configuration could not be parsed.',
+      remediation: `Fix or restore ${conflict.path}, then run context-brake remove again.`,
+    };
+  }
+  return {
+    code: conflict.code,
+    severity: 'error',
+    scope: 'file',
+    harness: null,
+    path: conflict.path,
+    message: conflict.detail,
+    impact: 'This file could not be removed.',
+    remediation: 'Inspect file permissions or modifications.',
+  };
 }

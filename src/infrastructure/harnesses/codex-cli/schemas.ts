@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const codexHookItemSchema = z.object({
   type: z.string().optional(),
   command: z.string().optional(),
+  commandWindows: z.string().optional(),
 }).passthrough();
 
 export const codexHookGroupSchema = z.object({

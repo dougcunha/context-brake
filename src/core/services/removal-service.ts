@@ -5,7 +5,7 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/manifest.js';
 import { createChangePlan } from './change-plan-service.js';
-import { planAssetDeletions, planInstructionRemoval } from './removal-helper.js';
+import { createRemovalFinding, planAssetDeletions, planInstructionRemoval } from './removal-helper.js';
 
 export type RemovalInput = {
   projectRoot: string;
@@ -36,11 +36,12 @@ function planStateDeletions(input: RemovalInput): PlannedChange[] {
   return changes;
 }
 
-function planCoreDeletions(input: RemovalInput): PlannedChange[] {
+function planCoreDeletions(input: RemovalInput, hasConflicts: boolean): PlannedChange[] {
   const changes: PlannedChange[] = [];
   if (input.protocolSnapshot.exists) {
     changes.push({ path: input.protocolSnapshot.path, realPath: input.protocolSnapshot.realPath, kind: 'delete', owner: 'protocol', content: null, preview: { summary: 'Delete protocol file' } });
   }
+  if (hasConflicts) return changes;
   const mSnap = input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH);
   const mPath = (mSnap?.realPath ?? resolve(input.projectRoot, MANIFEST_RELATIVE_PATH)).replace(/\\/g, '/');
   changes.push({ path: MANIFEST_RELATIVE_PATH, realPath: mPath, kind: 'delete', owner: 'manifest', content: null, preview: { summary: 'Delete manifest' } });
@@ -50,36 +51,47 @@ function planCoreDeletions(input: RemovalInput): PlannedChange[] {
   return changes;
 }
 
-async function planAdapterRemovals(input: RemovalInput): Promise<{ changes: PlannedChange[]; conflicts: PlanConflict[]; harnesses: HarnessInstallPlan[] }> {
+async function planAdapterRemovals(input: RemovalInput) {
   const changes: PlannedChange[] = [];
   const conflicts: PlanConflict[] = [];
   const harnesses: HarnessInstallPlan[] = [];
+  const findings: DiagnosticFinding[] = [];
+  const conflictedAssetPaths = new Set<string>();
   const installed = new Set<string>([...(input.manifest?.entries.map((e) => e.harness) ?? []), ...(input.config?.activeHarnesses ?? [])]);
   const active = installed.size > 0 ? input.adapters.filter((a) => installed.has(a.id)) : input.adapters;
   for (const adapter of active) {
     const aPlan = await adapter.planRemove(input.context);
     changes.push(...aPlan.changes);
     conflicts.push(...aPlan.conflicts);
-    harnesses.push({ harness: adapter.id, outcome: 'planned', supportLevel: adapter.capabilityProfile().supportLevel });
+    if (aPlan.conflicts.length > 0) {
+      for (const p of aPlan.assetPaths ?? []) conflictedAssetPaths.add(p);
+      for (const c of aPlan.conflicts) findings.push(createRemovalFinding(c, adapter.id));
+    }
+    const outcome = aPlan.conflicts.length > 0 ? 'conflict' : 'planned';
+    harnesses.push({ harness: adapter.id, outcome, supportLevel: adapter.capabilityProfile().supportLevel });
   }
-  return { changes, conflicts, harnesses };
+  return { changes, conflicts, harnesses, findings, conflictedAssetPaths };
 }
 
 export async function planRemoval(input: RemovalInput): Promise<RemovalResult> {
   const adapterResult = await planAdapterRemovals(input);
-  const assetPlan = planAssetDeletions(input.manifest, input.allSnapshots);
+  const excludedAssetPaths = new Set(adapterResult.conflictedAssetPaths);
+  if (adapterResult.conflicts.length > 0) {
+    excludedAssetPaths.add('context-brake.config.json');
+    excludedAssetPaths.add(MANIFEST_RELATIVE_PATH);
+  }
+  const assetPlan = planAssetDeletions(input.manifest, input.allSnapshots, excludedAssetPaths);
+  const hasConflicts = adapterResult.conflicts.length > 0 || assetPlan.conflicts.length > 0;
   const plannedChanges: PlannedChange[] = [
     ...adapterResult.changes,
     ...assetPlan.changes,
     ...planInstructionRemoval(input.instructionSnapshots),
     ...planStateDeletions(input),
-    ...planCoreDeletions(input),
+    ...planCoreDeletions(input, hasConflicts),
   ];
   const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts];
-  const findings: DiagnosticFinding[] = conflicts.map((c) => ({
-    code: c.code, severity: 'error', scope: 'file', harness: null, path: c.path,
-    message: c.detail, impact: 'This file could not be removed.', remediation: 'Inspect file permissions or modifications.',
-  }));
+  const assetFindings = assetPlan.conflicts.map((c) => createRemovalFinding(c, null));
+  const findings: DiagnosticFinding[] = [...adapterResult.findings, ...assetFindings];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: adapterResult.harnesses });
   return { plan, findings };
 }

@@ -5,6 +5,7 @@ import type { ManagedEntry } from '../../../core/contracts/manifest.js';
 import { setJsonProperty } from '../../storage/json-document-editor.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { resolveChangeTarget } from '../common/change-target.js';
+import { validateRemovalConfig } from '../common/removal-config-validator.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
 import { mergeHookGroups, removeHookGroups } from './claude-merger.js';
 
@@ -70,14 +71,17 @@ export async function planClaudeInstall(projectRoot: string): Promise<AdapterPla
 
 export async function planClaudeRemove(projectRoot: string): Promise<AdapterPlan> {
   const realConfig = await resolveChangeTarget(projectRoot, CLAUDE_CONFIG_FILE);
-  const changes: PlannedChange[] = [];
   const raw = await readFile(realConfig, 'utf8').catch(() => null);
+  const conflict = validateRemovalConfig(raw, CLAUDE_CONFIG_FILE);
+  if (conflict) {
+    return { harness: 'claude-code', changes: [], conflicts: [conflict], entries: buildClaudeEntries(), assetPaths: [CLAUDE_HOOK_FILE] };
+  }
+  const changes: PlannedChange[] = [];
   if (raw !== null) {
-    validateJsonDocument(raw);
     const updated = applyHooks(raw, false);
     changes.push({ path: CLAUDE_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Remove Claude Code hooks' } });
   }
   const realHook = await resolveChangeTarget(projectRoot, CLAUDE_HOOK_FILE);
   changes.push({ path: CLAUDE_HOOK_FILE, realPath: realHook, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete ContextBrake hook script' } });
-  return { harness: 'claude-code', changes, conflicts: [], entries: buildClaudeEntries() };
+  return { harness: 'claude-code', changes, conflicts: [], entries: buildClaudeEntries(), assetPaths: [CLAUDE_HOOK_FILE] };
 }

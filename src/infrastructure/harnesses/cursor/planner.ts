@@ -2,10 +2,11 @@ import { readFile } from 'node:fs/promises';
 import type { AdapterPlan } from '../../../core/contracts/adapter.js';
 import type { PlannedChange } from '../../../core/contracts/changes.js';
 import type { ManagedEntry } from '../../../core/contracts/manifest.js';
-import { setJsonProperty } from '../../storage/json-document-editor.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { resolveChangeTarget } from '../common/change-target.js';
+import { validateRemovalConfig } from '../common/removal-config-validator.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
+import { updateCursorHooks } from '../common/cursor-hooks-updater.js';
 
 export const CURSOR_CONFIG_FILE = '.cursor/hooks.json';
 export const CURSOR_HOOK_FILE = '.cursor/hooks/context-brake.mjs';
@@ -19,14 +20,7 @@ export function buildCursorEntries(): ManagedEntry[] {
 }
 
 function updateHooks(content: string, clear: boolean): string {
-  let text = content;
-  text = setJsonProperty(text, ['version'], 1);
-  const pre = clear ? [] : [{ command: `node ${CURSOR_HOOK_FILE} preToolUse`, failClosed: true }];
-  const post = clear ? [] : [{ command: `node ${CURSOR_HOOK_FILE} postToolUse` }];
-  const session = clear ? [] : [{ command: `node ${CURSOR_HOOK_FILE} sessionStart` }];
-  text = setJsonProperty(text, ['hooks', 'preToolUse'], pre);
-  text = setJsonProperty(text, ['hooks', 'postToolUse'], post);
-  return setJsonProperty(text, ['hooks', 'sessionStart'], session);
+  return updateCursorHooks(content, clear);
 }
 
 export async function planCursorInstall(projectRoot: string): Promise<AdapterPlan> {
@@ -62,14 +56,17 @@ export async function planCursorInstall(projectRoot: string): Promise<AdapterPla
 
 export async function planCursorRemove(projectRoot: string): Promise<AdapterPlan> {
   const realConfig = await resolveChangeTarget(projectRoot, CURSOR_CONFIG_FILE);
-  const changes: PlannedChange[] = [];
   const raw = await readFile(realConfig, 'utf8').catch(() => null);
+  const conflict = validateRemovalConfig(raw, CURSOR_CONFIG_FILE);
+  if (conflict) {
+    return { harness: 'cursor', changes: [], conflicts: [conflict], entries: buildCursorEntries(), assetPaths: [CURSOR_HOOK_FILE] };
+  }
+  const changes: PlannedChange[] = [];
   if (raw !== null) {
-    validateJsonDocument(raw);
     const updated = updateHooks(raw, true);
     changes.push({ path: CURSOR_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Remove Cursor hooks' } });
   }
   const realHook = await resolveChangeTarget(projectRoot, CURSOR_HOOK_FILE);
   changes.push({ path: CURSOR_HOOK_FILE, realPath: realHook, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete ContextBrake hook script' } });
-  return { harness: 'cursor', changes, conflicts: [], entries: buildCursorEntries() };
+  return { harness: 'cursor', changes, conflicts: [], entries: buildCursorEntries(), assetPaths: [CURSOR_HOOK_FILE] };
 }

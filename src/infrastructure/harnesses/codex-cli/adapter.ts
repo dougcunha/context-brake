@@ -5,7 +5,13 @@ import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
 import type { CapabilityDefinition, CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
-import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding, createLimitationFinding } from '../common/diagnostic-helpers.js';
+import {
+  createAssetMissingFinding,
+  createCodexRootNotGitWarning,
+  createIntegrationMissingFinding,
+  createInvalidConfigFinding,
+  createLimitationFinding,
+} from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { CODEX_EXECUTABLES, detectCodex } from './detector.js';
@@ -18,6 +24,30 @@ const CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to Codex CLI hooks.' },
   { id: 'timeout_fail_closed', state: 'unsupported', impact: 'Hosted tools bypass local tool hooks and hook failures are not guaranteed to fail closed.' },
 ];
+
+async function checkCodexConfig(configPath: string): Promise<DiagnosticFinding | null> {
+  if (!(await pathExists(configPath))) return createIntegrationMissingFinding('codex-cli', CODEX_CONFIG_FILE);
+  try {
+    const raw = await readFile(configPath, 'utf8');
+    const validation = validateJsonDocument(raw);
+    return validation.valid ? null : createInvalidConfigFinding('codex-cli', CODEX_CONFIG_FILE, validation.errors.join('; '));
+  } catch (err) {
+    return createInvalidConfigFinding('codex-cli', CODEX_CONFIG_FILE, err instanceof Error ? err.message : String(err));
+  }
+}
+
+async function checkCodexToml(tomlPath: string, configPath: string): Promise<DiagnosticFinding | null> {
+  if (!(await pathExists(tomlPath)) || !(await pathExists(configPath))) return null;
+  const toml = await readFile(tomlPath, 'utf8').catch(() => '');
+  if (!toml.includes('[hooks]')) return null;
+  return createLimitationFinding('codex-cli', 'MIXED_HOOK_REPRESENTATIONS', 'Both .codex/config.toml and .codex/hooks.json exist; Codex loads both with a warning.');
+}
+
+async function checkCodexGitRoot(root: string, configPath: string, hookPath: string): Promise<DiagnosticFinding | null> {
+  if (!(await pathExists(configPath)) || !(await pathExists(hookPath))) return null;
+  if (await pathExists(resolve(root, '.git'))) return null;
+  return createCodexRootNotGitWarning();
+}
 
 export class CodexAdapter implements HarnessAdapter {
   readonly id = 'codex-cli';
@@ -47,28 +77,13 @@ export class CodexAdapter implements HarnessAdapter {
     const findings: DiagnosticFinding[] = [];
     const configPath = resolve(context.projectRoot, CODEX_CONFIG_FILE);
     const hookPath = resolve(context.projectRoot, CODEX_HOOK_FILE);
-    const tomlPath = resolve(context.projectRoot, '.codex/config.toml');
-    if (!(await pathExists(configPath))) {
-      findings.push(createIntegrationMissingFinding(this.id, CODEX_CONFIG_FILE));
-    } else {
-      try {
-        const raw = await readFile(configPath, 'utf8');
-        const validation = validateJsonDocument(raw);
-        if (!validation.valid) {
-          findings.push(createInvalidConfigFinding(this.id, CODEX_CONFIG_FILE, validation.errors.join('; ')));
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        findings.push(createInvalidConfigFinding(this.id, CODEX_CONFIG_FILE, msg));
-      }
-    }
+    const cfg = await checkCodexConfig(configPath);
+    if (cfg) findings.push(cfg);
     if (!(await pathExists(hookPath))) findings.push(createAssetMissingFinding(this.id, CODEX_HOOK_FILE));
-    if ((await pathExists(tomlPath)) && (await pathExists(configPath))) {
-      const toml = await readFile(tomlPath, 'utf8').catch(() => '');
-      if (toml.includes('[hooks]')) {
-        findings.push(createLimitationFinding(this.id, 'MIXED_HOOK_REPRESENTATIONS', 'Both .codex/config.toml and .codex/hooks.json exist; Codex loads both with a warning.'));
-      }
-    }
+    const toml = await checkCodexToml(resolve(context.projectRoot, '.codex/config.toml'), configPath);
+    if (toml) findings.push(toml);
+    const git = await checkCodexGitRoot(context.projectRoot, configPath, hookPath);
+    if (git) findings.push(git);
     return findings;
   }
 

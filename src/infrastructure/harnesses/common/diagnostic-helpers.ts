@@ -56,3 +56,16 @@ export function createLimitationFinding(
     remediation: null,
   };
 }
+
+export function createCodexRootNotGitWarning(): DiagnosticFinding {
+  return {
+    code: 'CODEX_ROOT_NOT_GIT_TOPLEVEL',
+    severity: 'warning',
+    scope: 'harness',
+    harness: 'codex-cli',
+    path: null,
+    message: 'The project root is not a git repository root, so Codex CLI hooks cannot locate the ContextBrake hook script.',
+    impact: 'Codex CLI reports a hook failure on every event and runs the tool call without ContextBrake.',
+    remediation: 'Run context-brake init from the git repository root, or run git init here.',
+  };
+}

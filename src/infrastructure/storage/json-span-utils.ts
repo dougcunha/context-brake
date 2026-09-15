@@ -60,7 +60,15 @@ export function removeNodeSpan(text: string, node: Node): string {
   const slice = text.slice(lineStart, lineEnd);
   const isOnlyNodeOnLine = slice.trim().startsWith(text.slice(start, start + 5));
   if (isOnlyNodeOnLine) {
-    return `${text.slice(0, lineStart)}${text.slice(lineEnd)}`;
+    let before = text.slice(0, lineStart);
+    const after = text.slice(lineEnd);
+    if (/^\s*[\]}]/.test(after)) {
+      const match = before.match(/,([ \t]*\r?\n?)$/);
+      if (match?.index !== undefined) {
+        before = `${before.slice(0, match.index)}${match[1]}`;
+      }
+    }
+    return `${before}${after}`;
   }
   const after = text.slice(end);
   const trailingComma = after.match(/^\s*,/);

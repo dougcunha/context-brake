@@ -4,6 +4,7 @@ export const TEST_FILE_SUFFIX = '.test.ts';
 export const PROCESS_LANE_DIRECTORIES: readonly string[] = ['tests/e2e/'];
 
 export const PROCESS_LANE_FILES: readonly string[] = [
+  'tests/integration/codex-hook-command-shells.test.ts',
   'tests/integration/doctor-benchmark.test.ts',
   'tests/integration/doctor-manual-removal.test.ts',
   'tests/integration/invalid-config.test.ts',

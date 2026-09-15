@@ -1,9 +1,10 @@
 {
-  "hooks": {
-    "PreToolUse": {
-      "user-hook": {
+  "user-hook": {
+    "PreInvocation": [
+      {
+        "type": "command",
         "command": "echo 'user antigravity hook'"
       }
-    }
+    ]
   }
 }

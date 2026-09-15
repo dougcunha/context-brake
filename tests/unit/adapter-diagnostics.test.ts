@@ -56,3 +56,30 @@ describe('adapter diagnostics: mixed representations (RF20)', () => {
     expect(findings.some((f) => f.code === 'MIXED_HOOK_REPRESENTATIONS')).toBe(true);
   });
 });
+
+describe('adapter diagnostics: Codex git root warning (CR-07)', () => {
+  let tempDir: string;
+  beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-diag-c-')); });
+  afterEach(async () => { await rm(tempDir, { recursive: true, force: true }); });
+
+  it('warns when project root has no .git entry', async () => {
+    await mkdir(join(tempDir, '.codex/hooks'), { recursive: true });
+    await writeFile(join(tempDir, '.codex/hooks.json'), '{\n  "hooks": {}\n}\n', 'utf8');
+    await writeFile(join(tempDir, '.codex/hooks/context-brake.mjs'), '', 'utf8');
+    const codex = getAllAdapters().find((a) => a.id === 'codex-cli')!;
+    const findings = await codex.diagnose({ projectRoot: tempDir });
+    const warning = findings.find((f) => f.code === 'CODEX_ROOT_NOT_GIT_TOPLEVEL');
+    expect(warning?.severity).toBe('warning');
+    expect(warning?.message).toContain('not a git repository root');
+  });
+
+  it('does not warn when .git directory or file exists', async () => {
+    await mkdir(join(tempDir, '.codex/hooks'), { recursive: true });
+    await writeFile(join(tempDir, '.codex/hooks.json'), '{\n  "hooks": {}\n}\n', 'utf8');
+    await writeFile(join(tempDir, '.codex/hooks/context-brake.mjs'), '', 'utf8');
+    await mkdir(join(tempDir, '.git'), { recursive: true });
+    const codex = getAllAdapters().find((a) => a.id === 'codex-cli')!;
+    const findings = await codex.diagnose({ projectRoot: tempDir });
+    expect(findings.some((f) => f.code === 'CODEX_ROOT_NOT_GIT_TOPLEVEL')).toBe(false);
+  });
+});

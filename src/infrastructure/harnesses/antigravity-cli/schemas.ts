@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
 export const antigravityHookEntrySchema = z.object({
+  type: z.string().optional(),
   command: z.string().optional(),
 }).passthrough();
 
-export const antigravityHooksFileSchema = z.object({
-  hooks: z.record(z.string(), z.record(z.string(), antigravityHookEntrySchema)).optional(),
-}).passthrough();
+export const antigravityHooksFileSchema = z.record(
+  z.string(),
+  z.record(z.string(), z.unknown())
+);
 
 export const antigravityPreToolUsePayloadSchema = z.object({
   conversationId: z.string().optional(),

@@ -8,7 +8,11 @@ export function renderFinding(f: DiagnosticFinding): string {
   return lines.join('\n');
 }
 
-export function renderInstallText(report: InstallReport): void {
+export function findingPrintKey(code: string, path: string | null): string {
+  return `${code}|${path ?? ''}`;
+}
+
+export function renderInstallText(report: InstallReport, alreadyPrinted?: ReadonlySet<string>): void {
   const stream = report.status === 'errors' ? process.stderr : process.stdout;
   const label = report.status === 'errors' ? '[ERROR]' : report.status === 'warnings' ? '[WARN]' : '[OK]';
   stream.write(`${label} ContextBrake ${report.command} (${report.mode})\n`);
@@ -24,7 +28,10 @@ export function renderInstallText(report: InstallReport): void {
     stream.write('  Conflicts:\n');
     for (const c of report.plan.conflicts) stream.write(`    [ERROR] ${c.path}: ${c.detail}\n`);
   }
-  for (const f of report.findings) stream.write(`${renderFinding(f)}\n`);
+  for (const f of report.findings) {
+    if (alreadyPrinted?.has(findingPrintKey(f.code, f.path))) continue;
+    stream.write(`${renderFinding(f)}\n`);
+  }
   if (report.command === 'init' && report.status === 'success' && report.mode === 'applied' && report.plan.changes.length > 0) {
     stream.write('\nNext step: run context-brake plan init to create task plan.\n');
   }

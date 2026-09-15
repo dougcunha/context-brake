@@ -170,7 +170,8 @@
                   "ignore_block",
                   "harness_entry",
                   "runtime_asset",
-                  "manifest"
+                  "manifest",
+                  "runtime_state"
                 ]
               },
               "beforeSha256": {

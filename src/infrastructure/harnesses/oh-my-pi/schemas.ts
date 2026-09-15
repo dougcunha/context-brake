@@ -5,11 +5,13 @@ export const ompSettingsFileSchema = z.object({
 }).passthrough();
 
 export const ompToolCallPayloadSchema = z.object({
-  name: z.string().optional(),
+  toolName: z.string().optional(),
+  toolCallId: z.string().optional(),
   input: z.unknown().optional(),
 }).passthrough();
 
 export const ompToolResultPayloadSchema = z.object({
-  name: z.string().optional(),
+  toolName: z.string().optional(),
+  toolCallId: z.string().optional(),
   content: z.unknown().optional(),
 }).passthrough();

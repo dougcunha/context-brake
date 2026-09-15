@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { CAPABILITY_IDS, HARNESS_IDS, SUPPORT_LEVELS, type CapabilityLimitation, type HarnessId, type SupportLevel } from './harness.js';
 
 export const CHANGE_KINDS = ['create', 'update', 'delete'] as const;
-export const CHANGE_OWNERS = ['config', 'protocol', 'instruction_block', 'ignore_block', 'harness_entry', 'runtime_asset', 'manifest'] as const;
+export const CHANGE_OWNERS = ['config', 'protocol', 'instruction_block', 'ignore_block', 'harness_entry', 'runtime_asset', 'manifest', 'runtime_state'] as const;
 export const APPLY_STATUSES = ['planned', 'applied', 'unchanged', 'skipped', 'failed'] as const;
 export const PLAN_OUTCOMES = ['planned', 'skipped', 'conflict'] as const;
 

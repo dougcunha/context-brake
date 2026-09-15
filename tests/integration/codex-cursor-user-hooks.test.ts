@@ -28,7 +28,7 @@ function cursorDocument(): string {
   return `{\n  "version": 1,\n  "hooks": {\n${events.join(',\n')}\n  }\n}\n`;
 }
 
-async function step(fn: () => Promise<{ changes: Array<{ path: string; content: string | null }> }>, file: string): Promise<string> {
+async function step(fn: () => Promise<{ changes: readonly { path: string; content: string | null }[] }>, file: string): Promise<string> {
   const plan = await fn();
   const change = plan.changes.find((c) => c.path === file);
   if (change?.content) await writeFile(file, change.content, 'utf8');

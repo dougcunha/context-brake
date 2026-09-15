@@ -72,7 +72,7 @@ export class OhMyPiAdapter implements HarnessAdapter {
       executionModel: 'in_process',
       event: 'tool_call',
       targetMilliseconds: 15,
-      samplePayload: { toolName: 'read', input: { path: 'file.txt' } },
+      samplePayload: { toolName: 'read', toolCallId: 'call_bench', input: { path: 'file.txt' } },
     };
   }
 }

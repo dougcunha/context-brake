@@ -15,3 +15,10 @@ export function planStateDeletions(input: StateRemovalInput): PlannedChange[] {
   }
   return changes;
 }
+
+export function planRuntimeStateDeletions(removeState: boolean | undefined, snapshots: readonly FileSnapshot[]): PlannedChange[] {
+  if (!removeState) return [];
+  return snapshots
+    .filter((snap) => snap.exists)
+    .map((snap) => ({ path: snap.path, realPath: snap.realPath, kind: 'delete' as const, owner: 'runtime_state' as const, content: null, preview: { summary: `Delete ${snap.path}` } }));
+}

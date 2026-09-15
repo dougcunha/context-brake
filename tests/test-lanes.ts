@@ -5,6 +5,7 @@ export const PROCESS_LANE_DIRECTORIES: readonly string[] = ['tests/e2e/'];
 
 export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/codex-hook-command-shells.test.ts',
+  'tests/integration/doctor-asset-currency.test.ts',
   'tests/integration/doctor-benchmark.test.ts',
   'tests/integration/doctor-manual-removal.test.ts',
   'tests/integration/gitignore-lifecycle.test.ts',
@@ -13,7 +14,9 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/node-process-runner.test.ts',
   'tests/integration/package-assets.test.ts',
   'tests/integration/package-contents.test.ts',
+  'tests/integration/runtime-state-removal.test.ts',
   'tests/integration/safe-removal.test.ts',
+  'tests/unit/init-legacy-preview.test.ts',
   'tests/unit/overhead-measurer.test.ts',
 ];
 

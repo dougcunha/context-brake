@@ -6,6 +6,8 @@ import type { InstallReport } from '../../core/contracts/diagnostics.js';
 import { ProjectConfigStore } from '../../infrastructure/storage/project-config-store.js';
 import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.js';
 import { NodeChangeApplier } from '../../infrastructure/storage/change-applier.js';
+import { snapshotFiles } from '../../infrastructure/storage/node-file-system.js';
+import { listRuntimeStateFiles } from '../../infrastructure/storage/runtime-state-files.js';
 import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
 import { planRemoval } from '../../core/services/removal-service.js';
 import { buildInstallReport } from '../../core/services/report-service.js';
@@ -43,16 +45,24 @@ async function loadRemoveSnapshots(root: string, config: ContextBrakeConfig | nu
   return { allSnapshots, protocolSnap, gitignoreSnap, instSnaps, planSnap, checkpointSnap };
 }
 
+async function loadRuntimeStateSnapshots(root: string, removeState: boolean | undefined) {
+  if (!removeState) return [];
+  const paths = await listRuntimeStateFiles(root);
+  return paths.length > 0 ? snapshotFiles(root, paths) : [];
+}
+
 export async function runRemove(args: ParsedRemoveArgs, env: CommandEnv): Promise<number> {
   const config = await loadExistingConfig(env.projectRoot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const snaps = await loadRemoveSnapshots(env.projectRoot, config);
+  const runtimeStateSnapshots = await loadRuntimeStateSnapshots(env.projectRoot, args.removeState);
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest);
   const result = await planRemoval({
     projectRoot: env.projectRoot, config, adapters, context: ctx,
-    instructionSnapshots: snaps.instSnaps, protocolSnapshot: snaps.protocolSnap, gitignoreSnapshot: snaps.gitignoreSnap, allSnapshots: snaps.allSnapshots,
-    manifest, removeState: args.removeState,
+    instructionSnapshots: snaps.instSnaps, protocolSnapshot: snaps.protocolSnap, gitignoreSnapshot: snaps.gitignoreSnap,
+    allSnapshots: [...snaps.allSnapshots, ...runtimeStateSnapshots],
+    manifest, removeState: args.removeState, runtimeStateSnapshots,
     ...(snaps.planSnap ? { planSnapshot: snaps.planSnap } : {}),
     ...(snaps.checkpointSnap ? { checkpointSnapshot: snaps.checkpointSnap } : {}),
   });
@@ -62,7 +72,7 @@ export async function runRemove(args: ParsedRemoveArgs, env: CommandEnv): Promis
   }
   const confirmed = await authorizeWrite(args.yes, result.plan.requiresConfirmation, 'Apply ContextBrake removal plan?');
   if (!confirmed) return 0;
-  const applier = new NodeChangeApplier();
+  const applier = new NodeChangeApplier({ removeState: args.removeState });
   const applyReport = await applier.apply(result.plan);
   const report = buildInstallReport({ command: 'remove', mode: 'applied', detections: [], plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
   return outputReport(report, args.json);

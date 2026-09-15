@@ -3,6 +3,8 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding, DoctorReport, HarnessDiagnostic, OverheadMeasurer } from '../contracts/diagnostics.js';
 import type { FileSnapshot } from '../contracts/changes.js';
 import { type CapabilityProfile, type DetectionSources, type HarnessId } from '../contracts/harness.js';
+import type { InstallationManifest } from '../contracts/manifest.js';
+import { assetCurrencyFindings } from './asset-currency.js';
 import { detectHarnesses } from './detection-service.js';
 import { checkConfig, checkInstructionFiles, checkProtocolFile, checkStateFiles } from './doctor-checks.js';
 import { checkGitignore } from './gitignore-checks.js';
@@ -22,6 +24,9 @@ export type DoctorInput = {
   gitignoreSnapshot: FileSnapshot;
   planSnapshot?: FileSnapshot;
   checkpointSnapshot?: FileSnapshot;
+  manifest: InstallationManifest | null;
+  allSnapshots: readonly FileSnapshot[];
+  packageVersion: string;
 };
 
 function deriveIntegrationState(findings: readonly DiagnosticFinding[]): 'installed' | 'missing' | 'broken' {
@@ -41,7 +46,8 @@ function unverifiedFloorFinding(harness: HarnessId, support: CapabilityProfile):
 }
 
 async function diagnoseHarness(adapter: HarnessAdapter, input: DoctorInput): Promise<{ diagnostic: HarnessDiagnostic; findings: readonly DiagnosticFinding[] }> {
-  const findings = [...(await adapter.diagnose(input.context))];
+  const assetFindings = await assetCurrencyFindings(adapter, { context: input.context, manifest: input.manifest, allSnapshots: input.allSnapshots, packageVersion: input.packageVersion });
+  const findings = [...(await adapter.diagnose(input.context)), ...assetFindings];
   const version = input.sources[adapter.id]?.version;
   const support = adapter.capabilityProfile(version);
   const floor = unverifiedFloorFinding(adapter.id, support);

@@ -18,6 +18,10 @@ async function cleanup(dir: string): Promise<void> {
   await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
 
+function countOccurrences(text: string, needle: string): number {
+  return text.split(needle).length - 1;
+}
+
 describe('E2E legacy preview (CR-02, RF14, CA-10)', () => {
   it('reports the proposed migration and leaves the file unchanged without the flag', async () => {
     const dir = await setupRepo();
@@ -42,6 +46,30 @@ describe('E2E legacy preview (CR-02, RF14, CA-10)', () => {
       expect(res.code).toBe(2);
       expect(res.stderr).toContain('LEGACY_BLOCK_DETECTED');
       expect(await readFile(join(dir, 'AGENTS.md'), 'utf8')).toBe(LEGACY);
+    } finally {
+      await cleanup(dir);
+    }
+  });
+});
+
+describe('E2E legacy preview de-duplication (FR-10, TC-06)', () => {
+  it('prints LEGACY_BLOCK_DETECTED exactly once in the combined text output with --yes (FR-10, TC-06)', async () => {
+    const dir = await setupRepo();
+    try {
+      const res = await runBuiltCli(['init', '--yes'], dir);
+      const combined = `${res.stdout}${res.stderr}`;
+      expect(countOccurrences(combined, 'LEGACY_BLOCK_DETECTED')).toBe(1);
+    } finally {
+      await cleanup(dir);
+    }
+  });
+
+  it('prints LEGACY_BLOCK_DETECTED exactly once, in JSON only, with --dry-run --json (FR-10, TC-06)', async () => {
+    const dir = await setupRepo();
+    try {
+      const res = await runBuiltCli(['init', '--dry-run', '--json'], dir);
+      expect(countOccurrences(res.stderr, 'LEGACY_BLOCK_DETECTED')).toBe(0);
+      expect(countOccurrences(res.stdout, 'LEGACY_BLOCK_DETECTED')).toBe(1);
     } finally {
       await cleanup(dir);
     }

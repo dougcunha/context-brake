@@ -15,7 +15,7 @@ describe('T14/CR-04: link capability policy', () => {
     const policy = linkPolicy({ created: false, reason: 'unavailable dir link capability on win32: EPERM' }, false);
 
     expect(policy).toEqual({ action: 'skip', reason: 'unavailable dir link capability on win32: EPERM' });
-    expect(policy.reason.length).toBeGreaterThan(0);
+    if (policy.action === 'skip') expect(policy.reason.length).toBeGreaterThan(0);
   });
 
   it('fails in CI mode when a required link cannot be created', () => {

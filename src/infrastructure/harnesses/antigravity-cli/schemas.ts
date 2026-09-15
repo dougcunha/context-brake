@@ -10,9 +10,14 @@ export const antigravityHooksFileSchema = z.record(
   z.record(z.string(), z.unknown())
 );
 
+export const antigravityToolCallSchema = z.object({
+  name: z.string().optional(),
+  args: z.unknown().optional(),
+}).passthrough();
+
 export const antigravityPreToolUsePayloadSchema = z.object({
   conversationId: z.string().optional(),
-  toolName: z.string().optional(),
+  toolCall: antigravityToolCallSchema.optional(),
 }).passthrough();
 
 export const antigravityPreInvocationPayloadSchema = z.object({

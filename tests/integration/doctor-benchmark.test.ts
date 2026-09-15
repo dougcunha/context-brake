@@ -11,6 +11,7 @@ import { collectProjectSnapshots } from '../../src/cli/snapshot-helper.js';
 import { NodeOverheadMeasurer } from '../../src/infrastructure/diagnostics/overhead-measurer.js';
 import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
 import { NodeManifestStore } from '../../src/infrastructure/storage/manifest-store.js';
+import { readPackageVersion } from '../../src/infrastructure/storage/package-metadata.js';
 import { ProjectConfigStore } from '../../src/infrastructure/storage/project-config-store.js';
 
 function assertMeasurement(meas: { executionModel: string; sampleCount: number; targetMilliseconds: number; p95Milliseconds: number | null; status: string }, expected: { model: string; count: number; target: number }) {
@@ -40,7 +41,8 @@ async function buildReport(root: string, measurer: OverheadMeasurer): Promise<Do
   const adapters = getAllAdapters();
   const context = buildHarnessContext({ projectRoot: root }, manifest);
   const sources = await collectHarnessSources(adapters, context);
-  return diagnoseProject({ projectRoot: root, config, adapters, context, sources, measurer, instructionSnapshots: snapshots.filter((s) => config.instructionFiles.targets.includes(s.path)), protocolSnapshot, gitignoreSnapshot });
+  const packageVersion = await readPackageVersion();
+  return diagnoseProject({ projectRoot: root, config, adapters, context, sources, measurer, instructionSnapshots: snapshots.filter((s) => config.instructionFiles.targets.includes(s.path)), protocolSnapshot, gitignoreSnapshot, manifest, allSnapshots: snapshots, packageVersion });
 }
 
 async function measureInstalled(tempDir: string): Promise<void> {

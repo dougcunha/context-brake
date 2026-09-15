@@ -44,6 +44,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Reinício:** `/clear` dispara `SessionStart` com origem `clear`. Nenhum hook documentado abre sessão nova.
 - **Instruções:** o Claude Code lê `CLAUDE.md`, não `AGENTS.md`; um `CLAUDE.md` com `@AGENTS.md` importa o arquivo compartilhado. Comentários HTML em bloco são removidos antes da injeção.
 - **Fontes:** [Hooks reference](https://code.claude.com/docs/en/hooks), [Status line](https://code.claude.com/docs/en/statusline) e [Memory](https://code.claude.com/docs/en/memory).
+- **Versão mínima:** não documentada (14/09/2026). O hooks reference e o changelog público (code.claude.com/docs/en/changelog e o CHANGELOG.md em github.com/anthropics/claude-code) só registram versões para refinamentos incrementais (por exemplo, 2.1.191 para separadores em matchers), não a versão que introduziu `PreToolUse`/`PostToolUse`/`SessionStart` e `hookSpecificOutput.permissionDecision`.
 
 ## Codex CLI
 
@@ -63,6 +64,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Falhas:** o comportamento em erro ou timeout não é descrito na página consultada.
 - **Reinício:** `/new` inicia um chat novo na mesma sessão da CLI; `/clear` limpa o terminal e inicia chat novo; `/compact` resume o chat.
 - **Fontes:** [Hooks](https://learn.chatgpt.com/docs/hooks), [Slash commands](https://learn.chatgpt.com/docs/developer-commands) e fontes do Codex em [`command_runner.rs`](https://github.com/openai/codex/blob/99914f49504532f551ff6cdceca4318afdbd3d9c/codex-rs/hooks/src/engine/command_runner.rs), [`discovery.rs`](https://github.com/openai/codex/blob/99914f49504532f551ff6cdceca4318afdbd3d9c/codex-rs/hooks/src/engine/discovery.rs) e [`project_root_markers.rs`](https://github.com/openai/codex/blob/99914f49504532f551ff6cdceca4318afdbd3d9c/codex-rs/config/src/project_root_markers.rs).
+- **Versão mínima:** não documentada (14/09/2026). Nenhuma das fontes consultadas traz notas de versão ou changelog identificando quando os hooks foram introduzidos.
 
 ## Cursor
 
@@ -80,6 +82,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **CLI e nuvem:** agentes em nuvem executam só hooks de comando do projeto. A página diz que `workspaceOpen` roda no app e na CLI, sem detalhar a cobertura dos demais eventos na CLI, e há relato no fórum de que a ferramenta AskQuestion não dispara `preToolUse` nem `postToolUse` na CLI.
 - **Pendências:** se o `additional_context` do `sessionStart` chega antes da primeira chamada ao modelo; cobertura de eventos na CLI; comando de nova sessão.
 - **Fontes:** [Hooks](https://cursor.com/docs/hooks), [relato sobre hooks na Cursor CLI](https://forum.cursor.com/t/cursor-cli-askquestion-tool-skips-pretooluse-and-posttooluse-hooks/161836) e [discussão sobre vereditos autoritativos no fórum do Cursor](https://forum.cursor.com/t/support-authoritative-allow-deny-and-ask-verdicts-from-hooks/161342).
+- **Versão mínima:** não documentada (14/09/2026). A página de hooks só cita `cursor_version` como exemplo ilustrativo de payload, não como requisito; não há changelog referenciado.
 
 ## GitHub Copilot CLI
 
@@ -94,6 +97,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Falhas e limites:** timeouts sempre liberam a ação, inclusive em `preToolUse` e em hooks de política. Erros de execução de comando sem timeout (como saída com código de erro ou processo falho) negam a chamada de ferramenta. Depois de oito continuações de bloqueio seguidas, a CLI encerra o turno.
 - **Pendências:** comando de nova sessão.
 - **Fontes:** [Hooks reference](https://docs.github.com/en/copilot/reference/hooks-reference) e [Using hooks with GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-hooks).
+- **Versão mínima:** não documentada (14/09/2026). Nenhuma das páginas cita changelog ou versão mínima da CLI para hooks.
 
 ## OpenCode
 
@@ -107,33 +111,36 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Reinício:** `/new`, com alias `/clear`, inicia sessão nova; `/compact`, com alias `/summarize`, compacta.
 - **Pendências:** efeito de `tool.execute.after` no modelo; hook estável de injeção de contexto; leitura de tokens pelo plugin; comportamento quando um plugin falha fora de `tool.execute.before`.
 - **Fontes:** [Plugins](https://opencode.ai/docs/plugins/), [TUI](https://opencode.ai/docs/tui/) e [issue #13574](https://github.com/anomalyco/opencode/issues/13574).
+- **Versão mínima:** não documentada (14/09/2026). As páginas de plugins e TUI não citam changelog nem versão mínima.
 
 ## Pi
 
 - **Registro:** extensões em `.pi/extensions/*.ts` ou `.pi/extensions/*/index.ts` no projeto e em `~/.pi/agent/extensions/`; caminhos extras em `extensions` no `settings.json`.
 - **Execução:** dentro do processo do Pi, com permissões completas. Handlers se inscrevem com `pi.on(evento, handler)`.
 - **Eventos:** `session_start`, `session_before_switch`, `session_before_fork`, `session_shutdown`, `session_before_compact`, `session_compact`, `before_agent_start`, `agent_start`, `agent_end`, `turn_start`, `turn_end`, `message_start`, `message_update`, `message_end`, `tool_call`, `tool_result`, `tool_execution_start`, `tool_execution_end`, `context`, `input`, `before_provider_request` e `after_provider_response`, entre outros.
-- **Antes da ferramenta:** `tool_call` retorna `{ block: true, reason?, terminate? }`.
-- **Depois da ferramenta:** `tool_result` retorna `{ content, details, isError, usage }`; campos omitidos mantêm o valor atual, e os handlers se encadeiam como middleware.
+- **Antes da ferramenta:** `tool_call` recebe `{ toolName, toolCallId, input }` e retorna `{ block: true, reason?, terminate? }`.
+- **Depois da ferramenta:** `tool_result` recebe `{ toolName, toolCallId, content }` e retorna `{ content, details, isError, usage }`; campos omitidos mantêm o valor atual, e os handlers se encadeiam como middleware.
 - **Início da sessão:** `before_agent_start` pode retornar `message` e `systemPrompt`; `pi.sendMessage` injeta mensagens com os modos de entrega `steer`, `followUp` e `nextTurn`.
 - **Uso de contexto:** `ctx.getContextUsage()` retorna o uso de contexto do modelo ativo.
 - **Reinício:** `ctx.newSession({ withSession })`, `ctx.fork(entryId)` e `ctx.switchSession(sessionPath)`; comandos `/new` e `/compact`.
 - **Falhas:** o documento de hooks descreve que um erro em handler de `tool_call` bloqueia a ferramenta e que os demais eventos têm timeout padrão de 30 s, com erros registrados sem bloquear.
 - **Fontes:** [extensions.md](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md) e [hooks.md](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/hooks.md).
+- **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
 
 ## Oh-My-Pi
 
 - **Registro:** hooks em `.omp/hooks/pre/*.{ts,js}` e `.omp/hooks/post/*.{ts,js}` no projeto e em `~/.omp/agent/hooks/pre` e `post` do usuário. Arquivos colocados direto em `hooks/`, fora de `pre/` ou `post/`, não são carregados e não geram erro. A API de hooks é legada; a documentação recomenda a API de extensões, cujas regras de carregamento estão em `extension-loading.md`.
 - **Execução:** dentro do processo.
 - **Eventos:** eventos de sessão (`session_start`, `session_before_compact`, `session_compact`, `session_shutdown` e outros), `context`, `before_agent_start`, `agent_start`, `agent_end`, `turn_start`, `turn_end`, `auto_compaction_start`, `auto_compaction_end`, `tool_call` e `tool_result`; a API de extensões acrescenta `session_stop`, `tool_approval_requested` e outros.
-- **Antes da ferramenta:** `tool_call` retorna `{ block: true, reason }`, ou `input` para reescrever os argumentos. Erros em handlers de `tool_call` propagam para quem chamou.
-- **Depois da ferramenta:** `tool_result` pode substituir `content`, `details` e `isError`, em cadeia.
+- **Antes da ferramenta:** `tool_call` recebe `{ toolName, toolCallId, input }` e retorna `{ block: true, reason }`, ou `input` para reescrever os argumentos. Erros em handlers de `tool_call` propagam para quem chamou.
+- **Depois da ferramenta:** `tool_result` recebe `{ toolName, toolCallId, content }` e pode substituir `content`, `details` e `isError`, em cadeia.
 - **Contexto:** `before_agent_start` retorna mensagem customizada; o evento `context` pode filtrar ou transformar as mensagens enviadas ao modelo; `pi.sendMessage`, `pi.sendUserMessage` e `pi.appendEntry` injetam conteúdo.
 - **Uso de contexto:** `ctx.getContextUsage()`.
 - **Reinício:** `ctx.newSession(...)` em contexto de comando.
 - **Falhas:** erros de handlers dos demais eventos viram `HookError`, e a execução continua.
 - **Pendências:** caminhos de carregamento de extensões; comandos de nova sessão.
 - **Fontes:** [hooks.md](https://github.com/can1357/oh-my-pi/blob/main/docs/hooks.md) e [extensions.md](https://github.com/can1357/oh-my-pi/blob/main/docs/extensions.md).
+- **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
 
 ## Antigravity CLI
 
@@ -141,13 +148,14 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Execução:** comando por evento, com JSON por stdin e stdout e `timeout` opcional, padrão de 30 s.
 - **Entrada comum:** `conversationId`, `workspacePaths`, `transcriptPath`, `artifactDirectoryPath` e `modelName`. Nenhum campo de uso de tokens.
 - **Eventos:** `PreToolUse`, `PostToolUse`, `PreInvocation`, `PostInvocation` e `Stop`.
-- **Antes da ferramenta:** `PreToolUse` exige `decision` entre `allow`, `deny`, `ask`, `force_ask` e `deny_unless_prior_grant`, com `reason` e `permissionOverrides` opcionais. Não há veredito pass-through neutro ou de deferimento (`defer`); `allow` aprova automaticamente a ferramenta sem consulta ao usuário ou análise de risco. Por essa razão, o ContextBrake não registra `PreToolUse` no PRD-01 (`DEC-03`), deferindo o bloqueio seletivo (`deny`) para o PRD-02.
+- **Antes da ferramenta:** `PreToolUse` recebe a chamada aninhada em `toolCall: { name, args }` (confirmado em 14/09/2026 e refletido no schema do adaptador) e exige `decision` entre `allow`, `deny`, `ask`, `force_ask` e `deny_unless_prior_grant`, com `reason` e `permissionOverrides` opcionais. Não há veredito pass-through neutro ou de deferimento (`defer`); `allow` aprova automaticamente a ferramenta sem consulta ao usuário ou análise de risco. Por essa razão, o ContextBrake não registra `PreToolUse` no PRD-01 (`DEC-03`), deferindo o bloqueio seletivo (`deny`) para o PRD-02.
 - **Depois da ferramenta:** `PostToolUse` retorna objeto vazio; não há alteração de saída nem contexto adicional documentados.
 - **Antes e depois do modelo:** `PreInvocation` recebe `invocationNum` e `initialNumSteps` e pode retornar `injectSteps`, inseridos antes da chamada ao modelo. `PostInvocation` aceita `injectSteps` e `terminationBehavior` (`force_continue` ou `terminate`). O ContextBrake responde a `PreInvocation` com `{"injectSteps":[]}` no PRD-01.
 - **Fim:** `Stop` recebe `terminationReason` e `fullyIdle`; `decision: "continue"` impede a parada e injeta `reason` como mensagem de sistema.
 - **Falhas e timeouts:** o comportamento oficial em falha e timeout não é documentado na especificação oficial. Relatos independentes de terceiros indicam comportamento fail-closed em hooks síncronos e aprovações soft-denied quando hooks falham.
 - **Pendências:** cobertura completa dos hooks na CLI; comando de nova sessão; formato detalhado de `injectSteps`; diretório de trabalho de execução dos hooks e resolução de caminhos relativos em `command`, já que a documentação não define placeholder ou variável de ambiente para a raiz do workspace.
 - **Fontes:** [Hooks](https://antigravity.google/docs/hooks/), [CLI overview](https://antigravity.google/docs/cli/overview/), [guia de hooks na Antigravity CLI](https://medium.com/google-cloud/a-developers-guide-to-agent-hooks-in-antigravity-cli-4c1440febd11) e [relato de terceiros sobre fail-closed e soft-deny](https://agenticcontrolplane.com/blog/antigravity-acp-integration).
+- **Versão mínima:** não documentada (14/09/2026). Nenhuma das fontes cita changelog ou versão mínima da CLI para os hooks registrados.
 
 ## Fora do MVP
 

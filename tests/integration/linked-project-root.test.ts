@@ -36,8 +36,8 @@ describe('linked project root installation and idempotency (T11.4)', () => {
       const canonical = normalizeSeparators(await realpath(realRoot));
       expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
       const snaps = await snapshotFiles(linkRoot, ['context-brake.config.json', '.context-brake/manifest.json']);
-      expect(snaps[0].realPath).toBe(`${canonical}/context-brake.config.json`);
-      expect(snaps[1].realPath).toBe(`${canonical}/.context-brake/manifest.json`);
+      expect(snaps[0]?.realPath).toBe(`${canonical}/context-brake.config.json`);
+      expect(snaps[1]?.realPath).toBe(`${canonical}/.context-brake/manifest.json`);
       const firstContent = await readFile(join(realRoot, 'context-brake.config.json'), 'utf8');
       const firstManifest = await readFile(join(realRoot, '.context-brake/manifest.json'), 'utf8');
       expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);

@@ -4,6 +4,7 @@ import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../contracts/configurat
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { DetectionSelection, DetectionSources, HarnessDetection, HarnessId } from '../contracts/harness.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
+import { protectModifiedAssets } from './asset-currency.js';
 import { createChangePlan, hashString } from './change-plan-service.js';
 import { detectHarnesses } from './detection-service.js';
 import { planGitignoreInstall } from './gitignore-service.js';
@@ -27,7 +28,7 @@ export type InstallationInput = {
   createInstructions?: boolean;
   migrateLegacy?: boolean;
   previousManifest?: InstallationManifest | null;
-  packageVersion?: string;
+  packageVersion: string;
 };
 
 export type InstallationResult = {
@@ -76,11 +77,15 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const inst = planInstructionChanges({ snapshots: input.instructionSnapshots, config: cfg.config, createInstructions: input.createInstructions, migrateLegacy: input.migrateLegacy });
   const gi = planGitignoreInstall({ snapshot: input.gitignoreSnapshot, config: cfg.config });
   const ap = await planAdapters(input.adapters, active, input.context);
-  const allAssets = buildManagedAssets(cfg.config, cfg.change.content ?? '', ap.assets);
+  const protection = protectModifiedAssets(ap.changes, input.previousManifest ?? null, input.allSnapshots);
+  const modifiedPaths = new Set(protection.conflicts.map((c) => c.path));
+  const preservedAssets = (input.previousManifest?.assets ?? []).filter((a) => modifiedPaths.has(a.path));
+  const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets];
+  const allAssets = buildManagedAssets(cfg.config, cfg.change.content ?? '', adapterAssets);
   const manifestChange = planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) });
-  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...inst.changes, ...gi.changes, ...ap.changes];
+  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...inst.changes, ...gi.changes, ...protection.changes];
   if (proto.change) plannedChanges.push(proto.change);
-  const conflicts = [...inst.conflicts, ...gi.conflicts, ...(proto.conflict ? [proto.conflict] : []), ...ap.conflicts];
+  const conflicts = [...inst.conflicts, ...gi.conflicts, ...(proto.conflict ? [proto.conflict] : []), ...ap.conflicts, ...protection.conflicts];
   const findings: DiagnosticFinding[] = [
     ...conflictFindings(conflicts),
     ...inst.legacyDetected.map((path) => legacyFinding(path, cfg.config)),

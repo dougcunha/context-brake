@@ -1,6 +1,8 @@
 {
-  "name": "edit_file",
+  "toolName": "edit_file",
+  "toolCallId": "call_1",
   "input": {
     "path": "src/main.ts"
-  }
+  },
+  "extraField": "ignored"
 }

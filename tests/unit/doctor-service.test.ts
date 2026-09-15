@@ -32,6 +32,7 @@ function diagnose(adapters: readonly HarnessAdapter[], sources: Partial<Detectio
   return diagnoseProject({
     projectRoot: '/test-repo', config: { ...DEFAULT_CONFIG, activeHarnesses: adapters.map((a) => a.id) },
     adapters, context: { projectRoot: '/test-repo' }, sources, instructionSnapshots: [], protocolSnapshot, gitignoreSnapshot,
+    manifest: null, allSnapshots: [], packageVersion: '1.0.0',
   });
 }
 

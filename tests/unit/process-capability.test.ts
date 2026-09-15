@@ -15,7 +15,7 @@ describe('T35/CR-06: process capability policy', () => {
     const policy = processPolicy({ available: false, reason: 'bash is unavailable on win32: ENOENT' }, false);
 
     expect(policy).toEqual({ action: 'skip', reason: 'bash is unavailable on win32: ENOENT' });
-    expect(policy.reason.length).toBeGreaterThan(0);
+    if (policy.action === 'skip') expect(policy.reason.length).toBeGreaterThan(0);
   });
 
   it('fails in CI mode when the shell is unavailable', () => {

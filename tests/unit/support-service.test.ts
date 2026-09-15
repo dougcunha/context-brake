@@ -34,7 +34,7 @@ describe('TC-01: exhaustive support-level derivation (FR-02, DEC-02)', () => {
   });
 
   it('never lets context_usage or timeout_fail_closed change the level (DEC-02)', () => {
-    const base = CAPABILITY_IDS.map((id) => ({ id, state: id === 'context_usage' || id === 'timeout_fail_closed' ? 'unsupported' : 'supported' }));
+    const base: CapabilityDefinition[] = CAPABILITY_IDS.map((id) => ({ id, state: id === 'context_usage' || id === 'timeout_fail_closed' ? 'unsupported' : 'supported' }));
     for (const contextState of CAPABILITY_STATES) {
       for (const timeoutState of CAPABILITY_STATES) {
         const capabilities = base.map((capability) => {
@@ -51,19 +51,19 @@ describe('TC-01: exhaustive support-level derivation (FR-02, DEC-02)', () => {
 describe('TC-01: pre_tool_block drives cooperative and partial (FR-02, DEC-02)', () => {
   it('is cooperative when pre_tool_block is unsupported or unknown (DEC-02)', () => {
     for (const state of ['unsupported', 'unknown'] as const) {
-      const capabilities = CAPABILITY_IDS.map((id) => ({ id, state: id === 'pre_tool_block' ? state : 'supported' }));
+      const capabilities: CapabilityDefinition[] = CAPABILITY_IDS.map((id) => ({ id, state: id === 'pre_tool_block' ? state : 'supported' }));
       expect(profileFor(capabilities).supportLevel).toBe('cooperative');
     }
   });
 
   it('is partial when pre_tool_block is supported but tool_coverage is not (DEC-02)', () => {
-    const capabilities = CAPABILITY_IDS.map((id) => ({ id, state: id === 'tool_coverage' ? 'unsupported' : 'supported' }));
+    const capabilities: CapabilityDefinition[] = CAPABILITY_IDS.map((id) => ({ id, state: id === 'tool_coverage' ? 'unsupported' : 'supported' }));
     expect(profileFor(capabilities).supportLevel).toBe('partial');
   });
 
   it('stays full while only timeout_fail_closed is unsupported (FR-02, CA-15)', () => {
     const impact = 'A hook timeout lets the tool call proceed; a command failure without a timeout denies it.';
-    const capabilities = ALL_SUPPORTED.map((capability) => capability.id === 'timeout_fail_closed' ? { ...capability, state: 'unsupported', impact } : capability);
+    const capabilities: CapabilityDefinition[] = ALL_SUPPORTED.map((capability) => capability.id === 'timeout_fail_closed' ? { ...capability, state: 'unsupported', impact } : capability);
     const profile = deriveSupportProfile({ harness: 'github-copilot-cli', capabilities });
     expect(profile.supportLevel).toBe('full');
     expect(profile.limitations).toContainEqual({ capability: 'timeout_fail_closed', impact });

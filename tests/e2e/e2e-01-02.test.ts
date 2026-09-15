@@ -23,6 +23,16 @@ describe('E2E-01: Claude installation (CA-01)', () => {
     const settings = JSON.parse(await readFile(join(tempDir, '.claude/settings.json'), 'utf8'));
     expect(settings.hooks.PreToolUse).toBeDefined();
   });
+
+  it('records the running package version in the manifest (FR-07, TC-02)', async () => {
+    await mkdir(join(tempDir, '.claude'), { recursive: true });
+    await writeFile(join(tempDir, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
+    const result = await runBuiltCli(['init', '--yes'], tempDir);
+    expect(result.code).toBe(0);
+    const manifest = JSON.parse(await readFile(join(tempDir, '.context-brake/manifest.json'), 'utf8'));
+    const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+    expect(manifest.packageVersion).toBe(packageJson.version);
+  });
 });
 
 describe('E2E-02: Multi-harness detection (CA-02)', () => {

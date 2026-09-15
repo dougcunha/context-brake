@@ -7,7 +7,7 @@ import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/
 import { createChangePlan } from './change-plan-service.js';
 import { planGitignoreRemoval } from './gitignore-service.js';
 import { createRemovalFinding, planAssetDeletions, planInstructionRemoval } from './removal-helper.js';
-import { planStateDeletions } from './state-removal.js';
+import { planRuntimeStateDeletions, planStateDeletions } from './state-removal.js';
 
 export type RemovalInput = {
   projectRoot: string;
@@ -22,6 +22,7 @@ export type RemovalInput = {
   removeState?: boolean;
   planSnapshot?: FileSnapshot;
   checkpointSnapshot?: FileSnapshot;
+  runtimeStateSnapshots?: readonly FileSnapshot[];
 };
 
 export type RemovalResult = {
@@ -82,6 +83,7 @@ export async function planRemoval(input: RemovalInput): Promise<RemovalResult> {
     ...assetPlan.changes,
     ...planInstructionRemoval(input.instructionSnapshots),
     ...planStateDeletions(input),
+    ...planRuntimeStateDeletions(input.removeState, input.runtimeStateSnapshots ?? []),
     ...gitignorePlan.changes,
     ...planCoreDeletions(input, hasConflicts),
   ];

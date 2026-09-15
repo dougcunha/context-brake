@@ -13,7 +13,7 @@ describe('T32/IT-18: git capability policy', () => {
     const policy = gitPolicy({ available: false, reason: 'git is unavailable on win32: ENOENT' }, false);
 
     expect(policy).toEqual({ action: 'skip', reason: 'git is unavailable on win32: ENOENT' });
-    expect(policy.reason.length).toBeGreaterThan(0);
+    if (policy.action === 'skip') expect(policy.reason.length).toBeGreaterThan(0);
   });
 
   it('fails in CI mode when git is unavailable', () => {

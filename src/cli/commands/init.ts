@@ -6,11 +6,12 @@ import type { DiagnosticFinding, InstallReport } from '../../core/contracts/diag
 import { ProjectConfigStore } from '../../infrastructure/storage/project-config-store.js';
 import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.js';
 import { NodeChangeApplier } from '../../infrastructure/storage/change-applier.js';
+import { readPackageVersion } from '../../infrastructure/storage/package-metadata.js';
 import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
 import { planInstallation } from '../../core/services/installation-service.js';
 import { buildInstallReport } from '../../core/services/report-service.js';
 import { renderJsonOutput } from '../output/json.js';
-import { renderInstallText, renderFinding } from '../output/text.js';
+import { findingPrintKey, renderInstallText, renderFinding } from '../output/text.js';
 import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 import { authorizeWrite } from '../confirmation.js';
@@ -25,11 +26,11 @@ async function loadExistingConfig(root: string) {
   }
 }
 
-function outputReport(report: InstallReport, json: boolean): number {
+function outputReport(report: InstallReport, json: boolean, alreadyPrinted?: ReadonlySet<string>): number {
   if (json) {
     renderJsonOutput(report);
   } else {
-    renderInstallText(report);
+    renderInstallText(report, alreadyPrinted);
   }
   return report.exitCode;
 }
@@ -43,11 +44,17 @@ async function loadInitSnapshots(root: string, config: ContextBrakeConfig | null
   return { allSnapshots, protocolSnap, gitignoreSnap, instSnaps };
 }
 
-function emitLegacyPreview(findings: readonly DiagnosticFinding[], json: boolean): void {
-  if (json) return;
+export type PreviewGate = { json: boolean; yes: boolean; dryRun: boolean };
+
+export function emitLegacyPreview(findings: readonly DiagnosticFinding[], gate: PreviewGate): ReadonlySet<string> {
+  const printed = new Set<string>();
+  if (gate.json || gate.yes || gate.dryRun) return printed;
   for (const finding of findings) {
-    if (finding.code === 'LEGACY_BLOCK_DETECTED') process.stderr.write(`${renderFinding(finding)}\n`);
+    if (finding.code !== 'LEGACY_BLOCK_DETECTED') continue;
+    process.stderr.write(`${renderFinding(finding)}\n`);
+    printed.add(findingPrintKey(finding.code, finding.path));
   }
+  return printed;
 }
 
 export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<number> {
@@ -57,6 +64,7 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest);
   const sources = await collectHarnessSources(adapters, ctx);
+  const packageVersion = await readPackageVersion();
   const selection = {
     ...(args.harness.length > 0 ? { include: args.harness } : {}),
     ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
@@ -65,16 +73,17 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection,
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
+    packageVersion,
   });
   if (args.dryRun) {
     const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: result.findings });
     return outputReport(report, args.json);
   }
-  emitLegacyPreview(result.findings, args.json);
+  const printed = emitLegacyPreview(result.findings, args);
   const confirmed = await authorizeWrite(args.yes, result.plan.requiresConfirmation, 'Apply ContextBrake installation plan?');
   if (!confirmed) return 0;
   const applier = new NodeChangeApplier();
   const applyReport = await applier.apply(result.plan);
   const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
-  return outputReport(report, args.json);
+  return outputReport(report, args.json, printed);
 }

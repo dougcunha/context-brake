@@ -9,8 +9,8 @@ function definitionsById(capabilities: readonly CapabilityDefinition[]): Readonl
 function gatedState(definition: CapabilityDefinition | undefined, version: VersionProbe | undefined): CapabilityState {
   if (!definition) return 'unknown';
   if (definition.state !== 'supported') return definition.state;
-  if (!version?.minimumVersion || version.status === 'resolved') return definition.state;
-  return 'unknown';
+  if (version?.status === 'old') return 'unknown';
+  return definition.state;
 }
 
 function completeCapabilities(input: SupportInput): CapabilityStatus[] {

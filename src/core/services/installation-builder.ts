@@ -40,12 +40,12 @@ export type ManifestChangeInput = {
   assets: readonly ManagedAsset[];
   entries: readonly ManagedEntry[];
   prev: InstallationManifest | null;
-  pkgVer?: string | undefined;
+  pkgVer: string;
   snapshot?: FileSnapshot | null | undefined;
 };
 
 export function planManifestChange(input: ManifestChangeInput): PlannedChange {
-  const manifest: InstallationManifest = { schemaVersion: 1, packageVersion: input.pkgVer ?? '1.0.0', assets: input.assets, entries: input.entries };
+  const manifest: InstallationManifest = { schemaVersion: 1, packageVersion: input.pkgVer, assets: input.assets, entries: input.entries };
   const content = `${JSON.stringify(manifest, null, 2)}\n`;
   const defaultPath = resolve(input.root, MANIFEST_RELATIVE_PATH).replace(/\\/g, '/');
   const realPath = (input.snapshot?.realPath ?? defaultPath).replace(/\\/g, '/');

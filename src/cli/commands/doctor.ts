@@ -5,6 +5,7 @@ import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import { ProjectConfigStore } from '../../infrastructure/storage/project-config-store.js';
 import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.js';
 import { NodeOverheadMeasurer } from '../../infrastructure/diagnostics/overhead-measurer.js';
+import { readPackageVersion } from '../../infrastructure/storage/package-metadata.js';
 import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
 import { diagnoseProject } from '../../core/services/doctor-service.js';
 import { renderJsonOutput } from '../output/json.js';
@@ -37,12 +38,14 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const ctx = buildHarnessContext(env, manifest);
   const sources = await collectHarnessSources(adapters, ctx);
   const measurer = new NodeOverheadMeasurer(env.projectRoot);
+  const packageVersion = await readPackageVersion();
   const report = await diagnoseProject({
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,
     ...(args.harness.length > 0 ? { explicitHarnesses: args.harness } : {}), measurer,
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap,
     ...(planSnap ? { planSnapshot: planSnap } : {}),
     ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
+    manifest, allSnapshots, packageVersion,
   });
   if (args.json) {
     renderJsonOutput(report);

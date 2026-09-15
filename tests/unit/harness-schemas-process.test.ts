@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import {
   antigravityHooksFileSchema,
@@ -74,7 +75,15 @@ describe('process harness schemas: Cursor, Copilot, and Antigravity (RF5, RF6)',
     expect(copilotPostToolUsePayloadSchema.parse({ sessionId: 'cp1' }).sessionId).toBe('cp1');
     const agy = antigravityHooksFileSchema.parse({ 'context-brake': { PreInvocation: [{ command: 'node' }] } });
     expect(agy['context-brake']?.PreInvocation).toBeDefined();
-    expect(antigravityPreToolUsePayloadSchema.parse({ conversationId: 'a1' }).conversationId).toBe('a1');
     expect(antigravityPreInvocationPayloadSchema.parse({ invocationNum: 2 }).invocationNum).toBe(2);
+  });
+
+  it('parses the documented Antigravity PreToolUse fixture with toolCall.name/args (FR-06, TC-01)', async () => {
+    const raw = await readFile('tests/fixtures/harnesses/antigravity-cli/pre-tool-use.json', 'utf8');
+    const payload = antigravityPreToolUsePayloadSchema.parse(JSON.parse(raw));
+    expect(payload.conversationId).toBe('agy-conv-1');
+    expect(payload.toolCall?.name).toBe('bash');
+    expect(payload.toolCall?.args).toEqual({ command: 'ls' });
+    expect((payload as Record<string, unknown>).extraField).toBe('ignored');
   });
 });

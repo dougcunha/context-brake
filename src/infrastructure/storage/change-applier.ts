@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import type { ApplyOutcome, ApplyReport, ChangeApplier, ChangePlan, FileChange } from '../../core/contracts/changes.js';
 import { deleteFileIfExists, writeFileAtomically } from './atomic-writer.js';
+import { pruneEmptyContextBrakeDirectories } from './directory-pruner.js';
 import { computeSha256 } from './node-file-system.js';
 
 export const FILE_CHANGED_CODE = 'FILE_CHANGED_SINCE_PREVIEW' as const;
@@ -50,12 +51,27 @@ async function applySingleChange(change: FileChange): Promise<ApplyOutcome> {
   }
 }
 
+export type ChangeApplierOptions = {
+  removeState?: boolean | undefined;
+};
+
 export class NodeChangeApplier implements ChangeApplier {
+  private readonly options?: ChangeApplierOptions | undefined;
+
+  constructor(options?: ChangeApplierOptions) {
+    this.options = options;
+  }
+
   async apply(plan: ChangePlan): Promise<ApplyReport> {
     const outcomes: ApplyOutcome[] = [];
+    const appliedDeletePaths = new Set<string>();
     for (const change of plan.changes) {
-      outcomes.push(await applySingleChange(change));
+      const outcome = await applySingleChange(change);
+      outcomes.push(outcome);
+      if (change.kind === 'delete' && outcome.status === 'applied') appliedDeletePaths.add(change.path);
     }
+    const removeState = this.options?.removeState ?? plan.changes.some((c) => c.owner === 'runtime_state');
+    outcomes.push(...await pruneEmptyContextBrakeDirectories({ root: plan.projectRoot, changes: plan.changes, appliedPaths: appliedDeletePaths, removeState }));
     for (const conflict of plan.conflicts) {
       outcomes.push({ path: conflict.path, status: 'skipped', detail: `${conflict.code}: ${conflict.detail}` });
     }

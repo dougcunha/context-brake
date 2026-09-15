@@ -5,11 +5,13 @@ export const piSettingsFileSchema = z.object({
 }).passthrough();
 
 export const piToolCallPayloadSchema = z.object({
-  name: z.string().optional(),
+  toolName: z.string().optional(),
+  toolCallId: z.string().optional(),
   input: z.unknown().optional(),
 }).passthrough();
 
 export const piToolResultPayloadSchema = z.object({
-  name: z.string().optional(),
+  toolName: z.string().optional(),
+  toolCallId: z.string().optional(),
   content: z.unknown().optional(),
 }).passthrough();

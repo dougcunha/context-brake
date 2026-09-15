@@ -1,4 +1,4 @@
-import type { HarnessId } from './harness.js';
+import type { CapabilityDefinition, HarnessId } from './harness.js';
 
 export type SessionKey = {
   readonly harness: HarnessId;
@@ -24,7 +24,7 @@ export type RuntimeEvent =
 
 export type RuntimeDecision =
   | { readonly kind: 'neutral' }
-  | { readonly kind: 'deny'; readonly tool: string; readonly reason: 'critical_ceiling' | 'integration_failure' }
+  | { readonly kind: 'deny'; readonly tool: string; readonly reason: 'critical_ceiling' | 'integration_failure'; readonly message: string }
   | { readonly kind: 'context'; readonly block: string }
   | { readonly kind: 'notify_user'; readonly text: string };
 
@@ -37,6 +37,7 @@ export type EstimationConstants = {
 
 export type RuntimeDescriptor = {
   readonly harness: HarnessId;
+  readonly capabilities: readonly CapabilityDefinition[];
   readonly estimation: EstimationConstants;
   readonly newSessionCommand: string | null;
 };

@@ -141,7 +141,7 @@
 - [T01 — Configuration and contracts on `zod/mini` with the brake section](done/task_01.md): the config accepts optional allowed commands and rejects a `turnCeiling` mismatch, and the shared schema is mini so runtime bundles stay small.
 - [T02 — Zones, usage, telemetry block, injection policy, and protocol coherence](done/task_02.md): boundaries classify exactly, the block renders within budget, and the protocol uses the same configuration and actions.
 - [T03 — Session ledger, counters, runtime logs, and retention](done/task_03.md): parallel completed calls count once, counters survive restarts and reset on compaction, and block and error logs stay content-free.
-- [T04 — Brake decision core and runtime hosts](task_04.md): at the ceiling only the allowlist passes, failures never block below it, the mode comes from capabilities, and both hosts run the engine inside the failure boundary.
+- [T04 — Brake decision core and runtime hosts](done/task_04.md): at the ceiling only the allowlist passes, failures never block below it, the mode comes from capabilities, and both hosts run the engine inside the failure boundary.
 - [T05 — Doctor reads runtime state and reports cooperative brakes, blocks, and errors](task_05.md): `doctor` shows cooperative sessions with reasons, block counts, and recent runtime errors.
 - [T06 — Process harness runtimes (Claude Code, Codex CLI, Cursor, Copilot, Antigravity)](task_06.md): the five process harnesses register their new events, block above the ceiling, deliver telemetry, reset, and expose their guarantees in the research file.
 - [T07 — In-process harness runtimes (Pi, Oh-My-Pi, OpenCode)](task_07.md): measured usage where the API documents it, appended telemetry, in-process denies, reset, and the sampler on the real contract.
@@ -176,7 +176,7 @@
 - [x] T01 — done
 - [x] T02 — done
 - [x] T03 — done
-- [ ] T04 — pending
+- [x] T04 — done
 - [ ] T05 — pending
 - [ ] T06 — pending (sub-item pending OI-01)
 - [ ] T07 — pending

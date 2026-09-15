@@ -108,4 +108,10 @@ The registered Codex command is exercised under `sh -lc`, `bash -lc`, and `cmd.e
   - `npm run coverage`: 85 files / 350 passed; 92.33% statements, 86.00% branches, 95.68% functions, 92.33% lines (threshold 80%).
   - QA-01..QA-06 over changed TS files: 0 hits; changed files <=100 lines and functions <=30 lines.
 - Validated state: Windows 11 Pro, PowerShell 7, Node v24.19.0, npm 11.17.0; uncommitted worktree over `2a26a3e` with `dist/` rebuilt. Local missing prerequisites follow the skip policy; `CI=true` turns the same condition into a failure.
-- Open items: HIL-authorized publication is in progress; the correction commit SHA, the nine-job GitHub Actions run ID/URL, and the per-job matrix result are recorded in the follow-up entry below once the run completes. Historical runs are not accepted as substitutes.
+- CI evidence (HIL-authorized publication):
+  - Correction commit: `2ec5d5de1b25804f45fb1fe9e134ee789934436d` (pushed to `origin/master`).
+  - GitHub Actions run: `34980598912` - https://github.com/dougcunha/context-brake/actions/runs/34980598912 - conclusion `success`.
+  - Matrix (all nine jobs `success`): Node 20/22/24 on `ubuntu-latest`, `macos-latest`, and `windows-latest`; each job ran schema check, dependency check, build, typecheck, lint, tests, coverage, and package smoke.
+  - Shell execution proof (Ubuntu, Node 20, job `104419591254`): `tests/integration/codex-hook-command-shells.test.ts` ran `2 tests` and passed, i.e. both the `sh -lc` and `bash -lc` cases executed with no skip; Ubuntu reported 85 files / 351 tests passed. Windows jobs ran the `cmd.exe /C` case only; the POSIX cases are not registered there, so no applicable CI case was skipped.
+  - Local executor: Windows 11 Pro, PowerShell 7, Node v24.19.0, npm 11.17.0.
+- Open items: None for CR-06. Successor re-review (`sdd-review-code`) and PRD-01 acceptance remain.

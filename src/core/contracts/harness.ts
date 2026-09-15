@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 export const HARNESS_IDS = [
   'claude-code',
   'codex-cli',
@@ -47,10 +45,5 @@ export type DetectionInput = { project: readonly DetectionEvidence[]; machine?: 
 export type DetectionSources = Readonly<Record<HarnessId, DetectionInput>>;
 export type DetectionSelection = { include?: readonly HarnessId[]; exclude?: readonly HarnessId[] };
 
-export const harnessIdSchema = z.enum(HARNESS_IDS);
-export const capabilityIdSchema = z.enum(CAPABILITY_IDS);
-export const capabilityStateSchema = z.enum(CAPABILITY_STATES);
-export const detectionEvidenceSchema = z.object({ origin: z.enum(DETECTION_ORIGINS), kind: z.string().min(1), value: z.string().min(1) }).strict();
-export const versionProbeSchema = z.object({ status: z.enum(VERSION_STATUSES), display: z.string().nullable(), normalized: z.string().nullable(), source: z.enum(VERSION_SOURCES), minimumVersion: z.string().nullable() }).strict();
 export type { HarnessAdapter, AdapterPlan, BenchmarkFixture, HarnessContext, AdapterDescriptor } from './adapter.js';
 

@@ -1,25 +1,60 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { HARNESS_IDS } from './harness.js';
 
 export const INJECTION_MODES = ['threshold_only', 'always'] as const;
-const relativePath = z.string().min(1).regex(/^(?!\/)(?!\\)(?![A-Za-z]:)(?!.*\\)(?!.*(?:^|\/)\.\.?(?:\/|$))(?!.*\/\/)(?!.*\/$).+$/, 'must be a canonical repository-relative POSIX file path').refine(isCanonicalRelativeFilePath, 'must be a canonical repository-relative POSIX file path');
-function unique<T>(values: T[]): boolean { return new Set(values).size === values.length; }
+const CANONICAL_PATH_RULE = 'must be a canonical repository-relative POSIX file path';
+const DUPLICATE_ENTRIES_RULE = 'must not contain duplicates';
+const DUPLICATE_PATHS_RULE = 'must not contain duplicate canonical paths';
+const TURN_CEILING_RULE = 'must equal telemetry.zones.criticalTurn';
+const TRIMMED_RULE = 'must not have leading or trailing whitespace';
+const SHELL_OPERATOR_RULE = 'must not contain shell operators or line breaks';
+const ADDITIONAL_ALLOWED_COMMANDS_RULE = 'must have at most 20 entries';
+const MAX_ADDITIONAL_ALLOWED_COMMANDS = 20;
+const canonicalPathPattern = /^(?!\/)(?!\\)(?![A-Za-z]:)(?!.*\\)(?!.*(?:^|\/)\.\.?(?:\/|$))(?!.*\/\/)(?!.*\/$).+$/;
+const shellOperatorPattern = /[;&|`<>\r\n]|\$\(/;
+const percentage = z.int().check(z.minimum(0), z.maximum(100));
+const positiveInt = z.int().check(z.positive());
+
+type CustomIssue = { code: 'custom'; path: PropertyKey[]; input: unknown; message: string };
+
 function isCanonicalRelativeFilePath(value: string): boolean {
   if (value === '.' || value.endsWith('/')) return false;
   const segments = value.split('/');
   for (const segment of segments) if (segment === '' || segment === '.' || segment === '..') return false;
   return segments.length > 0;
 }
-function uniqueCanonicalPaths(values: string[]): boolean { return new Set(values.map((value) => value.split('/').join('/'))).size === values.length; }
+function isUnique<T>(values: T[]): boolean { return new Set(values).size === values.length; }
+function isUniqueCanonicalPath(values: string[]): boolean { return new Set(values.map((value) => value.split('/').join('/'))).size === values.length; }
+function addIssue(ctx: z.core.ParsePayload, issue: CustomIssue): void { ctx.issues.push(issue); }
+function uniqueCheck<T>(message: string): (ctx: z.core.ParsePayload<T[]>) => void {
+  return (ctx) => { if (!isUnique(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message }); };
+}
+function canonicalPathUniqueCheck(ctx: z.core.ParsePayload<string[]>): void {
+  if (!isUniqueCanonicalPath(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: DUPLICATE_PATHS_RULE });
+}
 
-export const zonesSchema = z.object({ greenMaxPercentage: z.number().int().min(0).max(100), yellowMaxPercentage: z.number().int().min(0).max(100), criticalPercentage: z.number().int().min(1).max(100), greenMaxTurn: z.number().int().positive(), yellowMaxTurn: z.number().int().positive(), criticalTurn: z.number().int().positive() }).strict().superRefine((value, context) => {
-  if (value.greenMaxPercentage >= value.yellowMaxPercentage) context.addIssue({ code: 'custom', path: ['yellowMaxPercentage'], message: 'must be greater than greenMaxPercentage' });
-  if (value.yellowMaxPercentage >= value.criticalPercentage) context.addIssue({ code: 'custom', path: ['yellowMaxPercentage'], message: 'must be less than criticalPercentage' });
-  if (value.greenMaxTurn >= value.yellowMaxTurn) context.addIssue({ code: 'custom', path: ['greenMaxTurn'], message: 'must be less than yellowMaxTurn' });
-  if (value.yellowMaxTurn >= value.criticalTurn) context.addIssue({ code: 'custom', path: ['yellowMaxTurn'], message: 'must be less than criticalTurn' });
+const relativePath = z.string().check(z.minLength(1), z.regex(canonicalPathPattern, CANONICAL_PATH_RULE), (ctx) => {
+  if (!isCanonicalRelativeFilePath(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: CANONICAL_PATH_RULE });
 });
-export const configurationSchema = z.object({ $schema: z.string().url().optional(), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).refine(unique, 'must not contain duplicates'), telemetry: z.object({ injectionMode: z.enum(INJECTION_MODES), activationThresholdPercentage: z.number().int().min(0).max(100), contextWindowCeiling: z.number().int().positive(), turnCeiling: z.number().int().positive(), zones: zonesSchema }).strict(), stateStorage: z.object({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: z.number().int().positive() }).strict(), instructionFiles: z.object({ targets: z.array(relativePath).min(1).refine(uniqueCanonicalPaths, 'must not contain duplicate canonical paths'), protocolFile: relativePath }).strict() }).strict();
+const additionalAllowedCommand = z.string().check(z.minLength(1), (ctx) => {
+  if (ctx.value.trim() !== ctx.value) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: TRIMMED_RULE });
+  if (shellOperatorPattern.test(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: SHELL_OPERATOR_RULE });
+});
+const additionalAllowedCommandsSchema = z.array(additionalAllowedCommand).check(z.maxLength(MAX_ADDITIONAL_ALLOWED_COMMANDS, ADDITIONAL_ALLOWED_COMMANDS_RULE), uniqueCheck(DUPLICATE_ENTRIES_RULE));
+
+const brakeSchema = z.strictObject({ additionalAllowedCommands: z._default(additionalAllowedCommandsSchema, []) });
+export const zonesSchema = z.strictObject({ greenMaxPercentage: percentage, yellowMaxPercentage: percentage, criticalPercentage: z.int().check(z.minimum(1), z.maximum(100)), greenMaxTurn: positiveInt, yellowMaxTurn: positiveInt, criticalTurn: positiveInt }).check((ctx) => {
+  const zones = ctx.value;
+  if (zones.greenMaxPercentage >= zones.yellowMaxPercentage) addIssue(ctx, { code: 'custom', path: ['yellowMaxPercentage'], input: zones.yellowMaxPercentage, message: 'must be greater than greenMaxPercentage' });
+  if (zones.yellowMaxPercentage >= zones.criticalPercentage) addIssue(ctx, { code: 'custom', path: ['yellowMaxPercentage'], input: zones.yellowMaxPercentage, message: 'must be less than criticalPercentage' });
+  if (zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue(ctx, { code: 'custom', path: ['greenMaxTurn'], input: zones.greenMaxTurn, message: 'must be less than yellowMaxTurn' });
+  if (zones.yellowMaxTurn >= zones.criticalTurn) addIssue(ctx, { code: 'custom', path: ['yellowMaxTurn'], input: zones.yellowMaxTurn, message: 'must be less than criticalTurn' });
+});
+const telemetrySchema = z.strictObject({ injectionMode: z.enum(INJECTION_MODES), activationThresholdPercentage: percentage, contextWindowCeiling: positiveInt, turnCeiling: positiveInt, zones: zonesSchema }).check((ctx) => {
+  if (ctx.value.turnCeiling !== ctx.value.zones.criticalTurn) addIssue(ctx, { code: 'custom', path: ['turnCeiling'], input: ctx.value.turnCeiling, message: TURN_CEILING_RULE });
+});
+export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: z.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: positiveInt }), instructionFiles: z.strictObject({ targets: z.array(relativePath).check(z.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: z._default(brakeSchema, { additionalAllowedCommands: [] }) });
 export type ContextBrakeConfig = z.infer<typeof configurationSchema>;
 export { HARNESS_IDS } from './harness.js';
 export type { HarnessId } from './harness.js';
-export const DEFAULT_CONFIG: ContextBrakeConfig = { $schema: 'https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json', schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: 'threshold_only', activationThresholdPercentage: 50, contextWindowCeiling: 128000, turnCeiling: 12, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75, greenMaxTurn: 7, yellowMaxTurn: 10, criticalTurn: 12 } }, stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 }, instructionFiles: { targets: ['CLAUDE.md', 'AGENTS.md'], protocolFile: 'docs/context-brake-protocol.md' } };
+export const DEFAULT_CONFIG: ContextBrakeConfig = { $schema: 'https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json', schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: 'threshold_only', activationThresholdPercentage: 50, contextWindowCeiling: 128000, turnCeiling: 12, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75, greenMaxTurn: 7, yellowMaxTurn: 10, criticalTurn: 12 } }, stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 }, instructionFiles: { targets: ['CLAUDE.md', 'AGENTS.md'], protocolFile: 'docs/context-brake-protocol.md' }, brake: { additionalAllowedCommands: [] } };

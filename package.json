@@ -41,6 +41,7 @@
     "esbuild": "^0.25.12",
     "eslint": "^9.35.0",
     "eslint-config-prettier": "^10.1.8",
+    "js-tiktoken": "^1.0.21",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.42.0",

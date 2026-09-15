@@ -158,6 +158,27 @@
         "protocolFile"
       ],
       "additionalProperties": false
+    },
+    "brake": {
+      "default": {
+        "additionalAllowedCommands": []
+      },
+      "type": "object",
+      "properties": {
+        "additionalAllowedCommands": {
+          "default": [],
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "additionalAllowedCommands"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
@@ -165,7 +186,8 @@
     "activeHarnesses",
     "telemetry",
     "stateStorage",
-    "instructionFiles"
+    "instructionFiles",
+    "brake"
   ],
   "additionalProperties": false
 }

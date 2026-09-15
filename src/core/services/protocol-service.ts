@@ -1,21 +1,29 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
+import { zoneActionClause } from './zone-actions.js';
 
-function renderZoneRows(zones: ContextBrakeConfig['telemetry']['zones'], files: { planFile: string; checkpointFile: string }): string[] {
+export type ProtocolZoneContext = Pick<ContextBrakeConfig, 'stateStorage' | 'brake'>;
+
+function buildProtocolRow(condition: string, action: string): string {
+  return `| ${condition} | ${action} |`;
+}
+function buildZoneRows(zones: ContextBrakeConfig['telemetry']['zones'], context: ProtocolZoneContext): string[] {
   const greenPct = zones.greenMaxPercentage + 1;
   const yellowMinTurn = zones.greenMaxTurn + 1;
   const redMinTurn = zones.yellowMaxTurn + 1;
+  const criticalPct = zones.criticalPercentage;
+  const criticalTurn = zones.criticalTurn;
+  const files = { planFile: context.stateStorage.planFile, checkpointFile: context.stateStorage.checkpointFile, additionalAllowedCommands: context.brake.additionalAllowedCommands };
   return [
-    `| \`GREEN\` | Usage below ${greenPct}% and at most ${zones.greenMaxTurn} turns | Work normally. |`,
-    `| \`YELLOW\` | Usage from ${greenPct}% to ${zones.yellowMaxPercentage}%, or ${yellowMinTurn} to ${zones.yellowMaxTurn} turns | Finish the current edit, do not start a new plan step, and run the step's validation command. |`,
-    `| \`RED\` | Usage above ${zones.yellowMaxPercentage}%, or ${redMinTurn} turns or more | Stop editing. Update \`${files.planFile}\` and \`${files.checkpointFile}\`. If validation passes, commit with \`checkpoint: <step title>\`. End the response with \`[REQUEST_SESSION_RESET]\`. |`,
-    `| \`CRITICAL\` | Usage at ${zones.criticalPercentage}% or more, or ${zones.criticalTurn} turns or more | Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, \`git status\`, \`git add\`, and \`git commit\` are allowed. Complete the \`RED\` actions. |`,
+    buildProtocolRow(`\`GREEN\` | Usage below ${greenPct}% and at most ${zones.greenMaxTurn} turns`, zoneActionClause('GREEN', files)),
+    buildProtocolRow(`\`YELLOW\` | Usage from ${greenPct}% to ${zones.yellowMaxPercentage}%, or ${yellowMinTurn} to ${zones.yellowMaxTurn} turns`, zoneActionClause('YELLOW', files)),
+    buildProtocolRow(`\`RED\` | Usage above ${zones.yellowMaxPercentage}%, or ${redMinTurn} turns or more`, zoneActionClause('RED', files)),
+    buildProtocolRow(`\`CRITICAL\` | Usage at ${criticalPct}% or more, or ${criticalTurn} turns or more`, zoneActionClause('CRITICAL', files)),
   ];
 }
-
 export function renderProtocol(config: ContextBrakeConfig): string {
   const { planFile, checkpointFile } = config.stateStorage;
-  const rows = renderZoneRows(config.telemetry.zones, { planFile, checkpointFile });
+  const rows = buildZoneRows(config.telemetry.zones, config);
   return [
     '# ContextBrake Protocol', '',
     `Applies while this repository has a \`${planFile}\` or tool results include a ContextBrake telemetry block. The limits below are defaults; \`context-brake.config.json\` overrides them.`, '',

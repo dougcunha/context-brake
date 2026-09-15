@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../../src/core/contracts/configuration.js';
 import type { FileSnapshot } from '../../src/core/contracts/changes.js';
 import { planProtocolChange, renderProtocol } from '../../src/core/services/protocol-service.js';
+import { parseConfiguration } from '../../src/core/validation/configuration-validator.js';
+
+function withAdditionalAllowedCommands(commands: string[]): ContextBrakeConfig {
+  return parseConfiguration({ ...DEFAULT_CONFIG, brake: { additionalAllowedCommands: commands } });
+}
 
 describe('protocol service rendering and planning (RF10, CA-08)', () => {
   it('renders protocol document using normalized zone thresholds and files', () => {
@@ -42,6 +47,19 @@ describe('protocol CRITICAL row wording (FR-11, DEC-06)', () => {
     const text = renderProtocol(customConfig);
     const criticalRow = text.split('\n').find((line) => line.startsWith('| `CRITICAL`'));
     expect(criticalRow).toContain('`git status`, `git add`, and `git commit` are allowed');
+  });
+
+  it('appends configured extra allowed commands to the CRITICAL row only', () => {
+    const text = renderProtocol(withAdditionalAllowedCommands(['npm run typecheck', 'npm test']));
+    const criticalRow = text.split('\n').find((line) => line.startsWith('| `CRITICAL`'));
+    expect(criticalRow).toContain('`git commit`, and `npm run typecheck`, and `npm test` are allowed');
+    const otherRows = text.split('\n').filter((line) => line.startsWith('| `') && !line.startsWith('| `CRITICAL`'));
+    for (const row of otherRows) expect(row).not.toContain('npm run typecheck');
+  });
+
+  it('keeps the default CRITICAL row free of extra commands', () => {
+    const criticalRow = renderProtocol(DEFAULT_CONFIG).split('\n').find((line) => line.startsWith('| `CRITICAL`'));
+    expect(criticalRow).not.toContain('Configured extra commands');
   });
 
   it('matches the packaged docs/context-brake-protocol.md byte-for-byte', async () => {

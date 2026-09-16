@@ -1,5 +1,12 @@
 import { realpath } from 'node:fs/promises';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import type { RuntimeEvent } from '../../core/contracts/runtime.js';
+
+export async function normalizeEventToolPaths(event: RuntimeEvent | null, projectRoot: string): Promise<RuntimeEvent | null> {
+  if (event === null || !('tool' in event) || event.tool.paths.length === 0) return event;
+  const paths = await Promise.all(event.tool.paths.map((path) => normalizeToolPath(projectRoot, path)));
+  return { ...event, tool: { ...event.tool, paths } };
+}
 
 export async function normalizeToolPath(projectRoot: string, toolPath: string): Promise<string> {
   const absolute = isAbsolute(toolPath) ? toolPath : resolve(projectRoot, toolPath);

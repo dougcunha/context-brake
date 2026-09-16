@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
-import type { CapabilityDefinition, CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
+import type { CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import {
@@ -14,17 +14,9 @@ import {
 } from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
+import { CODEX_CAPABILITIES } from './capabilities.js';
 import { CODEX_EXECUTABLES, detectCodex } from './detector.js';
 import { CODEX_CONFIG_FILE, CODEX_HOOK_FILE, planCodexInstall, planCodexRemove } from './planner.js';
-
-const CAPABILITIES: readonly CapabilityDefinition[] = [
-  { id: 'pre_tool_block', state: 'supported' },
-  { id: 'tool_coverage', state: 'unsupported', impact: 'Hosted tools such as web search bypass Codex CLI hooks.' },
-  { id: 'post_tool_telemetry', state: 'supported' },
-  { id: 'session_boot', state: 'supported' },
-  { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to Codex CLI hooks.' },
-  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook error, invalid output, or timeout lets the tool call proceed.' },
-];
 
 async function checkCodexConfig(configPath: string): Promise<DiagnosticFinding | null> {
   if (!(await pathExists(configPath))) return createIntegrationMissingFinding('codex-cli', CODEX_CONFIG_FILE);
@@ -55,7 +47,7 @@ export class CodexAdapter implements HarnessAdapter {
   readonly executionModel = 'process' as const;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
-    return deriveSupportProfile({ harness: this.id, capabilities: CAPABILITIES, version });
+    return deriveSupportProfile({ harness: this.id, capabilities: CODEX_CAPABILITIES, version });
   }
 
   detect(context: HarnessContext): Promise<readonly DetectionEvidence[]> {

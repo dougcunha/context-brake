@@ -4,17 +4,19 @@ import { parseAndValidateJson, removeJsonProperty, setJsonProperty } from '../..
 export const ANTIGRAVITY_CONFIG_FILE = '.agents/hooks.json';
 export const ANTIGRAVITY_HOOK_FILE = '.agents/hooks/context-brake.mjs';
 
-const DESIRED_HANDLER = { type: 'command', command: `node ${ANTIGRAVITY_HOOK_FILE} PreInvocation` };
-const DESIRED_HOOK = { PreInvocation: [DESIRED_HANDLER] };
+function desiredHandler(event: string): { type: string; command: string } {
+  return { type: 'command', command: `node ${ANTIGRAVITY_HOOK_FILE} ${event}` };
+}
+const DESIRED_HOOK = {
+  PreInvocation: [desiredHandler('PreInvocation')],
+  PreToolUse: [desiredHandler('PreToolUse')],
+  PostToolUse: [desiredHandler('PostToolUse')],
+};
 
 function hasMatchingRegistration(content: string): boolean {
   try {
     const obj = JSON.parse(content) as Record<string, unknown>;
-    const cb = obj['context-brake'] as Record<string, unknown> | undefined;
-    const inv = cb?.PreInvocation;
-    if (!Array.isArray(inv) || inv.length !== 1) return false;
-    const h = inv[0] as { type?: unknown; command?: unknown };
-    return h?.type === DESIRED_HANDLER.type && h?.command === DESIRED_HANDLER.command;
+    return JSON.stringify(obj['context-brake'] ?? null) === JSON.stringify(DESIRED_HOOK);
   } catch {
     return false;
   }

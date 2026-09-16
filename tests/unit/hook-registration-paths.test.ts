@@ -16,11 +16,11 @@ async function planConfig(harness: HarnessId, root: string, configPath: string):
   return JSON.parse(change?.content ?? '{}') as HookConfig;
 }
 
-describe('Claude Code hook commands do not depend on the session directory (RF5)', () => {
-  let root: string;
-  beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-claude-path-')); });
-  afterEach(async () => { await rm(root, { recursive: true, force: true }); });
+let root = '';
+beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-hook-path-')); });
+afterEach(async () => { await rm(root, { recursive: true, force: true }); });
 
+describe('Claude Code hook commands do not depend on the session directory (RF5)', () => {
   it('registers the hook in exec form from the project directory placeholder', async () => {
     const config = await planConfig('claude-code', root, CLAUDE_SETTINGS);
     const entry = { type: 'command', command: 'node', args: ['${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs', 'PreToolUse'] };
@@ -40,10 +40,6 @@ describe('Claude Code hook commands do not depend on the session directory (RF5)
 });
 
 describe('process hook commands locate the script from the project root (RF5)', () => {
-  let root: string;
-  beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-hook-path-')); });
-  afterEach(async () => { await rm(root, { recursive: true, force: true }); });
-
   it('resolves the Codex hook script from the git root', async () => {
     const config = await planConfig('codex-cli', root, '.codex/hooks.json');
     const entry = {
@@ -63,5 +59,39 @@ describe('process hook commands locate the script from the project root (RF5)', 
   it('keeps the Cursor path relative because project hooks run from the project root', async () => {
     const config = await planConfig('cursor', root, '.cursor/hooks.json');
     expect(config.hooks.preToolUse).toEqual([{ command: 'node .cursor/hooks/context-brake.mjs preToolUse', failClosed: true }]);
+  });
+});
+
+describe('new event registrations keep each harness command form (DEC-12, DEC-13, TC-26)', () => {
+  it('adds the exec-form Claude Code Stop group for the reset notice', async () => {
+    const config = await planConfig('claude-code', root, CLAUDE_SETTINGS);
+    const entry = { type: 'command', command: 'node', args: ['${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs', 'Stop'] };
+    expect(config.hooks.Stop).toEqual([{ matcher: '*', hooks: [entry] }]);
+  });
+
+  it('registers the Codex Stop group with both command forms', async () => {
+    const config = await planConfig('codex-cli', root, '.codex/hooks.json');
+    const entry = {
+      type: 'command',
+      command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" Stop',
+      commandWindows: 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i/.codex/hooks/context-brake.mjs" Stop',
+    };
+    expect(config.hooks.Stop).toEqual([{ matcher: '*', hooks: [entry] }]);
+  });
+
+  it('registers Cursor preCompact without failClosed', async () => {
+    const config = await planConfig('cursor', root, '.cursor/hooks.json');
+    expect(config.hooks.preCompact).toEqual([{ command: 'node .cursor/hooks/context-brake.mjs preCompact' }]);
+  });
+
+  it('registers Copilot preCompact in the owned config file', async () => {
+    const config = await planConfig('github-copilot-cli', root, '.github/hooks/context-brake.json');
+    const entry = { type: 'command', exec: 'node', args: ['.github/hooks/context-brake.mjs', 'preCompact'], cwd: '.' };
+    expect(config.hooks.preCompact).toEqual([entry]);
+  });
+
+  it('registers the three Antigravity events under the context-brake key (DEC-14, TC-34)', async () => {
+    const config = (await planConfig('antigravity-cli', root, '.agents/hooks.json')) as unknown as { 'context-brake': Record<string, unknown> };
+    expect(Object.keys(config['context-brake'])).toEqual(['PreInvocation', 'PreToolUse', 'PostToolUse']);
   });
 });

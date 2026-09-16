@@ -57,9 +57,10 @@ describe('README installation claims (T34, CR-05)', () => {
     expect(table.source).not.toMatch(/four[- ]line|4-line/i);
   });
 
-  it('reports the Antigravity pre-tool limitation without promising blocking', () => {
+  it('reports the Antigravity pre-tool limitation without promising full coverage', () => {
     const row = table.rows.get('antigravity-cli')?.[0];
-    expect(row?.level).toBe('cooperative');
+    expect(row?.level).toBe('partial');
+    expect(row?.limitation).toContain('coverage in the CLI is unconfirmed');
     expect(row?.limitation).toContain('PreInvocation');
   });
 });

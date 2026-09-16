@@ -1,26 +1,28 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
-export const antigravityHookEntrySchema = z.object({
-  type: z.string().optional(),
-  command: z.string().optional(),
-}).passthrough();
+export const antigravityHookEntrySchema = z.looseObject({
+  type: z.optional(z.string()),
+  command: z.optional(z.string()),
+});
 
 export const antigravityHooksFileSchema = z.record(
   z.string(),
   z.record(z.string(), z.unknown())
 );
 
-export const antigravityToolCallSchema = z.object({
-  name: z.string().optional(),
-  args: z.unknown().optional(),
-}).passthrough();
+export const antigravityPayloadSchema = z.looseObject({
+  conversationId: z.optional(z.string()),
+  toolCall: z.optional(z.looseObject({
+    name: z.optional(z.string()),
+    args: z.optional(z.unknown()),
+  })),
+  stepIdx: z.optional(z.number()),
+  error: z.optional(z.string()),
+  invocationNum: z.optional(z.number()),
+  initialNumSteps: z.optional(z.number()),
+  terminationReason: z.optional(z.string()),
+});
 
-export const antigravityPreToolUsePayloadSchema = z.object({
-  conversationId: z.string().optional(),
-  toolCall: antigravityToolCallSchema.optional(),
-}).passthrough();
-
-export const antigravityPreInvocationPayloadSchema = z.object({
-  conversationId: z.string().optional(),
-  invocationNum: z.number().optional(),
-}).passthrough();
+export const antigravityPreToolUsePayloadSchema = antigravityPayloadSchema;
+export const antigravityPreInvocationPayloadSchema = antigravityPayloadSchema;
+export type AntigravityPayload = z.infer<typeof antigravityPayloadSchema>;

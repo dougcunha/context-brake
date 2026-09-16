@@ -14,6 +14,8 @@ export const ANTIGRAVITY_HOOK_FILE = '.agents/hooks/context-brake.mjs';
 export function buildAntigravityEntries(): ManagedEntry[] {
   return [
     { harness: 'antigravity-cli', path: ANTIGRAVITY_CONFIG_FILE, identity: `PreInvocation|context-brake|${ANTIGRAVITY_HOOK_FILE}` },
+    { harness: 'antigravity-cli', path: ANTIGRAVITY_CONFIG_FILE, identity: `PreToolUse|context-brake|${ANTIGRAVITY_HOOK_FILE}` },
+    { harness: 'antigravity-cli', path: ANTIGRAVITY_CONFIG_FILE, identity: `PostToolUse|context-brake|${ANTIGRAVITY_HOOK_FILE}` },
   ];
 }
 

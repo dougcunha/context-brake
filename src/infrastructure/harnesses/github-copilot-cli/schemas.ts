@@ -1,26 +1,27 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
-export const copilotHookItemSchema = z.object({
-  type: z.string().optional(),
-  exec: z.string().optional(),
-  args: z.array(z.string()).optional(),
-  command: z.string().optional(),
-  cwd: z.string().optional(),
-}).passthrough();
+export const copilotHookItemSchema = z.looseObject({
+  type: z.optional(z.string()),
+  exec: z.optional(z.string()),
+  args: z.optional(z.array(z.string())),
+  command: z.optional(z.string()),
+  cwd: z.optional(z.string()),
+});
 
-export const copilotHooksFileSchema = z.object({
-  version: z.number().optional(),
-  hooks: z.record(z.string(), z.array(copilotHookItemSchema)).optional(),
-}).passthrough();
+export const copilotHooksFileSchema = z.looseObject({
+  version: z.optional(z.number()),
+  hooks: z.optional(z.record(z.string(), z.array(copilotHookItemSchema))),
+});
 
-export const copilotPreToolUsePayloadSchema = z.object({
-  sessionId: z.string().optional(),
-  toolName: z.string().optional(),
-  toolArgs: z.unknown().optional(),
-}).passthrough();
+export const copilotPayloadSchema = z.looseObject({
+  sessionId: z.optional(z.string()),
+  source: z.optional(z.string()),
+  toolName: z.optional(z.string()),
+  toolArgs: z.optional(z.unknown()),
+  toolResult: z.optional(z.unknown()),
+  hookName: z.optional(z.string()),
+});
 
-export const copilotPostToolUsePayloadSchema = z.object({
-  sessionId: z.string().optional(),
-  toolName: z.string().optional(),
-  toolResult: z.unknown().optional(),
-}).passthrough();
+export const copilotPreToolUsePayloadSchema = copilotPayloadSchema;
+export const copilotPostToolUsePayloadSchema = copilotPayloadSchema;
+export type CopilotPayload = z.infer<typeof copilotPayloadSchema>;

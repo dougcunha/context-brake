@@ -1,8 +1,8 @@
 import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
-import { appendJsonArrayItem, parseAndValidateJson, removeJsonArrayItem, setJsonProperty } from '../../storage/json-document-editor.js';
+import { appendJsonArrayItem, parseAndValidateJson, removeJsonArrayItem, removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 
 export const CODEX_HOOK_FILE = '.codex/hooks/context-brake.mjs';
-export const CODEX_EVENTS = ['PreToolUse', 'PostToolUse', 'SessionStart'] as const;
+export const CODEX_EVENTS = ['PreToolUse', 'PostToolUse', 'SessionStart', 'Stop'] as const;
 
 export type CodexHook = { type: string; command: string; commandWindows?: string };
 export type CodexGroup = { matcher: string; hooks: CodexHook[] };
@@ -52,7 +52,7 @@ function removeOwnedFromEvent(content: string, event: string): string {
       text = next;
     }
   }
-  return text;
+  return groups.length === 0 ? removeJsonProperty(text, ['hooks', event]) : text;
 }
 
 export function updateCodexHooks(content: string, clear: boolean, buildGroup: (event: string) => CodexGroup): string {

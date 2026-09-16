@@ -2,30 +2,22 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
-import type { CapabilityDefinition, CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
+import type { CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
+import { COPILOT_CAPABILITIES } from './capabilities.js';
 import { COPILOT_EXECUTABLES, detectCopilot } from './detector.js';
 import { COPILOT_CONFIG_FILE, COPILOT_HOOK_FILE, planCopilotInstall, planCopilotRemove } from './planner.js';
-
-const CAPABILITIES: readonly CapabilityDefinition[] = [
-  { id: 'pre_tool_block', state: 'supported' },
-  { id: 'tool_coverage', state: 'supported' },
-  { id: 'post_tool_telemetry', state: 'supported' },
-  { id: 'session_boot', state: 'supported' },
-  { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to GitHub Copilot CLI hooks.' },
-  { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook timeout lets the tool call proceed; a command failure without a timeout denies it.' },
-];
 
 export class CopilotAdapter implements HarnessAdapter {
   readonly id = 'github-copilot-cli';
   readonly executionModel = 'process' as const;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
-    return deriveSupportProfile({ harness: this.id, capabilities: CAPABILITIES, version });
+    return deriveSupportProfile({ harness: this.id, capabilities: COPILOT_CAPABILITIES, version });
   }
 
   detect(context: HarnessContext): Promise<readonly DetectionEvidence[]> {

@@ -2,12 +2,12 @@ import { readFile } from 'node:fs/promises';
 import type { AdapterPlan } from '../../../core/contracts/adapter.js';
 import type { PlannedChange } from '../../../core/contracts/changes.js';
 import type { ManagedEntry } from '../../../core/contracts/manifest.js';
-import { setJsonProperty } from '../../storage/json-document-editor.js';
+import { removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { resolveChangeTarget } from '../common/change-target.js';
 import { validateRemovalConfig } from '../common/removal-config-validator.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
-import { mergeHookGroups, removeHookGroups } from './claude-merger.js';
+import { mergeHookGroups, removeHookGroups, type ClaudeHookGroup } from './claude-merger.js';
 
 export const CLAUDE_CONFIG_FILE = '.claude/settings.json';
 export const CLAUDE_HOOK_FILE = '.claude/hooks/context-brake.mjs';
@@ -17,6 +17,7 @@ export function buildClaudeEntries(): ManagedEntry[] {
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `PreToolUse|*|${CLAUDE_HOOK_FILE}` },
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `PostToolUse|*|${CLAUDE_HOOK_FILE}` },
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `SessionStart|startup|resume|clear|compact|${CLAUDE_HOOK_FILE}` },
+    { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `Stop|*|${CLAUDE_HOOK_FILE}` },
   ];
 }
 
@@ -29,13 +30,23 @@ function parseHooks(content: string): Record<string, unknown> {
   }
 }
 
+type HookTransform = (existing: unknown, event: string, matcher: string) => ClaudeHookGroup[];
+type EventPlan = { readonly hooks: Record<string, unknown>; readonly event: string; readonly matcher: string };
+
+function applyEvent(text: string, plan: EventPlan, fn: HookTransform): string {
+  const groups = fn(plan.hooks[plan.event], plan.event, plan.matcher);
+  if (groups.length === 0) return removeJsonProperty(text, ['hooks', plan.event]);
+  return setJsonProperty(text, ['hooks', plan.event], groups);
+}
+
 function applyHooks(content: string, merge: boolean): string {
   const hooks = parseHooks(content);
-  const fn = merge ? mergeHookGroups : removeHookGroups;
+  const fn: HookTransform = merge ? mergeHookGroups : removeHookGroups;
   let text = content;
-  text = setJsonProperty(text, ['hooks', 'PreToolUse'], fn(hooks.PreToolUse, 'PreToolUse', '*'));
-  text = setJsonProperty(text, ['hooks', 'PostToolUse'], fn(hooks.PostToolUse, 'PostToolUse', '*'));
-  return setJsonProperty(text, ['hooks', 'SessionStart'], fn(hooks.SessionStart, 'SessionStart', 'startup|resume|clear|compact'));
+  text = applyEvent(text, { hooks, event: 'PreToolUse', matcher: '*' }, fn);
+  text = applyEvent(text, { hooks, event: 'PostToolUse', matcher: '*' }, fn);
+  text = applyEvent(text, { hooks, event: 'SessionStart', matcher: 'startup|resume|clear|compact' }, fn);
+  return applyEvent(text, { hooks, event: 'Stop', matcher: '*' }, fn);
 }
 
 export async function planClaudeInstall(projectRoot: string): Promise<AdapterPlan> {

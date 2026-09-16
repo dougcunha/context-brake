@@ -1,45 +1,45 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
-export const claudeHookItemSchema = z.object({
-  type: z.string().optional(),
-  command: z.string().optional(),
-  args: z.array(z.string()).optional(),
-}).passthrough();
+export const claudeHookItemSchema = z.looseObject({
+  type: z.optional(z.string()),
+  command: z.optional(z.string()),
+  args: z.optional(z.array(z.string())),
+});
 
-export const claudeHookGroupSchema = z.object({
-  matcher: z.string().optional(),
-  hooks: z.array(claudeHookItemSchema).optional(),
-}).passthrough();
+export const claudeHookGroupSchema = z.looseObject({
+  matcher: z.optional(z.string()),
+  hooks: z.optional(z.array(claudeHookItemSchema)),
+});
 
-export const claudeSettingsSchema = z.object({
-  hooks: z.record(z.string(), z.array(claudeHookGroupSchema)).optional(),
-}).passthrough();
+export const claudeSettingsSchema = z.looseObject({
+  hooks: z.optional(z.record(z.string(), z.array(claudeHookGroupSchema))),
+});
 
-export const claudePreToolUsePayloadSchema = z.object({
-  session_id: z.string().optional(),
-  hook_event_name: z.string().optional(),
-  tool_name: z.string().optional(),
-  tool_input: z.unknown().optional(),
-}).passthrough();
+export const claudePayloadSchema = z.looseObject({
+  session_id: z.optional(z.string()),
+  agent_id: z.optional(z.string()),
+  source: z.optional(z.string()),
+  tool_name: z.optional(z.string()),
+  tool_input: z.optional(z.unknown()),
+  tool_response: z.optional(z.unknown()),
+  tool_use_id: z.optional(z.string()),
+  last_assistant_message: z.optional(z.string()),
+});
 
-export const claudePostToolUsePayloadSchema = z.object({
-  session_id: z.string().optional(),
-  hook_event_name: z.string().optional(),
-  tool_name: z.string().optional(),
-  tool_output: z.unknown().optional(),
-}).passthrough();
+export const claudePreToolUsePayloadSchema = claudePayloadSchema;
+export type ClaudePayload = z.infer<typeof claudePayloadSchema>;
 
-export const claudePreToolUseResponseSchema = z.object({
-  hookSpecificOutput: z.object({
+export const claudePreToolUseResponseSchema = z.looseObject({
+  hookSpecificOutput: z.optional(z.looseObject({
     hookEventName: z.literal('PreToolUse'),
-    permissionDecision: z.enum(['allow', 'deny', 'ask', 'defer']).optional(),
-    permissionDecisionReason: z.string().optional(),
-  }).passthrough().optional(),
-}).passthrough();
+    permissionDecision: z.optional(z.enum(['allow', 'deny', 'ask', 'defer'])),
+    permissionDecisionReason: z.optional(z.string()),
+  })),
+});
 
-export const claudePostToolUseResponseSchema = z.object({
-  hookSpecificOutput: z.object({
+export const claudePostToolUseResponseSchema = z.looseObject({
+  hookSpecificOutput: z.optional(z.looseObject({
     hookEventName: z.literal('PostToolUse'),
-    additionalContext: z.string().optional(),
-  }).passthrough().optional(),
-}).passthrough();
+    additionalContext: z.optional(z.string()),
+  })),
+});

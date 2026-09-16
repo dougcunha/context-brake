@@ -39,9 +39,9 @@ describe('brake mode from capabilities (RF21, CA-17, DEC-10, TC-25)', () => {
     expect(deriveBrakeMode(definitionsFrom(new OpenCodeAdapter())).mode).toBe('cooperative');
     expect(reasonFrom(new OpenCodeAdapter())).toContain('tool.execute.before');
   });
-  it('derives cooperative for Antigravity CLI with the block reason', () => {
+  it('derives cooperative for Antigravity CLI with the coverage reason (DEC-14)', () => {
     expect(deriveBrakeMode(definitionsFrom(new AntigravityAdapter())).mode).toBe('cooperative');
-    expect(reasonFrom(new AntigravityAdapter())).toContain('PreInvocation');
+    expect(reasonFrom(new AntigravityAdapter())).toContain('Hook coverage in the Antigravity CLI');
   });
 });
 

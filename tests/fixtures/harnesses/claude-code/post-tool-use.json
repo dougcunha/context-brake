@@ -1,6 +1,17 @@
 {
   "session_id": "session-claude-1",
+  "cwd": "/repo",
+  "permission_mode": "default",
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
-  "tool_output": "On branch main\nnothing to commit, working tree clean"
+  "tool_input": { "command": "git status", "description": "Show the working tree status" },
+  "tool_response": {
+    "stdout": "On branch main\nnothing to commit, working tree clean",
+    "stderr": "",
+    "interrupted": false,
+    "isImage": false,
+    "noOutputExpected": false
+  },
+  "tool_use_id": "toolu_claude_1",
+  "duration_ms": 42
 }

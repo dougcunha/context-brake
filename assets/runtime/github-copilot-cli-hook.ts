@@ -1,7 +1,3 @@
-import { NO_OUTPUT, runProcessHook } from './process-hook.js';
+import { runCopilotHook } from '../../src/infrastructure/harnesses/github-copilot-cli/runtime.js';
 
-void runProcessHook({
-  preToolUse: NO_OUTPUT,
-  postToolUse: NO_OUTPUT,
-  sessionStart: NO_OUTPUT,
-});
+void runCopilotHook();

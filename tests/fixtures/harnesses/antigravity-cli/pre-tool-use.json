@@ -2,8 +2,9 @@
   "hookName": "PreToolUse",
   "conversationId": "agy-conv-1",
   "toolCall": {
-    "name": "bash",
-    "args": { "command": "ls" }
+    "name": "run_command",
+    "args": { "CommandLine": "ls" }
   },
+  "stepIdx": 2,
   "extraField": "ignored"
 }

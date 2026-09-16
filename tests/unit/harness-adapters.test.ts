@@ -38,8 +38,7 @@ const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
   'oh-my-pi': { level: 'full', states: 'SSSSS?', limitations: [
     ['timeout_fail_closed', 'Timeout behavior of Oh-My-Pi extension handlers is not documented.'],
   ] },
-  'antigravity-cli': { level: 'cooperative', states: 'U?UUU?', limitations: [
-    ['pre_tool_block', 'PRD-01 installs only the Antigravity CLI PreInvocation hook; selective pre-tool blocking arrives with PRD-02.'],
+  'antigravity-cli': { level: 'partial', states: 'S?UUU?', limitations: [
     ['tool_coverage', 'Hook coverage in the Antigravity CLI is not confirmed by its documentation.'],
     ['post_tool_telemetry', 'Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation.'],
     ['session_boot', 'Session boot is indirect via PreInvocation.'],

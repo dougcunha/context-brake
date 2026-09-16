@@ -61,7 +61,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 | OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Whether the pre-tool hook runs for every tool is unconfirmed, and post-tool output visibility is unconfirmed |
 | Pi (`pi`) | Extensions in `.pi/extensions/` | Full | Timeout behavior of extension handlers is not documented |
 | Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Timeout behavior of extension handlers is not documented |
-| Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Cooperative | Only the `PreInvocation` hook is installed, so there is no pre-tool denial; failure and timeout behavior is not documented |
+| Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Partial | Telemetry is injected through `PreInvocation`; hook coverage in the CLI is unconfirmed, and `PreToolUse` `allow` auto-approves calls |
 
 Aider is not supported because it has no hook mechanism. The full capability matrix and its sources are in the [installation PRD](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md).
 

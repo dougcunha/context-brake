@@ -1,7 +1,3 @@
-import { runProcessHook } from './process-hook.js';
+import { runAntigravityHook } from '../../src/infrastructure/harnesses/antigravity-cli/runtime.js';
 
-const NO_INJECTED_STEPS = { injectSteps: [] };
-
-void runProcessHook({
-  PreInvocation: NO_INJECTED_STEPS,
-});
+void runAntigravityHook();

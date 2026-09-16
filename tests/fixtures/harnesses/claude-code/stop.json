@@ -1,0 +1,9 @@
+{
+  "session_id": "session-claude-1",
+  "cwd": "/repo",
+  "hook_event_name": "Stop",
+  "stop_hook_active": false,
+  "last_assistant_message": "Checkpoint saved and committed.\n[REQUEST_SESSION_RESET]",
+  "background_tasks": [],
+  "session_crons": []
+}

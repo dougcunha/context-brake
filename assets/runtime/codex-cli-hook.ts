@@ -1,7 +1,3 @@
-import { NO_OUTPUT, runProcessHook } from './process-hook.js';
+import { runCodexCliHook } from '../../src/infrastructure/harnesses/codex-cli/runtime.js';
 
-void runProcessHook({
-  PreToolUse: NO_OUTPUT,
-  PostToolUse: NO_OUTPUT,
-  SessionStart: NO_OUTPUT,
-});
+void runCodexCliHook();

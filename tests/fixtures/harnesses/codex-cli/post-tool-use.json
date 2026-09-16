@@ -1,7 +1,12 @@
 {
   "session_id": "codex-sess-1",
+  "turn_id": "codex-turn-1",
+  "cwd": "/repo",
   "hook_event_name": "PostToolUse",
-  "tool_response": {
-    "status": "success"
-  }
+  "model": "gpt-5.6-sol",
+  "permission_mode": "default",
+  "tool_name": "Bash",
+  "tool_input": { "command": "git status" },
+  "tool_response": "On branch main\nnothing to commit, working tree clean\n",
+  "tool_use_id": "exec-codex-1"
 }

@@ -1,0 +1,9 @@
+{
+  "conversation_id": "cursor-conv-1",
+  "hook_event_name": "preCompact",
+  "trigger": "auto",
+  "context_usage_percent": 72,
+  "context_tokens": 92000,
+  "context_window_size": 128000,
+  "is_first_compaction": false
+}

@@ -20,7 +20,8 @@ describe('Antigravity install and removal (CR-02)', () => {
     expect(s1).toContain('user-hook');
     expect(s1).toContain('context-brake');
     expect(s1).toContain('PreInvocation');
-    expect(s1).not.toContain('PreToolUse');
+    expect(s1).toContain('PreToolUse');
+    expect(s1).toContain('PostToolUse');
 
     const p2 = await planAntigravityInstall(root);
     expect(p2.changes.find((c) => c.path === ANTIGRAVITY_CONFIG_FILE)?.content ?? s1).toBe(s1);

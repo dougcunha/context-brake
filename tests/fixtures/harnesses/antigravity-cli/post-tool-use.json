@@ -1,0 +1,9 @@
+{
+  "hookName": "PostToolUse",
+  "conversationId": "agy-conv-1",
+  "toolCall": {
+    "name": "run_command",
+    "args": { "CommandLine": "git status" }
+  },
+  "stepIdx": 2
+}

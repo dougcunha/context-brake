@@ -32,6 +32,7 @@ export function buildCodexEntries(): ManagedEntry[] {
     { harness: 'codex-cli', path: CODEX_CONFIG_FILE, identity: `PreToolUse|*|${CODEX_HOOK_FILE}` },
     { harness: 'codex-cli', path: CODEX_CONFIG_FILE, identity: `PostToolUse|*|${CODEX_HOOK_FILE}` },
     { harness: 'codex-cli', path: CODEX_CONFIG_FILE, identity: `SessionStart|startup|resume|clear|compact|${CODEX_HOOK_FILE}` },
+    { harness: 'codex-cli', path: CODEX_CONFIG_FILE, identity: `Stop|*|${CODEX_HOOK_FILE}` },
   ];
 }
 

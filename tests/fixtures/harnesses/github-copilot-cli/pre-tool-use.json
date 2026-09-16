@@ -1,7 +1,7 @@
 {
   "sessionId": "copilot-s-1",
-  "toolName": "shell",
-  "toolArgs": {
-    "command": "dir"
-  }
+  "timestamp": 1757937600000,
+  "cwd": "/repo",
+  "toolName": "powershell",
+  "toolArgs": { "command": "git status", "description": "Show the working tree status" }
 }

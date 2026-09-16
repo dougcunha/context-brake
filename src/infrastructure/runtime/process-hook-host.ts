@@ -3,6 +3,7 @@ import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../../cor
 import type { RuntimeInput } from '../../core/services/brake-engine.js';
 import { failureDetail, failureErrorCode, recordRuntimeFailure, resolveFailure, runWithinDeadline } from '../../core/services/failure-policy.js';
 import { composeRuntime, createRuntimePorts, loadRuntimeConfiguration, systemClock } from './runtime-composition.js';
+import { normalizeEventToolPaths } from './tool-path-normalizer.js';
 
 export const MAXIMUM_STDIN_BYTES = 16 * 1024 * 1024;
 const NEUTRAL: RuntimeDecision = { kind: 'neutral' };
@@ -63,7 +64,7 @@ async function dispatchHook(input: HookDispatch): Promise<RuntimeDecision> {
   const projectRoot = await input.adapter.resolveProjectRoot({ eventName: input.eventName, payload: null });
   input.state.projectRoot = projectRoot;
   const payload = parsePayload(await input.context.readStdin());
-  const event = input.adapter.mapEvent(input.eventName, payload);
+  const event = await normalizeEventToolPaths(input.adapter.mapEvent(input.eventName, payload), projectRoot);
   input.state.event = event;
   const config = await loadRuntimeConfiguration(projectRoot);
   input.state.config = config;

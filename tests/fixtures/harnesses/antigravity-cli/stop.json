@@ -1,0 +1,6 @@
+{
+  "hookName": "Stop",
+  "conversationId": "agy-conv-1",
+  "executionNum": 3,
+  "terminationReason": "model_stop"
+}

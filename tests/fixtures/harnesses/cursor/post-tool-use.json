@@ -1,5 +1,10 @@
 {
   "conversation_id": "cursor-conv-1",
   "hook_event_name": "postToolUse",
-  "tool_output": "file content here"
+  "tool_name": "Shell",
+  "tool_input": {
+    "command": "git status"
+  },
+  "tool_output": "file content here",
+  "tool_use_id": "cursor-call-1"
 }

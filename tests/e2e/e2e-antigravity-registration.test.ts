@@ -19,7 +19,8 @@ describe('E2E Antigravity lifecycle (CR-02)', () => {
     const installed = await readFile(file, 'utf8');
     expect(installed).toContain('echo \'user antigravity hook\'');
     expect(installed).toContain('context-brake');
-    expect(installed).not.toContain('PreToolUse');
+    expect(installed).toContain('PreToolUse');
+    expect(installed).toContain('PostToolUse');
 
     const doc = await runBuiltCli(['doctor', '--json'], root);
     expect(doc.stdout).not.toContain('INTEGRATION_MISSING');
@@ -46,6 +47,6 @@ describe('E2E Antigravity migration (CR-02)', () => {
 
     const migrated = await readFile(file, 'utf8');
     expect(migrated).toContain('context-brake');
-    expect(migrated).not.toContain('PreToolUse');
+    expect(migrated).toContain('PreToolUse');
   });
 });

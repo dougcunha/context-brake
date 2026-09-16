@@ -2,23 +2,15 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
-import type { CapabilityDefinition, CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
+import type { CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
+import { ANTIGRAVITY_CAPABILITIES } from './capabilities.js';
 import { ANTIGRAVITY_EXECUTABLES, detectAntigravity } from './detector.js';
 import { ANTIGRAVITY_CONFIG_FILE, ANTIGRAVITY_HOOK_FILE, planAntigravityInstall, planAntigravityRemove } from './planner.js';
-
-const CAPABILITIES: readonly CapabilityDefinition[] = [
-  { id: 'pre_tool_block', state: 'unsupported', impact: 'PRD-01 installs only the Antigravity CLI PreInvocation hook; selective pre-tool blocking arrives with PRD-02.' },
-  { id: 'tool_coverage', state: 'unknown', impact: 'Hook coverage in the Antigravity CLI is not confirmed by its documentation.' },
-  { id: 'post_tool_telemetry', state: 'unsupported', impact: 'Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation.' },
-  { id: 'session_boot', state: 'unsupported', impact: 'Session boot is indirect via PreInvocation.' },
-  { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to Antigravity CLI hooks.' },
-  { id: 'timeout_fail_closed', state: 'unknown', impact: 'Failure and timeout behavior of Antigravity hooks is not documented.' },
-];
 
 function hasInstalledIntegration(raw: string): boolean {
   try {
@@ -37,7 +29,7 @@ export class AntigravityAdapter implements HarnessAdapter {
   readonly executionModel = 'process' as const;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
-    return deriveSupportProfile({ harness: this.id, capabilities: CAPABILITIES, version });
+    return deriveSupportProfile({ harness: this.id, capabilities: ANTIGRAVITY_CAPABILITIES, version });
   }
 
   detect(context: HarnessContext): Promise<readonly DetectionEvidence[]> {

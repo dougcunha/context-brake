@@ -23,6 +23,7 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/runtime-host-process.test.ts',
   'tests/integration/runtime-invalid-config.test.ts',
   'tests/integration/runtime-in-process.test.ts',
+  'tests/integration/runtime-overhead.test.ts',
   'tests/integration/runtime-parallel-turns.test.ts',
   'tests/integration/runtime-retention.test.ts',
   'tests/integration/runtime-session-ledger.test.ts',

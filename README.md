@@ -46,6 +46,18 @@ Default limits. A turn is one completed tool call, and when several conditions m
 
 Blocking is available on harnesses with **Full** or **Partial** support, but only where the installed hook honors an explicit deny; on **Cooperative** harnesses the protocol only advises. `doctor` lists each harness's hook timeouts, missing tool coverage, and crashes as limitations. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
 
+### Brake Behavior & State-Saving Allowlist
+
+Above the critical ceiling (by default, 75% context usage or 12 turns), ContextBrake engages the tool-call brake on supported harnesses. General tool executions are intercepted and denied before execution with an agent-facing block message.
+
+Only allowlisted operations pass through:
+1. **Plan & Checkpoint Files:** Reading or writing the configured plan file (`task_plan.json`) and checkpoint file (`state_checkpoint.json`).
+2. **Step Validation Command:** The validation command configured for the active step in `task_plan.json`.
+3. **Safe Git Commands:** `git status`, `git add`, and `git commit` (without chained shell operators).
+4. **Configured Additional Commands:** Additional allowed commands defined in `brake.additionalAllowedCommands` in `context-brake.config.json` (such as `npm run typecheck`).
+
+To customize limits, modify `telemetry.zones` in `context-brake.config.json`. Note that `telemetry.turnCeiling` must strictly equal `telemetry.zones.criticalTurn`; update both values together when changing the ceiling. Full block specifications and format details live in `docs/telemetry-block.md`.
+
 ---
 
 ## 🧩 Supported Harnesses
@@ -62,6 +74,8 @@ Support levels come from each vendor's documentation, checked in September 2026.
 | Pi (`pi`) | Extensions in `.pi/extensions/` | Full | Timeout behavior of extension handlers is not documented |
 | Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Timeout behavior of extension handlers is not documented |
 | Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Partial | Telemetry is injected through `PreInvocation`; hook coverage in the CLI is unconfirmed, and `PreToolUse` `allow` auto-approves calls |
+
+For Antigravity CLI, `PreToolUse` requires an explicit decision (`allow` or `deny`). ContextBrake emits `allow` below the ceiling to permit tool execution, which auto-approves the call and replaces the harness's normal permission prompt. Above the ceiling, `deny` is returned.
 
 Aider is not supported because it has no hook mechanism. The full capability matrix and its sources are in the [installation PRD](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md).
 
@@ -118,7 +132,7 @@ npx context-brake doctor
 
 ### Updating and Removal
 
-- **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and protocol references without touching your custom settings.
+- **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and synchronize protocol references without touching your custom settings. If custom allowed commands are added or protocol rows change, `doctor` may report `PROTOCOL_FILE_MISMATCH` until `context-brake init --yes` is rerun to regenerate the protocol table to match the current configuration.
 - **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
 - **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations. Default removal keeps both state files and their `.gitignore` block, so the state stays ignored; add `--remove-state` to delete the plan, checkpoint, and that block together. `remove --remove-state` deletes `.gitignore` only when the ContextBrake block was its only content.
 
@@ -147,6 +161,9 @@ npx context-brake doctor
       "criticalTurn": 12
     }
   },
+  "brake": {
+    "additionalAllowedCommands": []
+  },
   "stateStorage": {
     "planFile": "task_plan.json",
     "checkpointFile": "state_checkpoint.json",
@@ -160,7 +177,7 @@ npx context-brake doctor
 }
 ```
 
-`contextWindowCeiling` is used only when the harness does not report the active model's window. `turnCeiling` must equal `zones.criticalTurn`; change both to move the turn ceiling. With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
+`contextWindowCeiling` is used only when the harness does not report the active model's window. `turnCeiling` must equal `zones.criticalTurn`; change both to move the turn ceiling. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
 
 ---
 

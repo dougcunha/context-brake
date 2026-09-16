@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 import { configurationSchema, type ContextBrakeConfig } from '../contracts/configuration.js';
 
 export type ConfigurationIssue = { path: string; received: unknown; rule: string };

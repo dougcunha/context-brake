@@ -9,7 +9,8 @@
   "files": [
     "dist",
     "schemas",
-    "docs/context-brake-protocol.md"
+    "docs/context-brake-protocol.md",
+    "docs/telemetry-block.md"
   ],
   "engines": {
     "node": ">=20"

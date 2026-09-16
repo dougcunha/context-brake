@@ -43,13 +43,13 @@ Every runtime asset is a thin entry over `src/`, `assets/runtime/process-hook.ts
 
 ## Work
 
-- [ ] T08.1 Confirm every `assets/runtime/*.ts` is a thin entry naming `runProcessHook` or a harness factory, and delete `assets/runtime/process-hook.ts` after no asset imports it.
-- [ ] T08.2 Expose the esbuild metafile from `bundleAsset` (return `{ text, metafile }`) without breaking `buildRuntimeAssets`, `findStaleAssets`, and `verifyAssets`; rerun `npm run assets:build`.
-- [ ] T08.3 Create `tests/unit/runtime-bundle-imports.test.ts` asserting no bundle input resolves to classic `zod`, `jsonc-parser`, `semver`, `node:child_process`, or `src/cli/`.
-- [ ] T08.4 Create `tests/integration/runtime-overhead.test.ts`: process assets on the built post-tool path and the `CRITICAL` pre-tool path with allowlist evaluation in a seeded temporary repository, and in-process `tool_call` handlers with the documented context.
-- [ ] T08.5 Create `docs/telemetry-block.md`: field order, versioning rule, one example per zone, the block message with the allowlist summary and its failure variant, the reset notice text, and the ledger and log locations with their metadata-only rule.
-- [ ] T08.6 Update the README (brake behavior, default zones and limits, how to change them, the allowlist and its configuration, the upgrade step with `PROTOCOL_FILE_MISMATCH`, and Antigravity's `allow` replacing the normal permission flow), add `docs/telemetry-block.md` to `package.json` `files` and `REQUIRED_FILES`, and add the 2026-09-15 re-check note to the research header.
-- [ ] T08.7 Adjust `tests/unit/asset-bundler.test.ts` and `tests/unit/runtime-assets.test.ts` only as the thin entries require, keeping the nine-entry count and the `runProcessHook` assertion valid.
+- [x] T08.1 Confirm every `assets/runtime/*.ts` is a thin entry naming `runProcessHook` or a harness factory, and delete `assets/runtime/process-hook.ts` after no asset imports it.
+- [x] T08.2 Expose the esbuild metafile from `bundleAsset` (return `{ text, metafile }`) without breaking `buildRuntimeAssets`, `findStaleAssets`, and `verifyAssets`; rerun `npm run assets:build`.
+- [x] T08.3 Create `tests/unit/runtime-bundle-imports.test.ts` asserting no bundle input resolves to classic `zod`, `jsonc-parser`, `semver`, `node:child_process`, or `src/cli/`.
+- [x] T08.4 Create `tests/integration/runtime-overhead.test.ts`: process assets on the built post-tool path and the `CRITICAL` pre-tool path with allowlist evaluation in a seeded temporary repository, and in-process `tool_call` handlers with the documented context.
+- [x] T08.5 Create `docs/telemetry-block.md`: field order, versioning rule, one example per zone, the block message with the allowlist summary and its failure variant, the reset notice text, and the ledger and log locations with their metadata-only rule.
+- [x] T08.6 Update the README (brake behavior, default zones and limits, how to change them, the allowlist and its configuration, the upgrade step with `PROTOCOL_FILE_MISMATCH`, and Antigravity's `allow` replacing the normal permission flow), add `docs/telemetry-block.md` to `package.json` `files` and `REQUIRED_FILES`, and add the 2026-09-15 re-check note to the research header.
+- [x] T08.7 Adjust `tests/unit/asset-bundler.test.ts` and `tests/unit/runtime-assets.test.ts` only as the thin entries require, keeping the nine-entry count and the `runProcessHook` assertion valid.
 
 ## Acceptance criteria
 
@@ -85,12 +85,12 @@ Every runtime asset is a thin entry over `src/`, `assets/runtime/process-hook.ts
 
 > Updated by `sdd-execute-task` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: T08 implemented. Runtime assets are thin delegates; `scripts/asset-bundler.ts` returns `{ text, metafile }` from `bundleAsset`; `configuration-validator.ts` migrated to `zod/mini`, eliminating classic Zod from bundles; `tests/unit/runtime-bundle-imports.test.ts` guards all bundles against classic `zod`, `jsonc-parser`, `semver`, `node:child_process`, and `src/cli/`; `tests/integration/runtime-overhead.test.ts` measures post-tool, critical pre-tool with allowlist, and in-process `tool_call` overhead; `docs/telemetry-block.md` defines the v1 block, message, notice, and storage specification; `README.md` documents the brake, limits, allowlist, `PROTOCOL_FILE_MISMATCH` upgrade behavior, and Antigravity auto-approval; `package.json` (`files`) and `tests/integration/package-contents.test.ts` (`REQUIRED_FILES`) package `docs/telemetry-block.md`; `tests/test-lanes.ts` registers the overhead integration suite.
+- Changed files: `scripts/asset-bundler.ts`, `src/core/validation/configuration-validator.ts`, `README.md`, `package.json`, `tests/test-lanes.ts`, `tests/integration/package-contents.test.ts`, `docs/telemetry-block.md`, `tests/unit/runtime-bundle-imports.test.ts`, `tests/integration/runtime-overhead.test.ts`, `tasks/prd-02-telemetria-zonas-e-freio/task_08.md`.
+- Checks: `npm run build`, `npm run typecheck`, `npm run lint`, `npm run schemas:check`, `npm run dependencies:check`, `npm run assets:check`, `npm run package:smoke`, `npx vitest run runtime-bundle-imports asset-bundler runtime-assets readme-config-example readme-support-table runtime-overhead doctor-benchmark package-contents` (all 40 tests passed), `npm test` (all 143 test files, 694 tests passed), and `npm run coverage` (all 143 test files passed, coverage thresholds >= 80% met).
+- Validated state: master branch at ce3c4c5 + local diff; Windows 11, Node.js 24.19.0.
+- Open items: none for T08; T09 (simulator, end-to-end brake flow, long-task efficacy) is next.
 
 ### ADR candidates
 
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+None - direct TechSpec implementation or local decision.

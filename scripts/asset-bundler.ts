@@ -1,8 +1,9 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
-import { build } from 'esbuild';
+import { build, type Metafile } from 'esbuild';
 
 export type AssetEntry = { readonly source: string; readonly destination: string };
+export type BundledAsset = { readonly text: string; readonly metafile: Metafile };
 
 export const ASSET_ENTRIES: readonly AssetEntry[] = [
   { source: 'assets/runtime/entry.ts', destination: 'dist/assets/runtime/context-brake-runtime.mjs' },
@@ -18,7 +19,7 @@ export const ASSET_ENTRIES: readonly AssetEntry[] = [
 
 const BUNDLE_TARGET = 'node20';
 
-export async function bundleAsset(entry: AssetEntry): Promise<string> {
+export async function bundleAsset(entry: AssetEntry): Promise<BundledAsset> {
   const result = await build({
     entryPoints: [entry.source],
     bundle: true,
@@ -27,15 +28,20 @@ export async function bundleAsset(entry: AssetEntry): Promise<string> {
     target: BUNDLE_TARGET,
     write: false,
     legalComments: 'none',
+    metafile: true,
   });
-  return result.outputFiles[0]?.text ?? '';
+  return {
+    text: result.outputFiles[0]?.text ?? '',
+    metafile: result.metafile ?? { inputs: {}, outputs: {} },
+  };
 }
 
 export async function buildRuntimeAssets(root: string = process.cwd(), entries: readonly AssetEntry[] = ASSET_ENTRIES): Promise<void> {
   for (const entry of entries) {
     const destination = resolve(root, entry.destination);
     await mkdir(dirname(destination), { recursive: true });
-    await writeFile(destination, await bundleAsset(entry), 'utf8');
+    const bundled = await bundleAsset(entry);
+    await writeFile(destination, bundled.text, 'utf8');
   }
 }
 
@@ -52,7 +58,8 @@ export async function findStaleAssets(root: string = process.cwd(), entries: rea
   const stale: string[] = [];
   for (const entry of entries) {
     const actual = await readBuiltAsset(resolve(root, entry.destination));
-    if (actual !== (await bundleAsset(entry))) stale.push(entry.destination);
+    const bundled = await bundleAsset(entry);
+    if (actual !== bundled.text) stale.push(entry.destination);
   }
   return stale;
 }

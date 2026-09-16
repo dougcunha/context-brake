@@ -1,13 +1,5 @@
-export type OmpApi = {
-  on?: (event: string, handler: (eventData: unknown, ctx: unknown) => Promise<unknown>) => void;
-};
+import { createOmpExtension, type OmpApi } from '../../src/infrastructure/harnesses/oh-my-pi/runtime.js';
 
-export default function contextBrakeOmpExtension(omp: OmpApi): void {
-  try {
-    omp?.on?.('tool_call', async () => ({}));
-    omp?.on?.('tool_result', async () => ({}));
-    omp?.on?.('before_agent_start', async () => ({}));
-  } catch {
-    // Guard against host API differences
-  }
+export default function contextBrakeOmpExtension(api: OmpApi): void {
+  createOmpExtension(api);
 }

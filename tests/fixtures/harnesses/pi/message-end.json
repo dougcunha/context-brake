@@ -1,0 +1,12 @@
+{
+  "message": {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "Checkpoint saved and committed.\n[REQUEST_SESSION_RESET]"
+      }
+    ]
+  },
+  "extraField": "ignored"
+}

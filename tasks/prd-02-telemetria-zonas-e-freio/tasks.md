@@ -144,7 +144,7 @@
 - [T04 — Brake decision core and runtime hosts](done/task_04.md): at the ceiling only the allowlist passes, failures never block below it, the mode comes from capabilities, and both hosts run the engine inside the failure boundary.
 - [T05 — Doctor reads runtime state and reports cooperative brakes, blocks, and errors](done/task_05.md): `doctor` shows cooperative sessions with reasons, block counts, and recent runtime errors.
 - [T06 — Process harness runtimes (Claude Code, Codex CLI, Cursor, Copilot, Antigravity)](done/task_06.md): the five process harnesses register their new events, block above the ceiling, deliver telemetry, reset, and expose their guarantees in the research file.
-- [T07 — In-process harness runtimes (Pi, Oh-My-Pi, OpenCode)](task_07.md): measured usage where the API documents it, appended telemetry, in-process denies, reset, and the sampler on the real contract.
+- [T07 — In-process harness runtimes (Pi, Oh-My-Pi, OpenCode)](done/task_07.md): measured usage where the API documents it, appended telemetry, in-process denies, reset, and the sampler on the real contract.
 - [T08 — Assets, bundle guard, overhead, documentation, and package](task_08.md): assets carry no logic, no heavy dependency reaches a bundle, the p95 targets are measured, and the brake is documented and published.
 - [T09 — Simulated accuracy, end-to-end brake flow, and long-task efficacy](task_09.md): the built CLI runs a real session, the estimate stays within 10 points, and 20 sessions per full-level harness save and commit with no out-of-allowlist call above the ceiling.
 
@@ -179,7 +179,7 @@
 - [x] T04 — done
 - [x] T05 — done
 - [x] T06 — done
-- [ ] T07 — pending
+- [x] T07 — done
 - [ ] T08 — pending
 - [ ] T09 — pending
 

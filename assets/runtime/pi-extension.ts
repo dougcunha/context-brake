@@ -1,13 +1,5 @@
-export type PiApi = {
-  on?: (event: string, handler: (eventData: unknown, ctx: unknown) => Promise<unknown>) => void;
-};
+import { createPiExtension, type PiApi } from '../../src/infrastructure/harnesses/pi/runtime.js';
 
-export default function contextBrakePiExtension(pi: PiApi): void {
-  try {
-    pi?.on?.('tool_call', async () => ({}));
-    pi?.on?.('tool_result', async () => ({}));
-    pi?.on?.('before_agent_start', async () => ({}));
-  } catch {
-    // Guard against host API differences
-  }
+export default function contextBrakePiExtension(api: PiApi): void {
+  createPiExtension(api);
 }

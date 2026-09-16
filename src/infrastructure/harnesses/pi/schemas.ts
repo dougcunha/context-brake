@@ -1,17 +1,22 @@
-import { z } from 'zod';
+import { z } from 'zod/mini';
 
-export const piSettingsFileSchema = z.object({
-  extensions: z.array(z.string()).optional(),
-}).passthrough();
+export const piSettingsFileSchema = z.looseObject({
+  extensions: z.optional(z.array(z.string())),
+});
 
-export const piToolCallPayloadSchema = z.object({
-  toolName: z.string().optional(),
-  toolCallId: z.string().optional(),
-  input: z.unknown().optional(),
-}).passthrough();
+export const piPayloadSchema = z.looseObject({
+  toolName: z.optional(z.string()),
+  toolCallId: z.optional(z.string()),
+  input: z.optional(z.unknown()),
+  content: z.optional(z.unknown()),
+  reason: z.optional(z.string()),
+  message: z.optional(z.unknown()),
+  last_assistant_message: z.optional(z.string()),
+});
 
-export const piToolResultPayloadSchema = z.object({
-  toolName: z.string().optional(),
-  toolCallId: z.string().optional(),
-  content: z.unknown().optional(),
-}).passthrough();
+export const piToolCallPayloadSchema = piPayloadSchema;
+export const piToolResultPayloadSchema = piPayloadSchema;
+export const piSessionStartPayloadSchema = piPayloadSchema;
+export const piSessionCompactPayloadSchema = piPayloadSchema;
+export const piMessageEndPayloadSchema = piPayloadSchema;
+export type PiPayload = z.infer<typeof piPayloadSchema>;

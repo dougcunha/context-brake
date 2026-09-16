@@ -1,0 +1,9 @@
+{
+  "event": {
+    "type": "session.compacted",
+    "properties": {
+      "sessionID": "opencode-session-1"
+    }
+  },
+  "extraField": "ignored"
+}

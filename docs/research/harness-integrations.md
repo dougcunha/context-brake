@@ -106,44 +106,52 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 ## OpenCode
 
 - **Registro:** plugins TypeScript ou JavaScript em `.opencode/plugins/` e `~/.config/opencode/plugins/`, ou pacotes npm listados em `plugin` no `opencode.json` do projeto ou global.
-- **Execução:** dentro do processo do OpenCode.
-- **Eventos:** `tool.execute.before`, `tool.execute.after`, `session.created`, `session.compacted`, `session.idle`, `session.updated`, `session.error`, `message.updated`, `message.part.updated`, `command.executed`, `file.edited`, `permission.asked`, `permission.replied`, `shell.env` e `experimental.session.compacting`, entre outros.
-- **Antes da ferramenta:** lançar um erro em `tool.execute.before` impede a execução.
-- **Depois da ferramenta:** `tool.execute.after` expõe `output.title`, `output.output` e `output.metadata`. A issue #13574, fechada sem correção, relata que alterações em `output.output` são ignoradas na interface; o efeito no contexto do modelo não foi confirmado.
-- **Início da sessão:** não aparece na página oficial consultada. Guias da comunidade citam `experimental.chat.system.transform` para acrescentar texto ao prompt de sistema.
-- **Uso de contexto:** o OpenCode registra tokens por sessão (entrada, saída, raciocínio e cache); falta confirmar como um plugin lê esses valores.
-- **Reinício:** `/new`, com alias `/clear`, inicia sessão nova; `/compact`, com alias `/summarize`, compacta.
-- **Pendências:** efeito de `tool.execute.after` no modelo; hook estável de injeção de contexto; leitura de tokens pelo plugin; comportamento quando um plugin falha fora de `tool.execute.before`.
-- **Fontes:** [Plugins](https://opencode.ai/docs/plugins/), [TUI](https://opencode.ai/docs/tui/) e [issue #13574](https://github.com/anomalyco/opencode/issues/13574).
+- **Execução:** dentro do processo do OpenCode. A função de plugin recebe `project`, `directory`, `worktree`, `client` e `$`; `directory` e `worktree` são as referências documentadas da raiz do projeto (reverificado em 16/09/2026).
+- **Eventos:** `tool.execute.before`, `tool.execute.after`, `session.created`, `session.compacted`, `session.idle`, `session.updated`, `session.error`, `message.updated`, `message.part.updated`, `command.executed`, `file.edited`, `permission.asked`, `permission.replied`, `shell.env` e `experimental.session.compacting`, entre outros. Eventos de sessão chegam pelo handler `event` do objeto de hooks, com `event.type` e `event.properties` (reverificado em 16/09/2026).
+- **Antes da ferramenta:** `tool.execute.before` tem assinatura `(input, output)`, com `input.tool` e `output.args`; lançar um erro impede a execução. O ContextBrake lança a mensagem de bloqueio exatamente acima do teto crítico (reverificado em 16/09/2026).
+- **Depois da ferramenta:** `tool.execute.after` expõe `output.title`, `output.output` e `output.metadata`; os argumentos do hook não são documentados (a estimativa usa `output.args` quando presente, e a lacuna fica registrada em OI-05). A issue #13574, fechada sem correção, relata que alterações em `output.output` são ignoradas na interface; o efeito no contexto do modelo não foi confirmado.
+- **Início da sessão:** `session.created` pelo handler `event`. Não há hook estável de injeção de contexto; guias da comunidade citam `experimental.chat.system.transform`.
+- **Uso de contexto:** o OpenCode registra tokens por sessão (entrada, saída, raciocínio e cache); nenhuma API documentada expõe esses valores a plugins (reverificado em 16/09/2026).
+- **Identificador de sessão:** `input.sessionID` é o campo usado pelo ContextBrake, mas não aparece na documentação oficial consultada; sem ele a chave cai para o identificador de projeto e a lacuna fica registrada em OI-05 (reverificado em 16/09/2026).
+- **Reinício:** `/new`, com alias `/clear`, inicia sessão nova; `/compact`, com alias `/summarize`, compacta. O evento de sessão não carrega texto da resposta, então o ContextBrake não registra canal de aviso de reinício.
+- **Pendências:** efeito de `tool.execute.after` no modelo; hook estável de injeção de contexto; leitura de tokens pelo plugin; argumentos de `tool.execute.after` e `input.sessionID`; comportamento quando um plugin falha fora de `tool.execute.before`.
+- **Fontes:** [Plugins](https://opencode.ai/docs/plugins/), [SDK](https://opencode.ai/docs/sdk/), [TUI](https://opencode.ai/docs/tui/) e [issue #13574](https://github.com/anomalyco/opencode/issues/13574).
+- **Payloads reais:** sem captura; a CLI do OpenCode não foi exercitada nesta máquina (16/09/2026). Os fixtures seguem a documentação e a classificação de ferramentas de arquivo fica condicionada a um payload real (OI-05).
 - **Versão mínima:** não documentada (14/09/2026). As páginas de plugins e TUI não citam changelog nem versão mínima.
 
 ## Pi
 
-- **Registro:** extensões em `.pi/extensions/*.ts` ou `.pi/extensions/*/index.ts` no projeto e em `~/.pi/agent/extensions/`; caminhos extras em `extensions` no `settings.json`.
-- **Execução:** dentro do processo do Pi, com permissões completas. Handlers se inscrevem com `pi.on(evento, handler)`.
+- **Registro:** extensões em `.pi/extensions/*.ts` ou `.pi/extensions/*/index.ts` no projeto e em `~/.pi/agent/extensions/`; caminhos extras em `extensions` no `settings.json`. O instalador grava `.pi/extensions/context-brake.js`; a descoberta documentada aceita apenas `.ts`, então um carregamento real precisa ser confirmado com uma instalação do Pi (OI-03; sem captura nesta máquina em 16/09/2026).
+- **Execução:** dentro do processo do Pi, com permissões completas. Handlers se inscrevem com `pi.on(evento, handler)` e recebem `(event, ctx)`.
 - **Eventos:** `session_start`, `session_before_switch`, `session_before_fork`, `session_shutdown`, `session_before_compact`, `session_compact`, `before_agent_start`, `agent_start`, `agent_end`, `turn_start`, `turn_end`, `message_start`, `message_update`, `message_end`, `tool_call`, `tool_result`, `tool_execution_start`, `tool_execution_end`, `context`, `input`, `before_provider_request` e `after_provider_response`, entre outros.
-- **Antes da ferramenta:** `tool_call` recebe `{ toolName, toolCallId, input }` e retorna `{ block: true, reason?, terminate? }`.
-- **Depois da ferramenta:** `tool_result` recebe `{ toolName, toolCallId, content }` e retorna `{ content, details, isError, usage }`; campos omitidos mantêm o valor atual, e os handlers se encadeiam como middleware.
-- **Início da sessão:** `before_agent_start` pode retornar `message` e `systemPrompt`; `pi.sendMessage` injeta mensagens com os modos de entrega `steer`, `followUp` e `nextTurn`.
-- **Uso de contexto:** `ctx.getContextUsage()` retorna o uso de contexto do modelo ativo.
+- **Antes da ferramenta:** `tool_call` recebe `{ toolName, toolCallId, input }` e retorna `{ block: true, reason?, terminate? }` (reverificado em 16/09/2026).
+- **Depois da ferramenta:** `tool_result` recebe `{ toolName, toolCallId, input, content }` e retorna `{ content, details, isError, usage }`; campos omitidos mantêm o valor atual, e os handlers se encadeiam como middleware. O ContextBrake acrescenta exatamente uma parte de texto ao `content` original (reverificado em 16/09/2026).
+- **Sessão e compactação:** `session_start` com `reason` `new` ou `startup` inicia contagem nova; `session_compact` zera turnos e uso; `message_end` de mensagem `assistant` carrega o texto final (reverificado em 16/09/2026).
+- **Início da sessão:** `before_agent_start` pode retornar `message` e `systemPrompt`; `pi.sendMessage` injeta mensagens com os modos de entrega `steer`, `followUp` e `nextTurn`. O boot do ContextBrake chega no PRD-03.
+- **Uso de contexto:** `ctx.getContextUsage()` retorna `{ tokens: number | null, contextWindow: number, percent: number | null }` de forma síncrona (reverificado em 16/09/2026).
+- **Identificador de sessão:** `ctx.sessionManager.getSessionId()` (reverificado em 16/09/2026).
 - **Reinício:** `ctx.newSession({ withSession })`, `ctx.fork(entryId)` e `ctx.switchSession(sessionPath)`; comandos `/new` e `/compact`.
 - **Falhas:** o documento de hooks descreve que um erro em handler de `tool_call` bloqueia a ferramenta e que os demais eventos têm timeout padrão de 30 s, com erros registrados sem bloquear.
 - **Fontes:** [extensions.md](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md) e [hooks.md](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/hooks.md).
+- **Payloads reais:** sem captura; o Pi não está instalado nesta máquina (16/09/2026). Os fixtures seguem a documentação e o carregamento do arquivo instalado fica registrado em OI-03.
 - **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
 
 ## Oh-My-Pi
 
-- **Registro:** hooks em `.omp/hooks/pre/*.{ts,js}` e `.omp/hooks/post/*.{ts,js}` no projeto e em `~/.omp/agent/hooks/pre` e `post` do usuário. Arquivos colocados direto em `hooks/`, fora de `pre/` ou `post/`, não são carregados e não geram erro. A API de hooks é legada; a documentação recomenda a API de extensões, cujas regras de carregamento estão em `extension-loading.md`.
-- **Execução:** dentro do processo.
+- **Registro:** hooks em `.omp/hooks/pre/*.{ts,js}` e `.omp/hooks/post/*.{ts,js}` no projeto e em `~/.omp/agent/hooks/pre` e `post` do usuário. Arquivos colocados direto em `hooks/`, fora de `pre/` ou `post/`, não são carregados e não geram erro. A API de hooks é legada; a documentação recomenda a API de extensões, cujas regras de carregamento estão em `extension-loading.md` e aceitam `.ts` e `.js` em `.omp/extensions/` (reverificado em 16/09/2026). O instalador grava `.omp/extensions/context-brake.js`; um carregamento real fica registrado em OI-04.
+- **Execução:** dentro do processo. Handlers recebem `(event, ctx)`.
 - **Eventos:** eventos de sessão (`session_start`, `session_before_compact`, `session_compact`, `session_shutdown` e outros), `context`, `before_agent_start`, `agent_start`, `agent_end`, `turn_start`, `turn_end`, `auto_compaction_start`, `auto_compaction_end`, `tool_call` e `tool_result`; a API de extensões acrescenta `session_stop`, `tool_approval_requested` e outros.
-- **Antes da ferramenta:** `tool_call` recebe `{ toolName, toolCallId, input }` e retorna `{ block: true, reason }`, ou `input` para reescrever os argumentos. Erros em handlers de `tool_call` propagam para quem chamou.
-- **Depois da ferramenta:** `tool_result` recebe `{ toolName, toolCallId, content }` e pode substituir `content`, `details` e `isError`, em cadeia.
+- **Antes da ferramenta:** `tool_call` recebe `{ toolName, toolCallId, input }` e retorna `{ block: true, reason }`, ou `input` para reescrever os argumentos. Erros em handlers de `tool_call` propagam para quem chamou (reverificado em 16/09/2026).
+- **Depois da ferramenta:** `tool_result` recebe `{ toolName, toolCallId, input, content }` e pode substituir `content`, `details` e `isError`, em cadeia (reverificado em 16/09/2026).
+- **Sessão e compactação:** `session_start` com `reason` `new` ou `startup` inicia contagem nova; `session_compact` e `auto_compaction_end` zeram turnos e uso; `session_stop` carrega `last_assistant_message` para o aviso de reinício (reverificado em 16/09/2026).
 - **Contexto:** `before_agent_start` retorna mensagem customizada; o evento `context` pode filtrar ou transformar as mensagens enviadas ao modelo; `pi.sendMessage`, `pi.sendUserMessage` e `pi.appendEntry` injetam conteúdo.
-- **Uso de contexto:** `ctx.getContextUsage()`.
-- **Reinício:** `ctx.newSession(...)` em contexto de comando.
+- **Uso de contexto:** `ctx.getContextUsage()` retorna `{ tokens: number, contextWindow: number, percent: number }` de forma síncrona (reverificado em 16/09/2026).
+- **Identificador de sessão:** `ctx.sessionManager.getSessionId()` (reverificado em 16/09/2026).
+- **Reinício:** `ctx.newSession(...)` em contexto de comando; `/new` e `/clear` são os comandos documentados.
 - **Falhas:** erros de handlers dos demais eventos viram `HookError`, e a execução continua.
-- **Pendências:** caminhos de carregamento de extensões; comandos de nova sessão.
+- **Pendências:** confirmar o carregamento da extensão `.js` instalada (OI-04); comando de nova sessão.
 - **Fontes:** [hooks.md](https://github.com/can1357/oh-my-pi/blob/main/docs/hooks.md) e [extensions.md](https://github.com/can1357/oh-my-pi/blob/main/docs/extensions.md).
+- **Payloads reais:** sem captura; o Oh-My-Pi não está instalado nesta máquina (16/09/2026). Os fixtures seguem a documentação e o carregamento da extensão instalada fica registrado em OI-04.
 - **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
 
 ## Antigravity CLI

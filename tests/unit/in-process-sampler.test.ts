@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { sampleInProcess } from '../../src/infrastructure/diagnostics/in-process-sampler.js';
+import { createBenchmarkContext, sampleInProcess } from '../../src/infrastructure/diagnostics/in-process-sampler.js';
 
 const FIXTURES = join(process.cwd(), 'tests', 'fixtures', 'benchmark');
 
@@ -46,4 +46,11 @@ describe('TC-04: in-process sampling selects the registered handler by event (FR
   it('runs only the tool_call handler across ten warm-ups and one hundred samples', runToolHandler);
   it('returns null instead of falling back when the named handler is absent', runMissingHandler);
   it('invokes OpenCode tool.execute.before with the documented input and output arguments', runOpenCodeHandler);
+  it('builds the documented synchronous ContextUsage shape and session manager', () => {
+    const context = createBenchmarkContext();
+    expect(context.getContextUsage()).toEqual({ tokens: 42000, contextWindow: 128000, percent: 33 });
+    expect(context.sessionManager.getSessionId()).toBe('context-brake-benchmark');
+    expect(typeof context.cwd).toBe('string');
+    expect(context.ui.notify).toBeTypeOf('function');
+  });
 });

@@ -1,0 +1,14 @@
+{
+  "toolName": "run_command",
+  "toolCallId": "call_omp_result",
+  "input": {
+    "command": "npm test"
+  },
+  "content": [
+    {
+      "type": "text",
+      "text": "tests passed"
+    }
+  ],
+  "extraField": "ignored"
+}

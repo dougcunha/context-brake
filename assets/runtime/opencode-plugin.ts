@@ -1,11 +1,5 @@
-export type OpenCodePluginHooks = {
-  readonly 'tool.execute.before'?: (input: unknown) => Promise<void>;
-  readonly 'tool.execute.after'?: (input: unknown) => Promise<void>;
-};
+import { createOpenCodePlugin, type OpenCodePluginHooks } from '../../src/infrastructure/harnesses/opencode/runtime.js';
 
-export default function contextBrakePlugin(): OpenCodePluginHooks {
-  return {
-    'tool.execute.before': async () => {},
-    'tool.execute.after': async () => {},
-  };
+export default function contextBrakePlugin(context?: unknown): OpenCodePluginHooks {
+  return createOpenCodePlugin(context);
 }

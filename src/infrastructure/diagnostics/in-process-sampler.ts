@@ -8,7 +8,8 @@ type HookHandler = (first: unknown, second: unknown) => unknown;
 type HookRecord = Record<string, unknown>;
 
 export type BenchmarkContext = {
-  readonly getContextUsage: () => Promise<unknown>;
+  readonly cwd: string;
+  readonly getContextUsage: () => unknown;
   readonly sessionManager: { readonly getSessionId: () => string };
   readonly ui: { readonly notify: (message: string) => void };
 };
@@ -25,9 +26,10 @@ function isHookRecord(value: unknown): value is HookRecord {
   return typeof value === 'object' && value !== null;
 }
 
-function createContext(): BenchmarkContext {
+export function createBenchmarkContext(): BenchmarkContext {
   return {
-    getContextUsage: async () => ({ usedTokens: 0, maxTokens: 1000 }),
+    cwd: process.cwd(),
+    getContextUsage: () => ({ tokens: 42000, contextWindow: 128000, percent: 33 }),
     sessionManager: { getSessionId: () => SESSION_ID },
     ui: { notify: () => {} },
   };
@@ -64,5 +66,5 @@ export async function sampleInProcess(benchmark: InProcessBenchmark): Promise<nu
   const returned = typeof module.default === 'function' ? module.default(api) : undefined;
   const selected = selectHandler(returned, handlers, benchmark.event);
   if (selected === null) return null;
-  return runSamples(selected.handler, invocationArgs(selected, benchmark.payload, createContext()));
+  return runSamples(selected.handler, invocationArgs(selected, benchmark.payload, createBenchmarkContext()));
 }

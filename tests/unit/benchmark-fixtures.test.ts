@@ -29,7 +29,7 @@ function checkProcessPayloads(): void {
 }
 
 function checkInProcessPayloads(): void {
-  expect(opencodeToolExecuteBeforePayloadSchema.parse(payload('opencode').input).tool).toBe('bash');
+  expect(opencodeToolExecuteBeforePayloadSchema.parse(payload('opencode')).input?.tool).toBe('bash');
   expect(piToolCallPayloadSchema.parse(payload('pi')).input).toEqual({ path: 'file.txt' });
   expect(payload('pi').toolName).toBe('read');
   expect(ompToolCallPayloadSchema.parse(payload('oh-my-pi')).input).toEqual({ path: 'file.txt' });

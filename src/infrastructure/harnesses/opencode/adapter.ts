@@ -2,30 +2,22 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
-import type { CapabilityDefinition, CapabilityProfile, DetectionEvidence, VersionProbe } from '../../../core/contracts/harness.js';
+import { type CapabilityProfile, type DetectionEvidence, type VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { detectOpenCode, OPENCODE_EXECUTABLES } from './detector.js';
+import { OPENCODE_CAPABILITIES } from './capabilities.js';
 import { OPENCODE_PLUGIN_FILE, planOpenCodeInstall, planOpenCodeRemove } from './planner.js';
-
-const CAPABILITIES: readonly CapabilityDefinition[] = [
-  { id: 'pre_tool_block', state: 'supported' },
-  { id: 'tool_coverage', state: 'unknown', impact: 'Whether tool.execute.before runs for every OpenCode tool is not documented.' },
-  { id: 'post_tool_telemetry', state: 'unsupported', impact: 'Model visibility of post-tool output modification is unconfirmed in OpenCode.' },
-  { id: 'session_boot', state: 'unsupported', impact: 'Stable boot injection is experimental in OpenCode.' },
-  { id: 'context_usage', state: 'unsupported', impact: 'No documented API exposes context usage to OpenCode plugins.' },
-  { id: 'timeout_fail_closed', state: 'unknown', impact: 'Failure and timeout behavior of OpenCode plugins is not documented.' },
-];
 
 export class OpenCodeAdapter implements HarnessAdapter {
   readonly id = 'opencode';
   readonly executionModel = 'in_process' as const;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
-    return deriveSupportProfile({ harness: this.id, capabilities: CAPABILITIES, version });
+    return deriveSupportProfile({ harness: this.id, capabilities: OPENCODE_CAPABILITIES, version });
   }
 
   detect(context: HarnessContext): Promise<readonly DetectionEvidence[]> {

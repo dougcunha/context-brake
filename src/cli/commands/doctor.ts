@@ -7,6 +7,8 @@ import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.j
 import { NodeOverheadMeasurer } from '../../infrastructure/diagnostics/overhead-measurer.js';
 import { readPackageVersion } from '../../infrastructure/storage/package-metadata.js';
 import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
+import { systemClock } from '../../infrastructure/runtime/runtime-composition.js';
+import { NodeRuntimeStateReader } from '../../infrastructure/runtime/runtime-state-reader.js';
 import { diagnoseProject } from '../../core/services/doctor-service.js';
 import { renderJsonOutput } from '../output/json.js';
 import { renderDoctorText } from '../output/text.js';
@@ -45,7 +47,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap,
     ...(planSnap ? { planSnapshot: planSnap } : {}),
     ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
-    manifest, allSnapshots, packageVersion,
+    manifest, allSnapshots, packageVersion, runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(),
   });
   if (args.json) {
     renderJsonOutput(report);

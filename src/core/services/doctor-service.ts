@@ -5,6 +5,7 @@ import type { FileSnapshot } from '../contracts/changes.js';
 import { type CapabilityProfile, type DetectionSources, type HarnessId } from '../contracts/harness.js';
 import type { InstallationManifest } from '../contracts/manifest.js';
 import { assetCurrencyFindings } from './asset-currency.js';
+import { brakeSessionFindings, type RuntimeStateReading } from './brake-session-checks.js';
 import { detectHarnesses } from './detection-service.js';
 import { checkConfig, checkInstructionFiles, checkProtocolFile, checkStateFiles } from './doctor-checks.js';
 import { checkGitignore } from './gitignore-checks.js';
@@ -27,6 +28,7 @@ export type DoctorInput = {
   manifest: InstallationManifest | null;
   allSnapshots: readonly FileSnapshot[];
   packageVersion: string;
+  runtimeState?: RuntimeStateReading | null;
 };
 
 function deriveIntegrationState(findings: readonly DiagnosticFinding[]): 'installed' | 'missing' | 'broken' {
@@ -91,5 +93,6 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
   allFindings.push(...checkProtocolFile(input.protocolSnapshot, effective));
   allFindings.push(...checkStateFiles(input.planSnapshot, input.checkpointSnapshot));
   if (input.config && !input.configError) allFindings.push(...checkGitignore(input.gitignoreSnapshot, input.config));
+  if (input.runtimeState) allFindings.push(...brakeSessionFindings(input.runtimeState));
   return buildDoctorReport({ detections, integrations, findings: allFindings });
 }

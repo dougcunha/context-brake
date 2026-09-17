@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "generation": 2,
+  "feature": "prd-02-telemetria-zonas-e-freio",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "completed",
+  "status": "completed",
+  "safe_to_stop": true,
+  "owner_session": "fdccf7c5-6e62-4b4a-8060-0e45b71d2466",
+  "objective": "Context telemetry, runtime zones, and tool-call brake safeguards across 8 coding-agent harnesses",
+  "constraints": [
+    "CLI and harness hooks only; no browser, UI, or external service",
+    "Offline and deterministic; zero secrets or tool output content stored",
+    "Under-ceiling fail-open; above-ceiling fail-closed",
+    "Overhead p95 <= 100ms process / <= 15ms in-process"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_09/codereview.md",
+    "qa": "qa_01/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "codereview_09/codereview.md",
+      "decision_id": "DEC-HIL-03"
+    },
+    {
+      "path": "qa_01/qa.md",
+      "decision_id": "DEC-HIL-04"
+    }
+  ],
+  "decisions_to_read": [
+    {
+      "decision": "Accept final delivery of PRD-02 (Telemetry, zones, and brake)",
+      "scope": "acceptance",
+      "relevant_human_text": "Accept PRD-02 delivery and mark feature completed",
+      "available_provenance": "workflow.md#DEC-HIL-04"
+    }
+  ],
+  "git_base": "b9647e9",
+  "worktree_evidence": "tasks/prd-02-telemetria-zonas-e-freio/task_09.md#Handoff",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "close",
+    "instruction": "Feature prd-02-telemetria-zonas-e-freio completed and accepted. Ready to transition to PRD-03 (tasks/prd-03-plano-checkpoint-e-boot/).",
+    "read": [
+      {
+        "path": "tasks/prd-02-telemetria-zonas-e-freio/qa_01/qa.md",
+        "section": "Conclusion"
+      },
+      {
+        "path": "tasks/prd-02-telemetria-zonas-e-freio/workflow.md",
+        "section": "Human Decisions Log"
+      }
+    ]
+  }
+}

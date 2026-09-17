@@ -1,0 +1,12 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-brake.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 23291[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 end-to-end brake flow (TC-27, CA-01, CA-14, CA-15, CA-18)[2m > [22mdrives Claude Code from GREEN to CRITICAL with the documented block, deny, and save sequence [33m 14505[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 end-to-end brake flow (TC-27, CA-01, CA-14, CA-15, CA-18)[2m > [22mreports the Codex CLI cooperative brake with text and JSON parity [33m 8784[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 10:37:39
+[2m   Duration [22m 25.19s[2m (transform 195ms, setup 0ms, collect 1.20s, tests 23.29s, environment 0ms, prepare 250ms)[22m
+

@@ -1,0 +1,13 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-simulated-usage.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 10283[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated usage accuracy (TC-13, CA-11)[2m > [22mkeeps every pi code reading within 10 points at window 128000 [33m 492[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated usage accuracy (TC-13, CA-11)[2m > [22mkeeps every oh-my-pi code reading within 10 points at window 128000 [33m 486[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated process harness (CA-11 acceptance)[2m > [22mdrives the installed Claude Code hook with estimated readings and identical repeated ledgers [33m 7760[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m   Start at [22m 10:38:13
+[2m   Duration [22m 12.16s[2m (transform 693ms, setup 0ms, collect 1.17s, tests 10.28s, environment 1ms, prepare 262ms)[22m
+

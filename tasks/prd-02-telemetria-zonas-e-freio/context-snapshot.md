@@ -4,15 +4,15 @@
 
 ## Header
 
-- status: active
+- status: closed
 - generated: 2026-09-17
-- stage: review
-- stage_source: codereview_09/codereview.md
-- covers_through: T09 (reviewed, APPROVED WITH RESERVATIONS)
+- stage: acceptance
+- stage_source: tasks/prd-02-telemetria-zonas-e-freio/workflow.md
+- covers_through: HIL 3 (completed)
 - authored_code: no
-- git_head: 4a9f5fe
-- worktree: tasks/prd-02-telemetria-zonas-e-freio/{done/task_09.md,tasks.md,codereview_09/codereview.md}, tests/support/harness-simulator/{scenarios,agent-profiles,process-driver,in-process-driver,session-recorder}.ts, tests/e2e/{e2e-simulated-usage,e2e-brake,e2e-simulated-long-task}.test.ts
-- next_step: sdd-execute-qa
+- git_head: 86961bb
+- worktree: clean
+- next_step: prd-03-plano-checkpoint-e-boot
 - other_eligible: —
 - superseded_by: —
 
@@ -32,11 +32,11 @@ Entry shape: `- [ID] (when: tier: trigger; trigger) gist — src: path#section; 
 
 ## Next step brief
 
-- Why next: T09 is implemented and green (handoff in `task_09.md`); T05 and T08 dependencies are closed, and the review must run in a session that did not author the code.
-- Read first: `tasks/prd-02-telemetria-zonas-e-freio/task_09.md` (contract + Handoff), then the eight new files, then the cited TechSpec sections: `#test-approach` (TC-13, TC-20 end to end, TC-23, TC-27), `#technical-decisions` DEC-05/06/08/10/11/19, and `prd.md#critérios-de-aceitação` (CA-01, CA-11, CA-14, CA-15, CA-17, CA-18, CA-21).
-- Known change points: `tests/support/harness-simulator/scenarios.ts` (catalog, seeds, tokenizer, call builders), `agent-profiles.ts` (20-profile catalog and scripts), `process-driver.ts` (payload builders, response parsing, install/git), `in-process-driver.ts` (mock API, incremental token counts, reload), `session-recorder.ts` (recorder, script runner, ledger helpers); `tests/e2e/e2e-simulated-usage.test.ts`, `e2e-brake.test.ts`, `e2e-simulated-long-task.test.ts`. No `src/` file changed.
-- Applicable entries: L-01, L-03, L-04, L-05, L-06, M-01, M-03, M-04, D-01, O-02, O-04, O-05, O-06, O-07.
-- Watch out: the quality-profile reservations are expected but must be counted (QA-10 and QA-11 below); the long-task suite is the slow one (~128 s alone, ~5 min in coverage); compare the handoff's claims against the actual commands, not the snapshot.
+- Why next: PRD-02 QA execution has concluded with status APPROVED. All 22 Functional Requirements (`RF1`–`RF22`) and 23 Acceptance Criteria (`CA-01`–`CA-23`) are verified and passing with 146 test files, 813 tests passing, and 93.31% statement coverage.
+- Read first: `tasks/prd-02-telemetria-zonas-e-freio/qa_01/qa.md` (QA report and evidence matrix), then `tasks/prd-02-telemetria-zonas-e-freio/tasks.md` and `prd.md`.
+- Known change points: No code modifications were performed in this QA session. QA evidence is stored under `tasks/prd-02-telemetria-zonas-e-freio/qa_01/evidence/`.
+- Applicable entries: L-01, L-03, L-04, L-05, L-06, M-01, M-03, M-04, O-02, O-04, O-05, O-06, O-07, O-08.
+- Watch out: PRD-02 is fully verified locally on Windows 11 / Node 24; multi-platform CI matrix (Linux/macOS × Node 20/22/24) remains tracked under O-04 for release.
 
 ## Decisions
 
@@ -63,3 +63,4 @@ Entry shape: `- [ID] (when: tier: trigger; trigger) gist — src: path#section; 
 - [O-05] (when: now) codereview_08 optional improvements: CR-01 (overhead evidence scope and p95 logging), CR-02 (dead `assets/runtime/entry.ts` stub), CR-03 (`scripts/check-package.ts` missing `docs/telemetry-block.md`); persistent reservations `codereview_01/CR-01` (schema `required: brake`) and `codereview_02/CR-02` (QA-10 test helper). None blocks T09. — src: `tasks/prd-02-telemetria-zonas-e-freio/codereview_08/codereview.md#findings`; until: a corrections or packaging task closes them.
 - [O-06] (when: now) Cursor has no documented file-write payload, so its above-ceiling state save is asserted denied and recorded as the fixture-gated gap (OI-04); do not read the long-task suite as proving an above-ceiling Cursor save. — src: `task_09.md#Handoff`; until: a real Cursor file-tool capture exists.
 - [O-07] (when: now) codereview_09 optional reservations: QA-10 in `tests/support/harness-simulator/process-driver.ts:69` and QA-11 in `tests/e2e/e2e-brake.test.ts` (106 physical lines, 100 non-blank). Both recorded as CR-01/CR-02; feature has 3 total reservations, below the 8-count escalation trigger. — src: `tasks/prd-02-telemetria-zonas-e-freio/codereview_09/codereview.md#findings`; until: a future cleanup task closes them.
+- [O-08] (when: now) QA stage completed with status APPROVED. Report written to `tasks/prd-02-telemetria-zonas-e-freio/qa_01/qa.md`. All 22 RFs and 23 CAs verified; 0 bugs found. Feature ready for final acceptance/handoff. — src: `tasks/prd-02-telemetria-zonas-e-freio/qa_01/qa.md`; until: feature accepted.

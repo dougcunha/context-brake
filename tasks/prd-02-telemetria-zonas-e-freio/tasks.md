@@ -146,7 +146,7 @@
 - [T06 — Process harness runtimes (Claude Code, Codex CLI, Cursor, Copilot, Antigravity)](done/task_06.md): the five process harnesses register their new events, block above the ceiling, deliver telemetry, reset, and expose their guarantees in the research file.
 - [T07 — In-process harness runtimes (Pi, Oh-My-Pi, OpenCode)](done/task_07.md): measured usage where the API documents it, appended telemetry, in-process denies, reset, and the sampler on the real contract.
 - [T08 — Assets, bundle guard, overhead, documentation, and package](done/task_08.md): assets carry no logic, no heavy dependency reaches a bundle, the p95 targets are measured, and the brake is documented and published.
-- [T09 — Simulated accuracy, end-to-end brake flow, and long-task efficacy](task_09.md): the built CLI runs a real session, the estimate stays within 10 points, and 20 sessions per full-level harness save and commit with no out-of-allowlist call above the ceiling.
+- [T09 — Simulated accuracy, end-to-end brake flow, and long-task efficacy](done/task_09.md): the built CLI runs a real session, the estimate stays within 10 points, and 20 sessions per full-level harness save and commit with no out-of-allowlist call above the ceiling.
 
 ## Coverage gate
 
@@ -181,7 +181,7 @@
 - [x] T06 — done
 - [x] T07 — done
 - [x] T08 — done
-- [ ] T09 — pending
+- [x] T09 — done
 
 ## Problems and solutions
 

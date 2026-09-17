@@ -5,14 +5,14 @@
 ## Header
 
 - status: active
-- generated: 2026-09-16
+- generated: 2026-09-17
 - stage: review
-- stage_source: codereview_08/codereview.md
-- covers_through: codereview_08/codereview.md
+- stage_source: codereview_09/codereview.md
+- covers_through: T09 (reviewed, APPROVED WITH RESERVATIONS)
 - authored_code: no
-- git_head: ce3c4c5
-- worktree: 13 changed: README.md, package.json, scripts/asset-bundler.ts, src/core/validation/configuration-validator.ts, tests/integration/{package-contents,runtime-overhead}.test.ts, tests/test-lanes.ts, tests/unit/runtime-bundle-imports.test.ts, docs/telemetry-block.md, tasks/prd-02-telemetria-zonas-e-freio/{tasks,context-snapshot}.md, done/task_08.md (moved), codereview_08/ (plus untracked .agents/scheduled_tasks.lock)
-- next_step: sdd-execute-task — T09 (task_09.md)
+- git_head: 4a9f5fe
+- worktree: tasks/prd-02-telemetria-zonas-e-freio/{done/task_09.md,tasks.md,codereview_09/codereview.md}, tests/support/harness-simulator/{scenarios,agent-profiles,process-driver,in-process-driver,session-recorder}.ts, tests/e2e/{e2e-simulated-usage,e2e-brake,e2e-simulated-long-task}.test.ts
+- next_step: sdd-execute-qa
 - other_eligible: —
 - superseded_by: —
 
@@ -32,31 +32,34 @@ Entry shape: `- [ID] (when: tier: trigger; trigger) gist — src: path#section; 
 
 ## Next step brief
 
-- Why next: T08 is implemented, reviewed (`APPROVED WITH RESERVATIONS` in codereview_08), and closed; T09 is the last PRD-02 unit and owns simulated accuracy (CA-11), the built-CLI brake flow (CA-01, CA-14, CA-15, CA-17, CA-18), and long-task efficacy (CA-21).
-- Read first: `tasks/prd-02-telemetria-zonas-e-freio/task_09.md` (contract + Work), then `techspec.md#technical-decisions` (DEC-19 plus DEC-05, DEC-06, DEC-08, DEC-10, DEC-11), `#test-approach` (TC-13, TC-20, TC-23, TC-27), `#quality-profile`, `prd.md#critérios-de-aceitação`, `docs/telemetry-block.md`, and `codereview_08/codereview.md` (findings, limitations, persistent reservations).
-- Known change points: new `tests/support/harness-simulator/{scenarios,agent-profiles,process-driver,in-process-driver,session-recorder}.ts` and `tests/e2e/{e2e-simulated-usage,e2e-brake,e2e-simulated-long-task}.test.ts`; `tests/test-lanes.ts` only if the support files need lane registration; `src/infrastructure/harnesses/{pi,oh-my-pi}/runtime.ts` only if estimation recalibration is required.
-- Watch out: e2e suites run the built CLI, so `npm run build` first; process-lane and e2e suites share `dist/`, `coverage/`, and fixture directories, so serialize them; unit-lane files must not carry process-lane literal markers (L-04); the process p95 target binds only under `CI` and no p95 is printed (codereview_08/CR-01); runtime bundles are ≈750 KB because all zod locale modules are retained (codereview_08 limitation).
-- Applicable entries: O-02, O-03, O-04, O-05, L-01, L-02, L-04, D-01, M-01, M-03.
+- Why next: T09 is implemented and green (handoff in `task_09.md`); T05 and T08 dependencies are closed, and the review must run in a session that did not author the code.
+- Read first: `tasks/prd-02-telemetria-zonas-e-freio/task_09.md` (contract + Handoff), then the eight new files, then the cited TechSpec sections: `#test-approach` (TC-13, TC-20 end to end, TC-23, TC-27), `#technical-decisions` DEC-05/06/08/10/11/19, and `prd.md#critérios-de-aceitação` (CA-01, CA-11, CA-14, CA-15, CA-17, CA-18, CA-21).
+- Known change points: `tests/support/harness-simulator/scenarios.ts` (catalog, seeds, tokenizer, call builders), `agent-profiles.ts` (20-profile catalog and scripts), `process-driver.ts` (payload builders, response parsing, install/git), `in-process-driver.ts` (mock API, incremental token counts, reload), `session-recorder.ts` (recorder, script runner, ledger helpers); `tests/e2e/e2e-simulated-usage.test.ts`, `e2e-brake.test.ts`, `e2e-simulated-long-task.test.ts`. No `src/` file changed.
+- Applicable entries: L-01, L-03, L-04, L-05, L-06, M-01, M-03, M-04, D-01, O-02, O-04, O-05, O-06, O-07.
+- Watch out: the quality-profile reservations are expected but must be counted (QA-10 and QA-11 below); the long-task suite is the slow one (~128 s alone, ~5 min in coverage); compare the handoff's claims against the actual commands, not the snapshot.
 
 ## Decisions
 
-- [D-01] (when: on-select: T09; on-edit: src/infrastructure/harnesses/{pi,oh-my-pi}/runtime.ts) The estimation constants (`baselineTokens`, `tokensPerTurn`) live in the runtime descriptors and are the only calibration knobs for TC-13; recalibrating them requires `npm run build` because the e2e suites load the built assets. — src: `tasks/prd-02-telemetria-zonas-e-freio/task_09.md#Work`; until: T09 review closes.
+- [D-01] (when: on-select: sdd-review-code; on-edit: tests/support/harness-simulator/**) Long-task process sessions seed an 11-turn RED ledger and emit only the post-tool event that crosses the ceiling; the below-ceiling save posts are skipped, but every call (save included) is still gated by the hook's documented response. Review it as a documented deviation, not as a silent pass. — src: `task_09.md#Handoff` (open items); until: T09 review closes.
 
 ## Learnings
 
 - [L-01] (when: on-run: npm test, npm run coverage, e2e suites) The process lane requires `npm run build` first; it now also runs `tests/integration/runtime-in-process.test.ts` and `tests/integration/runtime-overhead.test.ts`. — src: `tests/test-lanes.ts`; until: —
-- [L-02] (when: on-run: e2e-user-hook-preservation) `remove` must drop event keys that become empty arrays for the byte-identical restoration check; Claude planner, Codex and Cursor updaters use `removeJsonProperty` for that case. — src: `src/infrastructure/harnesses/claude-code/planner.ts`; until: refactor of the shared updaters.
-- [L-03] (when: on-edit: src/infrastructure/harnesses/*/{runtime,events}.ts) Each in-process runtime caches one runtime per project root (`createRuntimeResolver`), and its ledger cache does not see external writes; seed a ledger before the first handler call or use a fresh session key. — src: `src/infrastructure/harnesses/common/in-process-support.ts`; until: runtime cache changes.
+- [L-03] (when: on-edit: tests/support/harness-simulator/in-process-driver.ts) Each in-process runtime caches one runtime per project root (`createRuntimeResolver`); corrupting `context-brake.config.json` mid-session only takes effect after the channel's `reload()`, which the failure profile uses. — src: `src/infrastructure/harnesses/common/in-process-support.ts`; until: runtime cache changes.
 - [L-04] (when: on-edit: tests/unit/*, tests/e2e/*) Unit test files must not contain process-lane literal markers (`node:child_process`, `/cli/commands/`) in test strings or `test-lanes.test.ts` flags them as misplaced; e2e suites are registered through the `tests/e2e/` directory glob. — src: `tests/test-lanes.ts`; until: test lane marker regex is updated.
+- [L-05] (when: on-run: npx vitest run tests/e2e/e2e-simulated-long-task.test.ts) The suite runs 100 concurrent tests (20 per full-level harness) in ~128 s on Windows/Node 24; narrow with `-t "<harness>"` or `-t "session N"` while iterating. — src: `tests/e2e/e2e-simulated-long-task.test.ts`; until: suite changes.
+- [L-06] (when: on-edit: tests/support/harness-simulator/**) Measured usage in the mock is the incremental sum of line tokens (`+1` per join), not a re-tokenization; keep `addLine` as the only way lines enter the context or the margins in `e2e-simulated-usage` shift. — src: `tests/support/harness-simulator/in-process-driver.ts`; until: driver changes.
 
 ## Code map
 
 - [M-01] (when: on-edit: src/infrastructure/harnesses/{pi,oh-my-pi,opencode}/runtime.ts) Each exports the descriptor, context/API types, and the factory (`createPiExtension`, `createOmpExtension`, `createOpenCodePlugin`); `events.ts` holds pure mapping/rendering, `capabilities.ts` holds the capability list, `schemas.ts` is `zod/mini`. — src: —; until: changed files overlap.
-- [M-03] (when: on-edit: tests/helpers/*) `runtime-seed.ts` writes configs and ledger tool lines (`seedTurns(projectRoot, key, turns)`), `fixedClock` timestamps them; `harness-payloads.ts` reads fixtures; the simulator support files from T09 extend these helpers rather than duplicating them. — src: —; until: T09 extends them.
+- [M-03] (when: on-edit: tests/helpers/*, tests/support/harness-simulator/*) `runtime-seed.ts` (config + `fixedClock`), `built-hook.ts` (installed hook path and spawn), and `git-capability.ts` (`runGit`, skip policy) are reused by the simulator instead of duplicated. — src: —; until: helpers change.
+- [M-04] (when: on-select: sdd-review-code) Simulator responsibility split: `scenarios.ts` catalog+seed+call builders, `agent-profiles.ts` profiles/scripts, `process-driver.ts` documented payloads and response parsing, `in-process-driver.ts` built-extension mock, `session-recorder.ts` recorder/script runner/ledger+git helpers. — src: —; until: files change.
 
 ## Open threads
 
 - [O-02] (when: now) No real Pi, Oh-My-Pi, or OpenCode installation exists here: OI-03 (Pi `.js` discovery), OI-04 (Oh-My-Pi load), and OI-05 (`input.sessionID`, `tool.execute.after` arguments) stay as recorded gaps. Cursor/Antigravity capture gaps from T06 also remain. — src: `docs/research/harness-integrations.md` (Payloads reais per section); until: a capture is recorded.
-- [O-03] (when: now) T08 reviewed (`APPROVED WITH RESERVATIONS` in codereview_08) and moved to done; T09 (simulator, end-to-end brake flow, long-task efficacy) is the next and last unit. — src: `tasks.md#State`; until: T09 review closes.
 - [O-04] (when: now) Local validation was Windows/Node 24 only; the Linux/macOS/Windows × Node 20/22/24 CI matrix that completes CA-20 and the feature's final acceptance has not run. — src: `tasks/prd-02-telemetria-zonas-e-freio/codereview_08/codereview.md#limitations-and-open-items`; until: CI matrix run.
 - [O-05] (when: now) codereview_08 optional improvements: CR-01 (overhead evidence scope and p95 logging), CR-02 (dead `assets/runtime/entry.ts` stub), CR-03 (`scripts/check-package.ts` missing `docs/telemetry-block.md`); persistent reservations `codereview_01/CR-01` (schema `required: brake`) and `codereview_02/CR-02` (QA-10 test helper). None blocks T09. — src: `tasks/prd-02-telemetria-zonas-e-freio/codereview_08/codereview.md#findings`; until: a corrections or packaging task closes them.
+- [O-06] (when: now) Cursor has no documented file-write payload, so its above-ceiling state save is asserted denied and recorded as the fixture-gated gap (OI-04); do not read the long-task suite as proving an above-ceiling Cursor save. — src: `task_09.md#Handoff`; until: a real Cursor file-tool capture exists.
+- [O-07] (when: now) codereview_09 optional reservations: QA-10 in `tests/support/harness-simulator/process-driver.ts:69` and QA-11 in `tests/e2e/e2e-brake.test.ts` (106 physical lines, 100 non-blank). Both recorded as CR-01/CR-02; feature has 3 total reservations, below the 8-count escalation trigger. — src: `tasks/prd-02-telemetria-zonas-e-freio/codereview_09/codereview.md#findings`; until: a future cleanup task closes them.

@@ -1,8 +1,10 @@
 import { parseArgs } from 'node:util';
 import type { HarnessId } from '../core/contracts/harness.js';
 import { CliArgumentError, validateHarnessIds, validateInclusionExclusion, validateInstructionPaths } from './argument-validator.js';
+import { parsePlan, type ParsedPlanArgs } from './plan-arguments.js';
 
 export { CliArgumentError } from './argument-validator.js';
+export type { ParsedPlanArgs, ParsedPlanInitArgs } from './plan-arguments.js';
 
 export type ParsedInitArgs = {
   command: 'init'; dryRun: boolean; yes: boolean; json: boolean;
@@ -13,7 +15,7 @@ export type ParsedInitArgs = {
 export type ParsedDoctorArgs = { command: 'doctor'; json: boolean; harness: readonly HarnessId[] };
 export type ParsedRemoveArgs = { command: 'remove'; dryRun: boolean; yes: boolean; json: boolean; removeState: boolean };
 export type ParsedHelpArgs = { command: 'help' };
-export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedHelpArgs;
+export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedPlanArgs | ParsedHelpArgs;
 
 function parseInit(args: readonly string[]): ParsedInitArgs {
   const { values } = parseArgs({
@@ -70,7 +72,8 @@ export function parseCliArgs(args: readonly string[]): ParsedCliArgs {
     if (cmd === 'init') return parseInit(rest);
     if (cmd === 'doctor') return parseDoctor(rest);
     if (cmd === 'remove') return parseRemove(rest);
-    throw new CliArgumentError(`Unknown command '${cmd}'. Allowed commands: init, doctor, remove.`);
+    if (cmd === 'plan') return parsePlan(rest);
+    throw new CliArgumentError(`Unknown command '${cmd}'. Allowed commands: init, doctor, remove, plan.`);
   } catch (error) {
     if (error instanceof CliArgumentError) throw error;
     throw new CliArgumentError(error instanceof Error ? error.message : String(error));

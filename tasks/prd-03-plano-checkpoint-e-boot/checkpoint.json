@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "generation": 7,
+  "feature": "prd-03-plano-checkpoint-e-boot",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "implementation",
+  "status": "paused",
+  "safe_to_stop": true,
+  "owner_session": "82767139-be92-422f-909b-2be2bb0981ec",
+  "objective": "Cross-session task state for ContextBrake: a step plan with validation commands, a structured checkpoint carrying git state and working memory, and a session-start boot that delivers the essentials and requires validating inherited state before editing",
+  "constraints": [
+    "CLI plus harness hooks only; no server, browser, or UI",
+    "Plan and checkpoint are local JSON, gitignored, never committed or shared",
+    "Agent-written state is a proposal: validate both files before every use",
+    "Boot capped at 1000 tokens by default; constraints are never summarized or truncated",
+    "Works without git, omitting repository checks and reporting the omission",
+    "Linux, macOS, and Windows (PowerShell and Git Bash)"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": null,
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": null,
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "7c87529a924d435cf29a93bb1ac08134bc23ed99bded104bb98059006101c741",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "9fdd09ad229064e3472944d7771acc5b6d8e546bb51089aad302494ea1ae3718",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "117a5139ea205261c4cb6a855094bc0de0dff006f87356c4c281ab38a638b519",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    {
+      "decision": "TechSpec and T01-T09 plan approved; implementation and in-contract corrections authorized; CLI QA runs at acceptance",
+      "scope": "architecture-and-plan",
+      "relevant_human_text": "Approve TechSpec and plan; yes, run CLI QA; continue in this session",
+      "available_provenance": "workflow.md#Human-Decisions-Log (DEC-HIL-02)"
+    }
+  ],
+  "git_base": "86961bb",
+  "worktree_evidence": "done/task_01.md#Handoff and done/task_02.md#Handoff (T01 and T02 files uncommitted); workflow.md#Baseline-and-pre-existing-changes (prd-02 closure files)",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "run",
+    "instruction": "T01 and T02 complete and in done/. Full suite green: 152 files, 860 tests, exit 0, 93.07% coverage; lint and typecheck clean. Eligible next: T03 (recommended, unblocks T04 and T07), T06, T08. Run the chosen task via sdd-orchestrate-tasks, then review the diff, move to done/, update tasks.md, and ask the session pause. Note tasks.md Problems and solutions before writing any new test.",
+    "read": [
+      {
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/context-snapshot.md",
+        "section": "Header, Next step brief, Open threads"
+      },
+      {
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/task_03.md",
+        "section": "Work, Acceptance criteria, Context to recover on demand"
+      },
+      {
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/tasks.md",
+        "section": "Dependency graph, State, Problems and solutions"
+      }
+    ]
+  }
+}

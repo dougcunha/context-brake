@@ -14,6 +14,7 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/node-process-runner.test.ts',
   'tests/integration/package-assets.test.ts',
   'tests/integration/package-contents.test.ts',
+  'tests/integration/plan-init-command.test.ts',
   'tests/integration/runtime-antigravity.test.ts',
   'tests/integration/runtime-block-log.test.ts',
   'tests/integration/runtime-codex.test.ts',

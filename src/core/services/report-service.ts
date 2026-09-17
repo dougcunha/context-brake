@@ -76,7 +76,7 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
 }
 
 export type BuildCliErrorInput = {
-  command: 'init' | 'remove' | 'doctor';
+  command: 'init' | 'remove' | 'doctor' | 'plan';
   code: 'INVALID_ARGUMENTS' | 'INVALID_CONTEXTBRAKE_CONFIG' | 'CONFIRMATION_REQUIRED' | 'INTERRUPTED' | 'UNEXPECTED_ERROR';
   message: string;
 };

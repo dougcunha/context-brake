@@ -1,4 +1,5 @@
 import type { CliErrorDocument, DiagnosticFinding, DoctorReport, InstallReport } from '../../core/contracts/diagnostics.js';
+import type { PlanInitResult } from '../commands/plan.js';
 
 export function renderFinding(f: DiagnosticFinding): string {
   const label = f.severity === 'error' ? '[ERROR]' : f.severity === 'warning' ? '[WARN]' : '[OK]';
@@ -56,4 +57,10 @@ export function renderDoctorText(report: DoctorReport): void {
 
 export function renderCliErrorText(doc: CliErrorDocument): void {
   process.stderr.write(`[ERROR] ${doc.error.code}: ${doc.error.message}\n`);
+}
+
+export function renderPlanInitText(result: PlanInitResult): void {
+  process.stdout.write(`[OK] ContextBrake plan init: ${result.taskId}\n`);
+  for (const path of result.created) process.stdout.write(`  [create] ${path}\n`);
+  process.stdout.write('\nNext step: edit the plan steps and their validation commands, then run context-brake plan status.\n');
 }

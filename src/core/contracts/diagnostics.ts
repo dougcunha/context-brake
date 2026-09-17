@@ -20,7 +20,7 @@ const outcome = z.object({ path: z.string(), status: z.enum(['planned', 'applied
 const plan = z.object({ schemaVersion: z.literal(1), projectRoot: z.string(), changes: z.array(fileChange), conflicts: z.array(conflict), harnesses: z.array(harnessPlan), requiresConfirmation: z.boolean() }).strict();
 export const installReportSchema = z.object({ schemaVersion: z.literal(1), command: z.enum(['init', 'remove']), mode: z.enum(['dry_run', 'applied']), status: z.enum(['success', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), plan, outcomes: z.array(outcome), findings: z.array(finding) }).strict();
 export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding) }).strict();
-const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(['init', 'remove', 'doctor']), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
+const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(['init', 'remove', 'doctor', 'plan']), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
 export const cliErrorSchema = z.union([
   z.object({ ...cliErrorBase, exitCode: z.literal(64), error: z.object({ code: z.literal('INVALID_ARGUMENTS'), message: z.string() }).strict() }).strict(),
   z.object({ ...cliErrorBase, exitCode: z.literal(130), error: z.object({ code: z.literal('INTERRUPTED'), message: z.string() }).strict() }).strict(),

@@ -50,7 +50,7 @@ Registra o estado em campos próprios, para que decisões e restrições não de
 
 Entrega à sessão nova o mínimo para agir, sem manter o protocolo sempre carregado.
 
-- RF9: Nos harnesses que permitem contexto no início da sessão, entregar ao agente, em sessão nova, após limpar o contexto e após compactação, um resumo com tarefa, passo ativo e próximo passo, restrições, decisões e bloqueios, divergências do git e o comando de validação a executar primeiro.
+- RF9: Nos harnesses que permitem contexto no início da sessão, entregar ao agente, em sessão nova (inclusive após limpar o contexto quando isso abre uma sessão nova), um resumo com tarefa, passo ativo e próximo passo, restrições, decisões e bloqueios, divergências do git e o comando de validação a executar primeiro. Após compactação, reinjetar o boot somente nos harnesses com canal documentado para isso: Claude Code, Codex CLI, Pi e Oh-My-Pi. Cursor e GitHub Copilot CLI continuam com a rotina completa no arquivo de protocolo, sem promessa de reinjeção após compactação.
 - RF10: Não entregar boot quando não houver plano ativo ou quando todos os passos estiverem concluídos.
 - RF11: Quando plano ou checkpoint forem inválidos, entregar no lugar do boot uma instrução curta apontando o arquivo e o erro.
 - RF12: Respeitar o limite de tamanho do boot; ao excedê-lo, reduzir primeiro arquivos modificados e decisões antigas, nunca restrições, e apontar para o checkpoint completo.
@@ -80,7 +80,7 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 - CA-02 (RF2): Dado um plano existente, quando o usuário executa `plan init` sem confirmar, então os arquivos permanecem iguais.
 - CA-03 (RF7): Dado um plano com dois passos `IN_PROGRESS`, quando o plano é validado, então a validação falha indicando a regra violada.
 - CA-04 (RF7, RF11): Dado um checkpoint com JSON inválido, quando uma sessão começa em harness com injeção no início, então o agente recebe só a instrução apontando arquivo e erro, sem conteúdo do checkpoint.
-- CA-05 (US2, US3, RF9): Dado um plano com o passo 3 em andamento e um checkpoint com duas restrições, quando o usuário limpa o contexto e inicia nova conversa, então o agente recebe tarefa, passo 3, passo 4, as duas restrições e o comando de validação do passo 3.
+- CA-05 (US2, US3, RF9): Dado um plano com o passo 3 em andamento e um checkpoint com duas restrições, quando o usuário inicia nova conversa, então cada harness com boot suportado entrega tarefa, passo 3, passo 4, as duas restrições e o comando de validação do passo 3. Após compactação, a mesma entrega ocorre em Claude Code, Codex CLI, Pi e Oh-My-Pi; Cursor e GitHub Copilot CLI conservam a rotina no arquivo de protocolo, sem garantia de reinjeção.
 - CA-06 (RF10): Dado um plano com todos os passos concluídos, quando uma sessão começa, então nenhum boot é entregue.
 - CA-07 (RF12, Objetivo de restrições): Dado um checkpoint cujo resumo excede o limite configurado, quando o boot é gerado, então todas as restrições aparecem integralmente e o conteúdo reduzido aponta para o checkpoint.
 - CA-08 (Objetivo de tamanho): Dado um plano com 20 passos e um checkpoint com 20 restrições e decisões, quando o boot é gerado com a configuração padrão, então ele ocupa no máximo 1.000 tokens.
@@ -118,7 +118,7 @@ Trata o estado escrito pelo agente como proposta a confirmar.
 
 ## Restrições técnicas de alto nível
 
-- **Injeção no início da sessão:** depende da matriz de capacidades do [PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md). Claude Code, Codex CLI, Cursor, GitHub Copilot CLI, Pi e Oh-My-Pi oferecem esse ponto; o OpenCode, por recurso experimental; o Antigravity CLI, de forma indireta, antes da chamada ao modelo.
+- **Injeção no início da sessão:** depende da matriz de capacidades do [PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md). Claude Code, Codex CLI, Cursor, GitHub Copilot CLI, Pi e Oh-My-Pi oferecem esse ponto; somente Claude Code, Codex CLI, Pi e Oh-My-Pi têm canal documentado para reinjeção após compactação. O OpenCode oferece recurso experimental; o Antigravity CLI, um ponto indireto antes da chamada ao modelo.
 - **Git:** as verificações de repositório exigem git instalado; sem git, o restante funciona.
 - **Estado escrito pelo agente:** plano e checkpoint são tratados como proposta e validados antes de cada uso.
 - **Formato:** arquivos locais em JSON, legíveis por pessoas e ignorados pelo git desde a instalação ([PRD de instalação](../prd-01-instalacao-deteccao-diagnostico/prd.md), RF24); não são comitados nem compartilhados no repositório.

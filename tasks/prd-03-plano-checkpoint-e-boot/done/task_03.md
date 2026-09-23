@@ -42,10 +42,10 @@ The checkpoint's recorded commit and working-tree state are compared against the
 
 ## Work
 
-- [ ] T03.1 Add `src/core/contracts/git.ts`: `GitInspector` port, `GitState`, and `GitDivergence` types, with an explicit unavailable state.
-- [ ] T03.2 Add `src/infrastructure/git/git-inspector.ts` reading branch, head commit, ancestry of a recorded commit, and tree cleanliness, each as a separate argument-array invocation with a timeout.
-- [ ] T03.3 Add `src/core/services/git-divergence.ts` comparing a checkpoint's git state with a reading and returning named divergences.
-- [ ] T03.4 Tests: unit for the divergence service with a port fake; integration against a temporary git repository for ancestry, dirty tree, and absent git.
+- [x] T03.1 Add `src/core/contracts/git.ts`: `GitInspector` port, `GitState`, and `GitDivergence` types, with an explicit unavailable state.
+- [x] T03.2 Add `src/infrastructure/git/git-inspector.ts` reading branch, head commit, ancestry of a recorded commit, and tree cleanliness, each as a separate argument-array invocation with a timeout.
+- [x] T03.3 Add `src/core/services/git-divergence.ts` comparing a checkpoint's git state with a reading and returning named divergences.
+- [x] T03.4 Tests: unit for the divergence service with a port fake; integration against a temporary git repository for ancestry, dirty tree, and absent git.
 
 ## Acceptance criteria
 
@@ -81,12 +81,13 @@ The checkpoint's recorded commit and working-tree state are compared against the
 
 > Updated by `sdd-execute-task` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: `GitInspector` reports branch, head, tree cleanliness, and whether the checkpoint commit is an ancestor, missing, or outside history. The pure comparison reports named divergences or omitted checks with an injected timestamp (RF14, RF16; DEC-09; TC-09, TC-10, TC-12). An unborn current branch reports outside history with a null current commit.
+- Changed files: `src/core/contracts/git.ts`, `src/core/services/git-divergence.ts`, `src/infrastructure/git/git-inspector.ts`, `tests/unit/git-divergence.test.ts`, `tests/integration/git-divergence.test.ts`, `tests/test-lanes.ts`.
+- Checks: `npm run build`, `npm run lint`, `npm run typecheck`, and `npm test` passed (154 files, 870 tests before the final edge-case additions). The final `npm run coverage` passed after those additions; the focused final suites passed 12 tests. New source statement coverage: divergence 18/18, inspector 47/49. `git diff --check` was clean before the handoff.
+- Validated state: uncommitted T03 worktree on `91b4e68`, Windows, Node v24.19.0, Git 2.55.0.windows.5. Tests use fresh temporary repositories; missing git skips with an explicit reason outside CI and fails in CI. Linux, macOS, and Node 20/22 matrix evidence remains pending for feature acceptance.
+- Quality profile: no new blocking or reservation hits in the touched production files; all touched TypeScript files are at most 100 lines. The inspector uses `ProcessRunner` argument arrays with a timeout for every git invocation and never writes to the repository.
+- Open items: No T03 block. Boot delivery and `plan status` consume this port in T04 and T07. The existing platform CI matrix gap remains open.
 
 ### ADR candidates
 
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+None - direct implementation of DEC-09; no new durable architecture decision.

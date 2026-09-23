@@ -45,10 +45,10 @@ Given a plan, a checkpoint, and a git reading, the core produces either a boot s
 
 ## Work
 
-- [ ] T04.1 Add `src/core/services/boot-summary.ts` rendering the fixed sections in English Markdown, constraints as a list rather than prose.
-- [ ] T04.2 Apply the budget: drop modified files first, then oldest decisions, never constraints, appending a pointer to the full checkpoint when anything was reduced.
-- [ ] T04.3 Add `src/core/services/boot-policy.ts` returning boot, no boot, or invalid-state instruction, using the T01 validators.
-- [ ] T04.4 Tests: content, suppression, invalid-state, reduction order, and the 1,000-token budget for the reference fixture.
+- [x] T04.1 Add `src/core/services/boot-summary.ts` rendering the fixed sections in English Markdown, constraints as a list rather than prose.
+- [x] T04.2 Apply the budget: drop modified files first, then oldest decisions, never constraints, appending a pointer to the full checkpoint when anything was reduced.
+- [x] T04.3 Add `src/core/services/boot-policy.ts` returning boot, no boot, or invalid-state instruction, using the T01 validators.
+- [x] T04.4 Tests: content, suppression, invalid-state, reduction order, and the 1,000-token budget for the reference fixture.
 
 ## Acceptance criteria
 
@@ -85,12 +85,12 @@ Given a plan, a checkpoint, and a git reading, the core produces either a boot s
 
 > Updated by `sdd-execute-task` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: `renderBootSummary` emits the versioned Markdown contract with task, current and next steps, working memory, repository divergences, and a validation-first instruction (RF9, RF15; DEC-10). `decideBoot` validates both files with T01 validators, suppresses absent or complete plans, and returns a file-specific instruction without state content for invalid files (RF10, RF11). The budget drops modified files before oldest decisions, preserves every constraint, and links the full checkpoint when reduced (RF12).
+- Changed files: `src/core/services/boot-summary.ts`, `src/core/services/boot-policy.ts`, `tests/unit/boot-summary.test.ts`, `tests/unit/boot-budget.test.ts`, `tests/unit/boot-policy.test.ts`. The fifth test file separates policy failure cases because `boot-summary.test.ts` reached the 100-line file limit.
+- Checks: `npm run build`, `npm run lint`, `npm run typecheck`, focused T04 tests (15/15), and `npm run coverage -- --maxWorkers=4` passed. Full coverage ran 883/883 tests with 93.16% statement coverage. A preceding default-worker `npm test` run passed 882 tests and timed out once in the unrelated `e2e-support-limitations.test.ts` doctor scenario; that scenario passed alone (2/2) and in the full coverage run. `git diff --check` passed. The TechSpec quality profile found no blocking or reservation hits; all five new TypeScript files are at most 100 physical lines.
+- Validated state: T04 source and tests uncommitted on `91b4e68`, Windows 11 / Node v24.19.0. The final added policy tests were run after the full coverage run; production code and configuration did not change afterward. The pure renderer uses UTF-8 byte length as a conservative upper bound on token count, so it may drop optional content earlier than the configured token limit requires; constraints remain intact.
+- Open items: T05 owns harness delivery. The Linux/macOS and Node 20/22/24 matrix remains pending for feature acceptance; no T04 block.
 
 ### ADR candidates
 
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+None - direct implementation of DEC-10; no new durable architecture decision.

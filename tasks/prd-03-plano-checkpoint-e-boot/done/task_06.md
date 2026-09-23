@@ -43,10 +43,10 @@ The generated protocol file instructs the red-zone commit with the `checkpoint:`
 
 ## Work
 
-- [ ] T06.1 Add the switch to `ProtocolZoneContext` and make the `RED` clause omit the commit sentence when it is off, keeping the plan and checkpoint update instruction in both cases.
-- [ ] T06.2 Pass the key through `buildZoneRows` in the protocol service.
-- [ ] T06.3 Confirm the `Starting a new session` routine satisfies RF13 in full, adjusting wording only where a step is missing.
-- [ ] T06.4 Tests: rendered protocol with the switch on and off, and a doctor check confirming no mismatch finding for either setting.
+- [x] T06.1 Add the switch to `ProtocolZoneContext` and make the `RED` clause omit the commit sentence when it is off, keeping the plan and checkpoint update instruction in both cases.
+- [x] T06.2 Pass the key through `buildZoneRows` in the protocol service.
+- [x] T06.3 Confirm the `Starting a new session` routine satisfies RF13 in full, adjusting wording only where a step is missing.
+- [x] T06.4 Tests: rendered protocol with the switch on and off, and a doctor check confirming no mismatch finding for either setting.
 
 ## Acceptance criteria
 
@@ -79,14 +79,16 @@ The generated protocol file instructs the red-zone commit with the `checkpoint:`
 
 ## Handoff
 
-> Updated by `sdd-execute-task` during implementation.
-
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: Threaded `instructCheckpointCommit` into `ProtocolZoneContext` (`zone-actions.ts`) and `buildZoneRows` (`protocol-service.ts`), dynamically emitting or omitting the commit instruction while preserving plan and checkpoint updates. Confirmed 6-step boot sequence adherence (RF13). Added unit and integration tests covering both flag configurations, byte determinism, and doctor check compatibility.
+- Changed files:
+  - `src/core/services/zone-actions.ts`
+  - `src/core/services/protocol-service.ts`
+  - `tests/unit/protocol-commit-switch.test.ts`
+  - `tests/integration/protocol-content.test.ts`
+- Checks: `npm run lint` (clean), `npm run typecheck` (clean), unit and integration tests passing.
+- Validated state: Node 20+, Windows 11 (pwsh), git HEAD `91b4e68` (dirty with T03-T06 work).
+- Open items: None.
 
 ### ADR candidates
 
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+None - direct TechSpec implementation (DEC-11, RF13, RF17, RF18).

@@ -1,0 +1,222 @@
+QA CLI scenarios - 2026-09-23T14:18:15.5124889-03:00
+node v24.19.0 - Microsoft Windows NT 10.0.26200.0 - repo D:\MyProjects\ContextBrake - tmp C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli
+CMD: context-brake plan init --task=refactor-auth  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-init)
+EXIT: 0
+STDOUT: [OK] ContextBrake plan init: refactor-auth
+  [create] task_plan.json
+  [create] state_checkpoint.json
+
+Next step: edit the plan steps and their validation commands, then run context-brake plan status.
+
+STDERR: 
+[CA-01] PASSED - plan init creates plan and checkpoint :: exit=0
+[CA-01] PASSED - example step carries status and validation command :: taskId=refactor-auth step1status=PENDING cmd=npm test
+[CA-01] PASSED - checkpoint records git state and working memory :: activeStepId=1 timestamp=09/23/2026 17:18:16
+CMD: context-brake plan init --task=second  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-init)
+EXIT: 2
+STDOUT: 
+STDERR: [ERROR] CONFIRMATION_REQUIRED: Confirmation required for write operations. Use --yes in non-interactive environments.
+
+[CA-02] PASSED - refused init without confirmation leaves files identical :: exit=2 planHash=True ckptHash=True
+[CA-02] PASSED - refusal explains the missing confirmation :: message= [ERROR] CONFIRMATION_REQUIRED: Confirmation required for write operations. Use --yes in non-interactive environments.
+
+CMD: context-brake plan init --task=second --yes  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-init)
+EXIT: 0
+STDOUT: [OK] ContextBrake plan init: second
+  [create] task_plan.json
+  [create] state_checkpoint.json
+
+Next step: edit the plan steps and their validation commands, then run context-brake plan status.
+
+STDERR: 
+[CA-02] PASSED - explicit --yes allows overwrite :: exit=0 taskId=second
+CMD: context-brake plan status --json  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-status)
+EXIT: 0
+STDOUT: {
+  "schemaVersion": 1,
+  "command": "plan",
+  "subcommand": "status",
+  "status": "healthy",
+  "exitCode": 0,
+  "plan": {
+    "taskId": "qa-status",
+    "title": "QA Status Task",
+    "currentStepId": 3,
+    "activeStep": {
+      "id": 3,
+      "title": "Build",
+      "status": "IN_PROGRESS"
+    },
+    "steps": [
+      {
+        "id": 1,
+        "title": "Prepare",
+        "status": "COMPLETED"
+      },
+      {
+        "id": 2,
+        "title": "Design",
+        "status": "COMPLETED"
+      },
+      {
+        "id": 3,
+        "title": "Build",
+        "status": "IN_PROGRESS"
+      },
+      {
+        "id": 4,
+        "title": "Verify",
+        "status": "PENDING"
+      },
+      {
+        "id": 5,
+        "title": "Ship",
+        "status": "PENDING"
+      }
+    ]
+  },
+  "checkpoint": {
+    "timestamp": "2026-09-23T12:00:00.000Z",
+    "lastCommitHash": null,
+    "branch": "main",
+    "constraintsCount": 2,
+    "decisionsCount": 3
+  },
+  "files": {
+    "plan": {
+      "path": "task_plan.json",
+      "exists": true,
+      "valid": true,
+      "issues": []
+    },
+    "checkpoint": {
+      "path": "state_checkpoint.json",
+      "exists": true,
+      "valid": true,
+      "issues": []
+    }
+  },
+  "findings": [],
+  "git": {
+    "status": "unavailable",
+    "branch": null,
+    "headCommit": null,
+    "cleanWorkingTree": null,
+    "divergences": [
+      {
+        "kind": "checks_omitted",
+        "reason": "not_repository"
+      }
+    ]
+  }
+}
+
+STDERR: 
+CMD: context-brake plan status  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-status)
+EXIT: 0
+STDOUT: [OK] Task: QA Status Task (qa-status)
+  Files: task_plan.json [VALID], state_checkpoint.json [VALID]
+  Steps:
+    [COMPLETED] 1: Prepare
+    [COMPLETED] 2: Design
+    [IN_PROGRESS] 3: Build (active)
+    [PENDING] 4: Verify
+    [PENDING] 5: Ship
+  Active step: 3: Build
+  Last checkpoint: 2026-09-23T12:00:00.000Z (commit: none)
+  Working memory: 2 constraints, 3 decisions
+
+STDERR: 
+SCHEMA: VALID
+[CA-15] PASSED - plan status --json emits one valid document (exit 0) :: exit=0
+[CA-15] PASSED - JSON carries 5 steps, active step, and file validity :: steps=5 active=3 planValid=True ckptValid=True
+[CA-15] PASSED - JSON matches the shipped planStatusReportSchema :: schema=VALID
+[CA-15] PASSED - text status shows steps and statuses without color :: text=[OK] Task: QA Status Task (qa-status)
+  Files: task_plan.json [VALID], state_checkpoint.json [VALID]
+  Steps:
+    [COMPLETED] 1: Prepare
+    [COMPLETED] 2: Design
+    [IN_PROGRESS] 3: Build (active)
+    [PENDING] 4: Verify
+    [PENDING] 5: Ship
+  Active step: 3: Build
+  Last checkpoint: 2026-09-23T12:00:00.000Z (commit: none)
+  Working memory: 2 constraints, 3 decisions
+
+CMD: context-brake plan status  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-bad)
+EXIT: 2
+STDOUT: 
+STDERR: [OK] No plan exists at task_plan.json. Run 'context-brake plan init --task="<name>"' to create one.
+  [ERROR] INVALID_STATE_FILE: State file task_plan.json is invalid: steps must not contain more than one IN_PROGRESS step.
+    Impact: Harnesses cannot safely read state.
+    Remediation: Fix steps in task_plan.json.
+
+[CA-03] PASSED - two IN_PROGRESS steps rejected naming the rule :: exit=2 out= err=[OK] No plan exists at task_plan.json. Run 'context-brake plan init --task="<name>"' to create one.
+  [ERROR] INVALID_STATE_FILE: State file task_plan.json is invalid: steps must not contain more than one IN_PROGRESS step.
+    Impact: Harnesses cannot safely read state.
+    Remediation: Fix steps in task_plan.json.
+
+CMD: context-brake plan status  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-old)
+EXIT: 2
+STDOUT: 
+STDERR: [ERROR] Task: QA Status Task (qa-status)
+  Files: task_plan.json [VALID], state_checkpoint.json [INVALID]
+  Steps:
+    [COMPLETED] 1: Prepare
+    [COMPLETED] 2: Design
+    [IN_PROGRESS] 3: Build (active)
+    [PENDING] 4: Verify
+    [PENDING] 5: Ship
+  Active step: 3: Build
+  [ERROR] INVALID_STATE_FILE: State file state_checkpoint.json is invalid: schemaVersion must be 1; migrate the file to schema version 1.
+    Impact: Harnesses cannot safely read state.
+    Remediation: Fix schemaVersion in state_checkpoint.json.
+
+[CA-16] PASSED - earlier schema version names the required migration :: exit=2 out= [ERROR] Task: QA Status Task (qa-status)
+  Files: task_plan.json [VALID], state_checkpoint.json [INVALID]
+  Steps:
+    [COMPLETED] 1: Prepare
+    [COMPLETED] 2: Design
+    [IN_PROGRESS] 3: Build (active)
+    [PENDING] 4: Verify
+    [PENDING] 5: Ship
+  Active step: 3: Build
+  [ERROR] INVALID_STATE_FILE: State file state_checkpoint.json is invalid: schemaVersion must be 1; migrate the file to schema version 1.
+    Impact: Harnesses cannot safely read state.
+    Remediation: Fix schemaVersion in state_checkpoint.json.
+
+CMD: context-brake init --yes  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-protocol)
+EXIT: 0
+STDOUT: [OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Context usage reaches the Claude Code status line, not hooks, so ContextBrake estimates it.
+    * timeout_fail_closed: A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.
+  Planned changes:
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .gitignore (ignore_block)
+    [create] context-brake.config.json (config)
+    [create] docs/context-brake-protocol.md (protocol)
+
+Next step: run context-brake plan init to create task plan.
+
+STDERR: 
+[CA-13] PASSED - protocol file carries the complete boot routine :: exit=0 red=| `RED` | Usage above 65%, or 11 turns or more | Stop editing. Update `task_plan.json` and `state_checkpoint.json`. If validation passes, commit with `checkpoint: <step title>`. End the response with `[REQUEST_SESSION_RESET]`. |
+[CA-14] PASSED - default red-zone routine instructs the checkpoint: commit :: red=| `RED` | Usage above 65%, or 11 turns or more | Stop editing. Update `task_plan.json` and `state_checkpoint.json`. If validation passes, commit with `checkpoint: <step title>`. End the response with `[REQUEST_SESSION_RESET]`. |
+CMD: context-brake init --yes  (cwd C:\Users\Admin\AppData\Local\Temp\cb-qa-01-cli\fx-protocol)
+EXIT: 0
+STDOUT: [OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Context usage reaches the Claude Code status line, not hooks, so ContextBrake estimates it.
+    * timeout_fail_closed: A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] context-brake.config.json (config)
+    [update] docs/context-brake-protocol.md (protocol)
+
+Next step: run context-brake plan init to create task plan.
+
+STDERR: 
+[CA-14] PASSED - switch off removes the commit instruction from the red routine :: exit=0 red=| `RED` | Usage above 65%, or 11 turns or more | Stop editing. Update `task_plan.json` and `state_checkpoint.json`. End the response with `[REQUEST_SESSION_RESET]`. |
+SUMMARY failures=0

@@ -41,10 +41,10 @@ Versioned JSON Schemas for the plan and the checkpoint are generated from their 
 
 ## Work
 
-- [ ] T08.1 Add both schemas to the `outputs` map in the generation script, emitting draft-2020-12 like the existing three.
-- [ ] T08.2 Add the same two entries to the currency-check script.
-- [ ] T08.3 Add both schema paths to `REQUIRED_FILES` in the package check.
-- [ ] T08.4 Generate the schema files and verify the published tarball contains them.
+- [x] T08.1 Add both schemas to the `outputs` map in the generation script, emitting draft-2020-12 like the existing three.
+- [x] T08.2 Add the same two entries to the currency-check script.
+- [x] T08.3 Add both schema paths to `REQUIRED_FILES` in the package check.
+- [x] T08.4 Generate the schema files and verify the published tarball contains them.
 
 ## Acceptance criteria
 
@@ -67,7 +67,7 @@ Versioned JSON Schemas for the plan and the checkpoint are generated from their 
 
 ## Affected files
 
-- Modify: `scripts/generate-schemas.ts`, `scripts/check-schemas.ts`, `scripts/check-package.ts`, `tests/integration/package-contents.test.ts`
+- Modify: `scripts/generate-schemas.ts`, `scripts/check-schemas.ts`, `scripts/check-package.ts`, `tests/integration/package-contents.test.ts`, `tests/unit/schemas.test.ts`
 - Create: `schemas/task-plan.schema.json`, `schemas/state-checkpoint.schema.json`
 
 ## Observability and recovery
@@ -79,12 +79,12 @@ Versioned JSON Schemas for the plan and the checkpoint are generated from their 
 
 > Updated by `sdd-execute-task` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: Generated JSON Schemas for `task-plan` and `state-checkpoint` (Draft 2020-12) from `taskPlanSchema` and `stateCheckpointSchema`, verified schema currency check, updated package verification script and integration/unit tests ensuring both schemas are packaged in the published npm tarball without development files and declare schemaVersion: 1.
+- Changed files: `scripts/generate-schemas.ts`, `scripts/check-schemas.ts`, `scripts/check-package.ts`, `tests/integration/package-contents.test.ts`, `tests/unit/schemas.test.ts`, `schemas/task-plan.schema.json`, `schemas/state-checkpoint.schema.json`.
+- Checks: `npm run schemas:generate`, `npm run schemas:check`, `npm run build`, `npm run package:smoke`, `npm run lint`, `npm run typecheck`, `npx vitest run tests/unit/schemas.test.ts tests/integration/package-contents.test.ts tests/unit/test-lanes.test.ts`.
+- Validated state: Node v24.19.0, Windows 11, working tree at base `91b4e68`.
+- Open items: None.
 
 ### ADR candidates
 
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+None - direct TechSpec implementation or local decision.

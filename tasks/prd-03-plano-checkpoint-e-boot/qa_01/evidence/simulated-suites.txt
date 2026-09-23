@@ -1,0 +1,128 @@
+
+> context-brake@1.0.0 test
+> vitest run e2e-simulated-boot e2e-simulated-long-task --maxWorkers=1
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-simulated-long-task.test.ts [2m([22m[2m100 tests[22m[2m)[22m[33m 219693[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 0 without an out-of-allowlist call at or above the ceiling [33m 7752[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 1 without an out-of-allowlist call at or above the ceiling [33m 7854[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 2 without an out-of-allowlist call at or above the ceiling [33m 7796[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 3 without an out-of-allowlist call at or above the ceiling [33m 8088[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 4 without an out-of-allowlist call at or above the ceiling [33m 8033[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 5 without an out-of-allowlist call at or above the ceiling [33m 8865[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 6 without an out-of-allowlist call at or above the ceiling [33m 10654[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 7 without an out-of-allowlist call at or above the ceiling [33m 10435[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 8 without an out-of-allowlist call at or above the ceiling [33m 10653[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 9 without an out-of-allowlist call at or above the ceiling [33m 9541[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 10 without an out-of-allowlist call at or above the ceiling [33m 9241[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 11 without an out-of-allowlist call at or above the ceiling [33m 9187[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 12 without an out-of-allowlist call at or above the ceiling [33m 8591[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 13 without an out-of-allowlist call at or above the ceiling [33m 8296[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 14 without an out-of-allowlist call at or above the ceiling [33m 7525[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 15 without an out-of-allowlist call at or above the ceiling [33m 8200[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 16 without an out-of-allowlist call at or above the ceiling [33m 11835[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 17 without an out-of-allowlist call at or above the ceiling [33m 11602[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 18 without an out-of-allowlist call at or above the ceiling [33m 9426[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns claude-code session 19 without an out-of-allowlist call at or above the ceiling [33m 8296[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 0 without an out-of-allowlist call at or above the ceiling [33m 8100[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 1 without an out-of-allowlist call at or above the ceiling [33m 8443[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 2 without an out-of-allowlist call at or above the ceiling [33m 8683[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 3 without an out-of-allowlist call at or above the ceiling [33m 9640[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 4 without an out-of-allowlist call at or above the ceiling [33m 10325[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 5 without an out-of-allowlist call at or above the ceiling [33m 9151[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 6 without an out-of-allowlist call at or above the ceiling [33m 9652[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 7 without an out-of-allowlist call at or above the ceiling [33m 9624[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 8 without an out-of-allowlist call at or above the ceiling [33m 8898[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 9 without an out-of-allowlist call at or above the ceiling [33m 7714[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 10 without an out-of-allowlist call at or above the ceiling [33m 8016[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 11 without an out-of-allowlist call at or above the ceiling [33m 8000[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 12 without an out-of-allowlist call at or above the ceiling [33m 7382[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 13 without an out-of-allowlist call at or above the ceiling [33m 7751[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 14 without an out-of-allowlist call at or above the ceiling [33m 6938[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 15 without an out-of-allowlist call at or above the ceiling [33m 7778[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 16 without an out-of-allowlist call at or above the ceiling [33m 11146[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 17 without an out-of-allowlist call at or above the ceiling [33m 11459[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 18 without an out-of-allowlist call at or above the ceiling [33m 9682[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns cursor session 19 without an out-of-allowlist call at or above the ceiling [33m 12623[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 0 without an out-of-allowlist call at or above the ceiling [33m 9732[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 1 without an out-of-allowlist call at or above the ceiling [33m 12394[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 2 without an out-of-allowlist call at or above the ceiling [33m 12392[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 3 without an out-of-allowlist call at or above the ceiling [33m 13262[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 4 without an out-of-allowlist call at or above the ceiling [33m 14371[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 5 without an out-of-allowlist call at or above the ceiling [33m 14394[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 6 without an out-of-allowlist call at or above the ceiling [33m 28148[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 7 without an out-of-allowlist call at or above the ceiling [33m 30044[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 8 without an out-of-allowlist call at or above the ceiling [33m 28564[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 9 without an out-of-allowlist call at or above the ceiling [33m 28954[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 10 without an out-of-allowlist call at or above the ceiling [33m 29225[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 11 without an out-of-allowlist call at or above the ceiling [33m 19850[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 12 without an out-of-allowlist call at or above the ceiling [33m 16883[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 13 without an out-of-allowlist call at or above the ceiling [33m 16846[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 14 without an out-of-allowlist call at or above the ceiling [33m 14075[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 15 without an out-of-allowlist call at or above the ceiling [33m 14046[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 16 without an out-of-allowlist call at or above the ceiling [33m 24547[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 17 without an out-of-allowlist call at or above the ceiling [33m 25003[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 18 without an out-of-allowlist call at or above the ceiling [33m 20376[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns github-copilot-cli session 19 without an out-of-allowlist call at or above the ceiling [33m 24360[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 0 without an out-of-allowlist call at or above the ceiling [33m 7900[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 1 without an out-of-allowlist call at or above the ceiling [33m 6577[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 2 without an out-of-allowlist call at or above the ceiling [33m 5194[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 3 without an out-of-allowlist call at or above the ceiling [33m 5654[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 4 without an out-of-allowlist call at or above the ceiling [33m 7104[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 5 without an out-of-allowlist call at or above the ceiling [33m 7103[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 6 without an out-of-allowlist call at or above the ceiling [33m 7481[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 7 without an out-of-allowlist call at or above the ceiling [33m 8092[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 8 without an out-of-allowlist call at or above the ceiling [33m 6843[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 9 without an out-of-allowlist call at or above the ceiling [33m 7251[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 10 without an out-of-allowlist call at or above the ceiling [33m 7758[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 11 without an out-of-allowlist call at or above the ceiling [33m 7874[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 12 without an out-of-allowlist call at or above the ceiling [33m 8633[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 13 without an out-of-allowlist call at or above the ceiling [33m 9401[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 14 without an out-of-allowlist call at or above the ceiling [33m 8584[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 15 without an out-of-allowlist call at or above the ceiling [33m 8359[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 16 without an out-of-allowlist call at or above the ceiling [33m 11833[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 17 without an out-of-allowlist call at or above the ceiling [33m 10761[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 18 without an out-of-allowlist call at or above the ceiling [33m 10723[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns pi session 19 without an out-of-allowlist call at or above the ceiling [33m 9772[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 0 without an out-of-allowlist call at or above the ceiling [33m 12094[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 1 without an out-of-allowlist call at or above the ceiling [33m 9357[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 2 without an out-of-allowlist call at or above the ceiling [33m 9153[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 3 without an out-of-allowlist call at or above the ceiling [33m 9343[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 4 without an out-of-allowlist call at or above the ceiling [33m 9471[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 5 without an out-of-allowlist call at or above the ceiling [33m 8805[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 6 without an out-of-allowlist call at or above the ceiling [33m 8591[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 7 without an out-of-allowlist call at or above the ceiling [33m 8429[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 8 without an out-of-allowlist call at or above the ceiling [33m 7709[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 9 without an out-of-allowlist call at or above the ceiling [33m 7409[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 10 without an out-of-allowlist call at or above the ceiling [33m 6262[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 11 without an out-of-allowlist call at or above the ceiling [33m 5949[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 12 without an out-of-allowlist call at or above the ceiling [33m 6637[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 13 without an out-of-allowlist call at or above the ceiling [33m 6452[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 14 without an out-of-allowlist call at or above the ceiling [33m 5130[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 15 without an out-of-allowlist call at or above the ceiling [33m 7671[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 16 without an out-of-allowlist call at or above the ceiling [33m 10650[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 17 without an out-of-allowlist call at or above the ceiling [33m 10370[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 18 without an out-of-allowlist call at or above the ceiling [33m 7893[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated long-task efficacy (TC-17, CA-17)[2m > [22mruns oh-my-pi session 19 without an out-of-allowlist call at or above the ceiling [33m 9466[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-simulated-boot.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 71067[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot startup (RF9, CA-05)[2m > [22mdelivers boot on session startup for claude-code [33m 7429[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot startup (RF9, CA-05)[2m > [22mdelivers boot on session startup for codex-cli [33m 5813[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot startup (RF9, CA-05)[2m > [22mdelivers boot on session startup for cursor [33m 6672[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot startup (RF9, CA-05)[2m > [22mdelivers boot on session startup for github-copilot-cli [33m 7957[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot startup (RF9, CA-05)[2m > [22mdelivers boot on session startup for pi [33m 3193[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot startup (RF9, CA-05)[2m > [22mdelivers boot on session startup for oh-my-pi [33m 3813[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot compaction (RF9, DEC-15)[2m > [22mdelivers boot post-compaction for claude-code [33m 5575[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot compaction (RF9, DEC-15)[2m > [22mdelivers boot post-compaction for codex-cli [33m 5971[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot compaction (RF9, DEC-15)[2m > [22mdelivers boot post-compaction for pi [33m 3110[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot compaction (RF9, DEC-15)[2m > [22mdelivers boot post-compaction for oh-my-pi [33m 3627[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot compaction (RF9, DEC-15)[2m > [22mdoes not deliver boot post-compaction for cursor [33m 5553[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot compaction (RF9, DEC-15)[2m > [22mdoes not deliver boot post-compaction for github-copilot-cli [33m 4901[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m T09 simulated boot adherence (RF15, CA-11, TC-11)[2m > [22mruns validation command within three tool calls before any edit [33m 7437[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m113 passed[39m[22m[90m (113)[39m
+[2m   Start at [22m 14:27:30
+[2m   Duration [22m 296.97s[2m (transform 2.60s, setup 0ms, collect 5.58s, tests 290.76s, environment 0ms, prepare 151ms)[22m
+

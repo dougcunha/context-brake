@@ -5,15 +5,15 @@
 ## Header
 
 - status: active
-- generated: 2026-09-17
-- stage: tasks
-- stage_source: tasks/prd-03-plano-checkpoint-e-boot/tasks.md
-- covers_through: T02
-- authored_code: yes
-- git_head: 86961bb
-- worktree: dirty — T01 and T02 sources and tests uncommitted under `src/core/`, `src/cli/`, `src/infrastructure/`, `tests/`; plus pre-existing prd-02 closure files
-- next_step: `sdd-orchestrate-flow` → T03 (git inspector and divergence)
-- other_eligible: T06 (protocol commit switch, no dependencies), T08 (schema publishing)
+- generated: 2026-09-23
+- stage: qa
+- stage_source: tasks/prd-03-plano-checkpoint-e-boot/qa_01/
+- covers_through: `qa_01/qa.md` issued with status `REJECTED` on `BUG-01`; all acceptance obligations CA-01..CA-17 passed
+- authored_code: no
+- git_head: 91b4e68
+- worktree: dirty — uncommitted implementation, correction, SDD, and QA artifact paths across src/, tests/, tasks/, schemas/, scripts/, docs/; `.agents/scheduled_tasks.lock` is unrelated
+- next_step: `sdd-plan-corrections` for `qa_01/BUG-01`, then `sdd-execute-corrections`
+- other_eligible: — (re-review and re-QA must run in sessions that did not make the corrections)
 - superseded_by: —
 
 ## Load map
@@ -21,43 +21,32 @@
 | Tier | Load when |
 | --- | --- |
 | `now` | Session start: header, next step brief, open threads waiting on the user |
-| `on-select` | Chosen unit matches a trigger: task ID or traceability ID |
-| `on-edit` | About to edit or create a path matching a trigger |
-| `on-run` | About to run a matching command, or it just failed |
+| `on-select` | Chosen unit matches BUG-01, corrections, RV-01..RV-06, or the plan status/CLI output surfaces |
+| `on-edit` | About to edit `src/cli/output/**`, `src/core/services/plan-status.ts`, or their tests |
+| `on-run` | About to run `npm test`, `npm run coverage`, build, lint, or typecheck |
 | `on-demand` | A gist is not enough: follow its `src:` pointer, that section only |
 
-Review and QA sessions load only the header, next step brief, `Open threads`, and `on-run` entries.
-
-Entry shape: `- [ID] (when: tier: trigger; trigger) gist — src: path#section; until: condition`
+Review and QA sessions load only the header, next step brief, open threads, and on-run entries.
 
 ## Next step brief
 
-- Why next: T01 and T02 are complete and in `done/`. T03 unblocks both T04 (boot needs git divergence) and T07 (`plan status` shows git state), so it is the highest-value next unit. T06 and T08 are also eligible and fully independent if you prefer a smaller unit.
-- Read first: `tasks/prd-03-plano-checkpoint-e-boot/task_03.md`, then `techspec.md#technical-decisions` (DEC-09) and `prd.md` RF14/RF16.
-- Known change points: create `src/core/contracts/git.ts`, `src/infrastructure/git/git-inspector.ts`, `src/core/services/git-divergence.ts`. No git adapter exists yet; reuse the `ProcessRunner` port.
-- Applicable entries: D-01, L-01, L-02, L-03, L-04, M-01, M-02, O-01, O-02, O-03.
-- Watch out: the full suite takes 4–8 minutes. Run narrow suites while iterating and the full coverage run once, at the end of the task.
+- Why next: `qa_01/qa.md` is `REJECTED` on `BUG-01` alone (Low): with an existing-but-invalid `task_plan.json`, `plan status` prints `[OK] No plan exists at task_plan.json. Run 'context-brake plan init --task="<name>"' to create one.` beside the correct `[ERROR] INVALID_STATE_FILE` finding. Every acceptance obligation CA-01..CA-17 passed end to end (built CLI and built hooks against fixture repositories; CA-11/CA-17 simulated routes 2 files / 113 tests). The correction round is limited to `BUG-01`, which is within the HIL 2 correction authorization (the message must describe the actual state; no product contract changes).
+- Read first: `qa_01/qa.md` (Findings, Acceptance checklist, Conclusion), `qa_01/evidence/cli-scenarios.txt` (CA-03 block), `src/cli/output/text.ts:68-89`, `src/core/services/plan-status.ts:18-26`.
+- Recommended unit: `sdd-plan-corrections` for `qa_01/BUG-01`, then `sdd-execute-corrections` one task at a time.
+- Preserve: the re-review and the re-QA must run in sessions that did not make the corrections; RV-01..RV-06 stay accepted open items (D-05); evidence limits stay accepted (O-07); suites are load-sensitive (L-16) — isolated pass plus green reruns, never a weakened assertion.
 
 ## Decisions
 
-- [D-01] (when: on-edit: src/infrastructure/runtime/plan-validation-reader.ts; on-select: T04) `NodePlanValidationReader` must stay tolerant (`z.looseObject`, returns `null`). It sits on the hook fail-open path, so a strict parse there would let a malformed plan disable the brake. Strict validation lives in `src/core/validation/` and is used only by the CLI and the boot. — src: `techspec.md#technical-decisions` (DEC-06); until: DEC-06 replaced.
+- [D-05] (when: now; on-select: corrections, acceptance) Reservations gate on `codereview_03` finalized: RV-01..RV-06 accepted as open items; no correction round. Human text: "Finalize as accepted open items (Recommended)". — src: `workflow.md#Human-Decisions-Log (DEC-RES-01)`; until: feature accepted.
 
 ## Learnings
 
-- [L-01] (when: on-run: npm run lint; on-edit: tests/**) ESLint enforces `max-lines-per-function` 30 and `max-params` 3, both with `skipBlankLines`. A `describe` callback counts as a function, so a suite with many `it` blocks must be split. Both rules failed once each during T01 and T02. — src: `eslint.config.js`; until: config changes.
-- [L-02] (when: on-run: npm test, npm run coverage) The full suite is 152 files / 860 tests and takes 240–510 s. `tests/e2e/**` spawns `dist/src/cli/main.js`, so `npm run build` must run first. Iterate with `npx vitest run <file>` and do one full coverage run to close the task. — src: `vitest.config.ts`; until: suite shrinks.
-- [L-03] (when: on-edit: src/cli/commands/**) Coverage does not follow into the process the e2e suite spawns. A command module covered only by e2e reads at roughly 20%; `plan.ts` was 22% until an in-process test called `runPlanInit` directly, lifting it to 92%. Add an in-process test for every new command. — src: `done/task_02.md#Handoff`; until: coverage provider changes.
-- [L-04] (when: on-edit: tests/unit/**, tests/integration/**) A test importing `/cli/commands/` or `composition-root` contains a `PROCESS_MARKERS` string and must be listed in `PROCESS_LANE_FILES`, or `test-lanes.test.ts` fails. E2E files register automatically through the `tests/e2e/` directory glob. — src: `tests/test-lanes.ts`; until: markers change.
-
-## Code map
-
-- [M-01] (when: on-select: T03, T04, T07) T01 and T02 shipped: `src/core/contracts/{task-plan,state-checkpoint}.ts` (entities, `zod/mini` schemas, `PlanStore`/`CheckpointStore` ports, `findActiveStep`/`findNextStep`/`findLastCompletedStep`/`isPlanComplete`), `src/core/validation/{plan-validator,checkpoint-validator,issues}.ts`, `src/core/services/plan-scaffold.ts`, `src/infrastructure/storage/{plan-store,checkpoint-store}.ts`, `src/cli/{plan-arguments.ts,commands/plan.ts}`. — src: —; until: those files change.
-- [M-02] (when: on-select: T04, T05) Boot delivery seam, already traced: `brake-engine.ts:72` `handleSessionReset` returns `NEUTRAL` today and is where the boot decision belongs; the `context` decision kind already exists; `claude-code/runtime.ts:55`, `codex-cli/runtime.ts:64`, `cursor/runtime.ts:45` gate `context` on the post-tool event and must widen; `github-copilot-cli/runtime.ts:61` has no gate and needs no change; `pi/runtime.ts:58-61` and `oh-my-pi/runtime.ts:58-61` discard the session-start decision. Installers already register every session-start event, so no planner changes. — src: `techspec.md#technical-decisions` (DEC-01 to DEC-05); until: those files change.
-- [M-03] (when: on-edit: src/infrastructure/git/**) No git adapter exists. `src/core/contracts/processes.ts` defines `ProcessRunner`; `src/infrastructure/process/node-process-runner.ts` spawns with an argument array, `shell: false`, a timeout and tree-kill. `tests/helpers/git-capability.ts` has `runGit` and the skip policy for tests. — src: —; until: T03 lands.
+- [L-16] (when: on-run: npm test, npm run coverage) Full suites are load-sensitive; one run in three can hit a distinct single-case load timeout that passes in isolation. Evidence pattern: isolated pass plus green reruns, never a weakened assertion. — src: `codereview_03/codereview.md#Limitations-and-open-items`; until: feature accepted.
+- [L-17] (when: on-select: corrections, acceptance; on-edit: src/infrastructure/git/**, src/infrastructure/runtime/**) The boot Git chain is raced by `BOOT_GIT_BUDGET_MS` (1000 ms) wired only in `runtime-composition.ts:18,58-64` and clamped per command in `git-inspector.ts:59-66,89-95`; overrun degrades to `checks_omitted` while boot content still delivers; `plan status` (`plan.ts:78`) stays unbounded. — src: `codereview_02/done/task_14.md#Third-completion`; until: feature accepted.
+- [L-18] (when: on-edit: src/cli/output/text.ts, src/core/services/plan-status.ts) `renderPlanStatusText` prints the missing-plan line for any `null` `report.plan` (`text.ts:70-73`), while `readPlanSafely` (`plan-status.ts:18-26`) returns `plan: null` for both missing and invalid files; the JSON output distinguishes them correctly via `files.plan.exists`. The fix belongs in the text renderer's null-plan branch. QA repro: `qa_01/evidence/run-cli-scenarios.ps1` fixture `fx-bad`. — src: `qa_01/qa.md#Findings`; until: BUG-01 fixed.
 
 ## Open threads
 
-- [O-01] (when: now; on-select: T07) `src/cli/plan-arguments.ts` is at 11.76% coverage because `parsePlan` is exercised only through the out-of-process e2e suite. T07 should add `tests/unit/plan-arguments.test.ts` covering missing and unknown subcommands, missing or empty `--task`, and the flags. — src: `done/task_02.md#Handoff` (open item 1); until: T07 adds the suite.
-- [O-02] (when: now; on-select: T05, T09) No real Pi, Oh-My-Pi, or OpenCode installation exists on this machine, so their boot delivery rests on documented fixtures only (prd-02 gaps `OI-03`, `OI-04`, `OI-05`). — src: `docs/research/harness-integrations.md`; until: a real capture is recorded.
-- [O-03] (when: now) All evidence so far is Windows 11 / Node v24.19.0. The Linux and macOS × Node 20/22/24 CI matrix has never run and bounds this feature's acceptance too (prd-02 `O-04`, PRD-03 `PI-03`). — src: `workflow.md#Pending-items-for-HIL-1`; until: the matrix runs.
-- [O-04] (when: now) Nothing is committed. T01 and T02 sources and tests sit uncommitted on top of `86961bb`, together with the prd-02 closure files that were already there. Committing is a user decision and has not been requested. — src: `workflow.md#Baseline-and-pre-existing-changes`; until: the user commits.
+- [O-07] (when: now) Linux/macOS and Node 20/22 matrix remains unrun; Pi and Oh-My-Pi use documented fixtures without real local installations. — src: `workflow.md#Pending-items-for-HIL-1`; until: matrix or capture exists.
+- [O-09] (when: now; on-select: acceptance) RV-01..RV-06 are accepted open items to present at HIL 3: long-task test length, style hits (`brake-engine-boot.test.ts:62`, `plan.ts:81`), telemetry commit-switch residual, missing published JSON Schemas for `plan` JSON outputs, Copilot `preCompact` deadline emission, and wiring regression tests. — src: `codereview_03/codereview.md#Findings`; until: HIL 3 recorded.
+- [O-10] (when: now) `qa_01/qa.md` is `REJECTED` on `BUG-01` (Low): `plan status` claims "No plan exists" for an existing-but-invalid plan and suggests `plan init`. Correction round limited to `BUG-01`; then a new review and a new QA run in sessions that did not make the corrections. — src: `qa_01/qa.md#Findings`; until: BUG-01 resolved.

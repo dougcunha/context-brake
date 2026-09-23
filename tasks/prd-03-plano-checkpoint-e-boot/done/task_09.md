@@ -20,7 +20,7 @@ Simulated sessions prove that an agent using only the boot runs the indicated va
 
 - Depends on: T05, T06
 - Unblocks: —
-- In scope: extending the existing harness simulator with boot-driven session starts and the red-zone checkpoint routine, and asserting the two acceptance criteria.
+- In scope: extending the existing harness simulator with boot-driven new sessions, documented post-compaction delivery in Claude Code, Codex CLI, Pi, and Oh-My-Pi, and the red-zone checkpoint routine, then asserting the acceptance criteria.
 - Out of scope: measuring real model adherence, which the PRD excludes under "Verificação por simulação", and automatic session restart, which belongs to the runner PRD.
 
 ## Traceability
@@ -28,6 +28,7 @@ Simulated sessions prove that an agent using only the boot runs the indicated va
 | Source | Section | Obligation covered |
 | --- | --- | --- |
 | RF15 | `prd.md#verificação-do-estado-herdado` | Run the validation command before any edit and fix inherited state on failure |
+| RF9, CA-05, DEC-15 | `prd.md#boot-no-início-da-sessão`, `techspec.md#technical-decisions` | Simulate new-session boot on all six supported harnesses and post-compaction boot only on the four documented channels |
 | CA-11 | `prd.md#critérios-de-aceitação` | Validation command run within three tool calls, before any edit |
 | CA-17 | `prd.md#critérios-de-aceitação` | 20 simulated sessions per full-level harness leave a valid checkpoint and a prefixed commit |
 | TC-11, TC-17 | `techspec.md#test-approach` | Simulated boot adherence and long-task acceptance |
@@ -42,14 +43,15 @@ Simulated sessions prove that an agent using only the boot runs the indicated va
 
 ## Work
 
-- [ ] T09.1 Extend the simulator so a session start delivers the boot and the scripted agent acts only on its content.
-- [ ] T09.2 Add a boot-adherence profile asserting the validation command runs within three tool calls, before any edit.
-- [ ] T09.3 Extend the red-zone profile to write both files, run validation, and commit with the `checkpoint:` prefix.
-- [ ] T09.4 Assert across the full-level harnesses that each session ends with a valid checkpoint, a prefixed commit, and a clean tree with both files updated.
+- [x] T09.1 Extend the simulator so a new session delivers the boot on each supported harness and the scripted agent acts only on its content; add post-compaction scenarios for Claude Code, Codex CLI, Pi, and Oh-My-Pi.
+- [x] T09.2 Add a boot-adherence profile asserting the validation command runs within three tool calls, before any edit.
+- [x] T09.3 Extend the red-zone profile to write both files, run validation, and commit with the `checkpoint:` prefix.
+- [x] T09.4 Assert across the full-level harnesses that each session ends with a valid checkpoint, a prefixed commit, and a clean tree with both files updated.
 
 ## Acceptance criteria
 
 - In a simulated session seeded with an in-progress plan, the agent that reads only the boot runs the indicated validation command within three tool calls and performs no edit before it.
+- The simulator asserts boot delivery on new sessions for all six supported harnesses and after compaction for Claude Code, Codex CLI, Pi, and Oh-My-Pi; it does not claim reinjection for Cursor or GitHub Copilot CLI after compaction.
 - Across 20 simulated sessions per full-level harness, every session leaves a checkpoint passing the T01 validators.
 - Every such session produces a commit whose message begins with `checkpoint:` followed by the step title.
 - After each session the working tree is clean and both state files are updated, with neither file included in the commit.
@@ -79,14 +81,23 @@ Simulated sessions prove that an agent using only the boot runs the indicated va
 
 ## Handoff
 
-> Updated by `sdd-execute-task` during implementation.
+- Produced result: Extended harness simulator drivers (`process-driver.ts`, `in-process-driver.ts`, `session-recorder.ts`, `agent-profiles.ts`, `scenarios.ts`) to simulate startup boot on all 6 harnesses, compaction boot delivery on 4 harnesses, non-delivery on Cursor and Copilot CLI, and red-zone save sequence writing both `task_plan.json` and `state_checkpoint.json` with commit subject `checkpoint: step 1`. Created `tests/e2e/e2e-simulated-boot.test.ts` asserting boot delivery across all harnesses and validation command execution within 3 tool calls before edit. Updated `tests/e2e/e2e-simulated-long-task.test.ts` asserting clean working tree, checkpoint schema validity, commit subject format, and exclusion of state files from git commits across 20 simulated sessions per full-level harness.
+- Changed files:
+  - `tests/support/harness-simulator/session-recorder.ts`
+  - `tests/support/harness-simulator/process-driver.ts`
+  - `tests/support/harness-simulator/in-process-driver.ts`
+  - `tests/support/harness-simulator/scenarios.ts`
+  - `tests/support/harness-simulator/agent-profiles.ts`
+  - `tests/e2e/e2e-simulated-boot.test.ts`
+  - `tests/e2e/e2e-simulated-long-task.test.ts`
+- Checks: `npm run lint`, `npm run typecheck`, `npm run schemas:check`, `npm run dependencies:check`, `npm run build`, `npm run package:smoke`, `npm test` (168 test files, 946 tests passed), `npm run coverage` (all suites passing with coverage criteria met).
+- Validated state: Node.js 20+, Windows 11 (PowerShell/cmd), Vitest 3.2.7. All 20 sessions per full-level harness verified with valid checkpoints, prefixed commits, and clean working trees.
+- Open items: Multi-platform matrix (Linux, macOS) remains in CI per prd-02.
+- ADR candidates: None - direct TechSpec implementation or local decision.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+### Correction reconciliation (CR-02, CR-03; T11 after T12)
 
-### ADR candidates
-
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+- The original clean-tree claim above was incomplete: `codereview_01/codereview.md` found that `failure_above_ceiling` could leave `context-brake.config.json` modified in a counted session. The earlier passing suite did not prove CA-17 for every session.
+- `codereview_01/done/task_12.md#Handoff` records the correction. The test now captures and restores the exact installed configuration after asserting `INVALID_CONFIG`, then requires an empty `git status --porcelain` for every counted session. Checkpoint validity, the `checkpoint: step 1` commit, and exclusion of both state files from the commit remain asserted.
+- Current evidence: `npm run coverage -- --maxWorkers=2` passed the full suite, including 20 sessions for each of the five full-level harnesses; all five `failure_above_ceiling` sessions finished with a clean tree. T12 also passed build, lint, typecheck, and `git diff --check`. This is Windows 11 / Node 24 evidence; the Linux/macOS and Node 20/22 matrix remains open.
+- T09 was reopened for CR-03 and closed again on T12's corrected CA-17 evidence. T11 repaired its manifest link to this file. The immutable first review remains `REJECTED` until independent re-review.

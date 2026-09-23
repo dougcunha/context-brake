@@ -44,11 +44,11 @@ Use the current PRD and TechSpec versions already loaded; recover only missing o
 
 ## Work
 
-- [ ] T07.1 Add `src/core/services/plan-status.ts` building the report from both files plus a git reading.
-- [ ] T07.2 Add the report schema alongside the existing diagnostics schemas and export its type.
-- [ ] T07.3 Add the `plan status` path to `src/cli/commands/plan.ts`, with text and `--json` rendering.
-- [ ] T07.4 Upgrade `checkStateFiles` to report schema violations, keeping the existing invalid-JSON finding.
-- [ ] T07.5 Tests: unit for the report, end-to-end for text and JSON, and an integration check that `doctor` reports a schema-invalid state file.
+- [x] T07.1 Add `src/core/services/plan-status.ts` building the report from both files plus a git reading.
+- [x] T07.2 Add the report schema alongside the existing diagnostics schemas and export its type.
+- [x] T07.3 Add the `plan status` path to `src/cli/commands/plan.ts`, with text and `--json` rendering.
+- [x] T07.4 Upgrade `checkStateFiles` to report schema violations, keeping the existing invalid-JSON finding.
+- [x] T07.5 Tests: unit for the report, end-to-end for text and JSON, and an integration check that `doctor` reports a schema-invalid state file.
 
 ## Acceptance criteria
 
@@ -85,12 +85,29 @@ Use the current PRD and TechSpec versions already loaded; recover only missing o
 
 > Updated by `sdd-execute-task` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: `context-brake plan status` implemented with text status labels, `--json` parity matching `planStatusReportSchema`, divergence check against active git commit, clean missing-plan handling, and `doctor` state-file schema integrity validation.
+- Changed files:
+  - `src/core/contracts/diagnostics.ts`
+  - `src/core/services/plan-status.ts`
+  - `src/core/services/doctor-checks.ts`
+  - `src/cli/plan-arguments.ts`
+  - `src/cli/argument-parser.ts`
+  - `src/cli/commands/plan.ts`
+  - `src/cli/output/text.ts`
+  - `src/cli/composition-root.ts`
+  - `tests/unit/plan-status.test.ts`
+  - `tests/unit/plan-arguments.test.ts`
+  - `tests/unit/doctor-checks.test.ts`
+  - `tests/integration/plan-status-command.test.ts`
+  - `tests/integration/doctor-state-schema.test.ts`
+  - `tests/e2e/e2e-plan-status.test.ts`
+  - `tests/test-lanes.ts`
+  - `tests/support/harness-simulator/scenarios.ts`
+  - `tests/e2e/e2e-brake.test.ts`
+- Checks: `npm run lint`, `npm run typecheck`, `npm run build`, `npm test`, `npm run schemas:check`, `npm run dependencies:check`.
+- Validated state: Node.js 20+, Windows (PowerShell), all 167 test files and 930 tests passing.
+- Open items: None.
 
 ### ADR candidates
 
-Pending execution. `sdd-execute-task` replaces this text with structured candidates or `None - direct TechSpec implementation or local decision`.
+None - direct TechSpec implementation or local decision

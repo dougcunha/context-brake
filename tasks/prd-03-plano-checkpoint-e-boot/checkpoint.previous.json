@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generation": 60,
+  "generation": 59,
   "feature": "prd-03-plano-checkpoint-e-boot",
   "workspace": "D:/MyProjects/ContextBrake",
   "phase": "corrections",
-  "status": "paused",
+  "status": "active",
   "safe_to_stop": true,
   "owner_session": "ses_f30f6bb83ffehT8hrbUG4LNym2",
   "objective": "Cross-session task state for ContextBrake: a step plan with validation commands, a structured checkpoint carrying git state and working memory, and a session-start boot that delivers the essentials and requires validating inherited state before editing",
@@ -112,7 +112,7 @@
     }
   ],
   "git_base": "86961bb738bfee046267280f9a7127f47b9a4b74",
-  "worktree_evidence": "workflow.md#Baseline-and-pre-existing-changes, workflow.md#CLI-QA-(qa_01), codereview_02/done/task_14.md#Third-completion; worktree rechecked at resume on 2026-09-23 (dirty implementation and correction work over 91b4e68 plus SDD and QA artifacts; .agents/scheduled_tasks.lock unrelated)",
+  "worktree_evidence": "workflow.md#Correction-round-2, workflow.md#Baseline-and-pre-existing-changes, codereview_02/done/task_14.md#Third-completion; worktree rechecked at resume on 2026-09-23 and matches the context snapshot dirty baseline (implementation and correction files uncommitted over 91b4e68; .agents/scheduled_tasks.lock unrelated)",
   "active_work": [],
   "pending_hil": null,
   "blockers": [],
@@ -133,10 +133,6 @@
       {
         "path": "tasks/prd-03-plano-checkpoint-e-boot/workflow.md",
         "section": "CLI QA (qa_01)"
-      },
-      {
-        "path": "tasks/prd-03-plano-checkpoint-e-boot/context-snapshot.md",
-        "section": "Header, next step brief, open threads"
       }
     ]
   }

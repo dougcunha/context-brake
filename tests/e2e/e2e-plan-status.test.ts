@@ -23,6 +23,11 @@ const checkpointRecord = {
   modifiedFiles: ['src/auth.ts'], timestamp: '2026-09-21T18:00:00.000Z',
 };
 
+const twoInProgressPlan = {
+  schemaVersion: 1, taskId: 'bad-plan', title: 'Bad Plan', currentStepId: 1,
+  steps: [{ id: 1, title: 'One', status: 'IN_PROGRESS' }, { id: 2, title: 'Two', status: 'IN_PROGRESS' }],
+};
+
 describe('E2E plan status: empty and healthy states (RF19, RF20, CA-15)', () => {
   let tempDir: string;
   beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-status-')); });
@@ -78,4 +83,18 @@ describe('E2E plan status: text formatting and invalid states', () => {
     expect(res.code).toBe(2);
     expect(res.stderr).toContain('task_plan.json is invalid: title');
   });
+});
+
+it('does not report an existing invalid plan as missing (CA-03)', async () => {
+  const tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-status-invalid-'));
+  try {
+    await writeFile(join(tempDir, 'task_plan.json'), JSON.stringify(twoInProgressPlan), 'utf8');
+    const res = await runBuiltCli(['plan', 'status'], tempDir);
+    expect(res.code).toBe(2);
+    expect(res.stdout).toBe('');
+    expect(res.stderr).toMatch(/INVALID_STATE_FILE:[\s\S]*steps must not contain more than one IN_PROGRESS step/);
+    expect(res.stderr).not.toMatch(/No plan exists|plan init/);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+  }
 });

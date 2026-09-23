@@ -68,7 +68,9 @@ export function renderPlanInitText(result: PlanInitResult): void {
 export function renderPlanStatusText(report: PlanStatusReport): void {
   const stream = report.status === 'errors' ? process.stderr : process.stdout;
   if (!report.plan) {
-    stream.write(`[OK] No plan exists at ${report.files.plan.path}. Run 'context-brake plan init --task="<name>"' to create one.\n`);
+    if (!report.files.plan.exists) {
+      stream.write(`[OK] No plan exists at ${report.files.plan.path}. Run 'context-brake plan init --task="<name>"' to create one.\n`);
+    }
     for (const f of report.findings) stream.write(`${renderFinding(f)}\n`);
     return;
   }

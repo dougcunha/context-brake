@@ -74,8 +74,6 @@ describe('plan status in process: json and errors (RF20)', () => {
   });
 
   afterEach(async () => { vi.restoreAllMocks(); await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
-
   it('emits schema-valid JSON output when asked with --json flag', async () => {
     await writeFile(join(tempDir, 'task_plan.json'), JSON.stringify(singleStepPlan), 'utf8');
     const code = await runPlanStatus({ command: 'plan', subcommand: 'status', json: true }, { projectRoot: tempDir });
@@ -90,7 +88,9 @@ describe('plan status in process: json and errors (RF20)', () => {
     await writeFile(join(tempDir, 'task_plan.json'), '{invalid json', 'utf8');
     const code = await runPlanStatus({ command: 'plan', subcommand: 'status', json: false }, { projectRoot: tempDir });
     expect(code).toBe(2);
-    expect(stderrChunks.join('')).toContain('INVALID_STATE_FILE');
+    const stderr = stderrChunks.join('');
+    expect(stderr).toContain('INVALID_STATE_FILE');
+    expect(stderr).not.toMatch(/No plan exists|plan init/);
   });
 });
 

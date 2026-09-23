@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "generation": 59,
+  "generation": 68,
   "feature": "prd-03-plano-checkpoint-e-boot",
   "workspace": "D:/MyProjects/ContextBrake",
-  "phase": "corrections",
-  "status": "active",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
   "safe_to_stop": true,
-  "owner_session": "ses_f30f6bb83ffehT8hrbUG4LNym2",
+  "owner_session": "ses_f3043a491ffeFeMaXJNElC8MyM",
   "objective": "Cross-session task state for ContextBrake: a step plan with validation commands, a structured checkpoint carrying git state and working memory, and a session-start boot that delivers the essentials and requires validating inherited state before editing",
   "constraints": [
     "CLI plus harness hooks only; no server, browser, or UI",
@@ -21,12 +21,13 @@
     "prd": "prd.md",
     "techspec": "techspec.md",
     "tasks": "tasks.md",
-    "review": "codereview_03/codereview.md",
-    "qa": "qa_01/qa.md",
-    "snapshot": "context-snapshot.md"
+    "review": "codereview_04/codereview.md",
+    "qa": "qa_02/qa.md",
+    "snapshot": "context-snapshot.md",
+    "correction": "qa_01/done/task_17.md"
   },
   "review_status": "APPROVED WITH RESERVATIONS",
-  "qa_status": "REJECTED",
+  "qa_status": "APPROVED",
   "approved_sources": [
     {
       "path": "prd.md",
@@ -87,52 +88,52 @@
       "available_provenance": "workflow.md#Human-Decisions-Log (DEC-HIL-02)"
     },
     {
-      "decision": "Narrow runtime process exception approved for boot Git inspection",
-      "scope": "CR-01 boot Git runtime process boundary",
-      "relevant_human_text": "Approve narrow exception (Recommended)",
-      "available_provenance": "workflow.md#Human-Decisions-Log (DEC-EX-CR01)"
-    },
-    {
-      "decision": "Boot Git inspection gets an internal sub-budget degrading to checks_omitted on overrun so boot content delivers (implemented as T14.6)",
-      "scope": "CR-01/T14.6 boot Git budget",
-      "relevant_human_text": "Bound the Git budget (Recommended)",
-      "available_provenance": "workflow.md#Human-Decisions-Log (DEC-EX-T14B)"
-    },
-    {
-      "decision": "Snapshot and end session after T14's third completion; the re-review runs in an independent session (fulfilled: this session is that independent session)",
-      "scope": "session continuity",
-      "relevant_human_text": "Snapshot e encerrar (Recommended)",
-      "available_provenance": "workflow.md#Correction-round-2 (DEC-PAUSE-T14B)"
-    },
-    {
       "decision": "Reservations gate on codereview_03 finalized: RV-01..RV-06 accepted as open items, no correction round",
       "scope": "reservations-gate",
-      "relevant_human_text": "Finalize as accepted open items (Recommended); Snapshot and continue (Recommended)",
-      "available_provenance": "workflow.md#Human-Decisions-Log (DEC-RES-01, DEC-PAUSE-CR03)"
+      "relevant_human_text": "Finalize as accepted open items (Recommended)",
+      "available_provenance": "workflow.md#Human-Decisions-Log (DEC-RES-01)"
+    },
+    {
+      "decision": "Reservations gate on codereview_04 finalized: RV-07 accepted as an open item; review cycle closed and CLI QA authorized",
+      "scope": "reservations-gate and QA authorization",
+      "relevant_human_text": "Finalize with RV-07 accepted (Recommended); Snapshot and end session (Recommended)",
+      "available_provenance": "workflow.md#Human-Decisions-Log (DEC-RES-02, DEC-PAUSE-CR04)"
     }
   ],
   "git_base": "86961bb738bfee046267280f9a7127f47b9a4b74",
-  "worktree_evidence": "workflow.md#Correction-round-2, workflow.md#Baseline-and-pre-existing-changes, codereview_02/done/task_14.md#Third-completion; worktree rechecked at resume on 2026-09-23 and matches the context snapshot dirty baseline (implementation and correction files uncommitted over 91b4e68; .agents/scheduled_tasks.lock unrelated)",
+  "worktree_evidence": "HEAD ba11fe2664dfb626786d2f05ede1e55d889ec6eb plus the scoped uncommitted T17 correction (src/cli/output/text.ts, tests/integration/plan-status-command.test.ts, tests/e2e/e2e-plan-status.test.ts); new untracked qa_02/ QA evidence and report; untracked qa_01/done/task_17.md, codereview_04/codereview.md, context-snapshot.md, and flow state; .agents/scheduled_tasks.lock remains unrelated.",
   "active_work": [],
-  "pending_hil": null,
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the current delivery of prd-03-plano-checkpoint-e-boot? qa_02 is APPROVED: all CA-01-CA-17 verified end to end; npm test 173/967 and coverage 173/967 at 93.55% green; qa_01/BUG-01 resolved; RV-01-RV-07 accepted open items; load-sensitivity follow-up O-11 suggested for decision.",
+    "affected_ids": [
+      "CA-01..CA-17",
+      "RV-01..RV-07",
+      "O-11"
+    ]
+  },
   "blockers": [],
-  "correction_round": 2,
+  "correction_round": 3,
   "rounds_without_progress": 0,
   "next_action": {
-    "kind": "run",
-    "instruction": "QA report qa_01/qa.md is REJECTED on BUG-01 (Low): with an existing-but-invalid task_plan.json, plan status prints a false '[OK] No plan exists ... Run plan init' line beside the correct INVALID_STATE_FILE finding (src/cli/output/text.ts:70-73, plan-status.ts:18-26). Open a correction round limited to BUG-01 with sdd-plan-corrections, then execute it with sdd-execute-corrections. All CA-01..CA-17 obligations passed. The re-review and the re-QA must run in sessions that did not make the corrections.",
+    "kind": "await-decision",
+    "instruction": "Present HIL 3 and await the acceptance decision: qa_02/qa.md is APPROVED with all obligations verified, both mandatory commands green in this session, and the load-sensitivity follow-up O-11 suggested for the owner. On approval, record the decision in workflow.md, mark this checkpoint phase/status completed and the snapshot closed; no PR, commit, push, or ADR unless requested.",
     "read": [
       {
-        "path": "tasks/prd-03-plano-checkpoint-e-boot/qa_01/qa.md",
-        "section": "Findings (BUG-01), Acceptance checklist, Conclusion"
+        "section": "Summary, Acceptance checklist, Findings, Limitations, Conclusion",
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/qa_02/qa.md"
       },
       {
-        "path": "tasks/prd-03-plano-checkpoint-e-boot/qa_01/evidence/cli-scenarios.txt",
-        "section": "CA-03 block"
+        "section": "CLI QA (qa_02)",
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/workflow.md"
       },
       {
-        "path": "tasks/prd-03-plano-checkpoint-e-boot/workflow.md",
-        "section": "CLI QA (qa_01)"
+        "section": "Findings (RV-01..RV-07) and Conclusion",
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/codereview_04/codereview.md"
+      },
+      {
+        "section": "header, next step brief, open threads",
+        "path": "tasks/prd-03-plano-checkpoint-e-boot/context-snapshot.md"
       }
     ]
   }

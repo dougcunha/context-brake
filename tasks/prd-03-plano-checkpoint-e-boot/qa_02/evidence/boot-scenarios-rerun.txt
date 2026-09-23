@@ -1,0 +1,5 @@
+warning: in the working copy of 'notes.txt', CRLF will be replaced by LF the next time Git touches it
+Switched to a new branch 'side'
+warning: in the working copy of 'side.txt', CRLF will be replaced by LF the next time Git touches it
+Switched to branch 'main'
+FAILURES=1

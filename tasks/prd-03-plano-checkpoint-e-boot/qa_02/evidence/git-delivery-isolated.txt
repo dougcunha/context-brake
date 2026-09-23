@@ -1,0 +1,112 @@
+
+> context-brake@1.0.0 test
+> vitest run boot-git-delivery --maxWorkers=1
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [31mÔØ»[39m [30m[43m process [49m[39m tests/integration/boot-git-delivery.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[33m 15437[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m built hook repository divergence (RF14, CA-09, CA-10)[2m > [22mreports dirty tree and missing recorded commit [33m 3809[2mms[22m[39m
+[31m   [31m├ù[31m built hook repository divergence (RF14, CA-09, CA-10)[2m > [22mnames both commits when the recorded commit is outside history[39m[33m 5082[2mms[22m[39m
+[31m     ÔåÆ expected '[ContextBrake boot v1]\nTask: Alpha TÔÇª' to contain 'Checkpoint commit 02345adbee7bd756dd3ÔÇª'[39m
+[31m   [31m├ù[31m built hook repository availability (RF14, RF16, CA-12)[2m > [22mreports no false divergence in a clean repository[39m[33m 4711[2mms[22m[39m
+[31m     ÔåÆ expected '[ContextBrake boot v1]\nTask: Alpha TÔÇª' to contain '## Repository state\n- None'[39m
+   [33m[2mÔ£ô[22m[39m built hook repository availability (RF14, RF16, CA-12)[2m > [22mreports omitted checks outside a repository [33m 1115[2mms[22m[39m
+   [33m[2mÔ£ô[22m[39m built hook without Git (RF16, CA-12)[2m > [22mreports omitted checks when Git is absent from the hook environment [33m 414[2mms[22m[39m
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ» Failed Tests 2 ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»
+
+ FAIL   process  tests/integration/boot-git-delivery.test.ts > built hook repository divergence (RF14, CA-09, CA-10) > names both commits when the recorded commit is outside history
+AssertionError: expected '[ContextBrake boot v1]\nTask: Alpha TÔÇª' to contain 'Checkpoint commit 02345adbee7bd756dd3ÔÇª'
+
+- Expected
++ Received
+
+- Checkpoint commit 02345adbee7bd756dd3d8a14fd9d0dfe82db8fe4 is outside current history at f86d8323c7593566b5607a2279b77076a0c1427a.
++ [ContextBrake boot v1]
++ Task: Alpha Task (task-alpha)
++ Current step: 3: Implement core (IN_PROGRESS)
++ Next step: 4: Add tests (PENDING)
++
++ ## Constraints
++ - Must not exceed token budget
++ - No UI or server components
++
++ ## Decisions
++ - Use hexagonal ports
++
++ ## Blocked items
++ - None
++
++ ## Breaking changes
++ - None
++
++ ## Modified files
++ - src/core/a.ts
++
++ ## Repository state
++ - Repository checks omitted: inspection_failed.
++
++ ## Validate first
++ Before any edit, run `npm run check` to validate step 3. If it fails, correct the inherited state first.
+
+ ÔØ» tests/integration/boot-git-delivery.test.ts:59:41
+     57|       await runGit(['checkout', 'main'], root);
+     58|       await setRecordedCommit(root, side);
+     59|       expect(await deliveredBoot(root)).toContain(`Checkpoint commit $ÔÇª
+       |                                         ^
+     60|     } finally { await rm(root, { recursive: true, force: true }); }
+     61|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[1/2]ÔÄ»
+
+ FAIL   process  tests/integration/boot-git-delivery.test.ts > built hook repository availability (RF14, RF16, CA-12) > reports no false divergence in a clean repository
+AssertionError: expected '[ContextBrake boot v1]\nTask: Alpha TÔÇª' to contain '## Repository state\n- None'
+
+- Expected
++ Received
+
+- ## Repository state
++ [ContextBrake boot v1]
++ Task: Alpha Task (task-alpha)
++ Current step: 3: Implement core (IN_PROGRESS)
++ Next step: 4: Add tests (PENDING)
++
++ ## Constraints
++ - Must not exceed token budget
++ - No UI or server components
++
++ ## Decisions
++ - Use hexagonal ports
++
++ ## Blocked items
+  - None
++
++ ## Breaking changes
++ - None
++
++ ## Modified files
++ - src/core/a.ts
++
++ ## Repository state
++ - Repository checks omitted: inspection_failed.
++
++ ## Validate first
++ Before any edit, run `npm run check` to validate step 3. If it fails, correct the inherited state first.
+
+ ÔØ» tests/integration/boot-git-delivery.test.ts:70:41
+     68|     try {
+     69|       await setRecordedCommit(root, head);
+     70|       expect(await deliveredBoot(root)).toContain('## Repository stateÔÇª
+       |                                         ^
+     71|     } finally { await rm(root, { recursive: true, force: true }); }
+     72|   });
+
+ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»ÔÄ»[2/2]ÔÄ»
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 16:47:13
+[2m   Duration [22m 18.13s[2m (transform 561ms, setup 0ms, collect 1.24s, tests 15.44s, environment 1ms, prepare 554ms)[22m
+

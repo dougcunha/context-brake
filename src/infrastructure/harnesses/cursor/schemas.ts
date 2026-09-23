@@ -12,6 +12,7 @@ export const cursorHooksFileSchema = z.looseObject({
 
 export const cursorPayloadSchema = z.looseObject({
   conversation_id: z.optional(z.string()),
+  session_id: z.optional(z.string()),
   tool_name: z.optional(z.string()),
   tool_input: z.optional(z.unknown()),
   tool_output: z.optional(z.unknown()),

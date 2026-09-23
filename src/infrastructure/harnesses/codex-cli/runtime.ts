@@ -61,7 +61,7 @@ export function mapCodexInput(eventName: string, payload: unknown): RuntimeInput
 
 export function renderCodexDecision(decision: RuntimeDecision, eventName: string): string | null {
   if (decision.kind === 'deny') return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, permissionDecision: 'deny', permissionDecisionReason: decision.message } });
-  if (decision.kind === 'context' && eventName === 'PostToolUse') return JSON.stringify({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: decision.block } });
+  if (decision.kind === 'context' && (eventName === 'PostToolUse' || eventName === 'SessionStart')) return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: decision.block } });
   if (decision.kind === 'notify_user') return JSON.stringify({ systemMessage: decision.text });
   return null;
 }

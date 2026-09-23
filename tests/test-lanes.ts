@@ -4,10 +4,17 @@ export const TEST_FILE_SUFFIX = '.test.ts';
 export const PROCESS_LANE_DIRECTORIES: readonly string[] = ['tests/e2e/'];
 
 export const PROCESS_LANE_FILES: readonly string[] = [
+  'tests/integration/boot-delivery.test.ts',
+  'tests/integration/boot-git-delivery.test.ts',
+  'tests/integration/boot-invalid-state.test.ts',
   'tests/integration/codex-hook-command-shells.test.ts',
   'tests/integration/doctor-asset-currency.test.ts',
   'tests/integration/doctor-benchmark.test.ts',
   'tests/integration/doctor-manual-removal.test.ts',
+  'tests/integration/doctor-state-schema.test.ts',
+  'tests/integration/git-divergence.test.ts',
+  'tests/integration/git-inspection-budget.test.ts',
+
   'tests/integration/gitignore-lifecycle.test.ts',
   'tests/integration/invalid-config.test.ts',
   'tests/integration/linked-project-root.test.ts',
@@ -15,7 +22,9 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/package-assets.test.ts',
   'tests/integration/package-contents.test.ts',
   'tests/integration/plan-init-command.test.ts',
+  'tests/integration/plan-status-command.test.ts',
   'tests/integration/runtime-antigravity.test.ts',
+
   'tests/integration/runtime-block-log.test.ts',
   'tests/integration/runtime-codex.test.ts',
   'tests/integration/runtime-copilot.test.ts',
@@ -38,6 +47,7 @@ export const PROCESS_MARKERS: readonly string[] = [
   'node:child_process',
   'cli-runner',
   'shell-runner',
+  'built-hook',
   'NodeOverheadMeasurer',
   'NodeProcessRunner',
   '/cli/commands/',

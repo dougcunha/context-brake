@@ -1,11 +1,12 @@
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../contracts/configuration.js';
 import type { HarnessId } from '../contracts/harness.js';
-import type { RuntimeDecision, RuntimeEvent } from '../contracts/runtime.js';
+import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../contracts/runtime.js';
 import type { RuntimeErrorCode, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
 import type { SessionKey } from '../contracts/runtime.js';
 import type { Zone } from '../contracts/zones.js';
 import { InvalidConfigurationError } from '../validation/configuration-validator.js';
 import { isToolCallAllowed } from './brake-allowlist.js';
+import { renderBootOmission } from './boot-summary.js';
 import { renderFailureBlockMessage } from './block-message.js';
 import { summarizeLedger } from './session-counters.js';
 
@@ -26,6 +27,7 @@ export type FailureResolutionInput = {
   readonly code: RuntimeErrorCode;
   readonly detail: string;
   readonly config: ContextBrakeConfig | null;
+  readonly descriptor: RuntimeDescriptor | null;
   readonly ledger: SessionLedger;
   readonly errors: RuntimeErrorLog;
   readonly readValidationCommand: () => Promise<string | null>;
@@ -50,6 +52,7 @@ export function runWithinDeadline<T>(work: Promise<T>, deadlineMilliseconds = IN
 }
 export async function resolveFailure(input: FailureResolutionInput): Promise<RuntimeDecision> {
   await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail });
+  if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return { kind: 'context', block: renderBootOmission() };
   if (input.event.kind !== 'pre_tool') return { kind: 'neutral' };
   if ((await lastRecordedZone(input.ledger, input.event.session)) !== 'CRITICAL') return { kind: 'neutral' };
   const config = input.config ?? DEFAULT_CONFIG;
@@ -64,6 +67,9 @@ export async function recordRuntimeFailure(errors: RuntimeErrorLog, record: Runt
   } catch {
     return;
   }
+}
+function sessionBootSupported(descriptor: RuntimeDescriptor | null): boolean {
+  return descriptor?.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported') ?? false;
 }
 async function lastRecordedZone(ledger: SessionLedger, session: SessionKey): Promise<Zone | null> {
   try {

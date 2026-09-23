@@ -55,19 +55,19 @@ async function handleToolResult(payload: unknown, context: OmpContext, resolver:
   return decision.kind === 'context' ? renderOmpToolResult(payload, decision.block) : undefined;
 }
 
-async function handleSessionStart(payload: unknown, context: OmpContext, resolver: InProcessRuntimeResolver): Promise<void> {
-  const event = eventOf('session_start', payload, context);
-  if (event !== null) await runInProcessEvent({ resolver, projectRoot: rootOf(context), event });
+async function recordBoot(event: RuntimeEvent | null, context: OmpContext, state: { resolver: InProcessRuntimeResolver; pendingBoots: Map<string, string> }): Promise<void> {
+  if (event === null) return;
+  const decision = await runInProcessEvent({ resolver: state.resolver, projectRoot: rootOf(context), event });
+  if (decision.kind === 'context') state.pendingBoots.set(event.session.sessionId, decision.block);
 }
 
-async function handleSessionCompact(payload: unknown, context: OmpContext, resolver: InProcessRuntimeResolver): Promise<void> {
-  const event = eventOf('session_compact', payload, context);
-  if (event !== null) await runInProcessEvent({ resolver, projectRoot: rootOf(context), event });
-}
-
-async function handleAutoCompactionEnd(payload: unknown, context: OmpContext, resolver: InProcessRuntimeResolver): Promise<void> {
-  const event = eventOf('auto_compaction_end', payload, context);
-  if (event !== null) await runInProcessEvent({ resolver, projectRoot: rootOf(context), event });
+async function handleBeforeAgentStart(context: OmpContext, pendingBoots: Map<string, string>): Promise<unknown> {
+  const sessionId = context.sessionManager?.getSessionId?.();
+  if (!sessionId) return undefined;
+  const message = pendingBoots.get(sessionId);
+  if (!message) return undefined;
+  pendingBoots.delete(sessionId);
+  return { message };
 }
 
 async function handleSessionStop(payload: unknown, context: OmpContext, resolver: InProcessRuntimeResolver): Promise<void> {
@@ -79,10 +79,12 @@ async function handleSessionStop(payload: unknown, context: OmpContext, resolver
 
 export function createOmpExtension(api: OmpApi): void {
   const resolver = createRuntimeResolver(ompDescriptor);
+  const pendingBoots = new Map<string, string>();
   api.on?.('tool_call', (payload, context) => handleToolCall(payload, context, resolver));
   api.on?.('tool_result', (payload, context) => handleToolResult(payload, context, resolver));
-  api.on?.('session_start', (payload, context) => handleSessionStart(payload, context, resolver));
-  api.on?.('session_compact', (payload, context) => handleSessionCompact(payload, context, resolver));
-  api.on?.('auto_compaction_end', (payload, context) => handleAutoCompactionEnd(payload, context, resolver));
+  api.on?.('session_start', (payload, context) => recordBoot(eventOf('session_start', payload, context), context, { resolver, pendingBoots }));
+  api.on?.('session_compact', (payload, context) => recordBoot(eventOf('session_compact', payload, context), context, { resolver, pendingBoots }));
+  api.on?.('auto_compaction_end', (payload, context) => recordBoot(eventOf('auto_compaction_end', payload, context), context, { resolver, pendingBoots }));
+  api.on?.('before_agent_start', (_payload, context) => handleBeforeAgentStart(context, pendingBoots));
   api.on?.('session_stop', (payload, context) => handleSessionStop(payload, context, resolver));
 }

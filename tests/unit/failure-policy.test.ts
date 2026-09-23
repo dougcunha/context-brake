@@ -28,7 +28,7 @@ function toolLine(zone: ToolLine['zone']): ToolLine {
 }
 type FailureCall = { readonly event: RuntimeEvent; readonly ledger: SessionLedger; readonly errors: RuntimeErrorLog; readonly config?: ContextBrakeConfig | null };
 function failure(input: FailureCall) {
-  return resolveFailure({ event: input.event, code: 'UNEXPECTED', detail: 'UnexpectedError', config: input.config ?? null, ledger: input.ledger, errors: input.errors, readValidationCommand: async () => null });
+  return resolveFailure({ event: input.event, code: 'UNEXPECTED', detail: 'UnexpectedError', config: input.config ?? null, descriptor: null, ledger: input.ledger, errors: input.errors, readValidationCommand: async () => null });
 }
 
 describe('failure policy decisions (RF19, CA-16, DEC-09, TC-17)', () => {
@@ -88,7 +88,7 @@ describe('failure classification and deadline (DEC-09, TC-17)', () => {
     await settled;
     vi.useRealTimers();
     const errors = new TestErrorLog();
-    const decision = await resolveFailure({ event: { kind: 'pre_tool', session: KEY, tool: READ }, code: 'DEADLINE_EXCEEDED', detail: 'DeadlineExceededError', config: null, ledger: new TestLedger([toolLine('CRITICAL')]), errors, readValidationCommand: async () => null });
+    const decision = await resolveFailure({ event: { kind: 'pre_tool', session: KEY, tool: READ }, code: 'DEADLINE_EXCEEDED', detail: 'DeadlineExceededError', config: null, descriptor: null, ledger: new TestLedger([toolLine('CRITICAL')]), errors, readValidationCommand: async () => null });
     expect(decision).toMatchObject({ kind: 'deny', reason: 'integration_failure' });
     expect(errors.records[0]?.code).toBe('DEADLINE_EXCEEDED');
   });

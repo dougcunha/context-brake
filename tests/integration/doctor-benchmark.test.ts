@@ -8,15 +8,19 @@ import { diagnoseProject } from '../../src/core/services/doctor-service.js';
 import { runInit } from '../../src/cli/commands/init.js';
 import { buildHarnessContext, collectHarnessSources } from '../../src/cli/detection-collector.js';
 import { collectProjectSnapshots } from '../../src/cli/snapshot-helper.js';
-import { NodeOverheadMeasurer } from '../../src/infrastructure/diagnostics/overhead-measurer.js';
+import { NodeOverheadMeasurer, type SampleFailure } from '../../src/infrastructure/diagnostics/overhead-measurer.js';
 import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
 import { NodeManifestStore } from '../../src/infrastructure/storage/manifest-store.js';
 import { readPackageVersion } from '../../src/infrastructure/storage/package-metadata.js';
 import { ProjectConfigStore } from '../../src/infrastructure/storage/project-config-store.js';
 
-function assertMeasurement(meas: { executionModel: string; sampleCount: number; targetMilliseconds: number; p95Milliseconds: number | null; status: string }, expected: { model: string; count: number; target: number }) {
+function evidence(failure: SampleFailure | null): string {
+  return failure === null ? 'no sampler failure recorded' : `${failure.cause}: ${failure.detail}`;
+}
+
+function assertMeasurement(meas: { executionModel: string; sampleCount: number; targetMilliseconds: number; p95Milliseconds: number | null; status: string }, expected: { model: string; count: number; target: number }, failure: SampleFailure | null) {
   expect(meas.executionModel).toBe(expected.model);
-  expect(meas.sampleCount).toBe(expected.count);
+  expect(meas.sampleCount, evidence(failure)).toBe(expected.count);
   expect(meas.targetMilliseconds).toBe(expected.target);
   expect(meas.p95Milliseconds).not.toBeNull();
   expect(['pass', 'fail']).toContain(meas.status);
@@ -50,8 +54,10 @@ async function measureInstalled(tempDir: string): Promise<void> {
   const measurer = new NodeOverheadMeasurer(tempDir);
   const claudeBefore = await readFile(join(tempDir, '.claude/hooks/context-brake.mjs'), 'utf8');
   const openBefore = await readFile(join(tempDir, '.opencode/plugins/context-brake.js'), 'utf8');
-  assertMeasurement(await measurer.measure('claude-code'), { model: 'process', count: 20, target: 100 });
-  assertMeasurement(await measurer.measure('opencode'), { model: 'in_process', count: 100, target: 15 });
+  const processMeasurement = await measurer.measure('claude-code');
+  assertMeasurement(processMeasurement, { model: 'process', count: 20, target: 100 }, measurer.lastFailure);
+  const inProcessMeasurement = await measurer.measure('opencode');
+  assertMeasurement(inProcessMeasurement, { model: 'in_process', count: 100, target: 15 }, measurer.lastFailure);
   expect(await readFile(join(tempDir, '.claude/hooks/context-brake.mjs'), 'utf8')).toBe(claudeBefore);
   expect(await readFile(join(tempDir, '.opencode/plugins/context-brake.js'), 'utf8')).toBe(openBefore);
 }

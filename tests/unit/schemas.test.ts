@@ -2,6 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { configurationSchema } from '../../src/core/contracts/configuration.js';
 import { doctorReportSchema, installReportSchema } from '../../src/core/contracts/diagnostics.js';
+import { stateCheckpointSchema } from '../../src/core/contracts/state-checkpoint.js';
+import { taskPlanSchema } from '../../src/core/contracts/task-plan.js';
 
 describe('published schemas (RF17)', () => {
   it('publishes deterministic Draft 2020-12 schemas', async () => {
@@ -29,5 +31,23 @@ describe('published schemas (RF17)', () => {
     expect(doctorText).toContain('tool_coverage');
     expect(installText).toContain('"limitations"');
     expect(installText).toContain('tool_coverage');
+  });
+});
+
+describe('published plan and checkpoint schemas (RF6, DEC-08)', () => {
+  it('publishes deterministic Draft 2020-12 schemas for plan and checkpoint', async () => {
+    for (const name of ['task-plan.schema.json', 'state-checkpoint.schema.json']) {
+      const document = JSON.parse(await readFile(`schemas/${name}`, 'utf8')) as { $schema?: string };
+      expect(document.$schema).toBe('https://json-schema.org/draft/2020-12/schema');
+    }
+    expect(taskPlanSchema).toBeDefined();
+    expect(stateCheckpointSchema).toBeDefined();
+  });
+
+  it('declares schemaVersion literal matching Zod definitions', async () => {
+    const plan = JSON.parse(await readFile('schemas/task-plan.schema.json', 'utf8')) as { properties: { schemaVersion: { const: number } } };
+    const checkpoint = JSON.parse(await readFile('schemas/state-checkpoint.schema.json', 'utf8')) as { properties: { schemaVersion: { const: number } } };
+    expect(plan.properties.schemaVersion.const).toBe(1);
+    expect(checkpoint.properties.schemaVersion.const).toBe(1);
   });
 });

@@ -1,6 +1,7 @@
+import { strict as assert } from 'node:assert';
 import { runBuiltCli } from '../../e2e/cli-runner.js';
 import { installedHookPath, runInstalledHook } from '../../helpers/built-hook.js';
-import type { SessionChannel, HookOutcome } from './session-recorder.js';
+import type { SessionChannel } from './session-recorder.js';
 import type { SessionStep } from './agent-profiles.js';
 import type { SimulatedCall } from './scenarios.js';
 
@@ -15,13 +16,10 @@ const SURFACES: Record<ProcessHarnessId, Surface> = {
   'github-copilot-cli': { read: 'view', write: 'edit', shell: 'bash', path: 'path', pre: 'preToolUse', post: 'postToolUse' },
 };
 export function toolNameOf(harness: ProcessHarnessId, call: SimulatedCall): string {
-  const surface = SURFACES[harness];
-  if (call.tool === 'shell') return surface.shell;
-  return call.tool === 'write' ? surface.write : surface.read;
+  return call.tool === 'shell' ? SURFACES[harness].shell : (call.tool === 'write' ? SURFACES[harness].write : SURFACES[harness].read);
 }
 export function toolInputOf(harness: ProcessHarnessId, call: SimulatedCall): Record<string, unknown> {
-  if (call.tool === 'shell') return { command: call.command };
-  return call.tool === 'write' ? { [SURFACES[harness].path]: call.path, content: call.content } : { [SURFACES[harness].path]: call.path };
+  return call.tool === 'shell' ? { command: call.command } : { [SURFACES[harness].path]: call.path, ...(call.tool === 'write' ? { content: call.content } : {}) };
 }
 type PayloadInput = { readonly sessionId: string; readonly call: SimulatedCall; readonly agentId: string | null; readonly output: string | null };
 type PayloadBuilder = (input: PayloadInput, event: string) => Record<string, unknown>;
@@ -39,8 +37,8 @@ function copilotPayload(input: PayloadInput, event: string): Record<string, unkn
   return event === 'postToolUse' ? { ...base, toolResult: { resultType: 'success', textResultForLlm: input.output ?? '' } } : base;
 }
 const PAYLOAD_BUILDERS: Record<ProcessHarnessId, PayloadBuilder> = {
-  'claude-code': (input, event) => claudeLike('claude-code', input, event),
-  'codex-cli': (input, event) => claudeLike('codex-cli', input, event),
+  'claude-code': (i, e) => claudeLike('claude-code', i, e),
+  'codex-cli': (i, e) => claudeLike('codex-cli', i, e),
   cursor: cursorPayload,
   'github-copilot-cli': copilotPayload,
 };
@@ -49,8 +47,7 @@ function isDenied(harness: ProcessHarnessId, response: string): boolean {
   const value = JSON.parse(response) as Record<string, unknown>;
   if (harness === 'cursor') return value['permission'] === 'deny';
   if (harness === 'github-copilot-cli') return value['permissionDecision'] === 'deny';
-  const specific = value['hookSpecificOutput'] as Record<string, unknown> | undefined;
-  return specific?.['permissionDecision'] === 'deny';
+  return (value['hookSpecificOutput'] as Record<string, unknown> | undefined)?.['permissionDecision'] === 'deny';
 }
 function contextBlock(harness: ProcessHarnessId, response: string): string | null {
   if (response === '') return null;
@@ -59,10 +56,15 @@ function contextBlock(harness: ProcessHarnessId, response: string): string | nul
   const block = specific?.['additionalContext'] ?? value['additional_context'] ?? value['additionalContext'];
   return typeof block === 'string' ? block : null;
 }
-function resetRequest(harness: ProcessHarnessId, sessionId: string): { event: string; payload: Record<string, unknown> } {
-  if (harness === 'cursor') return { event: 'preCompact', payload: { conversation_id: sessionId, hook_event_name: 'preCompact', trigger: 'auto' } };
-  if (harness === 'github-copilot-cli') return { event: 'preCompact', payload: { sessionId, hookName: 'preCompact' } };
-  return { event: 'SessionStart', payload: { session_id: sessionId, source: 'compact' } };
+function eventRequest(harness: ProcessHarnessId, sessionId: string, kind: 'reset' | 'startup' | 'compact'): { event: string; payload: Record<string, unknown> } {
+  if (kind === 'reset') {
+    if (harness === 'cursor') return { event: 'preCompact', payload: { conversation_id: sessionId, hook_event_name: 'preCompact', trigger: 'auto' } };
+    if (harness === 'github-copilot-cli') return { event: 'preCompact', payload: { sessionId, hookName: 'preCompact' } };
+    return { event: 'SessionStart', payload: { session_id: sessionId, source: 'compact' } };
+  }
+  if (harness === 'cursor') return { event: 'sessionStart', payload: { conversation_id: sessionId, session_id: sessionId, hook_event_name: 'sessionStart' } };
+  if (harness === 'github-copilot-cli') return { event: 'sessionStart', payload: { sessionId, source: kind } };
+  return { event: 'SessionStart', payload: { session_id: sessionId, hook_event_name: 'SessionStart', source: kind } };
 }
 export async function installHarness(root: string, harness: ProcessHarnessId): Promise<void> {
   const result = await runBuiltCli(['init', '--yes', '--harness', harness], root);
@@ -77,19 +79,22 @@ export function createProcessSession(input: { readonly root: string; readonly ha
     return PAYLOAD_BUILDERS[input.harness](payload, event);
   }
   return {
-    harness: input.harness,
-    sessionId: input.sessionId,
-    async pre(step: SessionStep): Promise<HookOutcome> {
+    harness: input.harness, sessionId: input.sessionId,
+    pre: async (step) => {
       const result = await runInstalledHook(hook, ids.pre, build(step, null, ids.pre));
       return { allowed: !isDenied(input.harness, result.stdout), response: result.stdout };
     },
-    async post(step: SessionStep, output: string): Promise<string | null> {
-      const result = await runInstalledHook(hook, ids.post, build(step, output, ids.post));
-      return contextBlock(input.harness, result.stdout);
+    post: async (step, output) => contextBlock(input.harness, (await runInstalledHook(hook, ids.post, build(step, output, ids.post))).stdout),
+    reset: async () => {
+      const req = eventRequest(input.harness, input.sessionId, 'reset');
+      await runInstalledHook(hook, req.event, req.payload);
     },
-    async reset(): Promise<void> {
-      const request = resetRequest(input.harness, input.sessionId);
-      await runInstalledHook(hook, request.event, request.payload);
+    boot: async (source = 'startup') => {
+      if (source === 'compact' && (input.harness === 'cursor' || input.harness === 'github-copilot-cli')) return null;
+      const req = eventRequest(input.harness, input.sessionId, source);
+      const result = await runInstalledHook(hook, req.event, req.payload);
+      assert.notEqual(result.stdout, '', `Boot hook exited ${result.code}; ${result.stderr.match(/ContextBrake: [A-Z_]+/)?.[0] ?? 'no error code'}`);
+      return contextBlock(input.harness, result.stdout);
     },
   };
 }

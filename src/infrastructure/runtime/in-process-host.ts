@@ -27,14 +27,14 @@ export function createInProcessRuntime(input: InProcessRuntimeInput): InProcessR
         if (event.kind === 'session_reset') ledger.invalidate(event.session);
         return await runWithinDeadline(services.engine.handle(event, engineInput ?? {}));
       } catch (error) {
-        return handleFailure({ event, error, config: input.config, services, ledger });
+        return handleFailure({ event, error, config: input.config, descriptor: input.descriptor, services, ledger });
       }
     },
   };
 }
-async function handleFailure(input: { event: RuntimeEvent; error: unknown; config: ContextBrakeConfig; services: RuntimeServices; ledger: SessionLedger }): Promise<RuntimeDecision> {
+async function handleFailure(input: { event: RuntimeEvent; error: unknown; config: ContextBrakeConfig; descriptor: RuntimeDescriptor; services: RuntimeServices; ledger: SessionLedger }): Promise<RuntimeDecision> {
   try {
-    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.config, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand });
+    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand });
   } catch {
     return { kind: 'neutral' };
   }

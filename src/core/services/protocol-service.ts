@@ -13,7 +13,12 @@ function buildZoneRows(zones: ContextBrakeConfig['telemetry']['zones'], context:
   const redMinTurn = zones.yellowMaxTurn + 1;
   const criticalPct = zones.criticalPercentage;
   const criticalTurn = zones.criticalTurn;
-  const files = { planFile: context.stateStorage.planFile, checkpointFile: context.stateStorage.checkpointFile, additionalAllowedCommands: context.brake.additionalAllowedCommands };
+  const files = {
+    planFile: context.stateStorage.planFile,
+    checkpointFile: context.stateStorage.checkpointFile,
+    additionalAllowedCommands: context.brake.additionalAllowedCommands,
+    instructCheckpointCommit: context.stateStorage.instructCheckpointCommit,
+  };
   return [
     buildProtocolRow(`\`GREEN\` | Usage below ${greenPct}% and at most ${zones.greenMaxTurn} turns`, zoneActionClause('GREEN', files)),
     buildProtocolRow(`\`YELLOW\` | Usage from ${greenPct}% to ${zones.yellowMaxPercentage}%, or ${yellowMinTurn} to ${zones.yellowMaxTurn} turns`, zoneActionClause('YELLOW', files)),

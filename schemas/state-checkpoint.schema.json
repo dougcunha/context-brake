@@ -1,0 +1,128 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "activeStepId": {
+      "default": null,
+      "anyOf": [
+        {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1
+            },
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "gitState": {
+      "type": "object",
+      "properties": {
+        "branch": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lastCommitHash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cleanWorkingTree": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "branch",
+        "lastCommitHash",
+        "cleanWorkingTree"
+      ],
+      "additionalProperties": false
+    },
+    "workingMemory": {
+      "type": "object",
+      "properties": {
+        "discoveredConstraints": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "decisionsMade": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "blockedItems": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "breakingChanges": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "discoveredConstraints",
+        "decisionsMade",
+        "blockedItems",
+        "breakingChanges"
+      ],
+      "additionalProperties": false
+    },
+    "modifiedFiles": {
+      "default": [],
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "taskId",
+    "activeStepId",
+    "gitState",
+    "workingMemory",
+    "modifiedFiles",
+    "timestamp"
+  ],
+  "additionalProperties": false
+}

@@ -9,7 +9,7 @@ import { writeRuntimeConfig } from '../helpers/runtime-seed.js';
 import { brakeWorkFlow, deniedRead, operatorTrap, saveSequence, workStep } from '../support/harness-simulator/agent-profiles.js';
 import { createProcessSession, installHarness } from '../support/harness-simulator/process-driver.js';
 import { SessionRecorder, initializeRepository, lastCommitSubject, runScript } from '../support/harness-simulator/session-recorder.js';
-import { PLAN_FILE, planContent, shellCall } from '../support/harness-simulator/scenarios.js';
+import { CHECKPOINT_FILE, PLAN_FILE, checkpointContent, planContent, shellCall } from '../support/harness-simulator/scenarios.js';
 import { runBuiltCli } from './cli-runner.js';
 
 const CLAUDE_SESSION = 'brake-e2e-claude';
@@ -29,7 +29,7 @@ async function createFixture(harness: 'claude-code' | 'codex-cli'): Promise<stri
   await runGit(['add', '-A'], root);
   await runGit(['commit', '-m', 'install context-brake'], root);
   await writeFile(join(root, PLAN_FILE), planContent(), 'utf8');
-  await writeFile(join(root, 'state_checkpoint.json'), '{"schemaVersion": 1, "currentStepId": 1, "steps": []}\n', 'utf8');
+  await writeFile(join(root, CHECKPOINT_FILE), checkpointContent(), 'utf8');
   return root;
 }
 async function driveClaude(root: string, recorder: SessionRecorder): Promise<void> {

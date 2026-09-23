@@ -1,7 +1,9 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
+import type { HarnessId } from '../contracts/harness.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } from '../contracts/runtime.js';
-import type { BlockLog, SessionLedger } from '../contracts/session-ledger.js';
+import type { BlockLog, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
 import type { UsageReading, Zone } from '../contracts/zones.js';
+import type { BootDecision } from './boot-policy.js';
 import { isToolCallAllowed } from './brake-allowlist.js';
 import { deriveBrakeMode } from './brake-mode.js';
 import { renderBlockMessage } from './block-message.js';
@@ -14,18 +16,15 @@ import { estimatedTokens, resolveUsage } from './usage-resolver.js';
 import { classifyZone, usagePercentage } from './zone-classifier.js';
 
 export type ValidationCommandReader = () => Promise<string | null>;
+export type BootReader = () => Promise<BootDecision>;
 export type MeasuredUsage = { readonly tokens: number | null; readonly contextWindow: number };
 export type RuntimeInput = { readonly measured?: MeasuredUsage | undefined; readonly observedCharacters?: number | undefined };
-export type BrakeEngineOptions = { readonly descriptor: RuntimeDescriptor; readonly config: ContextBrakeConfig; readonly ledger: SessionLedger; readonly blocks: BlockLog; readonly readValidationCommand: ValidationCommandReader };
-export interface BrakeEngine {
-  handle(event: RuntimeEvent, input?: RuntimeInput): Promise<RuntimeDecision>;
-}
+export type BrakeEngineOptions = { readonly descriptor: RuntimeDescriptor; readonly config: ContextBrakeConfig; readonly ledger: SessionLedger; readonly blocks: BlockLog; readonly readValidationCommand: ValidationCommandReader; readonly readBoot?: BootReader | undefined; readonly errors?: RuntimeErrorLog | undefined };
+export interface BrakeEngine { handle(event: RuntimeEvent, input?: RuntimeInput): Promise<RuntimeDecision>; }
 
 const NEUTRAL: RuntimeDecision = { kind: 'neutral' };
-
-export function createBrakeEngine(options: BrakeEngineOptions): BrakeEngine {
-  return { handle: (event, input) => handleEvent(options, event, input ?? {}) };
-}
+const COMPACTION_BOOT_HARNESSES: readonly HarnessId[] = ['claude-code', 'codex-cli', 'pi', 'oh-my-pi'];
+export function createBrakeEngine(options: BrakeEngineOptions): BrakeEngine { return { handle: (event, input) => handleEvent(options, event, input ?? {}) }; }
 async function handleEvent(options: BrakeEngineOptions, event: RuntimeEvent, input: RuntimeInput): Promise<RuntimeDecision> {
   switch (event.kind) {
     case 'pre_tool': return handlePreTool(options, event, input);
@@ -72,12 +71,20 @@ async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEv
 async function handleSessionReset(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'session_reset' }): Promise<RuntimeDecision> {
   await options.ledger.appendResetLine(event.session, event.reason);
   if (event.reason === 'new') await options.ledger.pruneStaleSessions();
-  return NEUTRAL;
+  if (!options.descriptor.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported')) return NEUTRAL;
+  if (event.reason === 'compact' && !COMPACTION_BOOT_HARNESSES.includes(options.descriptor.harness)) return NEUTRAL;
+  if (!options.readBoot) return NEUTRAL;
+  try {
+    const decision = await options.readBoot();
+    return decision.kind === 'boot' || decision.kind === 'invalid_state' ? { kind: 'context', block: decision.text } : NEUTRAL;
+  } catch (error) {
+    if (options.errors) await options.errors.append(options.descriptor.harness, { event: 'session_reset', code: 'UNEXPECTED', detail: error instanceof Error ? error.message : String(error) }).catch(() => undefined);
+    return NEUTRAL;
+  }
 }
 async function handleResponseEnd(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'response_end' }): Promise<RuntimeDecision> {
-  const command = options.descriptor.newSessionCommand;
-  if (command === null || !hasResetSignal(event.text)) return NEUTRAL;
-  return { kind: 'notify_user', text: renderResetNotice(command) };
+  if (options.descriptor.newSessionCommand === null || !hasResetSignal(event.text)) return NEUTRAL;
+  return { kind: 'notify_user', text: renderResetNotice(options.descriptor.newSessionCommand) };
 }
 async function ensureSessionLine(options: BrakeEngineOptions, session: SessionKey, summary: SessionSummary): Promise<void> {
   if (summary.sessionLine !== null) return;
@@ -85,9 +92,5 @@ async function ensureSessionLine(options: BrakeEngineOptions, session: SessionKe
   await options.ledger.appendSessionLine(session, { brakeMode: brake.mode, brakeReason: brake.reason });
 }
 async function readSummary(ledger: SessionLedger, session: SessionKey): Promise<SessionSummary> {
-  try {
-    return summarizeLedger(await ledger.readLines(session));
-  } catch (error) {
-    throw new LedgerUnreadableError({ cause: error });
-  }
+  try { return summarizeLedger(await ledger.readLines(session)); } catch (error) { throw new LedgerUnreadableError({ cause: error }); }
 }

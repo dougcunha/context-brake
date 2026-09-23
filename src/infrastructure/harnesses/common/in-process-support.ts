@@ -51,5 +51,5 @@ export function measuredUsageFrom(value: unknown): MeasuredUsageInput | undefine
 
 async function resolveInProcessFailure(projectRoot: string, event: RuntimeEvent, error: unknown): Promise<RuntimeDecision> {
   const ports = createRuntimePorts({ projectRoot, config: null, clock: systemClock });
-  return await resolveFailure({ event, code: failureErrorCode(error), detail: failureDetail(error), config: null, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand });
+  return await resolveFailure({ event, code: failureErrorCode(error), detail: failureDetail(error), config: null, descriptor: null, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand });
 }

@@ -11,7 +11,8 @@ const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 export const cursorDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CURSOR_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null };
 
 function sessionOf(payload: CursorPayload): SessionKey {
-  return { harness: HARNESS, sessionId: requireIdentifier(payload.conversation_id), agentId: null };
+  const sessionId = payload.session_id ?? payload.conversation_id;
+  return { harness: HARNESS, sessionId: requireIdentifier(sessionId), agentId: null };
 }
 
 function toolOf(payload: CursorPayload): ToolCall {
@@ -42,7 +43,7 @@ export function mapCursorInput(eventName: string, payload: unknown): RuntimeInpu
 export function renderCursorDecision(decision: RuntimeDecision, eventName: string): string | null {
   if (decision.kind === 'deny') return JSON.stringify({ permission: 'deny', agent_message: decision.message, user_message: `ContextBrake blocked ${decision.tool}: the session is above the critical ceiling.` });
   if (eventName === 'preToolUse') return decision.kind === 'neutral' ? JSON.stringify({ permission: 'allow' }) : null;
-  if (decision.kind === 'context' && eventName === 'postToolUse') return JSON.stringify({ additional_context: decision.block });
+  if (decision.kind === 'context' && (eventName === 'postToolUse' || eventName === 'sessionStart')) return JSON.stringify({ additional_context: decision.block });
   return null;
 }
 

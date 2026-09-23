@@ -9,7 +9,6 @@ const FORBIDDEN_RULES = [
   { rule: 'classic zod', check: (p: string) => (p.includes('node_modules/zod') || p.includes('node_modules\\zod')) && (p.includes('/classic/') || p.includes('\\classic\\') || p.endsWith('/zod/index.js') || p.endsWith('\\zod\\index.js')) || p === 'zod' },
   { rule: 'jsonc-parser', check: (p: string) => p.includes('jsonc-parser') },
   { rule: 'semver', check: (p: string) => p.includes('semver') },
-  { rule: 'child_process', check: (p: string) => p.includes('child_process') },
   { rule: 'src/cli/', check: (p: string) => p.includes('src/cli/') || p.includes('src\\cli\\') },
 ] as const;
 
@@ -22,6 +21,13 @@ export function findForbiddenImports(metafile: Metafile): string[] {
   for (const target of targets) {
     for (const { rule, check } of FORBIDDEN_RULES) {
       if (check(target)) violations.push(`${rule}:${target}`);
+    }
+  }
+  for (const [source, input] of Object.entries(metafile.inputs)) {
+    for (const imported of input.imports) {
+      if (!imported.path.includes('child_process')) continue;
+      if (/src[/\\]infrastructure[/\\]process[/\\](node-process-runner|process-tree)\.ts$/.test(source)) continue;
+      violations.push(`child_process:${source}:${imported.path}`);
     }
   }
   return violations;

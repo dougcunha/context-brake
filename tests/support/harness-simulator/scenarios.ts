@@ -72,12 +72,11 @@ export function assistantText(): string {
   return takeTokens(ASSISTANT_SOURCE.repeat(8), TOKENS_PER_TURN);
 }
 export function checkpointContent(): string {
-  const step = { id: 1, status: 'COMPLETED', validationCommand: VALIDATION_COMMAND };
-  return `${JSON.stringify({ schemaVersion: 1, currentStepId: 1, steps: [step] }, null, 2)}\n`;
+  return `${JSON.stringify({ schemaVersion: 1, taskId: 'task-1', activeStepId: 1, gitState: { branch: 'master', lastCommitHash: null, cleanWorkingTree: true }, workingMemory: { discoveredConstraints: [], decisionsMade: [], blockedItems: [], breakingChanges: [] }, modifiedFiles: [], timestamp: '2026-09-16T12:00:00.000Z' }, null, 2)}\n`;
 }
 export function planContent(): string {
-  const step = { id: 1, status: 'IN_PROGRESS', validationCommand: VALIDATION_COMMAND };
-  return `${JSON.stringify({ currentStepId: 1, steps: [step] }, null, 2)}\n`;
+  const step = { id: 1, title: 'Step 1', status: 'IN_PROGRESS', validationCommand: VALIDATION_COMMAND, artifactsProduced: [], description: '' };
+  return `${JSON.stringify({ schemaVersion: 1, taskId: 'task-1', title: 'Task 1', currentStepId: 1, steps: [step] }, null, 2)}\n`;
 }
 export function seedCharactersFor(window: SimulatedWindow): number {
   const target = Math.floor(window * RED_USAGE_TARGET);

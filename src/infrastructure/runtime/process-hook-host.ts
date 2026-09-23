@@ -81,7 +81,7 @@ async function failureDecision(input: FailureInput): Promise<RuntimeDecision> {
     return NEUTRAL;
   }
   try {
-    return await resolveFailure({ event: input.state.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.state.config, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand });
+    return await resolveFailure({ event: input.state.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.state.config, descriptor: input.adapter.descriptor, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand });
   } catch {
     return NEUTRAL;
   }

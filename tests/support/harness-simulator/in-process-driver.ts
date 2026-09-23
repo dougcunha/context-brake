@@ -84,6 +84,12 @@ export async function createInProcessSession(input: InProcessSessionInput): Prom
     pre: (step) => runToolCall(state, step),
     post: (step, output) => runToolResult(state, step, output),
     reset: () => callHandler({ handlers: state.handlers, event: 'session_compact', payload: { reason: 'compact' }, context: state.context }).then(() => undefined),
+    boot: async (source = 'startup') => {
+      const event = source === 'compact' ? 'session_compact' : 'session_start';
+      await callHandler({ handlers: state.handlers, event, payload: { session_id: input.sessionId, reason: source }, context: state.context });
+      const decision = (await callHandler({ handlers: state.handlers, event: 'before_agent_start', payload: {}, context: state.context })) as { message?: string } | undefined;
+      return decision?.message ?? null;
+    },
     reload: async () => { state = await createState(input, state.lines, state.tokenTotal); },
   };
 }

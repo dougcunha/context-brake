@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import type { HarnessId } from '../../src/core/contracts/harness.js';
 
 export type BuiltHookResult = { readonly code: number | null; readonly stdout: string; readonly stderr: string };
+type HookInvocation = { readonly hookPath: string; readonly event: string; readonly payload: unknown; readonly environment: NodeJS.ProcessEnv };
 
 const INSTALLED_HOOK_PATHS: Readonly<Record<HarnessId, string>> = {
   'claude-code': '.claude/hooks/context-brake.mjs',
@@ -28,13 +29,19 @@ export async function installBuiltHook(harness: HarnessId, projectRoot: string):
 }
 
 export function runInstalledHook(hookPath: string, event: string, payload: unknown): Promise<BuiltHookResult> {
+  return runInstalledHookWithEnvironment({ hookPath, event, payload, environment: process.env });
+}
+
+export function runInstalledHookWithEnvironment(input: HookInvocation): Promise<BuiltHookResult> {
   return new Promise((resolvePromise) => {
-    const child = spawn(process.execPath, [hookPath, event], { cwd: dirname(hookPath), stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, [input.hookPath, input.event], {
+      cwd: dirname(input.hookPath), stdio: ['pipe', 'pipe', 'pipe'], env: input.environment,
+    });
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (data: Buffer) => { stdout += data.toString(); });
     child.stderr.on('data', (data: Buffer) => { stderr += data.toString(); });
-    child.stdin.end(JSON.stringify(payload));
+    child.stdin.end(JSON.stringify(input.payload));
     child.on('close', (code) => resolvePromise({ code, stdout, stderr }));
   });
 }

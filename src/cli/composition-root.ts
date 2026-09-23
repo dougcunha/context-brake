@@ -17,7 +17,9 @@ function renderHelp(): void {
     '  context-brake init [options]',
     '  context-brake doctor [options]',
     '  context-brake remove [options]',
-    '  context-brake plan init --task="<name>" [options]', '',
+    '  context-brake plan init --task="<name>" [options]',
+    '  context-brake plan status [options]', '',
+
     'Commands:',
     '  init     Detect harnesses, register integrations, and initialize ContextBrake',
     '  doctor   Diagnose integrations, configurations, versions, and overhead',

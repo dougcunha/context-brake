@@ -19,6 +19,7 @@ export type SessionChannel = {
   readonly post: (step: SessionStep, output: string) => Promise<string | null>;
   readonly reset: (kind: 'compact' | 'new') => Promise<void>;
   readonly reload?: (() => Promise<void>) | undefined;
+  readonly boot?: ((source?: 'startup' | 'compact') => Promise<string | null>) | undefined;
 };
 export type CallOutcome = 'executed' | 'denied';
 export type CallRecord = {
@@ -30,15 +31,9 @@ export type CallRecord = {
 };
 export class SessionRecorder {
   private readonly entries: CallRecord[] = [];
-  record(entry: CallRecord): void {
-    this.entries.push(entry);
-  }
-  get records(): readonly CallRecord[] {
-    return this.entries;
-  }
-  find(id: SimulatedCall['id']): CallRecord | undefined {
-    return this.entries.find((entry) => entry.step.call.id === id);
-  }
+  record(entry: CallRecord): void { this.entries.push(entry); }
+  get records(): readonly CallRecord[] { return this.entries; }
+  find(id: SimulatedCall['id']): CallRecord | undefined { return this.entries.find((entry) => entry.step.call.id === id); }
   report(): string {
     return this.entries.map((entry) => `${entry.harness} ${entry.step.phase} ${entry.step.call.id} expected=${entry.step.expectation} actual=${entry.outcome}`).join('\n');
   }

@@ -7,14 +7,15 @@ import { parseStateCheckpoint } from '../../src/core/validation/checkpoint-valid
 import { parseTaskPlan } from '../../src/core/validation/plan-validator.js';
 import { runPlanInit } from '../../src/cli/commands/plan.js';
 import { ConfirmationRequiredError } from '../../src/cli/confirmation.js';
-import type { ParsedPlanArgs } from '../../src/cli/plan-arguments.js';
+import type { ParsedPlanInitArgs } from '../../src/cli/plan-arguments.js';
 
 const PLAN_FILE = 'task_plan.json';
 const CHECKPOINT_FILE = 'state_checkpoint.json';
 
-function planArgs(overrides: Partial<ParsedPlanArgs> = {}): ParsedPlanArgs {
+function planArgs(overrides: Partial<ParsedPlanInitArgs> = {}): ParsedPlanInitArgs {
   return { command: 'plan', subcommand: 'init', task: 'refactor-auth', yes: false, json: false, ...overrides };
 }
+
 
 describe('plan init command in process (RF1, RF2, CA-01, CA-02)', () => {
   let tempDir: string;

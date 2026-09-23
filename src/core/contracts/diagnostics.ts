@@ -20,6 +20,26 @@ const outcome = z.object({ path: z.string(), status: z.enum(['planned', 'applied
 const plan = z.object({ schemaVersion: z.literal(1), projectRoot: z.string(), changes: z.array(fileChange), conflicts: z.array(conflict), harnesses: z.array(harnessPlan), requiresConfirmation: z.boolean() }).strict();
 export const installReportSchema = z.object({ schemaVersion: z.literal(1), command: z.enum(['init', 'remove']), mode: z.enum(['dry_run', 'applied']), status: z.enum(['success', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), plan, outcomes: z.array(outcome), findings: z.array(finding) }).strict();
 export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding) }).strict();
+const stepStatus = z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']);
+const statusStep = z.object({ id: z.union([z.string(), z.number().int()]), title: z.string(), status: stepStatus }).strict();
+const statusPlan = z.object({ taskId: z.string(), title: z.string(), currentStepId: z.union([z.string(), z.number().int()]).nullable(), activeStep: statusStep.nullable(), steps: z.array(statusStep) }).strict();
+const statusCheckpoint = z.object({ timestamp: z.string().nullable(), lastCommitHash: z.string().nullable(), branch: z.string().nullable(), constraintsCount: z.number().int().nonnegative(), decisionsCount: z.number().int().nonnegative() }).strict();
+const statusFileIssues = z.object({ path: z.string(), rule: z.string() }).strict();
+const statusFileValidity = z.object({ path: z.string(), exists: z.boolean(), valid: z.boolean(), issues: z.array(statusFileIssues) }).strict();
+const statusFiles = z.object({ plan: statusFileValidity, checkpoint: statusFileValidity }).strict();
+const gitDivergence = z.union([
+  z.object({ kind: z.literal('checks_omitted'), reason: z.string() }).strict(),
+  z.object({ kind: z.literal('missing_commit'), recordedCommit: z.string() }).strict(),
+  z.object({ kind: z.literal('outside_history'), recordedCommit: z.string(), currentCommit: z.string().nullable() }).strict(),
+  z.object({ kind: z.literal('pending_changes') }).strict(),
+  z.object({ kind: z.literal('branch_changed'), recordedBranch: z.string(), currentBranch: z.string().nullable() }).strict(),
+]);
+const statusGit = z.object({ status: z.enum(['available', 'unavailable']), branch: z.string().nullable(), headCommit: z.string().nullable(), cleanWorkingTree: z.boolean().nullable(), divergences: z.array(gitDivergence) }).strict();
+export const planStatusReportSchema = z.object({
+  schemaVersion: z.literal(1), command: z.literal('plan'), subcommand: z.literal('status'),
+  status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]),
+  plan: statusPlan.nullable(), checkpoint: statusCheckpoint.nullable(), files: statusFiles, findings: z.array(finding), git: statusGit.nullable().optional(),
+}).strict();
 const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(['init', 'remove', 'doctor', 'plan']), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
 export const cliErrorSchema = z.union([
   z.object({ ...cliErrorBase, exitCode: z.literal(64), error: z.object({ code: z.literal('INVALID_ARGUMENTS'), message: z.string() }).strict() }).strict(),
@@ -28,6 +48,7 @@ export const cliErrorSchema = z.union([
 ]);
 export type DiagnosticFinding = z.infer<typeof diagnosticFindingSchema>;
 export type DoctorReport = z.infer<typeof doctorReportSchema>;
+export type PlanStatusReport = z.infer<typeof planStatusReportSchema>;
 export type InstallReport = z.infer<typeof installReportSchema>;
 export type CliErrorDocument = z.infer<typeof cliErrorSchema>;
 export type OverheadMeasurement = z.infer<typeof overhead>;

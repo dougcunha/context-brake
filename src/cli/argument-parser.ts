@@ -4,7 +4,8 @@ import { CliArgumentError, validateHarnessIds, validateInclusionExclusion, valid
 import { parsePlan, type ParsedPlanArgs } from './plan-arguments.js';
 
 export { CliArgumentError } from './argument-validator.js';
-export type { ParsedPlanArgs, ParsedPlanInitArgs } from './plan-arguments.js';
+export type { ParsedPlanArgs, ParsedPlanInitArgs, ParsedPlanStatusArgs } from './plan-arguments.js';
+
 
 export type ParsedInitArgs = {
   command: 'init'; dryRun: boolean; yes: boolean; json: boolean;

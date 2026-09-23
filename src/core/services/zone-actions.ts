@@ -18,16 +18,26 @@ export type ProtocolZoneContext = {
   readonly planFile: string;
   readonly checkpointFile: string;
   readonly additionalAllowedCommands?: readonly string[] | undefined;
+  readonly instructCheckpointCommit?: boolean | undefined;
 };
 
 export function applyProtocolFileNames(text: string, context: ProtocolZoneContext): string {
   return text.replace('the plan and checkpoint', `\`${context.planFile}\` and \`${context.checkpointFile}\``);
 }
+
+function zoneRedClause(context: ProtocolZoneContext): string {
+  const commit = context.instructCheckpointCommit ?? true;
+  const base = commit
+    ? ZONE_ACTIONS.RED.protocol
+    : 'Stop editing. Update the plan and checkpoint. End the response with `[REQUEST_SESSION_RESET]`.';
+  return applyProtocolFileNames(base, context);
+}
+
 export function zoneActionClause(zone: Zone, context: ProtocolZoneContext): string {
   switch (zone) {
     case 'GREEN': return ZONE_ACTIONS.GREEN.protocol;
     case 'YELLOW': return ZONE_ACTIONS.YELLOW.protocol;
-    case 'RED': return applyProtocolFileNames(ZONE_ACTIONS.RED.protocol, context);
+    case 'RED': return zoneRedClause(context);
     case 'CRITICAL': return zoneCriticalClause(context);
   }
 }

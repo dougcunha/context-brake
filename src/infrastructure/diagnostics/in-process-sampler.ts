@@ -1,4 +1,5 @@
 import { pathToFileURL } from 'node:url';
+import { describeFailure, SampleError } from './sample-failure.js';
 
 const WARMUP_COUNT = 10;
 const SAMPLE_COUNT = 100;
@@ -59,12 +60,26 @@ async function runSamples(handler: HookHandler, args: [unknown, unknown]): Promi
   return samples;
 }
 
+type AssetModule = { default?: unknown };
+
+async function loadAsset(assetPath: string): Promise<AssetModule> {
+  try {
+    return (await import(pathToFileURL(assetPath).href)) as AssetModule;
+  } catch (error) {
+    throw new SampleError(describeFailure(error, 'import_error'));
+  }
+}
+
 export async function sampleInProcess(benchmark: InProcessBenchmark): Promise<number[] | null> {
-  const module = (await import(pathToFileURL(benchmark.assetPath).href)) as { default?: unknown };
+  const module = await loadAsset(benchmark.assetPath);
   const handlers = new Map<string, HookHandler>();
   const api = { on: (event: string, handler: HookHandler): void => { handlers.set(event, handler); } };
-  const returned = typeof module.default === 'function' ? module.default(api) : undefined;
-  const selected = selectHandler(returned, handlers, benchmark.event);
-  if (selected === null) return null;
-  return runSamples(selected.handler, invocationArgs(selected, benchmark.payload, createBenchmarkContext()));
+  try {
+    const returned = typeof module.default === 'function' ? module.default(api) : undefined;
+    const selected = selectHandler(returned, handlers, benchmark.event);
+    if (selected === null) return null;
+    return await runSamples(selected.handler, invocationArgs(selected, benchmark.payload, createBenchmarkContext()));
+  } catch (error) {
+    throw new SampleError(describeFailure(error, 'handler_error'));
+  }
 }

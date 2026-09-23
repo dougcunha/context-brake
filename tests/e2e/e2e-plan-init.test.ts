@@ -71,7 +71,8 @@ describe('E2E plan init: argument errors (RF1)', () => {
   it('rejects a missing task name, a missing subcommand, and an unknown subcommand', async () => {
     expect((await runBuiltCli(['plan', 'init'], tempDir)).code).toBe(EXIT_INVALID_ARGUMENTS);
     expect((await runBuiltCli(['plan'], tempDir)).code).toBe(EXIT_INVALID_ARGUMENTS);
-    expect((await runBuiltCli(['plan', 'status'], tempDir)).code).toBe(EXIT_INVALID_ARGUMENTS);
+    expect((await runBuiltCli(['plan', 'unknown'], tempDir)).code).toBe(EXIT_INVALID_ARGUMENTS);
+
   });
 
   it('reports the plan command in the JSON error document', async () => {

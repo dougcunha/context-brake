@@ -1,6 +1,10 @@
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { FileSnapshot } from '../contracts/changes.js';
+import type { TaskPlan } from '../contracts/task-plan.js';
+import type { StateCheckpoint } from '../contracts/state-checkpoint.js';
+import { parseTaskPlan } from '../validation/plan-validator.js';
+import { checkpointAgainstPlanIssues, parseStateCheckpoint } from '../validation/checkpoint-validator.js';
 import { CURRENT_START_MARKER } from './instruction-markers.js';
 import { renderProtocol } from './protocol-service.js';
 
@@ -52,16 +56,41 @@ export function checkProtocolFile(snapshot: FileSnapshot, config: ContextBrakeCo
   return [];
 }
 
+function validateSnapshot(snap: FileSnapshot, parse: (val: unknown) => void): DiagnosticFinding[] {
+  if (!snap.exists || !snap.content) return [];
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(snap.content);
+  } catch {
+    return [{
+      code: 'INVALID_STATE_FILE', severity: 'error', scope: 'file', harness: null, path: snap.path,
+      message: `State file ${snap.path} contains invalid JSON.`, impact: 'Harnesses cannot safely read state.', remediation: `Fix syntax errors in ${snap.path}.`,
+    }];
+  }
+  try {
+    parse(parsed);
+    return [];
+  } catch (err) {
+    const issues = (err as { issues?: { path: string; rule: string }[] }).issues ?? [];
+    return issues.map((i) => ({
+      code: 'INVALID_STATE_FILE', severity: 'error', scope: 'file', harness: null, path: snap.path,
+      message: `State file ${snap.path} is invalid: ${i.path} ${i.rule}.`, impact: 'Harnesses cannot safely read state.', remediation: `Fix ${i.path} in ${snap.path}.`,
+    }));
+  }
+}
+
 export function checkStateFiles(plan?: FileSnapshot, checkpoint?: FileSnapshot): DiagnosticFinding[] {
   const findings: DiagnosticFinding[] = [];
-  for (const snap of [plan, checkpoint]) {
-    if (!snap?.exists || !snap.content) continue;
-    try {
-      JSON.parse(snap.content);
-    } catch {
+  let validPlan: TaskPlan | null = null;
+  let validCheckpoint: StateCheckpoint | null = null;
+  if (plan) findings.push(...validateSnapshot(plan, (input) => { validPlan = parseTaskPlan(input, plan.path); }));
+  if (checkpoint) findings.push(...validateSnapshot(checkpoint, (input) => { validCheckpoint = parseStateCheckpoint(input, checkpoint.path); }));
+  if (validPlan && validCheckpoint && checkpoint) {
+    const cross = checkpointAgainstPlanIssues(validCheckpoint, validPlan);
+    for (const i of cross) {
       findings.push({
-        code: 'INVALID_STATE_FILE', severity: 'error', scope: 'file', harness: null, path: snap.path,
-        message: `State file ${snap.path} contains invalid JSON.`, impact: 'Harnesses cannot safely read state.', remediation: `Fix syntax errors in ${snap.path}.`,
+        code: 'INVALID_STATE_FILE', severity: 'error', scope: 'file', harness: null, path: checkpoint.path,
+        message: `State file ${checkpoint.path} is invalid: ${i.path} ${i.rule}.`, impact: 'Harnesses cannot safely read state.', remediation: `Fix ${i.path} in ${checkpoint.path}.`,
       });
     }
   }

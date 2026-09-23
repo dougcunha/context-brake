@@ -13,6 +13,8 @@ const REQUIRED_FILES: readonly string[] = [
   'schemas/context-brake.config.schema.json',
   'schemas/doctor-report.schema.json',
   'schemas/install-report.schema.json',
+  'schemas/state-checkpoint.schema.json',
+  'schemas/task-plan.schema.json',
   'docs/context-brake-protocol.md',
   'docs/telemetry-block.md',
   'dist/assets/runtime/context-brake-runtime.mjs',
@@ -61,5 +63,16 @@ describe('package manifest inputs and shebang (RF23)', () => {
     expect(manifest.engines.node).toContain('>=20');
     const binContent = await readFile('dist/src/cli/main.js', 'utf8');
     expect(binContent.startsWith('#!/usr/bin/env node')).toBe(true);
+  });
+});
+
+describe('published plan and checkpoint schemas (RF6)', () => {
+  it('validates that published plan and checkpoint schemas are usable JSON', async () => {
+    for (const file of ['schemas/task-plan.schema.json', 'schemas/state-checkpoint.schema.json']) {
+      const content = await readFile(file, 'utf8');
+      const schema = JSON.parse(content) as { type: string; properties: Record<string, unknown> };
+      expect(schema.type).toBe('object');
+      expect(schema.properties.schemaVersion).toBeDefined();
+    }
   });
 });

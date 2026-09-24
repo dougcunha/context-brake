@@ -7,24 +7,20 @@ import { dispatchCommand } from './composition-root.js';
 import { buildCliErrorDocument } from '../core/services/report-service.js';
 import { renderJsonOutput } from './output/json.js';
 import { renderCliErrorText } from './output/text.js';
+import { SHUTDOWN_SIGNALS, signalRouter } from './shutdown.js';
 
 let signalRegistered = false;
-
-function onSignal(): void {
-  process.exit(130);
-}
 
 function setupSignalHandlers(): void {
   if (signalRegistered) return;
   signalRegistered = true;
-  process.on('SIGINT', onSignal);
-  process.on('SIGTERM', onSignal);
+  for (const signal of SHUTDOWN_SIGNALS) process.on(signal, () => signalRouter.handle(signal));
 }
 
 function handleParseError(err: CliArgumentError, argsList: readonly string[]): number {
   const isJson = argsList.includes('--json');
   const first = argsList[0];
-  const cmd = first === 'doctor' || first === 'remove' || first === 'plan' ? first : 'init';
+  const cmd = first === 'doctor' || first === 'remove' || first === 'plan' || first === 'wrap' || first === 'run' ? first : 'init';
   const doc = buildCliErrorDocument({ command: cmd, code: 'INVALID_ARGUMENTS', message: err.message });
   if (isJson) {
     renderJsonOutput(doc);

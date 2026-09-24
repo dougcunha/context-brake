@@ -2,10 +2,11 @@ import { parseArgs } from 'node:util';
 import type { HarnessId } from '../core/contracts/harness.js';
 import { CliArgumentError, validateHarnessIds, validateInclusionExclusion, validateInstructionPaths } from './argument-validator.js';
 import { parsePlan, type ParsedPlanArgs } from './plan-arguments.js';
+import { parseRun, parseWrap, type ParsedRunArgs, type ParsedWrapArgs } from './run-arguments.js';
 
 export { CliArgumentError } from './argument-validator.js';
 export type { ParsedPlanArgs, ParsedPlanInitArgs, ParsedPlanStatusArgs } from './plan-arguments.js';
-
+export type { ParsedRunArgs, ParsedWrapArgs } from './run-arguments.js';
 
 export type ParsedInitArgs = {
   command: 'init'; dryRun: boolean; yes: boolean; json: boolean;
@@ -16,7 +17,7 @@ export type ParsedInitArgs = {
 export type ParsedDoctorArgs = { command: 'doctor'; json: boolean; harness: readonly HarnessId[] };
 export type ParsedRemoveArgs = { command: 'remove'; dryRun: boolean; yes: boolean; json: boolean; removeState: boolean };
 export type ParsedHelpArgs = { command: 'help' };
-export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedPlanArgs | ParsedHelpArgs;
+export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedPlanArgs | ParsedWrapArgs | ParsedRunArgs | ParsedHelpArgs;
 
 function parseInit(args: readonly string[]): ParsedInitArgs {
   const { values } = parseArgs({
@@ -74,7 +75,9 @@ export function parseCliArgs(args: readonly string[]): ParsedCliArgs {
     if (cmd === 'doctor') return parseDoctor(rest);
     if (cmd === 'remove') return parseRemove(rest);
     if (cmd === 'plan') return parsePlan(rest);
-    throw new CliArgumentError(`Unknown command '${cmd}'. Allowed commands: init, doctor, remove, plan.`);
+    if (cmd === 'wrap') return parseWrap(rest);
+    if (cmd === 'run') return parseRun(rest);
+    throw new CliArgumentError(`Unknown command '${cmd}'. Allowed commands: init, doctor, remove, plan, run, wrap.`);
   } catch (error) {
     if (error instanceof CliArgumentError) throw error;
     throw new CliArgumentError(error instanceof Error ? error.message : String(error));

@@ -1,5 +1,5 @@
 import {
-  cliErrorSchema, doctorReportSchema, installReportSchema,
+  cliErrorSchema, doctorReportSchema, installReportSchema, type CLI_ERROR_CODES, type CLI_ERROR_COMMANDS,
   type CliErrorDocument, type DiagnosticFinding, type DoctorReport,
   type HarnessDiagnostic, type InstallReport,
 } from '../contracts/diagnostics.js';
@@ -76,8 +76,8 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
 }
 
 export type BuildCliErrorInput = {
-  command: 'init' | 'remove' | 'doctor' | 'plan';
-  code: 'INVALID_ARGUMENTS' | 'INVALID_CONTEXTBRAKE_CONFIG' | 'CONFIRMATION_REQUIRED' | 'INTERRUPTED' | 'UNEXPECTED_ERROR';
+  command: (typeof CLI_ERROR_COMMANDS)[number];
+  code: 'INVALID_ARGUMENTS' | 'INTERRUPTED' | (typeof CLI_ERROR_CODES)[number];
   message: string;
 };
 

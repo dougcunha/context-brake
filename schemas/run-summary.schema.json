@@ -1,0 +1,434 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "command": {
+      "type": "string",
+      "const": "run"
+    },
+    "runId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "stopped",
+        "interrupted"
+      ]
+    },
+    "exitCode": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "stopReason": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "limit_reached",
+        "repeated_failure",
+        "no_checkpoint",
+        "harness_error",
+        "step_not_approved",
+        "confirmation_required",
+        "interrupted"
+      ]
+    },
+    "limit": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "maxSessions",
+            "maxTotalMinutes",
+            "maxSessionMinutes",
+            "maxTotalTokens"
+          ]
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "stepsCompleted": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "stepsTotal": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "sessionCount": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "durationMs": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "tokens": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "measured",
+            "estimated"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "harnessArgs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "const": 1
+          },
+          "index": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "harness": {
+            "type": "string",
+            "enum": [
+              "claude-code",
+              "codex-cli",
+              "cursor",
+              "github-copilot-cli",
+              "opencode",
+              "pi",
+              "oh-my-pi",
+              "antigravity-cli"
+            ]
+          },
+          "sessionId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "stepId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1
+              },
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            ]
+          },
+          "startedAt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "endedAt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "durationMs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "endReason": {
+            "type": "string",
+            "enum": [
+              "reset_signal",
+              "harness_exit",
+              "harness_error",
+              "critical_ceiling",
+              "session_timeout",
+              "run_timeout",
+              "token_limit",
+              "interrupted"
+            ]
+          },
+          "streamParseErrors": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "validation": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "passed",
+                  "failed",
+                  "timed_out",
+                  "not_run"
+                ]
+              },
+              "exitCode": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "durationMs": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "exitCode",
+              "durationMs"
+            ],
+            "additionalProperties": false
+          },
+          "bootTokens": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "measured",
+                  "estimated"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "sessionTokens": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "measured",
+                  "estimated"
+                ]
+              }
+            },
+            "required": [
+              "value",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "finalZone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "GREEN",
+                  "YELLOW",
+                  "RED",
+                  "CRITICAL"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "statusCorrections": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "stepId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  ]
+                },
+                "from": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "IN_PROGRESS",
+                    "COMPLETED",
+                    "FAILED"
+                  ]
+                },
+                "to": {
+                  "type": "string",
+                  "enum": [
+                    "PENDING",
+                    "IN_PROGRESS",
+                    "COMPLETED",
+                    "FAILED"
+                  ]
+                }
+              },
+              "required": [
+                "stepId",
+                "from",
+                "to"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "v",
+          "index",
+          "harness",
+          "sessionId",
+          "stepId",
+          "startedAt",
+          "endedAt",
+          "durationMs",
+          "endReason",
+          "validation",
+          "bootTokens",
+          "sessionTokens",
+          "finalZone",
+          "statusCorrections"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "enum": [
+            "completed",
+            "limit_reached",
+            "repeated_failure",
+            "no_checkpoint",
+            "harness_error",
+            "step_not_approved",
+            "confirmation_required",
+            "interrupted"
+          ]
+        },
+        "stepId": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "minLength": 1
+                },
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "required": [
+        "reason",
+        "stepId",
+        "options"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "command",
+    "runId",
+    "status",
+    "exitCode",
+    "stopReason",
+    "limit",
+    "stepsCompleted",
+    "stepsTotal",
+    "sessionCount",
+    "durationMs",
+    "tokens",
+    "harnessArgs",
+    "sessions"
+  ],
+  "additionalProperties": false
+}

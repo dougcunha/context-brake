@@ -45,6 +45,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Instruções:** o Claude Code lê `CLAUDE.md`, não `AGENTS.md`; um `CLAUDE.md` com `@AGENTS.md` importa o arquivo compartilhado. Comentários HTML em bloco são removidos antes da injeção.
 - **Fontes:** [Hooks reference](https://code.claude.com/docs/en/hooks), [Status line](https://code.claude.com/docs/en/statusline) e [Memory](https://code.claude.com/docs/en/memory).
 - **Payloads reais:** capturados em 16/09/2026 na versão 2.1.273 e guardados em `tests/fixtures/harnesses/claude-code/`; confirmam `tool_response` no `PostToolUse`, `tool_use_id`, `last_assistant_message` e `stop_hook_active` no `Stop`, e `source` no `SessionStart`.
+- **Modo não interativo:** reverificado em 24/09/2026. `claude -p --output-format stream-json --verbose` lê o prompt do stdin (limite de 10 MB) e emite JSON Lines: eventos `system` de hooks (`hook_started`, `hook_response`) podem preceder o `system/init`, que traz `session_id`; a última linha é `result`, com `subtype` (`success` ou `error_*`), `is_error`, `result` (texto final; ausente nos subtipos de erro, que trazem `errors[]`) e `usage` (`input_tokens`, `output_tokens`, `cache_creation_input_tokens`, `cache_read_input_tokens`). Sai com 0 em sucesso e diferente de zero em falha; falhas como login ausente saem como `result` com `is_error: true`. Sem `--bare`, `-p` roda os hooks de `.claude/settings.json`, inclusive `SessionStart`. O modo de permissão inicial é `default` (Manual) e pedidos que exigiriam aprovação são negados. SIGTERM encerra com 143 depois dos hooks `SessionEnd`; SIGINT encerra o turno. O launcher do runner usa esses campos (`src/infrastructure/harnesses/claude-code/session-stream.ts`, fixtures `stream-*.jsonl`). Fontes: [Headless](https://code.claude.com/docs/en/headless) e [Agent SDK TypeScript](https://code.claude.com/docs/en/agent-sdk/typescript) (`SDKResultMessage`, `SDKSystemMessage`).
 - **Versão mínima:** não documentada (14/09/2026). O hooks reference e o changelog público (code.claude.com/docs/en/changelog e o CHANGELOG.md em github.com/anthropics/claude-code) só registram versões para refinamentos incrementais (por exemplo, 2.1.191 para separadores em matchers), não a versão que introduziu `PreToolUse`/`PostToolUse`/`SessionStart` e `hookSpecificOutput.permissionDecision`.
 
 ## Codex CLI
@@ -66,6 +67,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Reinício:** `/new` inicia um chat novo na mesma sessão da CLI; `/clear` limpa o terminal e inicia chat novo; `/compact` resume o chat.
 - **Fontes:** [Hooks](https://learn.chatgpt.com/docs/hooks), [Slash commands](https://learn.chatgpt.com/docs/developer-commands) e fontes do Codex em [`command_runner.rs`](https://github.com/openai/codex/blob/99914f49504532f551ff6cdceca4318afdbd3d9c/codex-rs/hooks/src/engine/command_runner.rs), [`discovery.rs`](https://github.com/openai/codex/blob/99914f49504532f551ff6cdceca4318afdbd3d9c/codex-rs/hooks/src/engine/discovery.rs) e [`project_root_markers.rs`](https://github.com/openai/codex/blob/99914f49504532f551ff6cdceca4318afdbd3d9c/codex-rs/config/src/project_root_markers.rs).
 - **Payloads reais:** capturados em 16/09/2026 na versão 0.154.0 e guardados em `tests/fixtures/harnesses/codex-cli/`; confirmam `tool_response` (string no `Bash`), `tool_use_id`, `turn_id`, `model`, `permission_mode` e `last_assistant_message`/`stop_hook_active` no `Stop`. Hooks de projeto exigem a camada confiável; a captura usou `--dangerously-bypass-hook-trust`.
+- **Modo não interativo:** reverificado em 24/09/2026. `codex exec --json -` lê o prompt do stdin (o sentinela `-`; sem argumento de prompt o stdin também vira o prompt) e emite JSON Lines `thread.started` (`thread_id`, igual ao `session_id` dos hooks), `turn.started`, `item.started`/`item.updated`/`item.completed` (`item.type` `agent_message` com `text`), `turn.completed` (`usage.input_tokens`, que inclui `cached_input_tokens`, e `output_tokens`, que inclui `reasoning_output_tokens`), `turn.failed` (`error.message`) e `error` (`message`). O sandbox padrão do `exec` é somente leitura. Códigos de saída não são documentados; o runner trata saída diferente de zero ou evento de falha como erro do harness. O launcher usa esses campos (`src/infrastructure/harnesses/codex-cli/session-stream.ts`, fixtures `exec-*.jsonl`). Fontes: [Non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode) e [`exec_events.rs`](https://github.com/openai/codex/blob/main/codex-rs/exec/src/exec_events.rs).
 - **Versão mínima:** não documentada (14/09/2026). Nenhuma das fontes consultadas traz notas de versão ou changelog identificando quando os hooks foram introduzidos.
 
 ## Cursor
@@ -86,6 +88,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Fontes:** [Hooks](https://cursor.com/docs/hooks), [relato sobre hooks na Cursor CLI](https://forum.cursor.com/t/cursor-cli-askquestion-tool-skips-pretooluse-and-posttooluse-hooks/161836) e [discussão sobre vereditos autoritativos no fórum do Cursor](https://forum.cursor.com/t/support-authoritative-allow-deny-and-ask-verdicts-from-hooks/161342).
 - **Payloads reais:** sem captura; a CLI do Cursor não está instalada nesta máquina (16/09/2026). Os fixtures seguem a documentação e a classificação de ferramentas de arquivo fica condicionada a um payload real (OI-04).
 - **Versão mínima:** não documentada (14/09/2026). A página de hooks só cita `cursor_version` como exemplo ilustrativo de payload, não como requisito; não há changelog referenciado.
+- **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): `agent -p --output-format stream-json` existe, mas a documentação não diz se os hooks do projeto rodam nesse modo nem garante um schema de eventos com o identificador de sessão. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 
 ## GitHub Copilot CLI
 
@@ -102,6 +105,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Fontes:** [Hooks reference](https://docs.github.com/en/copilot/reference/hooks-reference) e [Using hooks with GitHub Copilot CLI](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/use-hooks).
 - **Payloads reais:** capturados em 16/09/2026 na versão 1.0.85 e guardados em `tests/fixtures/harnesses/github-copilot-cli/`; confirmam `sessionStart` com `source: "new"`, `preToolUse` com `toolName: "powershell"` (Windows) e `toolArgs.command`, e `toolResult.textResultForLlm` no `postToolUse`. `preCompact` e `agentStop` não foram exercitados na captura; os fixtures desses eventos seguem a documentação.
 - **Versão mínima:** não documentada (14/09/2026). Nenhuma das páginas cita changelog ou versão mínima da CLI para hooks.
+- **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): `copilot -p --output-format json` existe, mas a documentação não diz se os hooks do projeto rodam nesse modo nem garante um schema de eventos com o identificador de sessão. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 
 ## OpenCode
 
@@ -118,6 +122,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Fontes:** [Plugins](https://opencode.ai/docs/plugins/), [SDK](https://opencode.ai/docs/sdk/), [TUI](https://opencode.ai/docs/tui/) e [issue #13574](https://github.com/anomalyco/opencode/issues/13574).
 - **Payloads reais:** sem captura; a CLI do OpenCode não foi exercitada nesta máquina (16/09/2026). Os fixtures seguem a documentação e a classificação de ferramentas de arquivo fica condicionada a um payload real (OI-05).
 - **Versão mínima:** não documentada (14/09/2026). As páginas de plugins e TUI não citam changelog nem versão mínima.
+- **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): `opencode run --format json` existe, mas a documentação não diz se os plugins do projeto rodam nesse modo nem garante um schema de eventos com o identificador de sessão. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 
 ## Pi
 
@@ -135,6 +140,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Fontes:** [extensions.md](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/extensions.md) e [hooks.md](https://github.com/badlogic/pi-mono/blob/main/packages/coding-agent/docs/hooks.md).
 - **Payloads reais:** sem captura; o Pi não está instalado nesta máquina (16/09/2026). Os fixtures seguem a documentação e o carregamento do arquivo instalado fica registrado em OI-03.
 - **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
+- **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): o Pi documenta `-p` e `--mode json`, mas os modos não interativos ignoram recursos do projeto (como `.pi/extensions/`) sob o padrão `defaultProjectTrust: ask`, então a extensão do ContextBrake não carrega. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 
 ## Oh-My-Pi
 
@@ -153,6 +159,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Fontes:** [hooks.md](https://github.com/can1357/oh-my-pi/blob/main/docs/hooks.md) e [extensions.md](https://github.com/can1357/oh-my-pi/blob/main/docs/extensions.md).
 - **Payloads reais:** sem captura; o Oh-My-Pi não está instalado nesta máquina (16/09/2026). Os fixtures seguem a documentação e o carregamento da extensão instalada fica registrado em OI-04.
 - **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
+- **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): nenhum modo não interativo documentado. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 
 ## Antigravity CLI
 
@@ -169,6 +176,7 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Fontes:** [Hooks](https://antigravity.google/docs/hooks/), [CLI overview](https://antigravity.google/docs/cli/overview/), [guia de hooks na Antigravity CLI](https://medium.com/google-cloud/a-developers-guide-to-agent-hooks-in-antigravity-cli-4c1440febd11) e [relato de terceiros sobre fail-closed e soft-deny](https://agenticcontrolplane.com/blog/antigravity-acp-integration).
 - **Payloads reais:** sem captura; a CLI do Antigravity não está instalada nesta máquina (16/09/2026). Os fixtures seguem a documentação e a classificação de ferramentas de arquivo fica condicionada a um payload real (OI-04).
 - **Versão mínima:** não documentada (14/09/2026). Nenhuma das fontes cita changelog ou versão mínima da CLI para os hooks registrados.
+- **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): nenhum modo não interativo documentado. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 
 ## Fora do MVP
 

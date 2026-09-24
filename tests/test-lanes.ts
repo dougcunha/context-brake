@@ -9,10 +9,13 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/boot-invalid-state.test.ts',
   'tests/integration/codex-hook-command-shells.test.ts',
   'tests/integration/doctor-asset-currency.test.ts',
+  'tests/integration/executable-command.test.ts',
   'tests/integration/doctor-benchmark.test.ts',
   'tests/integration/doctor-manual-removal.test.ts',
   'tests/integration/doctor-state-schema.test.ts',
   'tests/integration/git-divergence.test.ts',
+  'tests/integration/harness-session-process.test.ts',
+  'tests/integration/harness-session-stop.test.ts',
   'tests/integration/git-inspection-budget.test.ts',
 
   'tests/integration/gitignore-lifecycle.test.ts',
@@ -23,6 +26,10 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/package-contents.test.ts',
   'tests/integration/plan-init-command.test.ts',
   'tests/integration/plan-status-command.test.ts',
+  'tests/integration/run-command.test.ts',
+  'tests/integration/run-command-interrupt.test.ts',
+  'tests/integration/run-command-preflight.test.ts',
+  'tests/integration/run-system-ports.test.ts',
   'tests/integration/runtime-antigravity.test.ts',
 
   'tests/integration/runtime-block-log.test.ts',
@@ -39,8 +46,11 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/runtime-session-ledger.test.ts',
   'tests/integration/runtime-state-removal.test.ts',
   'tests/integration/safe-removal.test.ts',
+  'tests/integration/shell-validation-executor.test.ts',
+  'tests/integration/wrap-command.test.ts',
   'tests/unit/init-legacy-preview.test.ts',
   'tests/unit/overhead-measurer.test.ts',
+  'tests/unit/run-prompts.test.ts',
 ];
 
 export const PROCESS_MARKERS: readonly string[] = [

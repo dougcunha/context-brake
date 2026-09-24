@@ -40,11 +40,13 @@ export const planStatusReportSchema = z.object({
   status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]),
   plan: statusPlan.nullable(), checkpoint: statusCheckpoint.nullable(), files: statusFiles, findings: z.array(finding), git: statusGit.nullable().optional(),
 }).strict();
-const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(['init', 'remove', 'doctor', 'plan']), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
+export const CLI_ERROR_COMMANDS = ['init', 'remove', 'doctor', 'plan', 'wrap', 'run'] as const;
+export const CLI_ERROR_CODES = ['INVALID_CONTEXTBRAKE_CONFIG', 'CONFIRMATION_REQUIRED', 'UNEXPECTED_ERROR', 'INVALID_STATE_FILE', 'RUN_HARNESS_UNSUPPORTED', 'RUN_HARNESS_MISSING', 'RUN_PLAN_NOT_RUNNABLE', 'RUN_IN_PROGRESS'] as const;
+const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(CLI_ERROR_COMMANDS), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
 export const cliErrorSchema = z.union([
   z.object({ ...cliErrorBase, exitCode: z.literal(64), error: z.object({ code: z.literal('INVALID_ARGUMENTS'), message: z.string() }).strict() }).strict(),
   z.object({ ...cliErrorBase, exitCode: z.literal(130), error: z.object({ code: z.literal('INTERRUPTED'), message: z.string() }).strict() }).strict(),
-  z.object({ ...cliErrorBase, exitCode: z.literal(2), error: z.object({ code: z.enum(['INVALID_CONTEXTBRAKE_CONFIG', 'CONFIRMATION_REQUIRED', 'UNEXPECTED_ERROR']), message: z.string() }).strict() }).strict(),
+  z.object({ ...cliErrorBase, exitCode: z.literal(2), error: z.object({ code: z.enum(CLI_ERROR_CODES), message: z.string() }).strict() }).strict(),
 ]);
 export type DiagnosticFinding = z.infer<typeof diagnosticFindingSchema>;
 export type DoctorReport = z.infer<typeof doctorReportSchema>;

@@ -5,7 +5,10 @@ import { runInit } from './commands/init.js';
 import { runDoctor } from './commands/doctor.js';
 import { runRemove } from './commands/remove.js';
 import { runPlan } from './commands/plan.js';
-import { buildCliErrorDocument } from '../core/services/report-service.js';
+import { runWrap } from './commands/wrap.js';
+import { runRun } from './commands/run.js';
+import { CLI_ERROR_CODES } from '../core/contracts/diagnostics.js';
+import { buildCliErrorDocument, type BuildCliErrorInput } from '../core/services/report-service.js';
 import { renderJsonOutput } from './output/json.js';
 import { renderCliErrorText } from './output/text.js';
 import { InvalidConfigurationError } from '../core/validation/configuration-validator.js';
@@ -18,23 +21,31 @@ function renderHelp(): void {
     '  context-brake doctor [options]',
     '  context-brake remove [options]',
     '  context-brake plan init --task="<name>" [options]',
-    '  context-brake plan status [options]', '',
+    '  context-brake plan status [options]',
+    '  context-brake run --harness <claude-code|codex-cli> [options]',
+    '  context-brake wrap -- <command> [args...]', '',
 
     'Commands:',
     '  init     Detect harnesses, register integrations, and initialize ContextBrake',
     '  doctor   Diagnose integrations, configurations, versions, and overhead',
     '  remove   Remove ContextBrake integrations and managed files',
-    '  plan     Create and inspect the task plan and checkpoint', '',
+    '  plan     Create and inspect the task plan and checkpoint',
+    '  run      Drive the plan through fresh harness sessions, validating each step before advancing',
+    '  wrap     Run a command in a runner session and append its context telemetry', '',
   ].join('\n'));
 }
 
-function handleCommandError(err: unknown, cmd: 'init' | 'remove' | 'doctor' | 'plan', json: boolean): number {
-  let code: 'INVALID_ARGUMENTS' | 'INVALID_CONTEXTBRAKE_CONFIG' | 'CONFIRMATION_REQUIRED' | 'UNEXPECTED_ERROR' = 'UNEXPECTED_ERROR';
+const KNOWN_ERROR_CODES: ReadonlySet<string> = new Set(['INVALID_ARGUMENTS', ...CLI_ERROR_CODES]);
+
+function errorCode(err: unknown): BuildCliErrorInput['code'] {
+  if (err instanceof InvalidConfigurationError) return 'INVALID_CONTEXTBRAKE_CONFIG';
+  const code = (err as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && KNOWN_ERROR_CODES.has(code) ? (code as BuildCliErrorInput['code']) : 'UNEXPECTED_ERROR';
+}
+
+function handleCommandError(err: unknown, cmd: BuildCliErrorInput['command'], json: boolean): number {
   const msg = err instanceof Error ? err.message : String(err);
-  if ((err as { code?: string })?.code === 'INVALID_ARGUMENTS') code = 'INVALID_ARGUMENTS';
-  else if (err instanceof InvalidConfigurationError || (err as { code?: string })?.code === 'INVALID_CONTEXTBRAKE_CONFIG') code = 'INVALID_CONTEXTBRAKE_CONFIG';
-  else if ((err as { code?: string })?.code === 'CONFIRMATION_REQUIRED') code = 'CONFIRMATION_REQUIRED';
-  const doc = buildCliErrorDocument({ command: cmd, code, message: msg });
+  const doc = buildCliErrorDocument({ command: cmd, code: errorCode(err), message: msg });
   if (json) {
     renderJsonOutput(doc);
   } else {
@@ -55,6 +66,8 @@ export async function dispatchCommand(args: ParsedCliArgs, env: CommandEnv): Pro
     if (args.command === 'doctor') return await runDoctor(args, canonicalEnv);
     if (args.command === 'remove') return await runRemove(args, canonicalEnv);
     if (args.command === 'plan') return await runPlan(args, canonicalEnv);
+    if (args.command === 'wrap') return await runWrap(args, canonicalEnv);
+    if (args.command === 'run') return await runRun(args, canonicalEnv);
     return 0;
   } catch (err) {
     return handleCommandError(err, args.command, args.json);

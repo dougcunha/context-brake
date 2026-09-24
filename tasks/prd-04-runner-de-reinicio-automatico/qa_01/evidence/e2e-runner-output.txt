@@ -1,0 +1,49 @@
+
+ RUN  v3.2.7 D:/MyProjects/ContextBrake
+
+ ✓ |process| tests/e2e/e2e-run-autonomy.test.ts (1 test) 207500ms
+   ✓ E2E run: autonomy objective (TC-23, CA-14, PRD "Objetivos") > completes a 10-step plan in 20 of 20 runs with no human input, across critical-ceiling restarts  207495ms
+ ✓ |process| tests/e2e/e2e-run-steps.test.ts (5 tests) 45661ms
+   ✓ E2E run: steps advance only on the runner validation (TC-20, CA-01, CA-02, CA-03) > completes a 3-step plan on claude-code after one retried step  11241ms
+   ✓ E2E run: steps advance only on the runner validation (TC-20, CA-01, CA-02, CA-03) > completes a 3-step plan on codex-cli after one retried step  8425ms
+   ✓ E2E run: session evidence of a retried step (TC-20, RF2, RF5, CA-02, CA-03) > opens each session with the boot from the installed SessionStart hook (CA-01, RF2)  8364ms
+   ✓ E2E run: session evidence of a retried step (TC-20, RF2, RF5, CA-02, CA-03) > gives the retried session the same step with the failed validation clause (CA-02)  8830ms
+   ✓ E2E run: session evidence of a retried step (TC-20, RF2, RF5, CA-02, CA-03) > reverts a step the agent marked complete without a passing validation and records the correction (CA-03)  8800ms
+ ✓ |process| tests/e2e/e2e-run-stops.test.ts (4 tests) 26463ms
+   ✓ E2E run: repeated validation failure asks for a decision (TC-21, CA-04, RF8) > stops with exit 4 after two consecutive failures of the same step, naming the step and the output  5871ms
+   ✓ E2E run: session ceiling (TC-21, CA-05, RF7) > opens no sixth session when five sessions leave steps pending, and exits 3 naming the limit  8926ms
+   ✓ E2E run: session without checkpoint or reset signal (TC-21, CA-06, RF9) > stops with exit 4, runs no validation, and leaves plan and checkpoint bytes untouched  2805ms
+   ✓ E2E run: validation timeout (TC-21, CA-07, RF10) > counts a hanging validation as a failure, retries the step, and then stops with exit 4  8859ms
+ ✓ |process| tests/e2e/e2e-run-signal.test.ts (4 tests) 16458ms
+   ✓ E2E runner reset signal (RF3, RF9, DEC-05, TC-10) > validates after a trailing signal without a fresh checkpoint on claude-code  3820ms
+   ✓ E2E runner reset signal (RF3, RF9, DEC-05, TC-10) > validates after a trailing signal without a fresh checkpoint on codex-cli  3748ms
+   ✓ E2E runner reset signal (RF3, RF9, DEC-05, TC-10) > stops when a mid-message signal has no fresh checkpoint on claude-code  2758ms
+   ✓ E2E runner reset signal (RF3, RF9, DEC-05, TC-10) > stops when a mid-message signal has no fresh checkpoint on codex-cli  6131ms
+ ✓ |process| tests/e2e/e2e-run-approval-wrap.test.ts (3 tests) 14544ms
+   ✓ E2E run: step approval without a TTY (TC-24, CA-08, RF11, DEC-17) > stops after the first validated step with exit 4 and opens no further session  3788ms
+   ✓ E2E run: wrap inside a runner session (TC-24, CA-12, RF16, DEC-19) > follows the wrapped output with the telemetry block of that claude-code session  5189ms
+   ✓ E2E run: wrap inside a runner session (TC-24, CA-12, RF16, DEC-19) > follows the wrapped output with the telemetry block of that codex-cli session  5566ms
+ ✓ |process| tests/e2e/e2e-run-summary.test.ts (3 tests) 9311ms
+   ✓ E2E run: JSON summary and session records (TC-18, RF17, RF18, CA-13, DEC-15) > prints one schema-valid document on stdout and keeps progress on stderr  3117ms
+   ✓ E2E run: session records (TC-18, RF17, CA-13, DEC-14) > records every session with duration, end reason, step, validation, and tokens with their source  3232ms
+   ✓ E2E run: text summary (TC-18, RF18, PRD user experience) > prints a labeled text summary on stdout without --json  2961ms
+ ✓ |process| tests/e2e/e2e-run-harness-args.test.ts (4 tests) 8939ms
+   ✓ E2E run: harness permission modes stay at their defaults (TC-17, RF15, CA-11, DEC-18) > launches claude-code with constant arguments only and prints the permission notice  2566ms
+   ✓ E2E run: harness permission modes stay at their defaults (TC-17, RF15, CA-11, DEC-18) > launches codex-cli with constant arguments only and prints the permission notice  3204ms
+   ✓ E2E run: explicit harness arguments (TC-17, RF15, DEC-04, DEC-18) > appends --harness-arg values verbatim, sends the prompt on stdin, and lists them in the summary  2314ms
+   ✓ E2E run: explicit harness arguments (TC-17, RF15, DEC-04, DEC-18) > rejects a harness argument that cmd.exe would interpret before any session starts (Windows shim)  856ms
+ ✓ |process| tests/e2e/e2e-run-preflight.test.ts (6 tests) 5133ms
+   ✓ E2E run: unsupported and missing harnesses (TC-19, DEC-02, DEC-16, DEC-21) > refuses cursor with RUN_HARNESS_UNSUPPORTED, the reason, and exit 2  967ms
+   ✓ E2E run: unsupported and missing harnesses (TC-19, DEC-02, DEC-16, DEC-21) > refuses a harness missing from PATH with RUN_HARNESS_MISSING and exit 2, also as JSON  830ms
+   ✓ E2E run: command confirmation without a terminal (TC-19, RF14, CA-10, DEC-10) > lists the commands, executes none, starts no session, and exits 2  666ms
+   ✓ E2E run: command confirmation without a terminal (TC-19, RF14, CA-10, DEC-10) > reports the stop as a JSON summary with the decision options  833ms
+   ✓ E2E run: plans that cannot run (DEC-21) > refuses an open step without a validation command with RUN_PLAN_NOT_RUNNABLE  868ms
+   ✓ E2E run: plans that cannot run (DEC-21) > exits 0 with nothing to run when every step is complete  968ms
+ ✓ |process| tests/e2e/e2e-run-interrupt.test.ts (2 tests | 1 skipped) 7939ms
+   ✓ E2E run: resume after a stop (CA-09, RF13, DEC-12) > starts the next run at the pending step with fresh limits and links the previous run  7938ms
+
+ Test Files  9 passed (9)
+      Tests  31 passed | 1 skipped (32)
+   Start at  16:16:34
+   Duration  344.89s (transform 720ms, setup 0ms, collect 1.80s, tests 341.95s, environment 0ms, prepare 442ms)
+

@@ -2,7 +2,6 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { HarnessId } from '../contracts/harness.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } from '../contracts/runtime.js';
 import type { BlockLog, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
-import type { UsageReading, Zone } from '../contracts/zones.js';
 import type { BootDecision } from './boot-policy.js';
 import { isToolCallAllowed } from './brake-allowlist.js';
 import { deriveBrakeMode } from './brake-mode.js';
@@ -11,13 +10,12 @@ import { LedgerUnreadableError } from './failure-policy.js';
 import { decideInjection } from './injection-policy.js';
 import { hasResetSignal, renderResetNotice } from './reset-notice.js';
 import { nextTurn, summarizeLedger, type SessionSummary } from './session-counters.js';
+import { readZone, type MeasuredUsage } from './session-zone.js';
 import { renderTelemetryBlock } from './telemetry-block.js';
-import { estimatedTokens, resolveUsage } from './usage-resolver.js';
-import { classifyZone, usagePercentage } from './zone-classifier.js';
 
 export type ValidationCommandReader = () => Promise<string | null>;
 export type BootReader = () => Promise<BootDecision>;
-export type MeasuredUsage = { readonly tokens: number | null; readonly contextWindow: number };
+export type { MeasuredUsage } from './session-zone.js';
 export type RuntimeInput = { readonly measured?: MeasuredUsage | undefined; readonly observedCharacters?: number | undefined };
 export type BrakeEngineOptions = { readonly descriptor: RuntimeDescriptor; readonly config: ContextBrakeConfig; readonly ledger: SessionLedger; readonly blocks: BlockLog; readonly readValidationCommand: ValidationCommandReader; readonly readBoot?: BootReader | undefined; readonly errors?: RuntimeErrorLog | undefined };
 export interface BrakeEngine { handle(event: RuntimeEvent, input?: RuntimeInput): Promise<RuntimeDecision>; }
@@ -33,14 +31,6 @@ async function handleEvent(options: BrakeEngineOptions, event: RuntimeEvent, inp
     case 'session_reset': return handleSessionReset(options, event);
     case 'response_end': return handleResponseEnd(options, event);
   }
-}
-type ZoneReading = { readonly reading: UsageReading; readonly estimate: number; readonly percentage: number; readonly zone: Zone };
-type ZoneInputs = { readonly summary: SessionSummary; readonly turns: number; readonly observedCharacters: number; readonly measured?: MeasuredUsage | undefined };
-function readZone(options: BrakeEngineOptions, inputs: ZoneInputs): ZoneReading {
-  const estimated = { observedCharacters: inputs.summary.observedCharacters + inputs.observedCharacters, turns: inputs.turns };
-  const reading = resolveUsage({ estimated, measured: inputs.measured, constants: options.descriptor.estimation, contextWindowCeiling: options.config.telemetry.contextWindowCeiling });
-  const percentage = usagePercentage(reading.usedTokens ?? 0, reading.windowTokens);
-  return { reading, estimate: estimatedTokens(estimated, options.descriptor.estimation), percentage, zone: classifyZone({ usagePercentage: percentage, turns: inputs.turns }, options.config.telemetry.zones) };
 }
 async function handlePreTool(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'pre_tool' }, input: RuntimeInput): Promise<RuntimeDecision> {
   const summary = await readSummary(options.ledger, event.session);

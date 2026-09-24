@@ -175,9 +175,63 @@
           }
         }
       },
-      "required": [
-        "additionalAllowedCommands"
-      ],
+      "additionalProperties": false
+    },
+    "runner": {
+      "default": {
+        "maxSessions": 20,
+        "maxTotalMinutes": 240,
+        "maxSessionMinutes": 30,
+        "maxTotalTokens": 5000000,
+        "validationTimeoutSeconds": 600,
+        "maxConsecutiveFailures": 2,
+        "criticalGraceSeconds": 120
+      },
+      "type": "object",
+      "properties": {
+        "maxSessions": {
+          "default": 20,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxTotalMinutes": {
+          "default": 240,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxSessionMinutes": {
+          "default": 30,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxTotalTokens": {
+          "default": 5000000,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "validationTimeoutSeconds": {
+          "default": 600,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "maxConsecutiveFailures": {
+          "default": 2,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "criticalGraceSeconds": {
+          "default": 120,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
       "additionalProperties": false
     }
   },
@@ -186,8 +240,7 @@
     "activeHarnesses",
     "telemetry",
     "stateStorage",
-    "instructionFiles",
-    "brake"
+    "instructionFiles"
   ],
   "additionalProperties": false
 }

@@ -2,7 +2,7 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { EstimationConstants } from '../contracts/runtime.js';
 import type { UsageReading } from '../contracts/zones.js';
 
-const CHARACTERS_PER_TOKEN = 4;
+export const CHARACTERS_PER_TOKEN = 4;
 
 export type UsageResolutionInput = {
   readonly estimated: {

@@ -19,6 +19,7 @@ const REQUIRED_FILES: readonly string[] = [
   'schemas/context-brake.config.schema.json',
   'schemas/doctor-report.schema.json',
   'schemas/install-report.schema.json',
+  'schemas/run-summary.schema.json',
   'schemas/state-checkpoint.schema.json',
   'schemas/task-plan.schema.json',
   'docs/context-brake-protocol.md',

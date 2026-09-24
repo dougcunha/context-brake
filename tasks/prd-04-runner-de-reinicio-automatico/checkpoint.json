@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "generation": 44,
+  "feature": "prd-04-runner-de-reinicio-automatico",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "completed",
+  "status": "completed",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "objective": "context-brake run: drive the active plan through successive fresh harness sessions with boot, validate each step independently before advancing, enforce session/duration/token ceilings and an anti-loop stop, stop safely on interrupt, resume, and record per-session reports; plus context-brake wrap for per-command telemetry",
+  "constraints": [
+    "CLI plus harness hooks only; no server, browser, or UI",
+    "Runner never trusts agent-written status; validation command decides advancement",
+    "Validation commands require confirmation on first run and on change; not disableable by versioned file",
+    "Harness permission modes stay at harness default unless explicitly opted out",
+    "Local logs carry no prompts, responses, or full tool output",
+    "Linux, macOS, and Windows (PowerShell and Git Bash)"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": "qa_01/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "1f534225a845dde593df38b3bcc768ad988b7024d8da1e82198c1d7ff5c06d95",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "fd61d74fd416f4f3cdb2c3de489c5c52a1e0c4e843ce517285efeb93d6777266",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "eee1bd09f762e9e84b658a12e4a5c1b6cfd257c96cb5cdab638e82c831b2606a",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "a0e44b6142643aaf93efbf89485b54b7932ff2e39ec402196095fcb3c2f5fcd2",
+      "decision_id": "DEC-EXC-CR01"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-03"
+  ],
+  "git_base": "eb2f386583771f03334ecbf23afbd5361814e5f7",
+  "worktree_evidence": "workflow.md#Baseline and pre-existing changes",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "close",
+    "instruction": "Feature prd-04-runner-de-reinicio-automatico completed and accepted at HIL 3.",
+    "read": []
+  }
+}

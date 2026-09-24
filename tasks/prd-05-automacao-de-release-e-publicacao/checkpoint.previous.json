@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "generation": 5,
+  "feature": "prd-05-automacao-de-release-e-publicacao",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "implementation",
+  "status": "active",
+  "safe_to_stop": true,
+  "owner_session": "47a8d5b3-9a62-4456-a6f7-b529df498531",
+  "objective": "Automatizar o pipeline de release e publicação no npm com provenance e notas de release no GitHub",
+  "constraints": [
+    "Node.js >= 20",
+    "GitHub Actions ubuntu-latest com atestação OIDC (id-token: write)",
+    "npm publish --access public --provenance",
+    "Segredos e credenciais protegidos sem vazamento em logs",
+    "Sem novas dependências de runtime de produção"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": null,
+    "qa": null,
+    "snapshot": null
+  },
+  "review_status": null,
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "0004e4b27ec5589d25428c6a3df452277b1095123817e9fa452a033bf75dcf32",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "b9afc92e6747dd85f1056c58e29319d4eb532a00d6fb7dd088d98b4687adfb5d",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "0f87556be7bd11f2c2490ca2c880d501a05e219569c3f8df4f5d1af3205b9bdb",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-01",
+    "DEC-HIL-02",
+    "DEC-PAUSE-HIL2"
+  ],
+  "git_base": "eb2f386583771f03334ecbf23afbd5361814e5f7",
+  "worktree_evidence": "Uncommitted files in worktree from prd-04 recorded in workflow.md",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "run",
+    "instruction": "Execute task T02: GitHub Actions release workflow and structure tests",
+    "read": [
+      {
+        "path": "tasks/prd-05-automacao-de-release-e-publicacao/task_02.md",
+        "section": "Work"
+      },
+      {
+        "path": "tasks/prd-05-automacao-de-release-e-publicacao/techspec.md",
+        "section": "Technical decisions"
+      }
+    ]
+  }
+}

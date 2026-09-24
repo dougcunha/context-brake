@@ -8,3 +8,7 @@ coverage/
 
 # Local link to .agents for Claude Code (see README, Contributing). No trailing slash, so a symlink is ignored too.
 /.claude
+
+# Agent transient runtime lock files
+.agents/*.lock
+

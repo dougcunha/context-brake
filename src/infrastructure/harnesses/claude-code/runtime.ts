@@ -8,6 +8,7 @@ import { claudePayloadSchema, type ClaudePayload } from './schemas.js';
 const HARNESS = 'claude-code';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 const WRITE_TOOLS = ['Write', 'Edit', 'MultiEdit', 'NotebookEdit'];
+const SKILL_TOOL = 'Skill';
 
 export const claudeDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CLAUDE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/clear' };
 
@@ -19,6 +20,7 @@ function toolOf(payload: ClaudePayload): ToolCall {
   const name = payload.tool_name ?? 'unknown';
   const input = asRecord(payload.tool_input);
   if (name === 'Bash') return { name, category: 'shell', paths: [], command: textValue(input?.['command']) };
+  if (name === SKILL_TOOL) return { name, category: 'skill', paths: [], command: null, skill: textValue(input?.['skill']) ?? undefined };
   const path = textValue(input?.['file_path']);
   if (path === null) return { name, category: 'other', paths: [], command: null };
   if (name === 'Read') return { name, category: 'file_read', paths: [path], command: null };

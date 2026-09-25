@@ -6,13 +6,14 @@ export type SessionKey = {
   readonly agentId: string | null;
 };
 
-export type ToolCategory = 'file_read' | 'file_write' | 'shell' | 'other';
+export type ToolCategory = 'file_read' | 'file_write' | 'shell' | 'skill' | 'other';
 
 export type ToolCall = {
   readonly name: string;
   readonly category: ToolCategory;
   readonly paths: readonly string[];
   readonly command: string | null;
+  readonly skill?: string | undefined;
 };
 
 export type RuntimeEvent =

@@ -14,12 +14,18 @@ const FAILURE_REASON = 'reason=integration_failure';
 const FAILURE_ZONE = 'last recorded zone=CRITICAL';
 const RED_ACTIONS = ' Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
 
-export function renderBlockMessage(input: BlockMessageInput): string {
+export function renderBlockHeader(input: BlockMessageInput): string {
   const values = `turn=${input.turn}/${input.config.telemetry.turnCeiling} usage=${input.usagePercentage}% tokens=${input.usage.usedTokens ?? 0}/${input.usage.windowTokens} source=${input.usage.source}`;
-  return `${BLOCKED_PREFIX} tool=${input.tool} zone=CRITICAL ${values} reason=critical_ceiling. ${allowedActions(input.config)}${RED_ACTIONS}`;
+  return `${BLOCKED_PREFIX} tool=${input.tool} zone=CRITICAL ${values} reason=critical_ceiling.`;
+}
+export function renderFailureBlockHeader(tool: string): string {
+  return `${BLOCKED_PREFIX} tool=${tool} zone=CRITICAL ${FAILURE_ZONE} ${FAILURE_REASON}.`;
+}
+export function renderBlockMessage(input: BlockMessageInput): string {
+  return `${renderBlockHeader(input)} ${allowedActions(input.config)}${RED_ACTIONS}`;
 }
 export function renderFailureBlockMessage(input: { readonly tool: string; readonly config: ContextBrakeConfig }): string {
-  return `${BLOCKED_PREFIX} tool=${input.tool} zone=CRITICAL ${FAILURE_ZONE} ${FAILURE_REASON}. ${allowedActions(input.config)}${RED_ACTIONS}`;
+  return `${renderFailureBlockHeader(input.tool)} ${allowedActions(input.config)}${RED_ACTIONS}`;
 }
 function allowedActions(config: ContextBrakeConfig): string {
   const extras = config.brake.additionalAllowedCommands;

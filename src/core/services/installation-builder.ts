@@ -1,13 +1,18 @@
 import { resolve } from 'node:path';
 import { DEFAULT_CONFIG, type ContextBrakeConfig, type HarnessId } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange } from '../contracts/changes.js';
+import { applyDelegatedSnapshot, type DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
+
+const KEEP: DelegatedSnapshotUpdate = { kind: 'keep' };
+const CONFIG_SUMMARY = 'Configure ContextBrake active harnesses and zones';
 
 export type ConfigChangeInput = {
   root: string;
   current: ContextBrakeConfig | null;
   active: readonly HarnessId[];
   snapshot?: FileSnapshot | null | undefined;
+  delegatedSnapshot?: DelegatedSnapshotUpdate | undefined;
 };
 
 export function planConfigChange(
@@ -20,7 +25,8 @@ export function planConfigChange(
   const act = typeof rootOrInput === 'string' ? (active ?? []) : rootOrInput.active;
   const snap = typeof rootOrInput === 'string' ? null : rootOrInput.snapshot;
   const merged = Array.from(new Set([...(curr?.activeHarnesses ?? []), ...act])).sort();
-  const config: ContextBrakeConfig = curr ? { ...curr, activeHarnesses: merged } : { ...DEFAULT_CONFIG, activeHarnesses: merged };
+  const update = typeof rootOrInput === 'string' ? KEEP : rootOrInput.delegatedSnapshot ?? KEEP;
+  const config: ContextBrakeConfig = applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update);
   const content = `${JSON.stringify(config, null, 2)}\n`;
   const defaultPath = resolve(root, 'context-brake.config.json').replace(/\\/g, '/');
   const realPath = (snap?.realPath ?? defaultPath).replace(/\\/g, '/');
@@ -30,7 +36,7 @@ export function planConfigChange(
     kind: curr ? 'update' : 'create',
     owner: 'config',
     content,
-    preview: { summary: 'Configure ContextBrake active harnesses and zones' },
+    preview: { summary: update.kind === 'keep' ? CONFIG_SUMMARY : `${CONFIG_SUMMARY}; ${update.kind === 'set' ? 'set' : 'remove'} the delegated snapshot section` },
   };
   return { config, change };
 }

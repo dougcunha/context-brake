@@ -1,5 +1,6 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
+import { renderDelegatedProtocol } from './delegated-protocol.js';
 import { zoneActionClause } from './zone-actions.js';
 
 export type ProtocolZoneContext = Pick<ContextBrakeConfig, 'stateStorage' | 'brake'>;
@@ -45,6 +46,7 @@ export function renderProtocol(config: ContextBrakeConfig): string {
     '4. Check that the recorded commit exists in the current branch history and that the working tree is clean; report any divergence before editing.',
     '5. Run the validation command of the active step, or of the last completed step, before editing code. If it fails, fix the inherited state before continuing.',
     '6. Continue the active step.', '',
+    ...renderDelegatedProtocol(config),
   ].join('\n');
 }
 

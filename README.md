@@ -179,6 +179,43 @@ npx context-brake doctor
 
 `contextWindowCeiling` is used only when the harness does not report the active model's window. `turnCeiling` must equal `zones.criticalTurn`; change both to move the turn ceiling. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
 
+### Delegated Snapshot Mode (without a task plan)
+
+If you already save session state with your own skill or command, you can keep telemetry and the brake without creating `task_plan.json`. Configure a snapshot command:
+
+```bash
+npx context-brake init --snapshot-command "/sdd-snapshot" --snapshot-path "tasks/**/context-snapshot.md" --resume-command "/sdd-orchestrate-flow"
+```
+
+This adds a `delegatedSnapshot` section to the configuration:
+
+```json
+{
+  "delegatedSnapshot": {
+    "snapshotCommand": "/sdd-snapshot",
+    "triggerZone": "RED",
+    "resumeCommand": "/sdd-orchestrate-flow",
+    "allowedPaths": ["tasks/**/context-snapshot.md"],
+    "allowedSkills": []
+  }
+}
+```
+
+While the section exists and the plan file does not, ContextBrake runs in delegated mode:
+
+- From `triggerZone` (`RED` by default, or `YELLOW`), the telemetry action becomes `run "<snapshotCommand>", then end reply with [REQUEST_SESSION_RESET]`. ContextBrake never runs the command; it only passes the text to the agent, so the command can be a skill, a slash command, or a short instruction.
+- In the `CRITICAL` zone, the brake allows:
+  - reading and writing the files that match `allowedPaths` (`*`, `**`, and `?` patterns relative to the repository);
+  - the skills in `allowedSkills`, plus the skill named by a leading `/name` in the snapshot or resume command;
+  - `git status`, `git add`, and `git commit`;
+  - `brake.additionalAllowedCommands`.
+
+  Only Claude Code reports skill calls as tool calls, so with other harnesses, list every file the snapshot command reads or writes in `allowedPaths`. `doctor` reports that limitation.
+- After `/clear`, `/new`, or compaction, harnesses with session boot receive the `resumeCommand` instead of the plan boot summary.
+- As soon as a plan file exists (for example, after `context-brake plan init`), the plan rules apply again.
+
+`context-brake doctor --json` reports the mode in effect under `checkpointMode`. `context-brake run` still needs a plan. To go back to plan-only behavior, run `context-brake init --no-delegated-snapshot`.
+
 ---
 
 ## 📋 CLI Commands
@@ -187,7 +224,7 @@ npx context-brake doctor
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json`, `--remove-state` | Safely uninstalls integrations, removes protocol, and cleans reference blocks; keeps plan/checkpoint unless `--remove-state` is provided. |
 

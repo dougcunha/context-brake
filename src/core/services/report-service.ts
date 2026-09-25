@@ -1,6 +1,6 @@
 import {
   cliErrorSchema, doctorReportSchema, installReportSchema, type CLI_ERROR_CODES, type CLI_ERROR_COMMANDS,
-  type CliErrorDocument, type DiagnosticFinding, type DoctorReport,
+  type CheckpointModeReport, type CliErrorDocument, type DiagnosticFinding, type DoctorReport,
   type HarnessDiagnostic, type InstallReport,
 } from '../contracts/diagnostics.js';
 import type { ApplyOutcome, ChangePlan } from '../contracts/changes.js';
@@ -64,6 +64,7 @@ export function buildInstallReport(input: BuildInstallReportInput): InstallRepor
 
 export type BuildDoctorReportInput = {
   detections: readonly HarnessDetection[]; integrations: readonly HarnessDiagnostic[]; findings: readonly DiagnosticFinding[];
+  checkpointMode?: CheckpointModeReport | undefined;
 };
 
 export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
@@ -71,6 +72,7 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
   const doc = {
     schemaVersion: 1 as const, command: 'doctor' as const, status, exitCode,
     detections: [...input.detections], integrations: [...input.integrations], findings: sortFindings(input.findings),
+    ...(input.checkpointMode === undefined ? {} : { checkpointMode: input.checkpointMode }),
   };
   return doctorReportSchema.parse(doc);
 }

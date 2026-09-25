@@ -18,7 +18,7 @@ export function readZone(settings: ZoneSettings, inputs: ZoneInputs): ZoneReadin
   return { reading, estimate: estimatedTokens(estimated, settings.descriptor.estimation), percentage, zone: classifyZone({ usagePercentage: percentage, turns: inputs.turns }, settings.config.telemetry.zones) };
 }
 
-export function renderSessionTelemetry(settings: ZoneSettings, inputs: ZoneInputs): string {
+export function renderSessionTelemetry(settings: ZoneSettings, inputs: ZoneInputs, actionFor?: (zone: Zone) => string): string {
   const { reading, percentage, zone } = readZone(settings, inputs);
-  return renderTelemetryBlock({ turn: inputs.turns, turnCeiling: settings.config.telemetry.turnCeiling, usagePercentage: percentage, usage: reading, zone });
+  return renderTelemetryBlock({ turn: inputs.turns, turnCeiling: settings.config.telemetry.turnCeiling, usagePercentage: percentage, usage: reading, zone, action: actionFor?.(zone) });
 }

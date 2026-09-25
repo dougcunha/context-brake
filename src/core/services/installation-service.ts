@@ -13,6 +13,7 @@ import { detectLegacyFindings, legacyFinding } from './legacy-preview.js';
 import { planConfigChange, planManifestChange } from './installation-builder.js';
 import { planInstructionChanges } from './instruction-service.js';
 import { planProtocolChange } from './protocol-service.js';
+import type { DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
 
 export type InstallationInput = {
   projectRoot: string;
@@ -29,6 +30,7 @@ export type InstallationInput = {
   migrateLegacy?: boolean;
   previousManifest?: InstallationManifest | null;
   packageVersion: string;
+  delegatedSnapshot?: DelegatedSnapshotUpdate | undefined;
 };
 
 export type InstallationResult = {
@@ -72,7 +74,7 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const active = detections.filter((d) => d.state === 'project');
   if (active.length === 0) return emptyResult(input.projectRoot, detections, detectLegacyFindings(input.instructionSnapshots, input.config ?? DEFAULT_CONFIG));
   const activeIds: HarnessId[] = active.map((d) => d.harness);
-  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json') });
+  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), delegatedSnapshot: input.delegatedSnapshot });
   const proto = planProtocolChange(cfg.config, input.protocolSnapshot, Boolean(input.previousManifest?.assets.some((a) => a.kind === 'protocol')));
   const inst = planInstructionChanges({ snapshots: input.instructionSnapshots, config: cfg.config, createInstructions: input.createInstructions, migrateLegacy: input.migrateLegacy });
   const gi = planGitignoreInstall({ snapshot: input.gitignoreSnapshot, config: cfg.config });

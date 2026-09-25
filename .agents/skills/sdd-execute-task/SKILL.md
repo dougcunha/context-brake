@@ -6,7 +6,7 @@ argument-hint: --task tasks/prd-[NN]-name/task_01.md
 
 # Execute an SDD task
 
-1. Resolve one `tasks/prd-[slug]/task_[num].md`. Require the PRD, TechSpec, and feature manifest. When `context-snapshot.md` exists in the feature folder and no orchestrator in this session already loaded it, apply the load protocol in `.agents/skills/sdd-orchestrate-tasks/references/session-continuity.md`. Read stable sources once per version in PRD, TechSpec, task order; consult state afterward. Confirm completed dependencies and a pending task. A task in `done/` is only reported.
+1. Resolve one `tasks/prd-[slug]/task_[num].md`. Require the PRD, TechSpec, and feature manifest. When `context-snapshot.md` exists in the feature folder and no orchestrator in this session already loaded it, load it through the Load branch of `.agents/skills/sdd-snapshot/SKILL.md`. Read stable sources once per version in PRD, TechSpec, task order; consult state afterward. Confirm completed dependencies and a pending task. A task in `done/` is only reported.
    **Output:** exact contract, satisfied dependencies, and identified write scope.
 2. Read `AGENTS.md`, the applicable `.agents/rules/`, and only the skills relevant to the change. Inspect the worktree, callers, and affected tests; preserve pre-existing changes. Answer targeted questions with direct searches; send a read-only explorer subagent only for sweeps across many files, and verify the lines it cites before editing. Map every acceptance item to implementation and evidence.
    **Output:** known change points; source or write conflicts raised before mutation.

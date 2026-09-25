@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Plan SDD corrections
 
-1. Fix one report folder by argument or context: `tasks/prd-[slug]/codereview_[num]/` for a code review or `tasks/prd-[slug]/qa_[num]/` for a QA run. When `tasks/prd-[slug]/context-snapshot.md` exists, apply the load protocol in `.agents/skills/sdd-orchestrate-tasks/references/session-continuity.md` first. Search only for missing values; multiple candidates require a choice. Require and read its `codereview.md` or `qa.md` once; preserve it.
+1. Fix one report folder by argument or context: `tasks/prd-[slug]/codereview_[num]/` for a code review or `tasks/prd-[slug]/qa_[num]/` for a QA run. When `tasks/prd-[slug]/context-snapshot.md` exists, load it through the Load branch of `.agents/skills/sdd-snapshot/SKILL.md` first. Search only for missing values; multiple candidates require a choice. Require and read its `codereview.md` or `qa.md` once; preserve it.
    **Output:** exact, readable report, without mixing IDs between reports.
 2. Classify every item as actionable, informational, or pending. For a review: in `APPROVED`, plan only what was requested; in `APPROVED WITH RESERVATIONS`, improvements require authorized scope; in `REJECTED`, cover violations, incompleteness, and failures. For a QA report: in `REJECTED`, cover every failed obligation and `BUG-NN`; in `BLOCKED`, plan only actionable items with evidence and keep the missing environment as pending. An unknown status allows only explicitly actionable findings.
    Preserve `CR-NN` and `BUG-NN`; in legacy reports without IDs, assign a local ID by order and section. Inventory root and `done/` metadata to reuse tasks; finding identity is report path + ID.

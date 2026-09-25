@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs';
 import { realpath } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -51,7 +52,17 @@ export async function main(argumentsList: readonly string[] = process.argv.slice
   }
 }
 
-const entrypoint = process.argv[1];
-if (entrypoint && import.meta.url === pathToFileURL(resolve(entrypoint)).href) {
+function isDirectExecution(): boolean {
+  const entrypoint = process.argv[1];
+  if (!entrypoint) return false;
+  if (import.meta.url === pathToFileURL(resolve(entrypoint)).href) return true;
+  try {
+    return import.meta.url === pathToFileURL(realpathSync(entrypoint)).href;
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectExecution()) {
   main().then((code) => { process.exitCode = code; });
 }

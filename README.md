@@ -9,7 +9,7 @@
 > Keep long tasks from degrading as the context window fills, and carry their state safely into a fresh session.
 
 > [!NOTE]
-> PRD-01 (Installation, Detection, and Diagnostics) is implemented and verified across Linux, macOS, and Windows. Commands and configuration below reflect the implemented CLI and upcoming roadmap features.
+> The MVP (installation and diagnostics, telemetry and brake, plan, checkpoint, and boot) is implemented, along with the automatic reset runner, delegated snapshot mode, and the usage-based brake with measured usage in Claude Code. CI runs on Linux, macOS, and Windows. Commands and configuration below reflect the current CLI.
 
 ---
 
@@ -28,27 +28,29 @@ ContextBrake plugs into the extension mechanism each harness already documents, 
 
 - 🔍 **Detection and setup:** `context-brake init` finds the harnesses a project uses, registers the integration in each one's own configuration, and reports the support level it can guarantee.
 - 🚦 **Telemetry:** as soon as the session leaves `GREEN`, or context usage reaches the activation threshold, tool results reach the agent with the session turn, context usage (measured by the harness or estimated), zone, and recommended action.
-- 🪓 **Brake:** above a critical ceiling, tool calls are blocked except the ones needed to save state.
+- 🪓 **Brake:** once context usage reaches the critical threshold, tool calls are blocked except the ones needed to save state. The number of tool calls alone never blocks.
 - 💾 **Checkpoint and boot:** the agent saves progress to `task_plan.json` and `state_checkpoint.json`, local files that `init` adds to `.gitignore`. After you run `/clear` or `/new`, the new session starts with a boot summary and validates the inherited state before editing code.
 
 ---
 
 ## 🚦 Zones
 
-Default limits. A turn is one completed tool call, and when several conditions match, the highest zone applies.
+Zones follow context usage. Default limits:
 
-| Zone | Context usage | Turns | Agent behavior |
+| Zone | Context usage | Agent behavior with `task_plan.json` | Agent behavior without a plan |
 | :--- | :--- | :--- | :--- |
-| 🟢 `GREEN` | below 50% | up to 7 | Normal work. No telemetry is injected in the default mode. |
-| 🟡 `YELLOW` | 50% to 65% | 8 to 10 | Finish the current edit, start no new plan step, run the step's validation command. |
-| 🔴 `RED` | above 65% | 11 or more | Save plan and checkpoint, commit the code with `checkpoint: <step title>` if validation passes, and end with `[REQUEST_SESSION_RESET]`. |
-| ⛔ `CRITICAL` | 75% or more | 12 or more | Only state-saving calls run: reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, and `git commit`. |
+| 🟢 `GREEN` | below 50% | Normal work. No telemetry is injected in the default mode. | Normal work. |
+| 🟡 `YELLOW` | 50% to 65% | Finish the current edit, start no new plan step, run the step's validation command. | Keep working; finish the current unit before large new explorations. |
+| 🔴 `RED` | above 65% | Save plan and checkpoint, commit the code with `checkpoint: <step title>` if validation passes, and end with `[REQUEST_SESSION_RESET]`. | Finish or pause the current unit, record progress, and end with `[REQUEST_SESSION_RESET]`. |
+| ⛔ `CRITICAL` | 75% or more | Only state-saving calls run: reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, and `git commit`. | Same as with a plan. |
+
+A turn is one completed tool call. Turn limits are optional and off by default: with `zones.greenMaxTurn` and `zones.yellowMaxTurn` set, a long session can move up to `RED` by turns, and when several conditions match, the highest zone applies. Turns never reach `CRITICAL` and never block tool calls.
 
 Blocking is available on harnesses with **Full** or **Partial** support, but only where the installed hook honors an explicit deny; on **Cooperative** harnesses the protocol only advises. `doctor` lists each harness's hook timeouts, missing tool coverage, and crashes as limitations. The agent-facing rules live in `docs/context-brake-protocol.md`; instruction files get only a short reference to it, so the protocol does not fill every session's context.
 
 ### Brake Behavior & State-Saving Allowlist
 
-Above the critical ceiling (by default, 75% context usage or 12 turns), ContextBrake engages the tool-call brake on supported harnesses. General tool executions are intercepted and denied before execution with an agent-facing block message.
+At the critical threshold (by default, 75% context usage), ContextBrake engages the tool-call brake on supported harnesses. General tool executions are intercepted and denied before execution with an agent-facing block message.
 
 Only allowlisted operations pass through:
 1. **Plan & Checkpoint Files:** Reading or writing the configured plan file (`task_plan.json`) and checkpoint file (`state_checkpoint.json`).
@@ -56,7 +58,7 @@ Only allowlisted operations pass through:
 3. **Safe Git Commands:** `git status`, `git add`, and `git commit` (without chained shell operators).
 4. **Configured Additional Commands:** Additional allowed commands defined in `brake.additionalAllowedCommands` in `context-brake.config.json` (such as `npm run typecheck`).
 
-To customize limits, modify `telemetry.zones` in `context-brake.config.json`. Note that `telemetry.turnCeiling` must strictly equal `telemetry.zones.criticalTurn`; update both values together when changing the ceiling. Full block specifications and format details live in `docs/telemetry-block.md`.
+To customize limits, modify `telemetry.zones` in `context-brake.config.json`. Full block specifications and format details live in `docs/telemetry-block.md`.
 
 ---
 
@@ -66,7 +68,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
-| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage reaches the status line, not hooks; a hook timeout or failure without an explicit deny lets the call proceed |
+| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; a hook timeout or failure without an explicit deny lets the call proceed |
 | Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Partial | Hosted tools such as web search bypass hooks; hook errors and timeouts let the call proceed |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | A hook timeout lets the tool call proceed |
@@ -133,6 +135,7 @@ npx context-brake doctor
 ### Updating and Removal
 
 - **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and synchronize protocol references without touching your custom settings. If custom allowed commands are added or protocol rows change, `doctor` may report `PROTOCOL_FILE_MISMATCH` until `context-brake init --yes` is rerun to regenerate the protocol table to match the current configuration.
+- **Upgrading from turn-based limits:** earlier versions blocked tool calls after 12 turns and wrote `turnCeiling`, `criticalTurn`, `greenMaxTurn`, and `yellowMaxTurn` into the config. Those configs stay valid, but `doctor` reports `LEGACY_TURN_LIMITS`. Run `npx context-brake init --yes` once: it removes `turnCeiling` and `criticalTurn`, removes `greenMaxTurn` and `yellowMaxTurn` when they are the retired defaults 7 and 10, and keeps custom values as optional turn limits.
 - **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
 - **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations. Default removal keeps both state files and their `.gitignore` block, so the state stays ignored; add `--remove-state` to delete the plan, checkpoint, and that block together. `remove --remove-state` deletes `.gitignore` only when the ContextBrake block was its only content.
 
@@ -151,14 +154,10 @@ npx context-brake doctor
     "injectionMode": "threshold_only",
     "activationThresholdPercentage": 50,
     "contextWindowCeiling": 128000,
-    "turnCeiling": 12,
     "zones": {
       "greenMaxPercentage": 49,
       "yellowMaxPercentage": 65,
-      "criticalPercentage": 75,
-      "greenMaxTurn": 7,
-      "yellowMaxTurn": 10,
-      "criticalTurn": 12
+      "criticalPercentage": 75
     }
   },
   "brake": {
@@ -177,7 +176,7 @@ npx context-brake doctor
 }
 ```
 
-`contextWindowCeiling` is used only when the harness does not report the active model's window. `turnCeiling` must equal `zones.criticalTurn`; change both to move the turn ceiling. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
+`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it. Claude Code reports usage but not the window, so there the percentages measure usage against this budget; a model with a 200,000 or 1,000,000-token window reaches `CRITICAL` at 96,000 tokens with the default 128,000. Raise it to let sessions run longer. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
 
 ### Delegated Snapshot Mode (without a task plan)
 
@@ -220,22 +219,15 @@ While the section exists and the plan file does not, ContextBrake runs in delega
 
 ## 📋 CLI Commands
 
-### Implemented Commands (MVP)
-
 | Command | Options | Description |
 | :--- | :--- | :--- |
 | `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json`, `--remove-state` | Safely uninstalls integrations, removes protocol, and cleans reference blocks; keeps plan/checkpoint unless `--remove-state` is provided. |
-
-### Roadmap Commands (Planned)
-
-| Command | Phase | Description |
-| :--- | :--- | :--- |
-| `context-brake plan init --task="<name>"` | PRD 03 | Creates `task_plan.json` and `state_checkpoint.json`. |
-| `context-brake plan status` | PRD 03 | Shows step progress, last checkpoint, and validates state files. |
-| `context-brake run` | Post-MVP | Runs the plan across fresh harness sessions and validates each step. |
-| `context-brake wrap -- <command>` | Post-MVP | Runs a command inside a runner session and appends telemetry. |
+| `context-brake plan init --task="<name>"` | `--yes` (`-y`), `--json` | Creates `task_plan.json` and `state_checkpoint.json`. |
+| `context-brake plan status` | `--json` | Shows step progress and the last checkpoint, and validates both state files. |
+| `context-brake run --harness <claude-code\|codex-cli>` | `--approve-commands`, `--approve-steps`, `--json`, `--max-sessions <n>`, `--max-minutes <n>`, `--max-session-minutes <n>`, `--max-tokens <n>`, `--validation-timeout <n>`, `--max-failures <n>`, `--harness-arg <arg>` | Drives the plan across fresh harness sessions and validates each step before advancing. Defaults come from the `runner` section of the configuration. |
+| `context-brake wrap -- <command> [args...]` | — | Runs a command inside a runner session and appends its context telemetry to the output. |
 
 ---
 
@@ -250,12 +242,16 @@ Both files are local state: `init` lists them in `.gitignore` between `# CONTEXT
 
 ## 🧭 Roadmap
 
-| PRD | Scope |
-| :--- | :--- |
-| [Installation, detection, and diagnostics](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md) | `init`, `doctor`, `remove`, harness support levels |
-| [Telemetry, zones, and brake](./tasks/prd-02-telemetria-zonas-e-freio/prd.md) | Turn counting, context measurement, zones, blocking above the ceiling |
-| [Plan, checkpoint, and boot](./tasks/prd-03-plano-checkpoint-e-boot/prd.md) | State files, boot summary, inherited-state validation |
-| [Automatic reset runner](./tasks/prd-04-runner-de-reinicio-automatico/prd.md) | Post-MVP `run` and `wrap` |
+| PRD | Scope | Status |
+| :--- | :--- | :--- |
+| [Installation, detection, and diagnostics](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md) | `init`, `doctor`, `remove`, harness support levels | Implemented |
+| [Installation follow-ups](./tasks/prd-01.1-pendencias-da-instalacao/prd.md) | Capabilities, overhead measurement, manifest, and installed assets the brake depends on | Implemented |
+| [Telemetry, zones, and brake](./tasks/prd-02-telemetria-zonas-e-freio/prd.md) | Turn counting, context measurement, zones, blocking at the critical threshold | Implemented |
+| [Brake by measured usage](./tasks/prd-02.1-freio-por-uso-medido/prd.md) | Usage-only `CRITICAL`, optional turn limits, measured usage in Claude Code, plan-aware actions | Implemented |
+| [Plan, checkpoint, and boot](./tasks/prd-03-plano-checkpoint-e-boot/prd.md) | State files, boot summary, inherited-state validation | Implemented |
+| [Automatic reset runner](./tasks/prd-04-runner-de-reinicio-automatico/prd.md) | Post-MVP `run` and `wrap` | Implemented |
+| [Release automation](./tasks/prd-05-automacao-de-release-e-publicacao/prd.md) | Automated release and npm publishing | Implemented |
+| [Delegated snapshot mode](./tasks/prd-06-modo-snapshot-delegado/prd.md) | Telemetry and brake without a task plan, using your own snapshot command | Implemented |
 
 The PRDs are written in Portuguese.
 

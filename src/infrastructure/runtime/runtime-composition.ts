@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../../core/contracts/configuration.js';
+import type { PlanPresence } from '../../core/contracts/checkpoint-mode.js';
 import type { HarnessId } from '../../core/contracts/harness.js';
 import type { RuntimeDescriptor } from '../../core/contracts/runtime.js';
 import type { BlockLog, Clock, RuntimeErrorLog, SessionLedger } from '../../core/contracts/session-ledger.js';
@@ -11,6 +12,7 @@ import { NodeProcessRunner } from '../process/node-process-runner.js';
 import { NodeBootReader } from './boot-reader.js';
 import { NodeBlockLog, NodeRuntimeErrorLog } from './node-runtime-logs.js';
 import { NodeSessionLedger } from './node-session-ledger.js';
+import { NodePlanPresence } from './plan-presence.js';
 import { NodePlanValidationReader } from './plan-validation-reader.js';
 import { isMissingFileError } from './runtime-paths.js';
 
@@ -24,6 +26,7 @@ export type RuntimePorts = {
   readonly errors: RuntimeErrorLog;
   readonly readValidationCommand: ValidationCommandReader;
   readonly readBoot: BootReader;
+  readonly planPresence: PlanPresence;
 };
 export type RuntimeServices = RuntimePorts & { readonly engine: BrakeEngine; readonly config: ContextBrakeConfig };
 export type RuntimePortsInput = {
@@ -68,6 +71,7 @@ export function createRuntimePorts(input: RuntimePortsInput): RuntimePorts {
     errors,
     readValidationCommand: () => planReader.readValidationCommand(),
     readBoot: () => bootReader.readBoot(),
+    planPresence: new NodePlanPresence(input.projectRoot, config.stateStorage.planFile),
   };
 }
 export function composeRuntime(input: RuntimeCompositionInput): RuntimeServices {
@@ -75,7 +79,7 @@ export function composeRuntime(input: RuntimeCompositionInput): RuntimeServices 
   const engine = createBrakeEngine({
     descriptor: input.descriptor, config: input.config, ledger: ports.ledger,
     blocks: ports.blocks, readValidationCommand: ports.readValidationCommand,
-    readBoot: ports.readBoot, errors: ports.errors,
+    readBoot: ports.readBoot, errors: ports.errors, planPresence: ports.planPresence,
   });
   return { ...ports, engine, config: input.config };
 }

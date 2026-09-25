@@ -177,6 +177,52 @@
       },
       "additionalProperties": false
     },
+    "delegatedSnapshot": {
+      "type": "object",
+      "properties": {
+        "snapshotCommand": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "triggerZone": {
+          "default": "RED",
+          "type": "string",
+          "enum": [
+            "YELLOW",
+            "RED"
+          ]
+        },
+        "resumeCommand": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "allowedPaths": {
+          "default": [],
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
+          }
+        },
+        "allowedSkills": {
+          "default": [],
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+          }
+        }
+      },
+      "required": [
+        "snapshotCommand"
+      ],
+      "additionalProperties": false
+    },
     "runner": {
       "default": {
         "maxSessions": 20,

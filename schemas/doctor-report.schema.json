@@ -421,6 +421,88 @@
         ],
         "additionalProperties": false
       }
+    },
+    "checkpointMode": {
+      "type": "object",
+      "properties": {
+        "effective": {
+          "type": "string",
+          "enum": [
+            "plan",
+            "delegated"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "enum": [
+            "no_section",
+            "plan_present",
+            "plan_missing"
+          ]
+        },
+        "delegatedSnapshot": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "snapshotCommand": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "triggerZone": {
+                  "default": "RED",
+                  "type": "string",
+                  "enum": [
+                    "YELLOW",
+                    "RED"
+                  ]
+                },
+                "resumeCommand": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "allowedPaths": {
+                  "default": [],
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
+                  }
+                },
+                "allowedSkills": {
+                  "default": [],
+                  "maxItems": 20,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
+                  }
+                }
+              },
+              "required": [
+                "snapshotCommand",
+                "triggerZone",
+                "allowedPaths",
+                "allowedSkills"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "effective",
+        "reason",
+        "delegatedSnapshot"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

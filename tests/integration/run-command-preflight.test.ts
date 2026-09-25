@@ -1,5 +1,8 @@
+import { rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createRunProject, PASSING_COMMAND, readFakeRecord, removeRunProject, writePlan, type RunProject } from '../helpers/run-project.js';
+import { delegatedConfig } from '../helpers/delegated-fixtures.js';
+import { createRunProject, PASSING_COMMAND, PLAN_FILE, readFakeRecord, removeRunProject, writePlan, type RunProject } from '../helpers/run-project.js';
 import { dispatchRun, restoreRunEnvironment, runArgs, useRunEnvironment } from '../helpers/run-command-world.js';
 import { dispatchCommand } from '../../src/cli/composition-root.js';
 import { captureOutput } from '../helpers/wrap-world.js';
@@ -47,5 +50,17 @@ describe('run command plan preflight (DEC-21)', () => {
     expect(code).toBe(0);
     expect(JSON.parse(output.stdout.join(''))).toMatchObject({ runId: null, status: 'completed', sessionCount: 0, stepsCompleted: 1, stepsTotal: 1 });
     expect(await readFakeRecord(world)).toBeNull();
+  });
+});
+
+describe('run command in delegated snapshot mode (TC-13, FR-12, DEC-10)', () => {
+  beforeEach(async () => { await useRunEnvironment(world); });
+
+  it('explains that the runner needs a plan when the delegated section is set', async () => {
+    await rm(join(world.project, PLAN_FILE));
+    await writeFile(join(world.project, 'context-brake.config.json'), JSON.stringify(delegatedConfig()), 'utf8');
+    const { code, output } = await dispatchRun(world, []);
+    expect(code).toBe(2);
+    expect(output.stderr.join('')).toContain('[ERROR] RUN_PLAN_NOT_RUNNABLE: No plan exists at task_plan.json; context-brake run needs a plan and does not support the delegated snapshot mode. Run context-brake plan init');
   });
 });

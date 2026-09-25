@@ -15,6 +15,8 @@ import { findingPrintKey, renderInstallText, renderFinding } from '../output/tex
 import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 import { authorizeWrite } from '../confirmation.js';
+import { CliArgumentError } from '../argument-validator.js';
+import { mergeDelegatedSnapshot, type DelegatedSnapshotFlags, type DelegatedSnapshotUpdate } from '../../core/services/delegated-snapshot-merge.js';
 
 export type CommandEnv = { projectRoot: string; runner?: ProcessRunner; userHome?: string };
 
@@ -59,21 +61,18 @@ export function emitLegacyPreview(findings: readonly DiagnosticFinding[], gate: 
 
 export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<number> {
   const config = await loadExistingConfig(env.projectRoot);
+  const delegatedSnapshot = delegatedUpdate(config, args.delegatedSnapshot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest);
   const sources = await collectHarnessSources(adapters, ctx);
   const packageVersion = await readPackageVersion();
-  const selection = {
-    ...(args.harness.length > 0 ? { include: args.harness } : {}),
-    ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
-  };
   const result = await planInstallation({
-    projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection,
+    projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
-    packageVersion,
+    packageVersion, delegatedSnapshot,
   });
   if (args.dryRun) {
     const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: result.findings });
@@ -86,4 +85,16 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const applyReport = await applier.apply(result.plan);
   const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
   return outputReport(report, args.json, printed);
+}
+function delegatedUpdate(config: ContextBrakeConfig | null, flags: DelegatedSnapshotFlags | undefined): DelegatedSnapshotUpdate {
+  if (flags === undefined) return { kind: 'keep' };
+  const merge = mergeDelegatedSnapshot(config?.delegatedSnapshot, flags);
+  if ('error' in merge) throw new CliArgumentError(merge.error);
+  return merge.update;
+}
+function harnessSelection(args: ParsedInitArgs) {
+  return {
+    ...(args.harness.length > 0 ? { include: args.harness } : {}),
+    ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
+  };
 }

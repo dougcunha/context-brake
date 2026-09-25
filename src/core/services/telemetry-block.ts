@@ -9,10 +9,11 @@ export type TelemetryBlockInput = {
   readonly usagePercentage: number;
   readonly usage: UsageReading;
   readonly zone: Zone;
+  readonly action?: string | undefined;
 };
 
 export function renderTelemetryBlock(input: TelemetryBlockInput): string {
   const { usage } = input;
   const tokens = `${usage.usedTokens ?? 0}/${usage.windowTokens}`;
-  return `[ContextBrake v1] turn=${input.turn}/${input.turnCeiling} usage=${input.usagePercentage}% tokens=${tokens} source=${usage.source} zone=${input.zone} action=${ZONE_ACTIONS[input.zone].compact}`;
+  return `[ContextBrake v1] turn=${input.turn}/${input.turnCeiling} usage=${input.usagePercentage}% tokens=${tokens} source=${usage.source} zone=${input.zone} action=${input.action ?? ZONE_ACTIONS[input.zone].compact}`;
 }

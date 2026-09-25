@@ -31,7 +31,8 @@ export async function requireLauncher(args: ParsedRunArgs): Promise<SessionLaunc
 export async function requireRunnablePlan(projectRoot: string, config: ContextBrakeConfig): Promise<PlanReadiness> {
   const preflight = await readPlanForRun(projectRoot, config);
   if (preflight.kind === 'missing_plan') {
-    throw new RunCommandError('RUN_PLAN_NOT_RUNNABLE', `No plan exists at ${preflight.file}. Run context-brake plan init --task="<name>", add steps with validation commands, ${RERUN}.`);
+    const delegated = config.delegatedSnapshot === undefined ? '' : `; context-brake run needs a plan and does not support the delegated snapshot mode`;
+    throw new RunCommandError('RUN_PLAN_NOT_RUNNABLE', `No plan exists at ${preflight.file}${delegated}. Run context-brake plan init --task="<name>", add steps with validation commands, ${RERUN}.`);
   }
   if (preflight.kind === 'invalid') {
     throw new RunCommandError('INVALID_STATE_FILE', `State file ${preflight.file} is invalid: ${preflight.detail}. Fix it (context-brake plan status lists every issue), ${RERUN}.`);

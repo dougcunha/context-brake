@@ -1,46 +1,19 @@
 import { parseArgs } from 'node:util';
 import type { HarnessId } from '../core/contracts/harness.js';
-import { CliArgumentError, validateHarnessIds, validateInclusionExclusion, validateInstructionPaths } from './argument-validator.js';
+import { CliArgumentError, validateHarnessIds } from './argument-validator.js';
+import { parseInit, type ParsedInitArgs } from './init-arguments.js';
 import { parsePlan, type ParsedPlanArgs } from './plan-arguments.js';
 import { parseRun, parseWrap, type ParsedRunArgs, type ParsedWrapArgs } from './run-arguments.js';
 
 export { CliArgumentError } from './argument-validator.js';
 export type { ParsedPlanArgs, ParsedPlanInitArgs, ParsedPlanStatusArgs } from './plan-arguments.js';
 export type { ParsedRunArgs, ParsedWrapArgs } from './run-arguments.js';
-
-export type ParsedInitArgs = {
-  command: 'init'; dryRun: boolean; yes: boolean; json: boolean;
-  harness: readonly HarnessId[]; excludeHarness: readonly HarnessId[];
-  instructionFile: readonly string[]; createInstructions: boolean; migrateLegacy: boolean;
-};
+export type { ParsedInitArgs } from './init-arguments.js';
 
 export type ParsedDoctorArgs = { command: 'doctor'; json: boolean; harness: readonly HarnessId[] };
 export type ParsedRemoveArgs = { command: 'remove'; dryRun: boolean; yes: boolean; json: boolean; removeState: boolean };
 export type ParsedHelpArgs = { command: 'help' };
 export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedPlanArgs | ParsedWrapArgs | ParsedRunArgs | ParsedHelpArgs;
-
-function parseInit(args: readonly string[]): ParsedInitArgs {
-  const { values } = parseArgs({
-    args: [...args],
-    options: {
-      'dry-run': { type: 'boolean', default: false }, yes: { type: 'boolean', short: 'y', default: false },
-      'json': { type: 'boolean', default: false }, harness: { type: 'string', multiple: true, default: [] },
-      'exclude-harness': { type: 'string', multiple: true, default: [] },
-      'instruction-file': { type: 'string', multiple: true, default: [] },
-      'create-instructions': { type: 'boolean', default: false },
-      'migrate-legacy': { type: 'boolean', default: false },
-    },
-    strict: true,
-  });
-  const harness = validateHarnessIds(values.harness as string[]);
-  const excludeHarness = validateHarnessIds(values['exclude-harness'] as string[]);
-  validateInclusionExclusion(harness, excludeHarness);
-  const instructionFile = validateInstructionPaths(values['instruction-file'] as string[]);
-  return {
-    command: 'init', dryRun: Boolean(values['dry-run']), yes: Boolean(values.yes), json: Boolean(values.json),
-    harness, excludeHarness, instructionFile, createInstructions: Boolean(values['create-instructions']), migrateLegacy: Boolean(values['migrate-legacy']),
-  };
-}
 
 function parseDoctor(args: readonly string[]): ParsedDoctorArgs {
   const { values } = parseArgs({

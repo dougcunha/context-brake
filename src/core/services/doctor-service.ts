@@ -8,6 +8,7 @@ import { assetCurrencyFindings } from './asset-currency.js';
 import { brakeSessionFindings, type RuntimeStateReading } from './brake-session-checks.js';
 import { detectHarnesses } from './detection-service.js';
 import { checkConfig, checkInstructionFiles, checkProtocolFile, checkStateFiles } from './doctor-checks.js';
+import { checkpointModeReport, delegatedSnapshotFindings } from './delegated-diagnostics.js';
 import { checkGitignore } from './gitignore-checks.js';
 import { buildDoctorReport } from './report-service.js';
 
@@ -94,5 +95,6 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
   allFindings.push(...checkStateFiles(input.planSnapshot, input.checkpointSnapshot));
   if (input.config && !input.configError) allFindings.push(...checkGitignore(input.gitignoreSnapshot, input.config));
   if (input.runtimeState) allFindings.push(...brakeSessionFindings(input.runtimeState));
-  return buildDoctorReport({ detections, integrations, findings: allFindings });
+  allFindings.push(...delegatedSnapshotFindings(input.config, [...targetIds]));
+  return buildDoctorReport({ detections, integrations, findings: allFindings, checkpointMode: checkpointModeReport(input.config, input.planSnapshot?.exists ?? false) });
 }

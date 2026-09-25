@@ -1,3 +1,4 @@
+import type { PlanPresence } from '../contracts/checkpoint-mode.js';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../contracts/configuration.js';
 import type { HarnessId } from '../contracts/harness.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../contracts/runtime.js';
@@ -5,10 +6,9 @@ import type { RuntimeErrorCode, RuntimeErrorLog, SessionLedger } from '../contra
 import type { SessionKey } from '../contracts/runtime.js';
 import type { Zone } from '../contracts/zones.js';
 import { InvalidConfigurationError } from '../validation/configuration-validator.js';
-import { isToolCallAllowed } from './brake-allowlist.js';
 import { renderBootOmission } from './boot-summary.js';
-import { renderFailureBlockMessage } from './block-message.js';
 import { summarizeLedger } from './session-counters.js';
+import { resolveFailureGuidance, type GuidanceSources } from './zone-guidance.js';
 
 export const INTERNAL_DEADLINE_MILLISECONDS = 1500;
 
@@ -31,6 +31,7 @@ export type FailureResolutionInput = {
   readonly ledger: SessionLedger;
   readonly errors: RuntimeErrorLog;
   readonly readValidationCommand: () => Promise<string | null>;
+  readonly planPresence?: PlanPresence | undefined;
 };
 
 export function failureErrorCode(error: unknown): RuntimeErrorCode {
@@ -52,13 +53,20 @@ export function runWithinDeadline<T>(work: Promise<T>, deadlineMilliseconds = IN
 }
 export async function resolveFailure(input: FailureResolutionInput): Promise<RuntimeDecision> {
   await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail });
-  if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return { kind: 'context', block: renderBootOmission() };
+  if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return deadlineBootDecision(input);
   if (input.event.kind !== 'pre_tool') return { kind: 'neutral' };
   if ((await lastRecordedZone(input.ledger, input.event.session)) !== 'CRITICAL') return { kind: 'neutral' };
-  const config = input.config ?? DEFAULT_CONFIG;
-  const validationCommand = input.event.tool.category === 'shell' ? await readTolerantly(input.readValidationCommand) : null;
-  if (isToolCallAllowed(input.event.tool, { config, validationCommand })) return { kind: 'neutral' };
-  return { kind: 'deny', tool: input.event.tool.name, reason: 'integration_failure', message: renderFailureBlockMessage({ tool: input.event.tool.name, config }) };
+  const guidance = await resolveFailureGuidance(guidanceSources(input));
+  if (await guidance.allows(input.event.tool)) return { kind: 'neutral' };
+  return { kind: 'deny', tool: input.event.tool.name, reason: 'integration_failure', message: guidance.failureMessage(input.event.tool.name) };
+}
+async function deadlineBootDecision(input: FailureResolutionInput): Promise<RuntimeDecision> {
+  const guidance = await resolveFailureGuidance(guidanceSources(input));
+  if (guidance.mode !== 'delegated') return { kind: 'context', block: renderBootOmission() };
+  return guidance.resumeText === null ? { kind: 'neutral' } : { kind: 'context', block: guidance.resumeText };
+}
+function guidanceSources(input: FailureResolutionInput): GuidanceSources {
+  return { config: input.config ?? DEFAULT_CONFIG, planPresence: input.planPresence, readValidationCommand: () => readTolerantly(input.readValidationCommand) };
 }
 export type RuntimeFailureRecord = { readonly harness: HarnessId; readonly event: string; readonly code: RuntimeErrorCode; readonly detail: string };
 export async function recordRuntimeFailure(errors: RuntimeErrorLog, record: RuntimeFailureRecord): Promise<void> {

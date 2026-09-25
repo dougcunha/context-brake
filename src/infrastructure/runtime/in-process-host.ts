@@ -34,7 +34,7 @@ export function createInProcessRuntime(input: InProcessRuntimeInput): InProcessR
 }
 async function handleFailure(input: { event: RuntimeEvent; error: unknown; config: ContextBrakeConfig; descriptor: RuntimeDescriptor; services: RuntimeServices; ledger: SessionLedger }): Promise<RuntimeDecision> {
   try {
-    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand });
+    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand, planPresence: input.services.planPresence });
   } catch {
     return { kind: 'neutral' };
   }

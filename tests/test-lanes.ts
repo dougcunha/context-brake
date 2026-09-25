@@ -11,6 +11,7 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/doctor-asset-currency.test.ts',
   'tests/integration/executable-command.test.ts',
   'tests/integration/doctor-benchmark.test.ts',
+  'tests/integration/doctor-delegated-snapshot.test.ts',
   'tests/integration/doctor-manual-removal.test.ts',
   'tests/integration/doctor-state-schema.test.ts',
   'tests/integration/git-divergence.test.ts',

@@ -52,6 +52,8 @@ export function renderDoctorText(report: DoctorReport): void {
     stream.write(`${line}\n`);
     for (const lim of integ.support.limitations) stream.write(`    * ${lim.capability}: ${lim.impact}\n`);
   }
+  const mode = report.checkpointMode;
+  if (mode?.delegatedSnapshot) stream.write(`  - checkpoint mode: ${mode.effective} (${mode.reason}, snapshot command: ${mode.delegatedSnapshot.snapshotCommand})\n`);
   for (const f of report.findings) stream.write(`${renderFinding(f)}\n`);
 }
 

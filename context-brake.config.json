@@ -8,14 +8,10 @@
     "injectionMode": "threshold_only",
     "activationThresholdPercentage": 50,
     "contextWindowCeiling": 128000,
-    "turnCeiling": 12,
     "zones": {
       "greenMaxPercentage": 49,
       "yellowMaxPercentage": 65,
-      "criticalPercentage": 75,
-      "greenMaxTurn": 7,
-      "yellowMaxTurn": 10,
-      "criticalTurn": 12
+      "criticalPercentage": 75
     }
   },
   "stateStorage": {

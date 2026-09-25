@@ -6,7 +6,7 @@ import { createOmpExtension, type OmpApi } from '../../src/infrastructure/harnes
 import { createOpenCodePlugin } from '../../src/infrastructure/harnesses/opencode/runtime.js';
 import { createPiExtension, type PiApi } from '../../src/infrastructure/harnesses/pi/runtime.js';
 import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths.js';
-import { seedTurns, writeInvalidRuntimeConfig, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, writeInvalidRuntimeConfig, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 type Handler = (payload: unknown, context: unknown) => Promise<unknown>;
 type Registration = { readonly api: PiApi & OmpApi; readonly handlers: Map<string, Handler> };
@@ -41,8 +41,8 @@ describe('in-process harness deny semantics (RF17, RF19, TC-32)', () => {
     const payload = { toolName: 'read', input: { path: 'src/a.ts' } };
     expect(await call(pi.handlers, 'tool_call')(payload, piContext(root, 'pi-green'))).toBeUndefined();
     expect(await call(omp.handlers, 'tool_call')(payload, ompContext(root, 'omp-green'))).toBeUndefined();
-    await seedTurns(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null }, 12);
-    await seedTurns(root, { harness: 'oh-my-pi', sessionId: 'omp-critical', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null });
+    await seedCriticalSession(root, { harness: 'oh-my-pi', sessionId: 'omp-critical', agentId: null });
     const piBlocked = await call(pi.handlers, 'tool_call')(payload, piContext(root, 'pi-critical')) as { block: boolean; reason: string };
     const ompBlocked = await call(omp.handlers, 'tool_call')(payload, ompContext(root, 'omp-critical')) as { block: boolean; reason: string };
     expect(piBlocked.block).toBe(true);
@@ -56,8 +56,8 @@ describe('in-process harness deny semantics (RF17, RF19, TC-32)', () => {
     const green = { tool: 'bash', sessionID: 'opencode-green', callID: 'call-green' };
     const critical = { tool: 'bash', sessionID: 'opencode-critical', callID: 'call-critical' };
     await expect(hooks['tool.execute.before']!(green, { args: { command: 'rm -rf src' } })).resolves.toBeUndefined();
-    await seedTurns(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null }, 12);
-    await expect(hooks['tool.execute.before']!(critical, { args: { command: 'rm -rf src' } })).rejects.toThrow('[ContextBrake v1] BLOCKED');
+    await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
+    await expect(hooks['tool.execute.before']!(critical, { args: { command: 'rm -rf src' } })).rejects.toThrow('[ContextBrake v2] BLOCKED');
   });
 });
 
@@ -76,7 +76,7 @@ describe('in-process failure policy (RF19, DEC-09, TC-32)', () => {
 
   it('denies with the failure variant above the ceiling when the configuration is invalid', async () => {
     await writeInvalidRuntimeConfig(root);
-    await seedTurns(root, { harness: 'pi', sessionId: 'pi-session-1', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'pi', sessionId: 'pi-session-1', agentId: null });
     const { api, handlers } = registration();
     createPiExtension(api);
     const blocked = await call(handlers, 'tool_call')({ toolName: 'read', input: { path: 'src/a.ts' } }, piContext(root, 'pi-session-1')) as { block: boolean; reason: string };

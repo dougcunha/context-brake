@@ -1,0 +1,8 @@
+{
+  "subtype": "success",
+  "is_error": false,
+  "num_turns": 38,
+  "result": "Last ContextBrake telemetry: zone=RED, source=measured (turn 37, 69%). All reads are finished; I did not record progress in files because you limited me to the Read tool. [REQUEST_SESSION_RESET]",
+  "total_cost_usd": 1.0286978000000002,
+  "session_id": "40f8abe6-0705-41dd-9694-9dae9b6d1353"
+}

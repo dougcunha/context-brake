@@ -1,9 +1,12 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
-import type { RuntimeInput } from '../../../core/services/brake-engine.js';
+import type { RuntimeErrorLog } from '../../../core/contracts/session-ledger.js';
+import type { MeasuredUsage, RuntimeInput } from '../../../core/services/brake-engine.js';
+import { failureDetail, recordRuntimeFailure } from '../../../core/services/failure-policy.js';
 import { asRecord, assetProjectRoot, characterLength, parsePayload, projectRootFromEnvironment, requireIdentifier, textValue } from '../common/runtime-support.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../runtime/process-hook-host.js';
 import { CLAUDE_CAPABILITIES } from './capabilities.js';
 import { claudePayloadSchema, type ClaudePayload } from './schemas.js';
+import { readTranscriptUsage } from './transcript-usage.js';
 
 const HARNESS = 'claude-code';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
@@ -46,10 +49,23 @@ export function mapClaudeEvent(eventName: string, payload: unknown): RuntimeEven
   }
 }
 
-export function mapClaudeInput(eventName: string, payload: unknown): RuntimeInput {
-  if (eventName !== 'PostToolUse') return {};
+export async function mapClaudeInput(eventName: string, payload: unknown, errors: RuntimeErrorLog): Promise<RuntimeInput> {
+  if (eventName !== 'PreToolUse' && eventName !== 'PostToolUse') return {};
   const data = parsePayload(claudePayloadSchema, payload);
-  return { observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
+  const measured = data.agent_id === undefined ? await measuredUsage({ path: data.transcript_path, eventName, errors }) : undefined;
+  const usage = measured === undefined ? {} : { measured };
+  return eventName === 'PreToolUse' ? usage : { ...usage, observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
+}
+
+type TranscriptRead = { readonly path: string | undefined; readonly eventName: string; readonly errors: RuntimeErrorLog };
+async function measuredUsage(input: TranscriptRead): Promise<MeasuredUsage | undefined> {
+  try {
+    const usage = await readTranscriptUsage(input.path);
+    return usage === null ? undefined : { tokens: usage.tokens, contextWindow: null, at: usage.at };
+  } catch (error) {
+    await recordRuntimeFailure(input.errors, { harness: HARNESS, event: input.eventName, code: 'UNEXPECTED', detail: failureDetail(error) });
+    return undefined;
+  }
 }
 
 export function renderClaudeDecision(decision: RuntimeDecision, eventName: string): string | null {

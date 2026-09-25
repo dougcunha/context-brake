@@ -5,7 +5,7 @@ import { prepareAcceptanceProject, readJournal, runAcceptance, workSteps, type A
 import { createRunProject, readPlanStatuses, removeRunProject, useScenario, type RunProject } from '../helpers/run-project.js';
 
 const WRAPPED_OUTPUT = 'wrapped-command-output';
-const TELEMETRY_BLOCK = /^\[ContextBrake v1\] turn=\d+\/\d+ usage=\d+% tokens=\d+\/\d+ source=\w+ zone=\w+ action=.+$/;
+const TELEMETRY_BLOCK = /^\[ContextBrake v2\] turn=\d+ usage=\d+% tokens=\d+\/\d+ source=\w+ zone=\w+ action=.+$/;
 
 type WrapResult = { readonly code: number | null; readonly stdout: string; readonly stderr: string };
 

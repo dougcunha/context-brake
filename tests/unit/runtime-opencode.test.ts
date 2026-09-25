@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import type { ToolLine } from '../../src/core/contracts/session-ledger.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
-import { fixedClock, seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { fixedClock, seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 import { createOpenCodePlugin, mapOpenCodeSessionEvent, mapOpenCodeToolCall, mapOpenCodeToolResult, openCodeDescriptor, openCodeObservedCharacters } from '../../src/infrastructure/harnesses/opencode/runtime.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 
@@ -77,9 +77,9 @@ async function checkOpenCodeLifecycle(root: string): Promise<void> {
 }
 
 async function checkOpenCodeExactBlock(root: string): Promise<void> {
-  await seedTurns(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null }, 12);
+  await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
   const hooks = createOpenCodePlugin({ directory: root });
-  const expected = '[ContextBrake v1] BLOCKED tool=bash zone=CRITICAL turn=12/12 usage=70% tokens=16800/24000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
+  const expected = '[ContextBrake v2] BLOCKED tool=bash zone=CRITICAL turn=12 usage=570% tokens=136800/24000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
   await expect(hooks['tool.execute.before']!({ tool: 'bash', sessionID: 'opencode-critical', callID: 'call-deny' }, { args: { command: 'rm -rf src' } })).rejects.toThrow(expected);
 }
 

@@ -15,8 +15,8 @@ describe('protocol service rendering and planning (RF10, CA-08)', () => {
     expect(text).toContain('# ContextBrake Protocol');
     expect(text).toContain('`task_plan.json`');
     expect(text).toContain('`state_checkpoint.json`');
-    expect(text).toContain('| `GREEN` | Usage below 50% and at most 7 turns |');
-    expect(text).toContain('| `CRITICAL` | Usage at 75% or more, or 12 turns or more |');
+    expect(text).toContain('| `GREEN` | Usage below 50% |');
+    expect(text).toContain('| `CRITICAL` | Usage at 75% or more |');
   });
 
   it('plans creation when protocol file is absent', () => {
@@ -35,11 +35,38 @@ describe('protocol service rendering and planning (RF10, CA-08)', () => {
   });
 });
 
+function zoneRow(config: ContextBrakeConfig, zone: string): string {
+  return renderProtocol(config).split('\n').find((line) => line.startsWith(`| \`${zone}\``)) ?? '';
+}
+const TURN_LIMITS_CONFIG: ContextBrakeConfig = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 59, yellowMaxTurn: 99 } } };
+
+describe('protocol plan-aware actions (FR-08, DEC-05, TC-08)', () => {
+  it('prints the plan and no-plan YELLOW actions in one row', () => {
+    expect(zoneRow(DEFAULT_CONFIG, 'YELLOW')).toBe("| `YELLOW` | Usage from 50% to 65% | With `task_plan.json`: Finish the current edit, do not start a new plan step, and run the step's validation command. Without it: Keep working, and prefer finishing the current unit of work before starting large new explorations. |");
+  });
+  it('prints the plan and no-plan RED actions in one row', () => {
+    expect(zoneRow(DEFAULT_CONFIG, 'RED')).toBe('| `RED` | Usage above 65% | With `task_plan.json`: Stop editing. Update `task_plan.json` and `state_checkpoint.json`. If validation passes, commit with `checkpoint: <step title>`. End the response with `[REQUEST_SESSION_RESET]`. Without it: Finish or pause the current unit of work. Record progress where the project already keeps state, or tell the user what remains. End the response with `[REQUEST_SESSION_RESET]`. |');
+  });
+  it('keeps the no-plan variants free of instructions to stop starting work', () => {
+    for (const zone of ['YELLOW', 'RED']) expect(zoneRow(DEFAULT_CONFIG, zone).split('Without it:')[1]).not.toMatch(/do not start|start no new/i);
+  });
+  it('names the configured plan file in the variants', () => {
+    const custom: ContextBrakeConfig = { ...DEFAULT_CONFIG, stateStorage: { ...DEFAULT_CONFIG.stateStorage, planFile: 'plan/steps.json' } };
+    expect(zoneRow(custom, 'YELLOW')).toContain('With `plan/steps.json`:');
+    expect(renderProtocol(custom)).toContain('the action depends on whether `plan/steps.json` exists');
+  });
+  it('adds turn conditions only when turn limits are on', () => {
+    expect(zoneRow(DEFAULT_CONFIG, 'YELLOW')).not.toContain('turns');
+    expect(zoneRow(TURN_LIMITS_CONFIG, 'YELLOW')).toContain('Usage from 50% to 65%, or 60 to 99 turns | With `task_plan.json`:');
+    expect(zoneRow(TURN_LIMITS_CONFIG, 'RED')).toContain('Usage above 65%, or 100 turns or more | With `task_plan.json`:');
+  });
+});
+
 describe('protocol CRITICAL row wording (FR-11, DEC-06)', () => {
   it('lists git status, git add, and git commit as allowed at the CRITICAL ceiling', () => {
     const text = renderProtocol(DEFAULT_CONFIG);
     const criticalRow = text.split('\n').find((line) => line.startsWith('| `CRITICAL`'));
-    expect(criticalRow).toBe('| `CRITICAL` | Usage at 75% or more, or 12 turns or more | Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, `git status`, `git add`, and `git commit` are allowed. Complete the `RED` actions. |');
+    expect(criticalRow).toBe('| `CRITICAL` | Usage at 75% or more | Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, `git status`, `git add`, and `git commit` are allowed. Complete the `RED` actions. |');
   });
 
   it('lists the same CRITICAL allowlist with a custom plan and checkpoint file configuration', () => {

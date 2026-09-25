@@ -4,7 +4,9 @@ Applies while this repository has a `task_plan.json` or tool results include a C
 
 ## Telemetry
 
-A telemetry block reports the session turn and turn ceiling, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call.
+A telemetry block reports the session turn, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call. When turn limits are configured, the turn also shows where `RED` starts. Turns never block tool calls; only context usage reaches `CRITICAL`.
+
+In `YELLOW` and `RED`, the action depends on whether `task_plan.json` exists. Without it, keep doing the requested work; never stop only because no plan exists.
 
 ## Zones
 
@@ -12,10 +14,10 @@ When several conditions match, the highest zone applies.
 
 | Zone | Default condition | What to do |
 | --- | --- | --- |
-| `GREEN` | Usage below 50% and at most 7 turns | Work normally. |
-| `YELLOW` | Usage from 50% to 65%, or 8 to 10 turns | Finish the current edit, do not start a new plan step, and run the step's validation command. |
-| `RED` | Usage above 65%, or 11 turns or more | Stop editing. Update `task_plan.json` and `state_checkpoint.json`. If validation passes, commit with `checkpoint: <step title>`. End the response with `[REQUEST_SESSION_RESET]`. |
-| `CRITICAL` | Usage at 75% or more, or 12 turns or more | Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, `git status`, `git add`, and `git commit` are allowed. Complete the `RED` actions. |
+| `GREEN` | Usage below 50% | Work normally. |
+| `YELLOW` | Usage from 50% to 65% | With `task_plan.json`: Finish the current edit, do not start a new plan step, and run the step's validation command. Without it: Keep working, and prefer finishing the current unit of work before starting large new explorations. |
+| `RED` | Usage above 65% | With `task_plan.json`: Stop editing. Update `task_plan.json` and `state_checkpoint.json`. If validation passes, commit with `checkpoint: <step title>`. End the response with `[REQUEST_SESSION_RESET]`. Without it: Finish or pause the current unit of work. Record progress where the project already keeps state, or tell the user what remains. End the response with `[REQUEST_SESSION_RESET]`. |
+| `CRITICAL` | Usage at 75% or more | Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, `git status`, `git add`, and `git commit` are allowed. Complete the `RED` actions. |
 
 ## Checkpoint
 

@@ -27,7 +27,7 @@ const blocks: BlockLog = { append: async () => Promise.resolve() };
 describe('Claude Code subagent session keys (RF4, CA-08, TC-10)', () => {
   it('counts subagent calls in their own ledger and leaves the main session untouched', async () => {
     const ledger = new PerSessionLedger();
-    const engine = createBrakeEngine({ descriptor: claudeDescriptor, config: DEFAULT_CONFIG, ledger, blocks, readValidationCommand: async () => null });
+    const engine = createBrakeEngine({ descriptor: claudeDescriptor, config: DEFAULT_CONFIG, ledger, blocks, readValidationCommand: async () => null, planPresence: { exists: async () => true } });
     const call = { tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } };
     await engine.handle(mapClaudeEvent('PostToolUse', { session_id: 'session-1', tool_use_id: 'main-1', ...call })!, { observedCharacters: 10 });
     await engine.handle(mapClaudeEvent('PostToolUse', { session_id: 'session-1', agent_id: 'agent-7', tool_use_id: 'sub-1', ...call })!, { observedCharacters: 10 });

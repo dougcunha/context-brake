@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { installBuiltHook, runInstalledHook } from '../helpers/built-hook.js';
-import { seedTurns, writeInvalidRuntimeConfig, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, writeInvalidRuntimeConfig, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 import { runtimeDirectory, sessionLedgerPath } from '../../src/infrastructure/runtime/runtime-paths.js';
 
 let root = '';
@@ -39,8 +39,8 @@ describe('T06 failure policy below the ceiling (TC-18, CA-16)', () => {
 
 describe('T06 failure policy above the ceiling (TC-18, CA-16)', () => {
   it('denies non-allowlisted calls in each harness deny shape but keeps the allowlist', async () => {
-    await seedTurns(root, { harness: 'claude-code', sessionId: 'critical', agentId: null }, 12);
-    await seedTurns(root, { harness: 'cursor', sessionId: 'critical', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'claude-code', sessionId: 'critical', agentId: null });
+    await seedCriticalSession(root, { harness: 'cursor', sessionId: 'critical', agentId: null });
     const claude = await runInstalledHook(claudeHook, 'PreToolUse', { session_id: 'critical', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } });
     expect((JSON.parse(claude.stdout) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision).toBe('deny');
     const claudeGit = await runInstalledHook(claudeHook, 'PreToolUse', { session_id: 'critical', tool_name: 'Bash', tool_input: { command: 'git add src/a.ts' } });

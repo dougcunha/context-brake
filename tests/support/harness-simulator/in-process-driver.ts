@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { HookOutcome, SessionChannel } from './session-recorder.js';
 import type { SessionStep } from './agent-profiles.js';
-import { assistantText, baselinePrompt, corpusText, measureTokens, type OutputKind, type SimulatedCall, type SimulatedWindow } from './scenarios.js';
+import { assistantText, baselinePrompt, corpusText, measureTokens, takeTokens, type OutputKind, type SimulatedCall, type SimulatedWindow } from './scenarios.js';
 
 export const IN_PROCESS_HARNESSES = ['pi', 'oh-my-pi'] as const;
 export type InProcessHarnessId = (typeof IN_PROCESS_HARNESSES)[number];
@@ -31,7 +31,7 @@ function blockPayload(decision: unknown): string | null {
   const content = (decision as { content?: unknown } | undefined)?.content;
   if (!Array.isArray(content)) return null;
   const texts = content.flatMap((part) => (typeof (part as { text?: unknown }).text === 'string' ? [(part as { text: string }).text] : []));
-  return texts.find((text) => text.startsWith('[ContextBrake v1]')) ?? null;
+  return texts.find((text) => text.startsWith('[ContextBrake v2]')) ?? null;
 }
 function isBlocked(decision: unknown): boolean {
   return (decision as { block?: unknown } | undefined)?.block === true;
@@ -43,6 +43,7 @@ export type InProcessSessionInput = {
   readonly window: SimulatedWindow;
   readonly kind: OutputKind;
   readonly seedCharacters: number;
+  readonly seedTokens?: number | undefined;
 };
 export type InProcessSession = SessionChannel & { readonly harness: InProcessHarnessId; readonly sessionId: string; readonly contextTokens: () => number };
 type State = { readonly handlers: Handlers; readonly lines: string[]; context: unknown; tokenTotal: number };
@@ -75,7 +76,7 @@ export async function createInProcessSession(input: InProcessSessionInput): Prom
   const lines: string[] = [];
   const seeded: State = { handlers: new Map(), lines, context: undefined, tokenTotal: 0 };
   addLine(seeded, baselinePrompt());
-  addLine(seeded, corpusText({ kind: input.kind, characters: input.seedCharacters }, 0));
+  addLine(seeded, seedText(input, seeded.tokenTotal));
   let state = await createState(input, lines, seeded.tokenTotal);
   return {
     harness: input.harness,
@@ -92,4 +93,8 @@ export async function createInProcessSession(input: InProcessSessionInput): Prom
     },
     reload: async () => { state = await createState(input, state.lines, state.tokenTotal); },
   };
+}
+function seedText(input: InProcessSessionInput, baselineTokens: number): string {
+  const corpus = corpusText({ kind: input.kind, characters: input.seedCharacters }, 0);
+  return input.seedTokens === undefined ? corpus : takeTokens(corpus, input.seedTokens - baselineTokens);
 }

@@ -1,0 +1,2 @@
+{"parentUuid":null,"isSidechain":false,"type":"user","timestamp":"2026-09-25T10:00:00.000Z","sessionId":"session-claude-1","message":{"role":"user","content":"First prompt."}}
+{"type":"summary","summary":"Synthetic summary","leafUuid":"synthetic"}

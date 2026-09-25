@@ -4,6 +4,7 @@ import type { RuntimeDescriptor, SessionKey, ToolCall } from '../../src/core/con
 import type { BlockLog, BlockRecordInput, LedgerLine, SessionLedger, ToolLine } from '../../src/core/contracts/session-ledger.js';
 
 export const DELEGATED_AT = '2026-09-24T12:00:00.000Z';
+export const CRITICAL_CHARACTERS_PER_LINE = 30000;
 export const DELEGATED_KEY: SessionKey = { harness: 'claude-code', sessionId: 'delegated-1', agentId: null };
 export const DELEGATED_DESCRIPTOR: RuntimeDescriptor = {
   harness: 'claude-code',
@@ -24,7 +25,7 @@ export class FailingPresence implements PlanPresence {
   async exists(): Promise<boolean> { throw new Error('stat failed'); }
 }
 export function delegatedToolLine(turn: number): ToolLine {
-  return { v: 1, type: 'tool', at: DELEGATED_AT, toolUseId: `toolu_${turn}`, observedCharacters: 0, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: turn >= 12 ? 'CRITICAL' : 'GREEN' };
+  return { v: 1, type: 'tool', at: DELEGATED_AT, toolUseId: `toolu_${turn}`, observedCharacters: CRITICAL_CHARACTERS_PER_LINE, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: turn >= 11 ? 'CRITICAL' : 'GREEN' };
 }
 export function sessionAtTurn(turns: number): LedgerLine[] {
   return Array.from({ length: turns }, (_, index) => delegatedToolLine(index + 1));

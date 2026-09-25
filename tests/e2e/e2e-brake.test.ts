@@ -13,6 +13,7 @@ import { CHECKPOINT_FILE, PLAN_FILE, checkpointContent, planContent, shellCall }
 import { runBuiltCli } from './cli-runner.js';
 
 const CLAUDE_SESSION = 'brake-e2e-claude';
+const LARGE_READ_CHARACTERS = 3700;
 const CODEX_SESSION = 'brake-e2e-codex';
 
 async function createFixture(harness: 'claude-code' | 'codex-cli'): Promise<string> {
@@ -35,9 +36,8 @@ async function createFixture(harness: 'claude-code' | 'codex-cli'): Promise<stri
 async function driveClaude(root: string, recorder: SessionRecorder): Promise<void> {
   const session = createProcessSession({ root, harness: 'claude-code', sessionId: CLAUDE_SESSION });
   const input = { channel: session, harness: 'claude-code', recorder, root };
-  await runScript(input, brakeWorkFlow());  expect(recorder.find('work-8')?.block).toContain('zone=YELLOW');
-  expect(recorder.find('work-8')?.block).toContain('turn=8/12');
-  expect(recorder.find('work-11')?.block).toContain('zone=RED');
+  await runScript(input, brakeWorkFlow(LARGE_READ_CHARACTERS));
+  for (const [id, text] of [['work-1', 'turn=1 '], ['work-1', 'zone=YELLOW'], ['work-6', 'zone=RED'], ['work-9', 'zone=CRITICAL']] as const) expect(recorder.find(id)?.block).toContain(text);
   await runScript(input, [deniedRead('critical-read-code', 'src/app.ts'), ...saveSequence(), operatorTrap('critical-operator')]);
 }
 async function assertClaudeResult(root: string, recorder: SessionRecorder): Promise<void> {

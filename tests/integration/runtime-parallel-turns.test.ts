@@ -74,7 +74,7 @@ describe('T06 built Claude Code hooks count parallel calls (CA-06, TC-08)', () =
       await Promise.all([1, 2, 3].map((call) => runBuiltHook('PostToolUse', { ...session, tool_use_id: `toolu-${round}-${call}` }, root)));
       const isolated = await runBuiltHook('PostToolUse', { ...session, tool_use_id: `toolu-${round}-4` }, root);
       expect(isolated.code).toBe(0);
-      expect(isolated.stdout, `round ${round}`).toContain('turn=4/12');
+      expect(isolated.stdout, `round ${round}`).toContain('turn=4 ');
       expect(isolated.stdout, `round ${round}`).toContain('zone=YELLOW');
     }
   }, BUILT_TIMEOUT_MS);
@@ -83,7 +83,7 @@ describe('T06 built Claude Code hooks count parallel calls (CA-06, TC-08)', () =
     await runBuiltHook('PostToolUse', { session_id: 'main-session', tool_use_id: 'main-1' }, root);
     await Promise.all([1, 2, 3].map((call) => runBuiltHook('PostToolUse', { session_id: 'main-session', agent_id: 'sub-1', tool_use_id: `sub-${call}` }, root)));
     const main = await runBuiltHook('PostToolUse', { session_id: 'main-session', tool_use_id: 'main-2' }, root);
-    expect(main.stdout).toContain('turn=2/12');
+    expect(main.stdout).toContain('turn=2 ');
     const ledgers = await readdir(sessionsDirectory(root, 'claude-code'));
     expect(ledgers).toHaveLength(2);
   }, BUILT_TIMEOUT_MS);

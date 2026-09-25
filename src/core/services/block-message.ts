@@ -1,5 +1,7 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { UsageReading } from '../contracts/zones.js';
+import { renderTurn, TELEMETRY_BLOCK_PREFIX } from './telemetry-block.js';
+import { redStartTurn } from './zone-classifier.js';
 
 export type BlockMessageInput = {
   readonly tool: string;
@@ -9,13 +11,13 @@ export type BlockMessageInput = {
   readonly config: ContextBrakeConfig;
 };
 
-const BLOCKED_PREFIX = '[ContextBrake v1] BLOCKED';
+const BLOCKED_PREFIX = `${TELEMETRY_BLOCK_PREFIX} BLOCKED`;
 const FAILURE_REASON = 'reason=integration_failure';
 const FAILURE_ZONE = 'last recorded zone=CRITICAL';
 const RED_ACTIONS = ' Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
 
 export function renderBlockHeader(input: BlockMessageInput): string {
-  const values = `turn=${input.turn}/${input.config.telemetry.turnCeiling} usage=${input.usagePercentage}% tokens=${input.usage.usedTokens ?? 0}/${input.usage.windowTokens} source=${input.usage.source}`;
+  const values = `turn=${renderTurn(input.turn, redStartTurn(input.config.telemetry.zones))} usage=${input.usagePercentage}% tokens=${input.usage.usedTokens ?? 0}/${input.usage.windowTokens} source=${input.usage.source}`;
   return `${BLOCKED_PREFIX} tool=${input.tool} zone=CRITICAL ${values} reason=critical_ceiling.`;
 }
 export function renderFailureBlockHeader(tool: string): string {

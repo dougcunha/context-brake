@@ -11,6 +11,7 @@ import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths
 const HOST_ENTRY = resolve('tests/fixtures/runtime-host/host-entry.ts');
 const SPAWN_TIMEOUT_MS = 20000;
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
+const CRITICAL_CHARACTERS_PER_TURN = 30000;
 const clock: Clock = { now: () => new Date('2026-09-15T12:00:00.000Z') };
 
 type Result = { readonly code: number | null; readonly stdout: string; readonly stderr: string };
@@ -26,7 +27,7 @@ function runHost(eventName: string, payload: unknown, projectRoot: string): Prom
   });
 }
 function toolInput(turn: number, zone: ToolLineInput['zone'] = 'GREEN'): ToolLineInput {
-  return { toolUseId: `toolu_${turn}`, observedCharacters: 0, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone };
+  return { toolUseId: `toolu_${turn}`, observedCharacters: CRITICAL_CHARACTERS_PER_TURN, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone };
 }
 async function seedCriticalSession(projectRoot: string): Promise<void> {
   const ledger = new NodeSessionLedger(projectRoot, clock);

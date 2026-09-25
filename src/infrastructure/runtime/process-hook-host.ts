@@ -2,7 +2,7 @@ import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../../core/contracts/runtime.js';
 import type { RuntimeInput } from '../../core/services/brake-engine.js';
 import { failureDetail, failureErrorCode, recordRuntimeFailure, resolveFailure, runWithinDeadline } from '../../core/services/failure-policy.js';
-import { composeRuntime, createRuntimePorts, loadRuntimeConfiguration, systemClock } from './runtime-composition.js';
+import { composeRuntime, createRuntimePorts, loadRuntimeConfiguration, systemClock, type RuntimePorts } from './runtime-composition.js';
 import { normalizeEventToolPaths } from './tool-path-normalizer.js';
 
 export const MAXIMUM_STDIN_BYTES = 16 * 1024 * 1024;
@@ -11,7 +11,7 @@ const NEUTRAL: RuntimeDecision = { kind: 'neutral' };
 export type ProcessHarnessAdapter = {
   readonly descriptor: RuntimeDescriptor;
   readonly mapEvent: (eventName: string, payload: unknown) => RuntimeEvent | null;
-  readonly mapInput: (eventName: string, payload: unknown) => RuntimeInput;
+  readonly mapInput: (eventName: string, payload: unknown, errors: RuntimePorts['errors']) => RuntimeInput | Promise<RuntimeInput>;
   readonly renderDecision: (decision: RuntimeDecision, eventName: string) => string | null;
   readonly resolveProjectRoot: (input: { readonly eventName: string; readonly payload: unknown }) => Promise<string>;
 };
@@ -70,7 +70,7 @@ async function dispatchHook(input: HookDispatch): Promise<RuntimeDecision> {
   input.state.config = config;
   if (event === null) return NEUTRAL;
   const services = composeRuntime({ projectRoot, descriptor: input.adapter.descriptor, config, clock: systemClock });
-  return services.engine.handle(event, input.adapter.mapInput(input.eventName, payload));
+  return services.engine.handle(event, await input.adapter.mapInput(input.eventName, payload, services.errors));
 }
 type FailureInput = { readonly adapter: ProcessHarnessAdapter; readonly state: HookState; readonly error: unknown; readonly eventName: string };
 async function failureDecision(input: FailureInput): Promise<RuntimeDecision> {

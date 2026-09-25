@@ -16,7 +16,7 @@ describe('Claude Code runtime tool events (RF12, RF14, TC-14, TC-33)', () => {
     expect(event.kind).toBe('post_tool');
     expect(event.toolUseId).toBe('toolu_claude_1');
     const fixture = payload as { tool_input: unknown; tool_response: unknown };
-    const input = mapClaudeInput('PostToolUse', payload);
+    const input = await mapClaudeInput('PostToolUse', payload, { append: async () => Promise.resolve() });
     expect(input.observedCharacters).toBe(JSON.stringify(fixture.tool_input).length + JSON.stringify(fixture.tool_response).length);
   });
 

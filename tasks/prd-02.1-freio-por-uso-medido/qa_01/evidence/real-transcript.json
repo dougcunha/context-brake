@@ -1,0 +1,1 @@
+{"scenario":"FR-04 against a real Claude Code transcript (this QA session, 1.49 MB, read-only, usage fields only)","command":"node scratchpad/real.mjs dist <session>.jsonl","result":{"reader":{"tokens":218302,"at":"2026-09-25T18:47:49.404Z"},"fullScanReference":{"tokens":218302,"at":"2026-09-25T18:47:49.404Z"},"equal":true,"readMs":3.9},"status":"PASSED"}

@@ -4,7 +4,7 @@ import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
-import { seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 type Handler = (payload: unknown, context?: unknown) => Promise<unknown>;
 type HookObject = { readonly 'tool.execute.before'?: Handler; readonly 'tool.execute.after'?: Handler; readonly event?: Handler };
@@ -43,16 +43,16 @@ async function checkPi(root: string): Promise<void> {
   expect(rendered.content).toHaveLength(2);
   expect(rendered.content[0]).toEqual({ type: 'text', text: 'tests passed' });
   expect((rendered.content[1] as { text: string }).text).toContain('tokens=128000/200000 source=measured');
-  await seedTurns(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null }, 12);
+  await seedCriticalSession(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null });
   await expect(handlers.get('session_start')!({ reason: 'new' }, piContext(root, 'pi-reset', measured))).resolves.toBeUndefined();
-  const blocked = await handlers.get('tool_call')!({ toolName: 'read', input: { path: 'src/a.ts' } }, piContext(root, 'pi-critical', measured)) as { block: boolean; reason: string };
+  const blocked = await handlers.get('tool_call')!({ toolName: 'read', input: { path: 'src/a.ts' } }, piContext(root, 'pi-critical', { tokens: 160000, contextWindow: 200000, percent: 80 })) as { block: boolean; reason: string };
   expect(blocked).toMatchObject({ block: true });
   expect(blocked.reason).toContain('zone=CRITICAL');
 }
 
 async function checkOmp(root: string): Promise<void> {
   const handlers = await loadOmp();
-  await seedTurns(root, { harness: 'oh-my-pi', sessionId: 'omp-built', agentId: null }, 12);
+  await seedCriticalSession(root, { harness: 'oh-my-pi', sessionId: 'omp-built', agentId: null });
   const stop = await loadHarnessPayload('oh-my-pi', 'session-stop.json');
   await expect(handlers.get('session_stop')!(stop, piContext(root, 'omp-built', undefined))).resolves.toBeUndefined();
   const blocked = await handlers.get('tool_call')!({ toolName: 'bash', input: { command: 'rm -rf x' } }, piContext(root, 'omp-built', undefined)) as { block: boolean; reason: string };
@@ -67,8 +67,8 @@ async function checkOpenCode(root: string): Promise<void> {
   const critical = { ...before.input, sessionID: 'opencode-critical' };
   await expect(hooks['tool.execute.before']!(green, before.output)).resolves.toBeUndefined();
   await expect(hooks['tool.execute.after']!(green, { args: { command: 'npm test' }, output: 'done' })).resolves.toBeUndefined();
-  await seedTurns(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null }, 12);
-  await expect(hooks['tool.execute.before']!(critical, before.output)).rejects.toThrow('[ContextBrake v1] BLOCKED');
+  await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
+  await expect(hooks['tool.execute.before']!(critical, before.output)).rejects.toThrow('[ContextBrake v2] BLOCKED');
   await expect(hooks.event!(await loadHarnessPayload('opencode', 'session-compacted.json'))).resolves.toBeUndefined();
 }
 

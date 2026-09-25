@@ -44,6 +44,10 @@ describe('usage resolver measured readings (RF5, RF7, CA-09, TC-11)', () => {
     expect(first.windowTokens).toBe(128000);
     expect(second.windowTokens).toBe(200000);
   });
+  it('uses the configured ceiling as the window of a measurement without one (FR-07, DEC-10, TC-10)', () => {
+    const reading = resolveUsage({ estimated: { observedCharacters: 0, turns: 1 }, measured: { tokens: 54000, contextWindow: null }, constants, contextWindowCeiling: 150000 });
+    expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 150000, measuredTokens: 54000 });
+  });
   it('keeps the parallel estimate available for measured sessions', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: 54000, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
     expect(reading.measuredTokens).toBe(54000);

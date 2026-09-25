@@ -1,0 +1,170 @@
+[
+  {
+    "id": "S1.0",
+    "obligation": "setup",
+    "status": "PASSED",
+    "detail": "init --yes exit=0"
+  },
+  {
+    "id": "S1.1",
+    "obligation": "FR-09 TC-19",
+    "status": "PASSED",
+    "detail": "doctor --json reports LEGACY_TURN_LIMITS with remediation"
+  },
+  {
+    "id": "S1.2",
+    "obligation": "FR-10 TC-21",
+    "status": "PASSED",
+    "detail": "doctor shows Claude context_usage from the transcript"
+  },
+  {
+    "id": "S1.3",
+    "obligation": "FR-09 cli-output",
+    "status": "PASSED",
+    "detail": "doctor text mentions the legacy warning (exit=1)"
+  },
+  {
+    "id": "S1.4",
+    "obligation": "FR-09 TC-20",
+    "status": "PASSED",
+    "detail": "init --dry-run leaves the legacy config byte-identical"
+  },
+  {
+    "id": "S1.5",
+    "obligation": "FR-09 TC-20",
+    "status": "PASSED",
+    "detail": "init --yes removes the four turn fields"
+  },
+  {
+    "id": "S1.6",
+    "obligation": "FR-09 idempotency",
+    "status": "PASSED",
+    "detail": "second init --yes makes no change"
+  },
+  {
+    "id": "S1.7",
+    "obligation": "FR-09",
+    "status": "PASSED",
+    "detail": "doctor after migration has no legacy finding"
+  },
+  {
+    "id": "S1.8",
+    "obligation": "file-changes",
+    "status": "PASSED",
+    "detail": "user content in CLAUDE.md preserved"
+  },
+  {
+    "id": "S1.9",
+    "obligation": "FR-09 TC-19",
+    "status": "PASSED",
+    "detail": "doctor reports ignored fields for custom limits"
+  },
+  {
+    "id": "S1.10",
+    "obligation": "FR-09",
+    "status": "PASSED",
+    "detail": "init keeps custom 20/30 and drops criticalTurn/turnCeiling"
+  },
+  {
+    "id": "S1.11",
+    "obligation": "FR-02 TC-03",
+    "status": "FAILED",
+    "detail": "non-increasing turn limits rejected with field and rule"
+  },
+  {
+    "id": "S2.0",
+    "obligation": "FR-08 FR-10 TC-08",
+    "status": "PASSED",
+    "detail": "installed protocol: usage-only conditions and both plan variants"
+  },
+  {
+    "id": "S2.1",
+    "obligation": "OBJ-01 FR-01 TC-04",
+    "status": "PASSED",
+    "detail": "200 calls, missing transcript: denies=0, injected blocks=0"
+  },
+  {
+    "id": "S2.2",
+    "obligation": "FR-05 NFR-02",
+    "status": "PASSED",
+    "detail": "missing transcript logs nothing to the runtime error log"
+  },
+  {
+    "id": "S3.1",
+    "obligation": "FR-04 FR-07 FR-03 NFR-04",
+    "status": "PASSED",
+    "detail": "block: [ContextBrake v2] turn=1 usage=151% tokens=194431/128000 source=measured zone=CRITICAL action=other tools are blocked; finish the RED actions"
+  },
+  {
+    "id": "S3.2",
+    "obligation": "FR-08 US-05 TC-07",
+    "status": "PASSED",
+    "detail": "block: [ContextBrake v2] turn=2 usage=60% tokens=76800/128000 source=measured zone=YELLOW action=keep working; finish the current unit before large new explorations"
+  },
+  {
+    "id": "S3.3",
+    "obligation": "FR-08 US-05",
+    "status": "PASSED",
+    "detail": "block: [ContextBrake v2] turn=3 usage=70% tokens=89600/128000 source=measured zone=RED action=finish or pause the current unit, record progress, end reply with [REQUEST_SESSION_RESET]"
+  },
+  {
+    "id": "S3.4",
+    "obligation": "FR-08 TC-07",
+    "status": "PASSED",
+    "detail": "block: [ContextBrake v2] turn=4 usage=70% tokens=89600/128000 source=measured zone=RED action=save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET]"
+  },
+  {
+    "id": "S3.5",
+    "obligation": "FR-01 TC-18",
+    "status": "PASSED",
+    "detail": "deny: deny"
+  },
+  {
+    "id": "S3.6",
+    "obligation": "FR-04 TC-14",
+    "status": "PASSED",
+    "detail": "sidechain line ignored; main-thread 80% still denies"
+  },
+  {
+    "id": "S3.7",
+    "obligation": "DEC-08 FR-04",
+    "status": "PASSED",
+    "detail": "subagent hook keeps the estimate"
+  },
+  {
+    "id": "S3.8",
+    "obligation": "FR-06 TC-11",
+    "status": "PASSED",
+    "detail": "after compact, the pre-compaction 80% reading is ignored (no deny)"
+  },
+  {
+    "id": "S3.9",
+    "obligation": "FR-06",
+    "status": "PASSED",
+    "detail": "first response after compaction is measured again"
+  },
+  {
+    "id": "S3.10",
+    "obligation": "NFR-02 TC-15",
+    "status": "PASSED",
+    "detail": "torn tail and invalid lines skipped without logging"
+  },
+  {
+    "id": "S3.11",
+    "obligation": "NFR-03",
+    "status": "PASSED",
+    "detail": "runtime state 2170 bytes, no transcript text; ledger measured lines=0"
+  },
+  {
+    "id": "S4.0",
+    "obligation": "TC-08",
+    "status": "PASSED",
+    "detail": "protocol shows turn conditions only up to RED"
+  },
+  {
+    "id": "S4.1",
+    "obligation": "FR-02 FR-03 TC-02 TC-05",
+    "status": "PASSED",
+    "detail": "turn6: [ContextBrake v2] turn=6/10 usage=12% tokens=15941/128000 so | turn10: [ContextBrake v2] turn=10/10 usage=12% tokens=16568/128000 s | denies=0"
+  }
+]

@@ -31,12 +31,15 @@ describe('configuration contract (RF15, RF16, UT-12)', () => {
     const invalid = { ...DEFAULT_CONFIG, extra: true, instructionFiles: { ...DEFAULT_CONFIG.instructionFiles, protocolFile: '/outside.md' } };
     expect(() => parseConfiguration(invalid)).toThrow(InvalidConfigurationError);
   });
-  it('rejects non-increasing turn limits (RF16)', () => {
-    const invalid = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, criticalTurn: 7 } } };
-    let captured: unknown;
-    try { parseConfiguration(invalid); } catch (error) { captured = error; }
-    expect(captured).toBeInstanceOf(InvalidConfigurationError);
-    expect((captured as InvalidConfigurationError).issues.some((issue) => issue.rule === 'must be less than criticalTurn')).toBe(true);
+  it('rejects non-increasing turn limits (FR-02, TC-03)', () => {
+    const invalid = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 10, yellowMaxTurn: 10 } } };
+    expect(configurationIssues(invalid)).toContainEqual({ path: 'telemetry.zones.greenMaxTurn', received: 10, rule: 'must be less than yellowMaxTurn' });
+  });
+  it('rejects a turn limit set without its pair (FR-02, TC-03)', () => {
+    const onlyGreen = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 59 } } };
+    const onlyYellow = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, yellowMaxTurn: 99 } } };
+    expect(configurationIssues(onlyGreen).map((issue) => [issue.path, issue.rule])).toContainEqual(['telemetry.zones.yellowMaxTurn', 'must be set together with greenMaxTurn']);
+    expect(configurationIssues(onlyYellow).map((issue) => [issue.path, issue.rule])).toContainEqual(['telemetry.zones.greenMaxTurn', 'must be set together with yellowMaxTurn']);
   });
 });
 
@@ -61,9 +64,12 @@ describe('brake configuration (RF11, RF18, CA-05, CA-23, TC-03)', () => {
     const config: ContextBrakeConfig = parseConfiguration(v1FileWithoutBrake());
     expect(config.brake.additionalAllowedCommands).toEqual([]);
   });
-  it('rejects a turn ceiling that differs from the critical turn (RF11, CA-23)', () => {
-    const invalid = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, turnCeiling: 11 } };
-    expect(configurationIssues(invalid)).toContainEqual({ path: 'telemetry.turnCeiling', received: 11, rule: 'must equal telemetry.zones.criticalTurn' });
+  it('accepts a PRD-02 legacy configuration with turn ceiling and critical turn (FR-09, TC-03)', () => {
+    const legacy = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, turnCeiling: 12, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 7, yellowMaxTurn: 10, criticalTurn: 12 } } };
+    expect(parseConfiguration(legacy).telemetry.turnCeiling).toBe(12);
+    const mismatched = { ...legacy, telemetry: { ...legacy.telemetry, turnCeiling: 11 } };
+    expect(configurationIssues(mismatched)).toEqual([]);
+    expect([DEFAULT_CONFIG.telemetry.turnCeiling, DEFAULT_CONFIG.telemetry.zones.greenMaxTurn, DEFAULT_CONFIG.telemetry.zones.criticalTurn]).toEqual([undefined, undefined, undefined]);
   });
   it('accepts trimmed commands without shell operators (RF18)', () => {
     const config = parseConfiguration(withAdditionalCommands(['npm run typecheck']));

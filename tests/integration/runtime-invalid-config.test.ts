@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { installBuiltHook, runInstalledHook } from '../helpers/built-hook.js';
-import { seedTurns, writeInvalidRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, writeInvalidRuntimeConfig } from '../helpers/runtime-seed.js';
 import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths.js';
 
 let root = '';
@@ -20,7 +20,7 @@ describe('T06 invalid configuration on the built Claude Code hook (TC-04, RF19)'
     const below = await runInstalledHook(hook, 'PreToolUse', { session_id: 'green', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } });
     expect(below.code).toBe(0);
     expect(below.stdout).toBe('');
-    await seedTurns(root, { harness: 'claude-code', sessionId: 'critical', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'claude-code', sessionId: 'critical', agentId: null });
     const above = await runInstalledHook(hook, 'PreToolUse', { session_id: 'critical', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } });
     expect(above.code).toBe(0);
     const reason = (JSON.parse(above.stdout) as { hookSpecificOutput: { permissionDecision: string; permissionDecisionReason: string } }).hookSpecificOutput;

@@ -21,7 +21,7 @@ describe('wrap inside a runner session (TC-16, RF16, CA-12, DEC-19)', () => {
     const ledger = await seedToolLine(projectRoot, 'claude-code', GREEN_LINE);
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
-    expect(output.stdout.join('')).toMatch(/^stdout:3\r?\n\n\[ContextBrake v1\] turn=2\/12 .* zone=GREEN .*\n$/s);
+    expect(output.stdout.join('')).toMatch(/^stdout:3\r?\n\n\[ContextBrake v2\] turn=2 .* zone=GREEN .*\n$/s);
     expect(output.stderr.join('')).toContain('stderr:line');
     expect(await ledger.readLines({ harness: 'claude-code', sessionId: SESSION_ID, agentId: null })).toHaveLength(1);
   });
@@ -32,14 +32,14 @@ describe('wrap inside a runner session (TC-16, RF16, CA-12, DEC-19)', () => {
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
     const lines = await new NodeSessionLedger(projectRoot, clock).readLines({ harness: 'opencode', sessionId: SESSION_ID, agentId: null });
     expect(lines.filter((line) => line.type === 'tool')).toHaveLength(1);
-    expect(output.stdout.join('')).toContain('[ContextBrake v1] turn=1/12');
+    expect(output.stdout.join('')).toContain('[ContextBrake v2] turn=1 ');
   });
 
   it('finds the run from a subdirectory of the project', async () => {
     await startRunnerSession(projectRoot, 'claude-code');
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot: await makeSubdirectory(projectRoot) })).toBe(3);
-    expect(output.stdout.join('')).toContain('[ContextBrake v1] turn=1/12');
+    expect(output.stdout.join('')).toContain('[ContextBrake v2] turn=1 ');
   });
 });
 
@@ -56,7 +56,7 @@ describe('wrap outside a runner session (TC-16, DEC-19)', () => {
     process.env['CONTEXT_BRAKE_RUN_ID'] = 'run-unknown';
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
-    expect(output.stdout.join('')).not.toContain('[ContextBrake v1]');
+    expect(output.stdout.join('')).not.toContain('[ContextBrake v2]');
   });
 
   it('keeps the exit code and warns when the telemetry cannot be computed', async () => {
@@ -65,7 +65,7 @@ describe('wrap outside a runner session (TC-16, DEC-19)', () => {
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
     expect(output.stderr.join('')).toContain('[WARN] context-brake wrap: session telemetry is unavailable');
-    expect(output.stdout.join('')).not.toContain('[ContextBrake v1]');
+    expect(output.stdout.join('')).not.toContain('[ContextBrake v2]');
   });
 });
 
@@ -80,11 +80,13 @@ describe('wrap when the run record cannot be read (DEC-19)', () => {
   });
 });
 
+const RED_CHARACTERS_PER_LINE = 29000;
+
 describe('wrap in delegated snapshot mode (TC-10, FR-12)', () => {
   it('shows the delegated snapshot action when the section is set and no plan exists (TC-10, FR-12)', async () => {
     await writeFile(join(projectRoot, 'context-brake.config.json'), JSON.stringify(delegatedConfig()), 'utf8');
     await startRunnerSession(projectRoot, 'claude-code');
-    for (let turn = 1; turn <= 10; turn += 1) await seedToolLine(projectRoot, 'claude-code', { ...GREEN_LINE, toolUseId: `toolu_${turn}`, turn });
+    for (let turn = 1; turn <= 10; turn += 1) await seedToolLine(projectRoot, 'claude-code', { ...GREEN_LINE, toolUseId: `toolu_${turn}`, turn, observedCharacters: RED_CHARACTERS_PER_LINE });
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
     expect(output.stdout.join('')).toContain('zone=RED action=run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]');

@@ -5,7 +5,7 @@ import type { RuntimeErrorLog } from '../../src/core/contracts/session-ledger.js
 import { resolveFailure } from '../../src/core/services/failure-policy.js';
 import { CountingPresence, DELEGATED_KEY, delegatedConfig, delegatedToolLine, FailingPresence, MemoryLedger, toolCall } from '../helpers/delegated-fixtures.js';
 
-const FAILURE_DENY = '[ContextBrake v1] BLOCKED tool=Read zone=CRITICAL last recorded zone=CRITICAL reason=integration_failure. Allowed: read or write tasks/**/context-snapshot.md, skill sdd-snapshot, git status, git add, git commit. Run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET].';
+const FAILURE_DENY = '[ContextBrake v2] BLOCKED tool=Read zone=CRITICAL last recorded zone=CRITICAL reason=integration_failure. Allowed: read or write tasks/**/context-snapshot.md, skill sdd-snapshot, git status, git add, git commit. Run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET].';
 const errors: RuntimeErrorLog = { append: async () => undefined };
 function failAt(tool: ToolCall, planPresence: PlanPresence) {
   return resolveFailure({ event: { kind: 'pre_tool', session: DELEGATED_KEY, tool }, code: 'UNEXPECTED', detail: 'UnexpectedError', config: delegatedConfig(), descriptor: null, ledger: new MemoryLedger([delegatedToolLine(12)]), errors, readValidationCommand: async () => 'npm test', planPresence });

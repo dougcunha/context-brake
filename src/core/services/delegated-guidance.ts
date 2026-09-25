@@ -5,7 +5,7 @@ import { renderBlockHeader, renderFailureBlockHeader } from './block-message.js'
 import { matchesAnyPathPattern } from './path-pattern.js';
 import { SESSION_RESET_SIGNAL } from './reset-notice.js';
 import { isAllowedShellCommand } from './shell-command-matcher.js';
-import { ZONE_ACTIONS } from './zone-actions.js';
+import { compactZoneAction } from './zone-actions.js';
 import type { DenyInput, ZoneGuidance } from '../contracts/checkpoint-mode.js';
 
 const COMMAND_PREFIX = '/';
@@ -20,7 +20,7 @@ export function delegatedGuidance(config: ContextBrakeConfig, section: Delegated
   const tail = `${allowedSummary(config, section, skills)} Run "${section.snapshotCommand}", then end reply with ${SESSION_RESET_SIGNAL}.`;
   return {
     mode: 'delegated',
-    actionFor: (zone) => (isAtOrAbove(zone, section.triggerZone) ? delegatedAction(section.snapshotCommand) : ZONE_ACTIONS[zone].compact),
+    actionFor: (zone) => (isAtOrAbove(zone, section.triggerZone) ? delegatedAction(section.snapshotCommand) : compactZoneAction(zone, false)),
     allows: (call) => Promise.resolve(isDelegatedCallAllowed(call, { config, section, skills })),
     denyMessage: (input: DenyInput) => `${renderBlockHeader({ ...input, config })} ${tail}`,
     failureMessage: (tool) => `${renderFailureBlockHeader(tool)} ${tail}`,

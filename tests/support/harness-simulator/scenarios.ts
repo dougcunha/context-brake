@@ -12,7 +12,8 @@ export type OutputKind = (typeof OUTPUT_KINDS)[number];
 export const BASELINE_TOKENS = 15000;
 export const TOKENS_PER_TURN = 150;
 export const SEEDED_TURNS = 11;
-export const RED_USAGE_TARGET = 0.7;
+export const NEAR_CRITICAL_USAGE_TARGET = 0.749;
+export const IN_PROCESS_SEED_USAGE_TARGET = 0.745;
 export const PLAN_FILE = 'task_plan.json';
 export const CHECKPOINT_FILE = 'state_checkpoint.json';
 export const WORK_FILE = 'src/feature.ts';
@@ -79,7 +80,7 @@ export function planContent(): string {
   return `${JSON.stringify({ schemaVersion: 1, taskId: 'task-1', title: 'Task 1', currentStepId: 1, steps: [step] }, null, 2)}\n`;
 }
 export function seedCharactersFor(window: SimulatedWindow): number {
-  const target = Math.floor(window * RED_USAGE_TARGET);
+  const target = Math.floor(window * NEAR_CRITICAL_USAGE_TARGET);
   return Math.floor((4 * (target - BASELINE_TOKENS - SEEDED_TURNS * TOKENS_PER_TURN)) / SEEDED_TURNS) * SEEDED_TURNS;
 }
 export async function seedRedSession(input: { readonly root: string; readonly harness: HarnessId; readonly window: SimulatedWindow; readonly sessionId: string }): Promise<void> {

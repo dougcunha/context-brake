@@ -8,6 +8,7 @@ export type SessionSummary = {
   readonly lastZone: Zone | null;
   readonly sessionLine: SessionLine | null;
   readonly toolUseIds: ReadonlySet<string>;
+  readonly lastResetAt: string | null;
 };
 
 export function nextTurn(summary: SessionSummary): number {
@@ -19,7 +20,8 @@ export function summarizeLedger(lines: readonly LedgerLine[]): SessionSummary {
   let turns = 0;
   let observedCharacters = 0;
   let lastReading: ToolLine | null = null;
-  for (const line of lines.slice(lastResetIndex(lines) + 1)) {
+  const resetIndex = lastResetIndex(lines);
+  for (const line of lines.slice(resetIndex + 1)) {
     if (line.type !== 'tool') continue;
     if (line.toolUseId !== null) {
       if (toolUseIds.has(line.toolUseId)) continue;
@@ -29,7 +31,8 @@ export function summarizeLedger(lines: readonly LedgerLine[]): SessionSummary {
     observedCharacters += line.observedCharacters;
     lastReading = line;
   }
-  return { turns, observedCharacters, lastReading, lastZone: lastReading?.zone ?? null, sessionLine, toolUseIds };
+  const lastResetAt = lines[resetIndex]?.at ?? null;
+  return { turns, observedCharacters, lastReading, lastZone: lastReading?.zone ?? null, sessionLine, toolUseIds, lastResetAt };
 }
 function lastResetIndex(lines: readonly LedgerLine[]): number {
   let index = -1;

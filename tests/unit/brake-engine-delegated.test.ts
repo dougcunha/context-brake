@@ -4,7 +4,7 @@ import type { ToolCall } from '../../src/core/contracts/runtime.js';
 import { createBrakeEngine } from '../../src/core/services/brake-engine.js';
 import { CountingPresence, DELEGATED_DESCRIPTOR, DELEGATED_KEY, delegatedConfig, MemoryBlocks, MemoryLedger, sessionAtTurn, toolCall } from '../helpers/delegated-fixtures.js';
 
-const DENY = '[ContextBrake v1] BLOCKED tool=Read zone=CRITICAL turn=12/12 usage=13% tokens=16800/128000 source=estimated reason=critical_ceiling. Allowed: read or write tasks/**/context-snapshot.md, skill sdd-snapshot, git status, git add, git commit. Run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET].';
+const DENY = '[ContextBrake v2] BLOCKED tool=Read zone=CRITICAL turn=12 usage=83% tokens=106800/128000 source=estimated reason=critical_ceiling. Allowed: read or write tasks/**/context-snapshot.md, skill sdd-snapshot, git status, git add, git commit. Run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET].';
 function critical(config: ContextBrakeConfig = delegatedConfig(), present = false) {
   const blocks = new MemoryBlocks();
   const engine = createBrakeEngine({ descriptor: DELEGATED_DESCRIPTOR, config, ledger: new MemoryLedger(sessionAtTurn(12)), blocks, readValidationCommand: async () => 'npm test', planPresence: new CountingPresence(present) });

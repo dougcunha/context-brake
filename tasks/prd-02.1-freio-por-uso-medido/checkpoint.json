@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "generation": 22,
+  "feature": "prd-02.1-freio-por-uso-medido",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "completed",
+  "status": "completed",
+  "safe_to_stop": true,
+  "owner_session": "bdc9931c-2075-4cdb-b3c2-c61fb222be2d",
+  "objective": "Revise PRD-02: CRITICAL only by context usage, optional turn limits off by default, measured usage in Claude Code from transcript usage with estimate fallback, plan-aware YELLOW/RED actions.",
+  "constraints": [
+    "Supersedes turn parts of PRD-02 RF10/RF11/RF17 and CA-03/CA-22/CA-23",
+    "Config stays schemaVersion 1; existing configs remain valid",
+    "No runtime dependencies added"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_01/codereview.md",
+    "qa": "qa_01/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "f9108261c17ac3325a15d90d5c08644607124ebd1d6ee9dd25d70a05ef8fb1b3",
+      "decision_id": "DEC-HIL-03"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "6f0d3134806d93b60dd0d6eb95a7facfa2d173fab4734710ac8dd1ec43665b84",
+      "decision_id": "DEC-HIL-04"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "8950b13cacfae560244378a17787d49284f7f0d5ebf94bbe3a14cb5e292798a4",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-07"
+  ],
+  "git_base": "3b94a9c0ead1432bc5476982803486a940cdcba0",
+  "worktree_evidence": "HEAD 5492604; T01-T05 uncommitted; 7 files flagged unmerged in index (content resolved); stash@{0} kept; see workflow.md EV-11..EV-18",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "close",
+    "instruction": "Feature accepted at HIL 3 (DEC-HIL-07). Nothing to resume; commit/push only on user request.",
+    "read": [
+      {
+        "path": "tasks/prd-02.1-freio-por-uso-medido/qa_01/qa.md",
+        "section": "Limitations and open items"
+      }
+    ]
+  }
+}

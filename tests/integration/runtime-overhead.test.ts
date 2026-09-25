@@ -1,11 +1,12 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { calculateNearestRankP95 } from '../../src/infrastructure/diagnostics/p95.js';
 import { sampleInProcess } from '../../src/infrastructure/diagnostics/in-process-sampler.js';
-import { seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { largeTranscript } from '../helpers/transcript-fixtures.js';
 
 const CLAUDE_ASSET = resolve('dist/assets/runtime/claude-code-hook.mjs');
 const PI_ASSET = resolve('dist/assets/runtime/pi-extension.js');
@@ -66,25 +67,34 @@ async function measureProcessPath(input: ProcessPathInput): Promise<void> {
   assertProcessP95(p95, baseline);
 }
 
-describe('runtime overhead targets (TC-22, CA-20, DEC-17)', () => {
-  let root: string;
-  beforeEach(async () => {
-    root = await mkdtemp(join(tmpdir(), 'cb-t08-overhead-'));
-    await writeRuntimeConfig(root);
-    const plan = { currentStepId: 1, steps: [{ id: 1, status: 'IN_PROGRESS', validationCommand: 'npm test' }] };
-    await writeFile(join(root, 'task_plan.json'), JSON.stringify(plan), 'utf8');
-  });
-  afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
+let root: string;
+beforeEach(async () => {
+  root = await mkdtemp(join(tmpdir(), 'cb-t08-overhead-'));
+  await writeRuntimeConfig(root);
+  const plan = { currentStepId: 1, steps: [{ id: 1, status: 'IN_PROGRESS', validationCommand: 'npm test' }] };
+  await writeFile(join(root, 'task_plan.json'), JSON.stringify(plan), 'utf8');
+});
+afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
+describe('runtime overhead targets (TC-22, CA-20, DEC-17)', () => {
   it('measures built post-tool path within overhead limit', async () => {
     const payload = { session_id: 'bench-post', tool_name: 'Write', tool_input: { file_path: 'src/a.ts' }, tool_response: 'ok' };
     await measureProcessPath({ label: 'post-tool', event: 'PostToolUse', payload, cwd: root });
   });
 
   it('measures critical pre-tool path with allowlist evaluation within overhead limit', async () => {
-    await seedTurns(root, { harness: 'claude-code', sessionId: 'bench-crit', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'claude-code', sessionId: 'bench-crit', agentId: null });
     const payload = { session_id: 'bench-crit', tool_name: 'Bash', tool_input: { command: 'npm test' } };
     await measureProcessPath({ label: 'pre-tool', event: 'PreToolUse', payload, cwd: root });
+  });
+
+  it('measures the post-tool path reading a 20 MB transcript at a path with spaces and accents (NFR-01, NFR-06, TC-16)', async () => {
+    const directory = join(root, 'transcrições com espaço');
+    await mkdir(directory, { recursive: true });
+    const transcript = join(directory, 'sessão atual.jsonl');
+    await writeFile(transcript, largeTranscript(), 'utf8');
+    const payload = { session_id: 'bench-transcript', transcript_path: transcript, tool_name: 'Read', tool_input: { file_path: 'src/a.ts' }, tool_response: 'ok' };
+    await measureProcessPath({ label: 'post-tool 20 MB transcript', event: 'PostToolUse', payload, cwd: root });
   });
 
   it('measures in-process tool_call handler within 15 ms limit', async () => {

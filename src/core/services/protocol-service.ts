@@ -2,6 +2,7 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
 import { renderDelegatedProtocol } from './delegated-protocol.js';
 import { zoneActionClause } from './zone-actions.js';
+import { turnLimits, type TurnLimits } from './zone-classifier.js';
 
 export type ProtocolZoneContext = Pick<ContextBrakeConfig, 'stateStorage' | 'brake'>;
 
@@ -10,10 +11,7 @@ function buildProtocolRow(condition: string, action: string): string {
 }
 function buildZoneRows(zones: ContextBrakeConfig['telemetry']['zones'], context: ProtocolZoneContext): string[] {
   const greenPct = zones.greenMaxPercentage + 1;
-  const yellowMinTurn = zones.greenMaxTurn + 1;
-  const redMinTurn = zones.yellowMaxTurn + 1;
-  const criticalPct = zones.criticalPercentage;
-  const criticalTurn = zones.criticalTurn;
+  const turns = turnClauses(turnLimits(zones));
   const files = {
     planFile: context.stateStorage.planFile,
     checkpointFile: context.stateStorage.checkpointFile,
@@ -21,11 +19,16 @@ function buildZoneRows(zones: ContextBrakeConfig['telemetry']['zones'], context:
     instructCheckpointCommit: context.stateStorage.instructCheckpointCommit,
   };
   return [
-    buildProtocolRow(`\`GREEN\` | Usage below ${greenPct}% and at most ${zones.greenMaxTurn} turns`, zoneActionClause('GREEN', files)),
-    buildProtocolRow(`\`YELLOW\` | Usage from ${greenPct}% to ${zones.yellowMaxPercentage}%, or ${yellowMinTurn} to ${zones.yellowMaxTurn} turns`, zoneActionClause('YELLOW', files)),
-    buildProtocolRow(`\`RED\` | Usage above ${zones.yellowMaxPercentage}%, or ${redMinTurn} turns or more`, zoneActionClause('RED', files)),
-    buildProtocolRow(`\`CRITICAL\` | Usage at ${criticalPct}% or more, or ${criticalTurn} turns or more`, zoneActionClause('CRITICAL', files)),
+    buildProtocolRow(`\`GREEN\` | Usage below ${greenPct}%${turns.green}`, zoneActionClause('GREEN', files)),
+    buildProtocolRow(`\`YELLOW\` | Usage from ${greenPct}% to ${zones.yellowMaxPercentage}%${turns.yellow}`, zoneActionClause('YELLOW', files)),
+    buildProtocolRow(`\`RED\` | Usage above ${zones.yellowMaxPercentage}%${turns.red}`, zoneActionClause('RED', files)),
+    buildProtocolRow(`\`CRITICAL\` | Usage at ${zones.criticalPercentage}% or more`, zoneActionClause('CRITICAL', files)),
   ];
+}
+type TurnClauses = { readonly green: string; readonly yellow: string; readonly red: string };
+function turnClauses(limits: TurnLimits | null): TurnClauses {
+  if (limits === null) return { green: '', yellow: '', red: '' };
+  return { green: ` and at most ${limits.greenMaxTurn} turns`, yellow: `, or ${limits.greenMaxTurn + 1} to ${limits.yellowMaxTurn} turns`, red: `, or ${limits.yellowMaxTurn + 1} turns or more` };
 }
 export function renderProtocol(config: ContextBrakeConfig): string {
   const { planFile, checkpointFile } = config.stateStorage;
@@ -34,7 +37,8 @@ export function renderProtocol(config: ContextBrakeConfig): string {
     '# ContextBrake Protocol', '',
     `Applies while this repository has a \`${planFile}\` or tool results include a ContextBrake telemetry block. The limits below are defaults; \`context-brake.config.json\` overrides them.`, '',
     '## Telemetry', '',
-    'A telemetry block reports the session turn and turn ceiling, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call.', '',
+    'A telemetry block reports the session turn, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call. When turn limits are configured, the turn also shows where `RED` starts. Turns never block tool calls; only context usage reaches `CRITICAL`.', '',
+    `In \`YELLOW\` and \`RED\`, the action depends on whether \`${planFile}\` exists. Without it, keep doing the requested work; never stop only because no plan exists.`, '',
     '## Zones', '', 'When several conditions match, the highest zone applies.', '',
     '| Zone | Default condition | What to do |', '| --- | --- | --- |', ...rows, '',
     '## Checkpoint', '',

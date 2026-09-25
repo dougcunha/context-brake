@@ -88,10 +88,7 @@
           "required": [
             "greenMaxPercentage",
             "yellowMaxPercentage",
-            "criticalPercentage",
-            "greenMaxTurn",
-            "yellowMaxTurn",
-            "criticalTurn"
+            "criticalPercentage"
           ],
           "additionalProperties": false
         }
@@ -100,7 +97,6 @@
         "injectionMode",
         "activationThresholdPercentage",
         "contextWindowCeiling",
-        "turnCeiling",
         "zones"
       ],
       "additionalProperties": false

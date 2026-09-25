@@ -10,8 +10,8 @@ function sessionLine(): SessionLine {
 function toolLine(overrides: Partial<ToolLine> = {}): ToolLine {
   return { v: 1, type: 'tool', at: AT, toolUseId: 'toolu_1', observedCharacters: 100, turn: 1, usedTokens: 15100, windowTokens: 128000, estimatedTokens: 15100, source: 'estimated', zone: 'GREEN', ...overrides };
 }
-function resetLine(reason: ResetLine['reason'] = 'new'): ResetLine {
-  return { v: 1, type: 'reset', at: AT, reason };
+function resetLine(reason: ResetLine['reason'] = 'new', at = AT): ResetLine {
+  return { v: 1, type: 'reset', at, reason };
 }
 
 describe('session counters (RF1, RF2, RF3, CA-06, CA-07, TC-09)', () => {
@@ -56,5 +56,15 @@ describe('session counter resets and deduplication (RF1, RF3, CA-06, CA-07)', ()
     const summary = summarizeLedger([sessionLine(), resetLine('clear')]);
     expect(summary.turns).toBe(0);
     expect(summary.sessionLine?.brakeMode).toBe('enforced');
+  });
+});
+
+describe('session counter last reset time (FR-06, DEC-09, TC-12)', () => {
+  it('has no reset time without a reset line', () => {
+    expect(summarizeLedger([sessionLine(), toolLine()]).lastResetAt).toBeNull();
+  });
+  it('reports the time of the last of two reset lines', () => {
+    const lines: LedgerLine[] = [sessionLine(), resetLine('compact', '2026-09-15T10:01:00.000Z'), toolLine(), resetLine('clear', '2026-09-15T10:02:00.000Z'), toolLine({ toolUseId: 'toolu_2' })];
+    expect(summarizeLedger(lines).lastResetAt).toBe('2026-09-15T10:02:00.000Z');
   });
 });

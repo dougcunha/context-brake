@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { installBuiltHook, runInstalledHook } from '../helpers/built-hook.js';
-import { seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 let root = '';
 let hook = '';
@@ -18,7 +18,7 @@ describe('Antigravity CLI built hook follows the documented response shape (DEC-
   it('answers PreToolUse with the required decision and denies above the ceiling', async () => {
     const allowed = await runInstalledHook(hook, 'PreToolUse', { conversationId: 'c1', toolCall: { name: 'run_command', args: { CommandLine: 'ls' } } });
     expect(JSON.parse(allowed.stdout)).toEqual({ decision: 'allow' });
-    await seedTurns(root, { harness: 'antigravity-cli', sessionId: 'critical', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'antigravity-cli', sessionId: 'critical', agentId: null });
     const denied = await runInstalledHook(hook, 'PreToolUse', { conversationId: 'critical', toolCall: { name: 'run_command', args: { CommandLine: 'rm -rf x' } } });
     const shape = JSON.parse(denied.stdout) as { decision: string; reason: string };
     expect(shape.decision).toBe('deny');
@@ -35,7 +35,7 @@ describe('Antigravity CLI counts turns and injects through PreInvocation (DEC-13
     expect(last.stdout).toBe('{}');
     const invocation = await runInstalledHook(hook, 'PreInvocation', { conversationId: 'agy', invocationNum: 2 });
     const injected = JSON.parse(invocation.stdout) as { injectSteps: { ephemeralMessage: string }[] };
-    expect(injected.injectSteps[0]?.ephemeralMessage).toContain('turn=4/12');
+    expect(injected.injectSteps[0]?.ephemeralMessage).toContain('turn=4 ');
   });
 
   it('answers PreInvocation with an empty injectSteps list while green', async () => {

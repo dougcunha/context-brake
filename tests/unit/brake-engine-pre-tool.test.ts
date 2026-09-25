@@ -5,11 +5,13 @@ import type { BlockLog, BlockRecordInput, LedgerLine, ResetReason, SessionLedger
 import { createBrakeEngine } from '../../src/core/services/brake-engine.js';
 
 const AT = '2026-09-15T12:00:00.000Z';
+const CRITICAL_CHARACTERS_PER_TURN = 30000;
+const LONG_SESSION_CALLS = 200;
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
 const CHECKPOINT_WRITE: ToolCall = { name: 'Write', category: 'file_write', paths: ['state_checkpoint.json'], command: null };
 const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'pre_tool_block', state: 'supported' }, { id: 'tool_coverage', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
-const DENY = '[ContextBrake v1] BLOCKED tool=Read zone=CRITICAL turn=12/12 usage=13% tokens=16800/128000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
+const DENY = '[ContextBrake v2] BLOCKED tool=Read zone=CRITICAL turn=12 usage=83% tokens=106800/128000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
 
 function toolLine(observedCharacters: number, turn: number, toolUseId: string | null = `toolu_${turn}`): ToolLine {
   return { v: 1, type: 'tool', at: AT, toolUseId, observedCharacters, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: 'GREEN' };
@@ -33,11 +35,11 @@ class TestBlocks implements BlockLog {
 function setup(lines: LedgerLine[] = [], config: ContextBrakeConfig = DEFAULT_CONFIG) {
   const ledger = new TestLedger(lines);
   const blocks = new TestBlocks();
-  const engine = createBrakeEngine({ descriptor: DESCRIPTOR, config, ledger, blocks, readValidationCommand: async () => 'npm test' });
+  const engine = createBrakeEngine({ descriptor: DESCRIPTOR, config, ledger, blocks, readValidationCommand: async () => 'npm test', planPresence: { exists: async () => true } });
   return { ledger, blocks, engine };
 }
 function criticalSession(): LedgerLine[] {
-  return Array.from({ length: 12 }, (_, index) => toolLine(0, index + 1));
+  return Array.from({ length: 12 }, (_, index) => toolLine(CRITICAL_CHARACTERS_PER_TURN, index + 1));
 }
 
 describe('brake engine pre-tool deny (RF17, CA-14, TC-15)', () => {
@@ -45,7 +47,7 @@ describe('brake engine pre-tool deny (RF17, CA-14, TC-15)', () => {
     const { ledger, blocks, engine } = setup(criticalSession());
     const decision = await engine.handle({ kind: 'pre_tool', session: KEY, tool: READ });
     expect(decision).toEqual({ kind: 'deny', tool: 'Read', reason: 'critical_ceiling', message: DENY });
-    expect(blocks.records).toEqual([{ tool: 'Read', zone: 'CRITICAL', turn: 12, percentage: 13, source: 'estimated', reason: 'critical_ceiling' }]);
+    expect(blocks.records).toEqual([{ tool: 'Read', zone: 'CRITICAL', turn: 12, percentage: 83, source: 'estimated', reason: 'critical_ceiling' }]);
     expect(ledger.lines).toHaveLength(12);
   });
   it('stays neutral below the ceiling without writing anything', async () => {
@@ -79,5 +81,18 @@ describe('brake engine allowlist at the ceiling (RF18, CA-15, TC-16)', () => {
   it('denies unknown tools at the ceiling', async () => {
     const { engine } = setup(criticalSession());
     expect(await engine.handle({ kind: 'pre_tool', session: KEY, tool: { name: 'WebSearch', category: 'other', paths: [], command: null } })).toMatchObject({ kind: 'deny' });
+  });
+});
+
+describe('tool-call count alone never blocks (FR-01, OBJ-01, TC-04)', () => {
+  it('runs 200 pre-tool and post-tool events at low usage without a deny or an injected block', async () => {
+    const { blocks, engine } = setup();
+    const decisions = [];
+    for (let turn = 1; turn <= LONG_SESSION_CALLS; turn += 1) {
+      decisions.push(await engine.handle({ kind: 'pre_tool', session: KEY, tool: READ }));
+      decisions.push(await engine.handle({ kind: 'post_tool', session: KEY, tool: READ, toolUseId: `toolu_${turn}` }, { observedCharacters: 100 }));
+    }
+    expect(decisions.every((decision) => decision.kind === 'neutral')).toBe(true);
+    expect(blocks.records).toEqual([]);
   });
 });

@@ -9,8 +9,8 @@ const STATES: Readonly<Record<string, 'supported' | 'unsupported' | 'unknown'>> 
 const VERSION: VersionProbe = { status: 'resolved', display: '1.0.0', normalized: '1.0.0', source: 'executable', minimumVersion: '1.0.0' };
 
 const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
-  'claude-code': { level: 'full', states: 'SSSSUU', limitations: [
-    ['context_usage', 'Context usage reaches the Claude Code status line, not hooks, so ContextBrake estimates it.'],
+  'claude-code': { level: 'full', states: 'SSSS?U', limitations: [
+    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate.'],
     ['timeout_fail_closed', 'A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.'],
   ] },
   'codex-cli': { level: 'partial', states: 'SUSSUU', limitations: [

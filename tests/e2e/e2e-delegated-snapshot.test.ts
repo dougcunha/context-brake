@@ -10,6 +10,7 @@ const SESSION = 'delegated-e2e';
 const E2E_TIMEOUT_MS = 120000;
 const ACTION = 'action=run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]';
 const PLAN_WORDS = /task_plan|state_checkpoint/;
+const RESPONSE_CHARACTERS = 27400;
 let root: string;
 beforeEach(async () => {
   root = await realpath(await mkdtemp(join(tmpdir(), 'cb-e2e-delegated-')));
@@ -24,7 +25,7 @@ function hook(event: string, payload: Record<string, unknown>): Promise<BuiltHoo
   return runInstalledHookWithEnvironment({ hookPath: installedHookPath('claude-code', root), event, payload: { session_id: SESSION, hook_event_name: event, ...payload }, environment });
 }
 async function postTool(turn: number): Promise<string> {
-  const result = await hook('PostToolUse', { tool_name: 'Read', tool_input: { file_path: join(root, 'CLAUDE.md') }, tool_response: {}, tool_use_id: `toolu_${turn}` });
+  const result = await hook('PostToolUse', { tool_name: 'Read', tool_input: { file_path: join(root, 'CLAUDE.md') }, tool_response: 'x'.repeat(RESPONSE_CHARACTERS), tool_use_id: `toolu_${turn}` });
   return hookOutput(result.stdout).additionalContext ?? '';
 }
 async function preTool(toolName: string, toolInput: Record<string, unknown>): Promise<string> {

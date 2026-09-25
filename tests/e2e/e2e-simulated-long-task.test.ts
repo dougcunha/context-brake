@@ -12,7 +12,7 @@ import { PROFILE_CATALOG, sessionSteps, stateToolHarness, type AgentProfile, typ
 import { IN_PROCESS_HARNESSES, createInProcessSession, type InProcessHarnessId } from '../support/harness-simulator/in-process-driver.js';
 import { createProcessSession, installHarness, type ProcessHarnessId } from '../support/harness-simulator/process-driver.js';
 import { SessionRecorder, initializeRepository, lastCommitSubject, readLedgerLines, runScript, type CallOutcome, type SessionChannel } from '../support/harness-simulator/session-recorder.js';
-import { CHECKPOINT_FILE, PLAN_FILE, SIMULATED_WINDOWS, checkpointContent, planContent, seedCharactersFor, seedRedSession, type SimulatedWindow } from '../support/harness-simulator/scenarios.js';
+import { CHECKPOINT_FILE, IN_PROCESS_SEED_USAGE_TARGET, PLAN_FILE, SIMULATED_WINDOWS, checkpointContent, planContent, seedCharactersFor, seedRedSession, type SimulatedWindow } from '../support/harness-simulator/scenarios.js';
 
 const SESSION_COUNT = 20;
 const SESSION_TIMEOUT_MS = 600000;
@@ -40,7 +40,7 @@ async function createRoot(window: SimulatedWindow): Promise<string> {
   return root;
 }
 async function prepareChannel(input: { readonly harness: ProcessHarnessId | InProcessHarnessId; readonly root: string; readonly sessionId: string; readonly window: SimulatedWindow }): Promise<SessionChannel> {
-  if (isInProcess(input.harness)) return await createInProcessSession({ root: input.root, harness: input.harness, sessionId: input.sessionId, window: input.window, kind: 'code', seedCharacters: seedCharactersFor(input.window) });
+  if (isInProcess(input.harness)) return await createInProcessSession({ root: input.root, harness: input.harness, sessionId: input.sessionId, window: input.window, kind: 'code', seedCharacters: seedCharactersFor(input.window) * 2, seedTokens: Math.floor(input.window * IN_PROCESS_SEED_USAGE_TARGET) });
   await installHarness(input.root, input.harness);
   await runGit(['add', '-A'], input.root);
   await runGit(['commit', '-m', 'install context-brake'], input.root);

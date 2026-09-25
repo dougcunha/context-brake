@@ -29,7 +29,7 @@ describe('in-process host decisions (TC-32, DEC-16)', () => {
 
   it('returns the engine decision without writing to stdout', async () => {
     const ledger = new NodeSessionLedger(root, clock);
-    for (let turn = 1; turn <= 12; turn += 1) await ledger.appendToolLine(KEY, toolInput(turn));
+    for (let turn = 1; turn <= 12; turn += 1) await ledger.appendToolLine(KEY, { ...toolInput(turn), observedCharacters: 30000 });
     const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
     const decision = await runtime.handle({ kind: 'pre_tool', session: KEY, tool: READ });
     expect(decision).toMatchObject({ kind: 'deny', reason: 'critical_ceiling' });

@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { DEFAULT_CONFIG, type ContextBrakeConfig, type HarnessId } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange } from '../contracts/changes.js';
 import { applyDelegatedSnapshot, type DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
+import { normalizeTurnLimits } from './config-legacy-checks.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
 
 const KEEP: DelegatedSnapshotUpdate = { kind: 'keep' };
@@ -26,7 +27,7 @@ export function planConfigChange(
   const snap = typeof rootOrInput === 'string' ? null : rootOrInput.snapshot;
   const merged = Array.from(new Set([...(curr?.activeHarnesses ?? []), ...act])).sort();
   const update = typeof rootOrInput === 'string' ? KEEP : rootOrInput.delegatedSnapshot ?? KEEP;
-  const config: ContextBrakeConfig = applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update);
+  const config: ContextBrakeConfig = applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update);
   const content = `${JSON.stringify(config, null, 2)}\n`;
   const defaultPath = resolve(root, 'context-brake.config.json').replace(/\\/g, '/');
   const realPath = (snap?.realPath ?? defaultPath).replace(/\\/g, '/');

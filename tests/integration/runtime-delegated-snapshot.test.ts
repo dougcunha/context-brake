@@ -7,7 +7,7 @@ import { claudeDescriptor, mapClaudeEvent } from '../../src/infrastructure/harne
 import { composeRuntime, loadRuntimeConfiguration } from '../../src/infrastructure/runtime/runtime-composition.js';
 import { normalizeEventToolPaths } from '../../src/infrastructure/runtime/tool-path-normalizer.js';
 import { delegatedConfig } from '../helpers/delegated-fixtures.js';
-import { fixedClock, seedTurns } from '../helpers/runtime-seed.js';
+import { fixedClock, seedCriticalSession } from '../helpers/runtime-seed.js';
 
 const SKILL_FIXTURE = resolve('tests/fixtures/harnesses/claude-code/pre-tool-use-skill.json');
 const SESSION = 'session-claude-1';
@@ -34,7 +34,7 @@ function preTool(toolName: string, toolInput: Record<string, unknown>): unknown 
 const KEY = { harness: 'claude-code', sessionId: SESSION, agentId: null } as const;
 
 describe('delegated mode through the Claude Code runtime (TC-09, FR-06, DEC-07)', () => {
-  beforeEach(async () => { await seedTurns(projectRoot, KEY, 12); });
+  beforeEach(async () => { await seedCriticalSession(projectRoot, KEY); });
   it('allows the configured Skill call from the documented payload at the ceiling', async () => {
     const payload = JSON.parse(await readFile(SKILL_FIXTURE, 'utf8')) as unknown;
     expect(await dispatch('PreToolUse', payload)).toEqual({ kind: 'neutral' });
@@ -54,7 +54,7 @@ describe('delegated mode through the Claude Code runtime (TC-09, FR-06, DEC-07)'
 });
 
 describe('mode follows the plan file between events (TC-10, FR-01)', () => {
-  beforeEach(async () => { await seedTurns(projectRoot, KEY, 10); });
+  beforeEach(async () => { await seedCriticalSession(projectRoot, KEY); });
   it('switches from the delegated action to the plan action once the plan exists', async () => {
     const delegated = await dispatch('PostToolUse', postTool(11));
     expect(delegated).toEqual({ kind: 'context', block: expect.stringContaining('action=run "/sdd-snapshot"') });

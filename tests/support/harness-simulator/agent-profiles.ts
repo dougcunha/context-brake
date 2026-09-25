@@ -73,9 +73,6 @@ const PROFILE_STEPS: Record<AgentProfile, () => readonly SessionStep[]> = {
 export function workStep(call: SimulatedCall): SessionStep {
   return step('work', 'execute', call);
 }
-export function brakeWorkFlow(): readonly SessionStep[] {
-  return [...usageSteps({ kind: 'code', turns: 11, characters: 700 }), workStep(writeCall('work-write', WORK_FILE, 'export const feature = 1;\n')), workStep(readCall('work-12', 'src/app.ts'))];
-}
 export function deniedRead(id: string, path: string): SessionStep { return step('critical', 'deny', readCall(id, path)); }
 export function operatorTrap(id: string): SessionStep { return step('critical', 'deny', shellCall(id, 'git status && rm -rf src', ['status'])); }
 export function bootAdherenceSteps(): readonly SessionStep[] {
@@ -91,3 +88,7 @@ export function stateToolHarness(harness: string): boolean {
   return harness !== 'cursor' && harness !== 'codex-cli';
 }
 
+export function brakeWorkFlow(largeReadCharacters: number): readonly SessionStep[] {
+  const largeRead = { kind: 'code', characters: largeReadCharacters } as const;
+  return [...usageSteps({ ...largeRead, turns: 8 }), workStep(writeCall('work-write', WORK_FILE, 'export const feature = 1;\n')), workStep({ id: 'work-9', tool: 'read', path: 'src/app.ts', content: '', output: largeRead })];
+}

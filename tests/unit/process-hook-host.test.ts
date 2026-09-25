@@ -64,7 +64,7 @@ describe('process hook host responses (CMP-17, TC-15)', () => {
   });
 });
 
-describe('process hook host failure policy (DEC-09, TC-17)', () => {
+describe('process hook host failure policy and input (DEC-09, DEC-11, TC-17)', () => {
   let root: string;
   beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-t04-fail-')); });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
@@ -85,6 +85,13 @@ describe('process hook host failure policy (DEC-09, TC-17)', () => {
     expect(JSON.parse(stdout[0] ?? '{}')).toEqual({ kind: 'neutral' });
     expect(stderr[0]).toContain('DEADLINE_EXCEEDED');
     expect(await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8')).toContain('"code":"DEADLINE_EXCEEDED"');
+  });
+  it('awaits an asynchronous input mapper that receives the runtime error log (DEC-11)', async () => {
+    const { stdout, context } = capture(['node', 'hook', 'PreToolUse']);
+    const measuring = adapter(root, { mapInput: async (_event, _payload, errors) => { await errors.append('claude-code', { event: 'PreToolUse', code: 'UNEXPECTED', detail: 'probe' }); return { measured: { tokens: 120000, contextWindow: null } }; } });
+    expect(await runProcessHook(measuring, context)).toBe(0);
+    expect(JSON.parse(stdout[0] ?? '{}')).toMatchObject({ kind: 'deny', reason: 'critical_ceiling' });
+    expect(await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8')).toContain('"detail":"probe"');
   });
 });
 

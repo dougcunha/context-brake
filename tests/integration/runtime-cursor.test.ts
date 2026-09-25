@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { installBuiltHook, runInstalledHook } from '../helpers/built-hook.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
-import { seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedCriticalSession, seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 let root = '';
 let hook = '';
@@ -23,7 +23,7 @@ describe('Cursor built hook with documented payloads (CA-15, TC-18)', () => {
   });
 
   it('denies a non-allowlisted shell call above the ceiling and allows git status', async () => {
-    await seedTurns(root, { harness: 'cursor', sessionId: 'critical', agentId: null }, 12);
+    await seedCriticalSession(root, { harness: 'cursor', sessionId: 'critical', agentId: null });
     const denied = await runInstalledHook(hook, 'preToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'rm -rf x' } });
     const shape = JSON.parse(denied.stdout) as { permission: string; agent_message: string; user_message: string };
     expect(shape.permission).toBe('deny');
@@ -40,10 +40,10 @@ describe('Cursor built hook injects telemetry and resets (DEC-13)', () => {
     for (let call = 1; call <= 4; call += 1) {
       last = await runInstalledHook(hook, 'postToolUse', { conversation_id: 'c2', tool_use_id: `x${call}` });
     }
-    expect((JSON.parse(last.stdout) as { additional_context: string }).additional_context).toContain('turn=4/12');
+    expect((JSON.parse(last.stdout) as { additional_context: string }).additional_context).toContain('turn=4 ');
     await seedTurns(root, { harness: 'cursor', sessionId: 'cursor-conv-1', agentId: null }, 9);
     await runInstalledHook(hook, 'preCompact', await loadHarnessPayload('cursor', 'pre-compact.json'));
     const after = await runInstalledHook(hook, 'postToolUse', { conversation_id: 'cursor-conv-1', tool_use_id: 'next' });
-    expect(after.stdout).toContain('turn=1/12');
+    expect(after.stdout).toContain('turn=1 ');
   });
 });

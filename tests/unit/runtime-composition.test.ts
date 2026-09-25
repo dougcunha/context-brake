@@ -28,7 +28,7 @@ describe('runtime configuration loading (CMP-17)', () => {
   it('rejects invalid syntax and invalid values with the configuration error', async () => {
     await writeFile(join(root, 'context-brake.config.json'), 'not json', 'utf8');
     await expect(loadRuntimeConfiguration(root)).rejects.toBeInstanceOf(InvalidConfigurationError);
-    const mismatched = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, turnCeiling: 11 } };
+    const mismatched = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 11 } } };
     await writeFile(join(root, 'context-brake.config.json'), JSON.stringify(mismatched), 'utf8');
     await expect(loadRuntimeConfiguration(root)).rejects.toBeInstanceOf(InvalidConfigurationError);
   });

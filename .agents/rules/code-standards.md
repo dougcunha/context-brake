@@ -67,8 +67,8 @@ Avoid functions with more than three parameters. Group values that belong to one
 Avoid:
 
 ```ts
-function formatTelemetry(turn: number, turnCeiling: number, usagePercentage: number, zone: Zone): string {
-  return renderTelemetryBlock({ turn, turnCeiling, usagePercentage, zone });
+function formatTelemetry(turn: number, redStartTurn: number, usagePercentage: number, zone: Zone): string {
+  return renderTelemetryBlock({ turn, redStartTurn, usagePercentage, zone });
 }
 ```
 
@@ -77,7 +77,7 @@ Prefer:
 ```ts
 type TelemetrySnapshot = {
   turn: number;
-  turnCeiling: number;
+  redStartTurn: number;
   usagePercentage: number;
   zone: Zone;
 };
@@ -93,12 +93,12 @@ Do not leave blank lines inside methods and functions; extract functions instead
 
 ## Name Magic Numbers and Strings
 
-Give business values a name. Zone limits and turn ceilings come from configuration defaults defined once; exit codes, marker strings, file names, and schema versions are named constants.
+Give business values a name. Zone and turn limits come from configuration defaults defined once; exit codes, marker strings, file names, and schema versions are named constants.
 
 Avoid:
 
 ```ts
-if (usage.percentage >= 75 || usage.turns >= 12) {
+if (usage.percentage >= 75) {
   return 'CRITICAL';
 }
 ```
@@ -106,7 +106,7 @@ if (usage.percentage >= 75 || usage.turns >= 12) {
 Prefer:
 
 ```ts
-if (usage.percentage >= zones.criticalPercentage || usage.turns >= zones.criticalTurn) {
+if (usage.percentage >= zones.criticalPercentage) {
   return 'CRITICAL';
 }
 ```

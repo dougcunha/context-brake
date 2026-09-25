@@ -3,14 +3,16 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { HarnessId } from '../contracts/harness.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } from '../contracts/runtime.js';
 import type { BlockLog, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
+import type { Zone } from '../contracts/zones.js';
 import type { BootDecision } from './boot-policy.js';
 import { deriveBrakeMode } from './brake-mode.js';
 import { LedgerUnreadableError } from './failure-policy.js';
 import { decideInjection } from './injection-policy.js';
 import { hasResetSignal, renderResetNotice } from './reset-notice.js';
 import { nextTurn, summarizeLedger, type SessionSummary } from './session-counters.js';
-import { readZone, type MeasuredUsage } from './session-zone.js';
+import { readZone, type MeasuredUsage, type ZoneReading } from './session-zone.js';
 import { renderTelemetryBlock } from './telemetry-block.js';
+import { redStartTurn } from './zone-classifier.js';
 import { resolveGuidance } from './zone-guidance.js';
 
 export type ValidationCommandReader = () => Promise<string | null>;
@@ -46,19 +48,20 @@ async function handlePostTool(options: BrakeEngineOptions, event: RuntimeEvent &
   if (event.toolUseId !== null && summary.toolUseIds.has(event.toolUseId)) return NEUTRAL;
   const observedCharacters = input.observedCharacters ?? 0;
   const turn = nextTurn(summary);
-  const { reading, estimate, percentage, zone } = readZone(options, { summary, turns: turn, observedCharacters, measured: input.measured });
+  const view = readZone(options, { summary, turns: turn, observedCharacters, measured: input.measured });
+  const { reading, zone } = view;
   await ensureSessionLine(options, event.session, summary);
-  await options.ledger.appendToolLine(event.session, { toolUseId: event.toolUseId, observedCharacters, turn, usedTokens: reading.usedTokens ?? 0, windowTokens: reading.windowTokens, estimatedTokens: estimate, source: reading.source, zone });
-  if (!decideInjection({ telemetry: options.config.telemetry, zone, usagePercentage: percentage })) return NEUTRAL;
-  const action = (await readGuidance(options)).actionFor(zone);
-  return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: options.config.telemetry.turnCeiling, usagePercentage: percentage, usage: reading, zone, action }) };
+  await options.ledger.appendToolLine(event.session, { toolUseId: event.toolUseId, observedCharacters, turn, usedTokens: reading.usedTokens ?? 0, windowTokens: reading.windowTokens, estimatedTokens: view.estimate, source: reading.source, zone });
+  return telemetryDecision(options, turn, view);
 }
 async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'pre_invocation' }, input: RuntimeInput): Promise<RuntimeDecision> {
   const summary = await readSummary(options.ledger, event.session);
-  const { reading, percentage, zone } = readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input.measured });
-  if (!decideInjection({ telemetry: options.config.telemetry, zone, usagePercentage: percentage })) return NEUTRAL;
-  const action = (await readGuidance(options)).actionFor(zone);
-  return { kind: 'context', block: renderTelemetryBlock({ turn: summary.turns, turnCeiling: options.config.telemetry.turnCeiling, usagePercentage: percentage, usage: reading, zone, action }) };
+  return telemetryDecision(options, summary.turns, readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input.measured }));
+}
+async function telemetryDecision(options: BrakeEngineOptions, turn: number, view: ZoneReading): Promise<RuntimeDecision> {
+  if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage })) return NEUTRAL;
+  const action = (await readGuidance(options, view.zone)).actionFor(view.zone);
+  return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action }) };
 }
 async function handleSessionReset(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'session_reset' }): Promise<RuntimeDecision> {
   await options.ledger.appendResetLine(event.session, event.reason);
@@ -85,8 +88,8 @@ async function ensureSessionLine(options: BrakeEngineOptions, session: SessionKe
   const brake = deriveBrakeMode(options.descriptor.capabilities);
   await options.ledger.appendSessionLine(session, { brakeMode: brake.mode, brakeReason: brake.reason });
 }
-function readGuidance(options: BrakeEngineOptions): Promise<ZoneGuidance> {
-  return resolveGuidance({ config: options.config, planPresence: options.planPresence, readValidationCommand: options.readValidationCommand });
+function readGuidance(options: BrakeEngineOptions, zone?: Zone): Promise<ZoneGuidance> {
+  return resolveGuidance({ config: options.config, planPresence: options.planPresence, readValidationCommand: options.readValidationCommand, zone });
 }
 async function readSummary(ledger: SessionLedger, session: SessionKey): Promise<SessionSummary> {
   try { return summarizeLedger(await ledger.readLines(session)); } catch (error) { throw new LedgerUnreadableError({ cause: error }); }

@@ -1,10 +1,11 @@
 import { dirname } from 'node:path';
 import type { ActiveSession } from '../../core/contracts/run-records.js';
 import type { SessionKey, ToolCall } from '../../core/contracts/runtime.js';
+import type { Zone } from '../../core/contracts/zones.js';
 import type { Clock, SessionLedger } from '../../core/contracts/session-ledger.js';
 import { nextTurn, summarizeLedger } from '../../core/services/session-counters.js';
 import type { ZoneGuidance } from '../../core/contracts/checkpoint-mode.js';
-import { renderSessionTelemetry, type ZoneSettings } from '../../core/services/session-zone.js';
+import { readZone, renderSessionTelemetry, type ZoneSettings } from '../../core/services/session-zone.js';
 import { resolveGuidance } from '../../core/services/zone-guidance.js';
 import { composeRuntime, loadRuntimeConfiguration, systemClock } from '../runtime/runtime-composition.js';
 import { readRunRecord } from './node-run-store.js';
@@ -31,14 +32,15 @@ export async function renderWrapTelemetry(request: WrapTelemetryRequest): Promis
   const key: SessionKey = { harness: request.session.harness, sessionId: request.session.sessionId, agentId: null };
   const recorded = !hasPostToolTelemetry(descriptor);
   if (recorded) await services.engine.handle({ kind: 'post_tool', session: key, tool: WRAP_TOOL, toolUseId: null }, { observedCharacters: request.characters });
-  const guidance = await resolveGuidance({ config, planPresence: services.planPresence, readValidationCommand: services.readValidationCommand });
-  return renderBlock({ descriptor, config }, { ledger: services.ledger, key, pendingCharacters: recorded ? null : request.characters, guidance });
+  const guidanceSources = { config, planPresence: services.planPresence, readValidationCommand: services.readValidationCommand };
+  return renderBlock({ descriptor, config }, { ledger: services.ledger, key, pendingCharacters: recorded ? null : request.characters, readGuidance: (zone) => resolveGuidance({ ...guidanceSources, zone }) });
 }
 
-type BlockSource = { readonly ledger: SessionLedger; readonly key: SessionKey; readonly pendingCharacters: number | null; readonly guidance: ZoneGuidance };
+type BlockSource = { readonly ledger: SessionLedger; readonly key: SessionKey; readonly pendingCharacters: number | null; readonly readGuidance: (zone: Zone) => Promise<ZoneGuidance> };
 
 async function renderBlock(settings: ZoneSettings, source: BlockSource): Promise<string> {
   const summary = summarizeLedger(await source.ledger.readLines(source.key));
-  if (source.pendingCharacters === null) return renderSessionTelemetry(settings, { summary, turns: summary.turns, observedCharacters: 0 }, source.guidance.actionFor);
-  return renderSessionTelemetry(settings, { summary, turns: nextTurn(summary), observedCharacters: source.pendingCharacters }, source.guidance.actionFor);
+  const inputs = source.pendingCharacters === null ? { summary, turns: summary.turns, observedCharacters: 0 } : { summary, turns: nextTurn(summary), observedCharacters: source.pendingCharacters };
+  const guidance = await source.readGuidance(readZone(settings, inputs).zone);
+  return renderSessionTelemetry(settings, inputs, guidance.actionFor);
 }

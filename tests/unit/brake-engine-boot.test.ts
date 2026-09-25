@@ -30,7 +30,7 @@ function createMockLedger(): SessionLedger {
 function setupEngine(descriptor: RuntimeDescriptor, readBoot?: BootReader, errors?: RuntimeErrorLog) {
   const ledger = createMockLedger();
   const blocks: BlockLog = { append: async () => undefined };
-  return { ledger, engine: createBrakeEngine({ descriptor, config: DEFAULT_CONFIG, ledger, blocks, readValidationCommand: async () => null, readBoot, errors }) };
+  return { ledger, engine: createBrakeEngine({ descriptor, config: DEFAULT_CONFIG, ledger, blocks, readValidationCommand: async () => null, planPresence: { exists: async () => true }, readBoot, errors }) };
 }
 
 describe('brake engine session boot delivery (RF9, RF10, RF11, TC-05, TC-06)', () => {

@@ -9,7 +9,7 @@ export type UsageResolutionInput = {
     readonly observedCharacters: number;
     readonly turns: number;
   };
-  readonly measured?: { readonly tokens: number | null; readonly contextWindow: number } | undefined;
+  readonly measured?: { readonly tokens: number | null; readonly contextWindow: number | null } | undefined;
   readonly constants: EstimationConstants;
   readonly contextWindowCeiling: number;
 };
@@ -21,7 +21,7 @@ export function resolveUsage(input: UsageResolutionInput): UsageReading {
   const estimate = estimatedTokens(input.estimated, input.constants);
   const measured = input.measured;
   if (measured && measured.tokens !== null) {
-    return { source: 'measured', usedTokens: measured.tokens, windowTokens: measured.contextWindow, measuredTokens: measured.tokens };
+    return { source: 'measured', usedTokens: measured.tokens, windowTokens: measured.contextWindow ?? input.contextWindowCeiling, measuredTokens: measured.tokens };
   }
   return { source: 'estimated', usedTokens: estimate, windowTokens: input.contextWindowCeiling, measuredTokens: estimate };
 }

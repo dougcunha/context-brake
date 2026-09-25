@@ -30,7 +30,7 @@ class TestLedger implements SessionLedger {
 const blocks: BlockLog = { append: async () => Promise.resolve() };
 function setup(lines: LedgerLine[] = [], config: ContextBrakeConfig = DEFAULT_CONFIG) {
   const ledger = new TestLedger(lines);
-  return { ledger, engine: createBrakeEngine({ descriptor: DESCRIPTOR, config, ledger, blocks, readValidationCommand: async () => 'npm test' }) };
+  return { ledger, engine: createBrakeEngine({ descriptor: DESCRIPTOR, config, ledger, blocks, readValidationCommand: async () => 'npm test', planPresence: { exists: async () => true } }) };
 }
 
 describe('brake engine post-tool telemetry (RF12, RF13, CA-01, CA-06, TC-06)', () => {
@@ -39,7 +39,7 @@ describe('brake engine post-tool telemetry (RF12, RF13, CA-01, CA-06, TC-06)', (
     const decision = await engine.handle({ kind: 'post_tool', session: KEY, tool: READ, toolUseId: 'toolu_2' }, { observedCharacters: 0 });
     expect(decision).toMatchObject({ kind: 'context' });
     if (decision.kind !== 'context') throw new Error('expected context');
-    expect(decision.block).toContain('turn=2/12 usage=51%');
+    expect(decision.block).toContain('turn=2 usage=51%');
     expect(decision.block).toContain('zone=YELLOW');
     expect(ledger.lines.at(-1)).toMatchObject({ type: 'tool', turn: 2, toolUseId: 'toolu_2' });
   });

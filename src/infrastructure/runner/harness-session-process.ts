@@ -81,7 +81,7 @@ class HarnessSession implements RunningHarnessSession {
         const grace = this.options.graceMilliseconds ?? STOP_GRACE_MILLISECONDS;
         await Promise.race([this.exit, delay(grace, undefined, { ref: false })]);
       }
-      killGroup(child.pid);
+      killGroup(child.pid, this.exited);
       return;
     }
     await killProcessTree(child).then(undefined, (error: unknown) => { if (!this.exited) throw error; });

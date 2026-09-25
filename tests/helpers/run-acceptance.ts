@@ -41,8 +41,17 @@ export async function prepareAcceptanceProject(world: RunProject, options: Proje
 
 export async function runAcceptance(world: RunProject, args: readonly string[]): Promise<AcceptanceRun> {
   const result = await runBuiltCli(['run', '--approve-commands', '--json', ...args], world.project, await runEnvironment(world));
-  const summary = runSummarySchema.parse(JSON.parse(result.stdout));
-  return { ...result, summary };
+  const parsed = runSummarySchema.safeParse(parseJsonOrNull(result.stdout));
+  if (!parsed.success) throw new Error(`context-brake run did not print a run summary (exit ${result.code}).\nstdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  return { ...result, summary: parsed.data };
+}
+
+function parseJsonOrNull(source: string): unknown {
+  try {
+    return JSON.parse(source) as unknown;
+  } catch {
+    return null;
+  }
 }
 
 export async function readJournal(world: RunProject): Promise<JournalEntry[]> {

@@ -35,3 +35,17 @@ describe('POSIX harness group signals (TC-15, CR-02)', () => {
     expect(() => killGroup(42)).toThrow(denied);
   });
 });
+
+describe('POSIX harness group kill after the leader exited (macOS CI)', () => {
+  it('treats EPERM after the leader exited as a group of zombies (Darwin)', () => {
+    const denied = Object.assign(new Error('denied'), { code: 'EPERM' });
+    vi.spyOn(process, 'kill').mockImplementation(() => { throw denied; });
+    expect(() => killGroup(42, true)).not.toThrow();
+  });
+
+  it('still propagates unexpected failures after the leader exited', () => {
+    const invalid = Object.assign(new Error('invalid'), { code: 'EINVAL' });
+    vi.spyOn(process, 'kill').mockImplementation(() => { throw invalid; });
+    expect(() => killGroup(42, true)).toThrow(invalid);
+  });
+});

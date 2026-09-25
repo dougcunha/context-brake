@@ -50,9 +50,10 @@ function summarize(label: string, samples: readonly number[]): number {
   return p95;
 }
 
+// CA-20 bounds the overhead per call, so CI subtracts the runner's own Node startup (the empty `node -e` p95).
 function assertProcessP95(p95: number, baseline: number): void {
   expect(p95).toBeGreaterThan(0);
-  if (process.env.CI) expect(p95).toBeLessThanOrEqual(PROCESS_TARGET_MS);
+  if (process.env.CI) expect(p95 - baseline).toBeLessThanOrEqual(PROCESS_TARGET_MS);
   else expect(p95).toBeLessThanOrEqual(Math.max(PROCESS_TARGET_MS, baseline * 3 + 150));
 }
 

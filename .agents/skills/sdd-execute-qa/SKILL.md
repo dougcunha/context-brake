@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # Execute SDD QA
 
-Run in a session that did not write or change the code under test; a review session that changed no code may continue into QA. This session runs every scenario and writes the report; subagents are read-only explorers. If this session authored any of that code, stop before step 1 and ask the session pause from `.agents/skills/sdd-orchestrate-tasks/references/session-continuity.md`, which recommends ending the session; if the user continues anyway, record the missing independence under the report's limitations.
+Run in a session that did not write or change the code under test; a review session that changed no code may continue into QA. This session runs every scenario and writes the report; subagents are read-only explorers. If this session authored any of that code, stop before step 1 and run the session pause from `.agents/skills/sdd-orchestrate-tasks/references/session-continuity.md`, which recommends ending the session; if the user continues anyway, record the missing independence under the report's limitations.
 
 1. Require `prd.md`, `techspec.md`, and `tasks.md` under `tasks/prd-[slug]/`, and read the latest `codereview_[num]/codereview.md`. When `context-snapshot.md` exists, apply its load protocol as an independent stage: header, next step brief, open threads, and `on-run` entries only. Read PRD and TechSpec once per version; then manifest, `done/` tasks, and handoffs. QA runs only after a review cycle closed as `APPROVED` or with decided reservations; otherwise return a block to the caller.
    **Output:** sources, latest review, and validated code state identified; a missing source blocks QA with the exact path.
@@ -25,7 +25,7 @@ Run in a session that did not write or change the code under test; a review sess
    - `APPROVED`: every acceptance obligation verified and passing, including essential manual items.
    - `REJECTED`: any failed obligation or `BUG-NN`.
    - `BLOCKED`: no failure found, but essential evidence could not be produced; the report names the missing environment or decision.
-   In standalone use, ask the session pause; a snapshot written then records stage `qa`, the report in `covers_through`, `authored_code: no`, and the status as an open thread.
+   In standalone use, run the session pause; a snapshot written then records stage `qa`, the report in `covers_through`, `authored_code: no`, and the status as an open thread.
    **Output:** immutable report with checklist, runs, findings, and status; the report path returns to the caller.
 
 In a run after corrections, reference the previous QA report, mark each earlier `BUG-NN` as resolved, persistent, or not verifiable, and rerun every affected scenario. A code change after this report invalidates it.

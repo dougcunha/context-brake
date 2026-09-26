@@ -42,8 +42,8 @@ The corrected change runs on the CI matrix (Linux, macOS, Windows), and the TC-2
 
 ## Work
 
-- [ ] T12.1 With authorization, commit the feature on a branch, push, and open a draft PR.
-- [ ] T12.2 Collect CI results and p95 values per OS into this handoff.
+- [x] T12.1 With authorization, commit the feature on a branch, push, and open a draft PR.
+- [x] T12.2 Collect CI results and p95 values per OS into this handoff.
 
 ## Acceptance criteria
 
@@ -73,8 +73,23 @@ The corrected change runs on the CI matrix (Linux, macOS, Windows), and the TC-2
 
 > Updated by `sdd-execute-corrections` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: CI run 36256275030 on commit `66e46cf` (branch `feat/prd-02.2-claude-context-window`, draft PR https://github.com/dougcunha/context-brake/pull/2). Ubuntu passes on Node 20/22/24; macOS and Windows fail on all three, only in `tests/integration/statusline-overhead.test.ts` (TC-20). Every other file passes on every job, including `e2e-statusline-shell` (4/4, CR-03) and `statusline-diagnostics-symlink` (3/3), with no skips.
+- p95 over baseline, first run of each job (bridge vs user command / PreToolUse / PostToolUse with 200 `statusline` lines; budget 50 / 100 / 100 ms):
+
+  | Job | Bridge | PreToolUse | PostToolUse | Result |
+  | --- | --- | --- | --- | --- |
+  | ubuntu Node 20 | +47.2 | +71.1 | +72.5 | pass |
+  | ubuntu Node 22 | +47.8 | +74.7 | +77.8 | pass |
+  | ubuntu Node 24 | +37.1 | +47.1 | +48.8 | pass |
+  | macOS Node 20 | +40.2 | **+105.8** | +49.4 | fail |
+  | macOS Node 22 | **+68.4** | — | — | fail |
+  | macOS Node 24 | +47.9 (2nd run **+50.6**) | +69.6 | +63.9 | fail |
+  | Windows Node 20 | **+65.7** | +93.8 | +99.1 | fail |
+  | Windows Node 22 | **+64.7** | +91.7 | +87.8 | fail |
+  | Windows Node 24 | **+62.4** | +73.0 | +76.8 | fail |
+
+- Cause (measured): the bridge sits in the pipeline as a second Node process, so the user's status line waits for one Node cold start of the bundled bridge. The empty `node -e` baseline on the same runners is 42–57 ms p95 on Windows and 34–85 ms on macOS, so a Node bridge cannot fit 50 ms there; on Linux (baseline 22–30 ms) it fits. Hook overhead with 200 `statusline` lines is close to the 100 ms budget on Windows (+88 to +99 ms) and noisy on macOS (one +105.8 ms outlier; PRD 2.1 hooks without those lines measure +38 to +82 ms in `runtime-overhead` on the same jobs).
+- Changed files: none.
+- Checks: `gh pr checks 2`; job logs parsed for `[overhead]` lines and assertions.
+- Validated state: commit `66e46cf`, GitHub Actions ubuntu/macos/windows-latest, Node 20/22/24, 2026-09-26.
+- Open items: NFR-01/OBJ-04 are not met on macOS and Windows. Changing the budget or the bridge design is a contract change, so T12 stays open pending an exception HIL decision (BLK-01 in `checkpoint.json`).

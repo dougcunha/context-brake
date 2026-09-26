@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "generation": 7,
+  "generation": 11,
   "feature": "prd-02.2-janela-de-contexto-do-claude-code",
   "workspace": "D:/MyProjects/ContextBrake",
   "phase": "corrections",
-  "status": "active",
-  "safe_to_stop": false,
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
   "owner_session": "33e595e5-7996-4a90-bd7a-54c61013c5bf",
   "objective": "Claude Code telemetry uses the real context window reported to the status line (bridge in .claude/settings.local.json), keeping the user's status line intact.",
   "constraints": [
@@ -42,27 +42,44 @@
     }
   ],
   "decisions_to_read": [
-    "DEC-HIL-03",
     "DEC-HIL-04"
   ],
   "git_base": "5917593",
-  "worktree_evidence": "HEAD 5917593; T01-T05 uncommitted plus dogfooding init changes; see workflow.md EV-01..EV-03 and codereview_01 Sources and scope",
+  "worktree_evidence": "Branch feat/prd-02.2-claude-context-window, commit 66e46cf (feature paths), pushed; draft PR https://github.com/dougcunha/context-brake/pull/2. Dogfooding files and .agents/settings.local.json uncommitted; see workflow.md EV-06",
   "active_work": [],
-  "pending_hil": null,
-  "blockers": [],
+  "pending_hil": {
+    "gate": "exception",
+    "question": "BLK-01: take the bridge off the critical path (shell fan-out, background recording), revise NFR-01/OBJ-04 budgets to the measured Node start cost, or accept CR-04 open; plus session choice.",
+    "affected": [
+      "codereview_01/CR-04",
+      "codereview_01/T12",
+      "prd.md#NFR-01",
+      "prd.md#OBJ-04",
+      "techspec.md#DEC-02",
+      "techspec.md#DEC-03",
+      "techspec.md#DEC-13"
+    ]
+  },
+  "blockers": [
+    {
+      "id": "BLK-01",
+      "summary": "TC-20 fails on macOS and Windows CI: the Node bridge in the pipeline adds one Node cold start (+62 to +68 ms vs the 50 ms NFR-01 budget); hooks near 100 ms on Windows, one macOS outlier +105.8 ms",
+      "evidence": "codereview_01/task_12.md#handoff"
+    }
+  ],
   "correction_round": 1,
   "rounds_without_progress": 0,
   "next_action": {
-    "kind": "run",
-    "instruction": "sdd-execute-corrections for codereview_01: T06-T11 done; next T13, T14, then T12 (commit on a branch, push, draft PR, CI p95; authorized by DEC-HIL-04). Re-review in a session that made no corrections.",
+    "kind": "await-decision",
+    "instruction": "Answer BLK-01 (exception HIL); record it in workflow.md; plan the chosen correction as a new task in codereview_01 (T15) and re-run CI on PR #2; T12 closes on a green matrix; then end the session so codereview_02 runs in a session that made no corrections.",
     "read": [
       {
         "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/workflow.md",
-        "section": "Human Decisions Log"
+        "section": "Events"
       },
       {
-        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_01/codereview.md",
-        "section": "Findings"
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_01/task_12.md",
+        "section": "Handoff"
       }
     ]
   }

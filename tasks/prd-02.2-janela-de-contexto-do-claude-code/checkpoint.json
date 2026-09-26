@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generation": 8,
+  "generation": 12,
   "feature": "prd-02.2-janela-de-contexto-do-claude-code",
   "workspace": "D:/MyProjects/ContextBrake",
   "phase": "corrections",
@@ -42,34 +42,28 @@
     }
   ],
   "decisions_to_read": [
-    "DEC-HIL-03",
-    "DEC-HIL-04"
+    "DEC-HIL-04",
+    "DEC-HIL-05"
   ],
   "git_base": "5917593",
-  "worktree_evidence": "HEAD 5917593; T01-T05 uncommitted plus dogfooding init changes; see workflow.md EV-01..EV-03 and codereview_01 Sources and scope",
-  "active_work": [
+  "worktree_evidence": "Branch feat/prd-02.2-claude-context-window, commit 66e46cf (feature paths), pushed; draft PR https://github.com/dougcunha/context-brake/pull/2. Dogfooding files and .agents/settings.local.json uncommitted; see workflow.md EV-06",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [
     {
-      "kind": "process",
-      "handle": "git branch feat/prd-02.2-claude-context-window + draft PR",
-      "owner": "33e595e5",
-      "scope": "T12 CI run",
-      "state": "starting"
+      "id": "BLK-01",
+      "summary": "TC-20 fails on macOS and Windows CI: the Node bridge in the pipeline adds one Node cold start (+62 to +68 ms vs the 50 ms NFR-01 budget); hooks near 100 ms on Windows, one macOS outlier +105.8 ms",
+      "evidence": "codereview_01/task_12.md#handoff"
     }
   ],
-  "pending_hil": null,
-  "blockers": [],
   "correction_round": 1,
   "rounds_without_progress": 0,
   "next_action": {
     "kind": "run",
-    "instruction": "T12 in progress: branch feat/prd-02.2-claude-context-window pushed with a draft PR; collect CI results and p95 per OS into codereview_01/task_12.md handoff, then write the snapshot; re-review (codereview_02) in a session that made no corrections.",
+    "instruction": "T15 (budget revision per DEC-HIL-05): amend PRD/TechSpec and statusline-overhead.test.ts, push to PR #2, confirm CI; then close T12 and end the session for codereview_02.",
     "read": [
       {
-        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/workflow.md",
-        "section": "Events"
-      },
-      {
-        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_01/task_12.md",
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_01/task_15.md",
         "section": "Requirements"
       }
     ]

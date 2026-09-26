@@ -17,7 +17,7 @@ O Claude Code documenta o tamanho da janela só no JSON que envia ao comando de 
 | OBJ-01 | Percentuais calculados sobre a janela real no Claude Code | Com a ponte ativa, 100% dos blocos emitidos depois da primeira execução da status line na sessão mostram como janela o `context_window_size` mais recente dessa sessão. |
 | OBJ-02 | Status line do usuário intacta | A saída exibida é byte a byte igual à do comando do usuário, ou vazia quando não há comando, em 100% dos cenários de fixture, inclusive quando a ponte falha. |
 | OBJ-03 | Sem regressão para quem não liga a ponte | Sem a ponte, os critérios do PRD 2.1 continuam passando sem alteração. |
-| OBJ-04 | Overhead mantido | O p95 por chamada de hook no Claude Code continua em até 100 ms, e a ponte acrescenta no máximo 50 ms ao tempo da status line do usuário. |
+| OBJ-04 | Overhead mantido | Sem a ponte, o p95 por chamada de hook no Claude Code continua em até 100 ms. Com 200 linhas `statusline` no ledger, fica em até 120 ms. A ponte acrescenta ao tempo da status line do usuário no máximo 50 ms além de uma inicialização do Node (revisado em 26/09/2026, DEC-HIL-05). |
 
 ## Stories and journeys
 
@@ -47,7 +47,7 @@ O Claude Code documenta o tamanho da janela só no JSON que envia ao comando de 
 
 | ID | Attribute | Limit or criterion |
 | --- | --- | --- |
-| NFR-01 | Desempenho | O p95 por chamada de hook continua em até 100 ms (NFR-01 do PRD 2.1). A ponte acrescenta no máximo 50 ms ao tempo do comando do usuário, medido no p95 com o estado de runtime existente. |
+| NFR-01 | Desempenho | Sem a ponte, o p95 por chamada de hook continua em até 100 ms (NFR-01 do PRD 2.1). Com 200 linhas `statusline` no ledger, o p95 fica em até 120 ms. A ponte acrescenta ao tempo do comando do usuário, medido no p95 com o estado de runtime existente, no máximo 50 ms além do p95 de um `node -e` vazio na mesma máquina, porque roda como um segundo processo Node no pipeline. Revisado em 26/09/2026 (DEC-HIL-05): no CI de macOS e Windows, só a inicialização do Node leva de 42 a 85 ms. |
 | NFR-02 | Resiliência | JSON inválido, campos ausentes, estado ilegível ou falha de escrita não alteram a saída da status line do usuário nem fazem o hook falhar. Falhas de leitura ou escrita do estado vão para o log local de erros de runtime. |
 | NFR-03 | Privacidade | A ponte grava só os cinco valores do FR-03 e o instante da leitura. Custos, caminhos, nome do workspace, conteúdo de mensagens e a saída do comando do usuário nunca entram em ledger, log ou saída própria. |
 | NFR-04 | Compatibilidade | A configuração continua em `schemaVersion: 1`, os schemas publicados só recebem campos opcionais, o formato do bloco de telemetria não muda e nenhuma dependência de runtime é adicionada. |

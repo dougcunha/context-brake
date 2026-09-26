@@ -4,12 +4,13 @@ import type { DiagnosticFinding, DoctorReport, HarnessDiagnostic, OverheadMeasur
 import type { FileSnapshot } from '../contracts/changes.js';
 import { type CapabilityProfile, type DetectionSources, type HarnessId } from '../contracts/harness.js';
 import type { InstallationManifest } from '../contracts/manifest.js';
+import { activeSessions } from './active-sessions.js';
 import { assetCurrencyFindings } from './asset-currency.js';
 import { brakeSessionFindings, type RuntimeStateReading } from './brake-session-checks.js';
 import { detectHarnesses } from './detection-service.js';
-import { checkConfig, checkInstructionFiles, checkProtocolFile, checkStateFiles } from './doctor-checks.js';
+import { checkConfig } from './doctor-checks.js';
 import { checkpointModeReport, delegatedSnapshotFindings } from './delegated-diagnostics.js';
-import { checkGitignore } from './gitignore-checks.js';
+import { projectFileFindings } from './project-file-checks.js';
 import { buildDoctorReport } from './report-service.js';
 
 export type DoctorInput = {
@@ -29,7 +30,7 @@ export type DoctorInput = {
   manifest: InstallationManifest | null;
   allSnapshots: readonly FileSnapshot[];
   packageVersion: string;
-  runtimeState?: RuntimeStateReading | null; contextWindow?: DoctorReport['contextWindow'];
+  runtimeState?: RuntimeStateReading | null; contextWindow?: DoctorReport['contextWindow']; now?: Date | undefined;
 };
 
 function deriveIntegrationState(findings: readonly DiagnosticFinding[]): 'installed' | 'missing' | 'broken' {
@@ -90,11 +91,9 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
     integrations.push(diagnostic);
     allFindings.push(...findings);
   }
-  allFindings.push(...checkInstructionFiles(input.instructionSnapshots));
-  allFindings.push(...checkProtocolFile(input.protocolSnapshot, effective));
-  allFindings.push(...checkStateFiles(input.planSnapshot, input.checkpointSnapshot));
-  if (input.config && !input.configError) allFindings.push(...checkGitignore(input.gitignoreSnapshot, input.config));
+  allFindings.push(...projectFileFindings(input, effective));
   if (input.runtimeState) allFindings.push(...brakeSessionFindings(input.runtimeState));
   allFindings.push(...delegatedSnapshotFindings(input.config, [...targetIds]));
-  return buildDoctorReport({ detections, integrations, findings: allFindings, checkpointMode: checkpointModeReport(input.config, input.planSnapshot?.exists ?? false), contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined });
+  const sessions = input.now === undefined ? [] : activeSessions(input.runtimeState?.ledgers ?? [], { now: input.now, zones: effective.telemetry.zones });
+  return buildDoctorReport({ detections, integrations, findings: allFindings, checkpointMode: checkpointModeReport(input.config, input.planSnapshot?.exists ?? false), contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, activeSessions: sessions });
 }

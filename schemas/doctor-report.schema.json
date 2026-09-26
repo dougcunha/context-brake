@@ -429,7 +429,8 @@
           "type": "string",
           "enum": [
             "plan",
-            "delegated"
+            "delegated",
+            "light"
           ]
         },
         "reason": {
@@ -437,7 +438,8 @@
           "enum": [
             "no_section",
             "plan_present",
-            "plan_missing"
+            "plan_missing",
+            "light_mode"
           ]
         },
         "delegatedSnapshot": {
@@ -495,6 +497,23 @@
               "type": "null"
             }
           ]
+        },
+        "lightMode": {
+          "type": "object",
+          "properties": {
+            "triggerZone": {
+              "default": "RED",
+              "type": "string",
+              "enum": [
+                "YELLOW",
+                "RED"
+              ]
+            }
+          },
+          "required": [
+            "triggerZone"
+          ],
+          "additionalProperties": false
         }
       },
       "required": [
@@ -541,6 +560,98 @@
         "lastWindowTokens"
       ],
       "additionalProperties": false
+    },
+    "activeSessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "harness": {
+            "type": "string",
+            "enum": [
+              "claude-code",
+              "codex-cli",
+              "cursor",
+              "github-copilot-cli",
+              "opencode",
+              "pi",
+              "oh-my-pi",
+              "antigravity-cli"
+            ]
+          },
+          "sessionId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "lastActivityAt": {
+            "type": "string"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "percentage": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "usedTokens": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "windowTokens": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "zone": {
+                    "type": "string",
+                    "enum": [
+                      "GREEN",
+                      "YELLOW",
+                      "RED",
+                      "CRITICAL"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "enum": [
+                      "measured",
+                      "estimated"
+                    ]
+                  },
+                  "at": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "percentage",
+                  "usedTokens",
+                  "windowTokens",
+                  "zone",
+                  "source",
+                  "at"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "harness",
+          "sessionId",
+          "lastActivityAt",
+          "usage"
+        ],
+        "additionalProperties": false
+      }
     }
   },
   "required": [

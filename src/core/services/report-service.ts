@@ -67,6 +67,7 @@ export type BuildDoctorReportInput = {
   detections: readonly HarnessDetection[]; integrations: readonly HarnessDiagnostic[]; findings: readonly DiagnosticFinding[];
   checkpointMode?: CheckpointModeReport | undefined;
   contextWindow?: ContextWindowReport | undefined;
+  activeSessions?: DoctorReport['activeSessions'];
 };
 
 export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
@@ -76,6 +77,7 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
     detections: [...input.detections], integrations: [...input.integrations], findings: sortFindings(input.findings),
     ...(input.checkpointMode === undefined ? {} : { checkpointMode: input.checkpointMode }),
     ...(input.contextWindow === undefined ? {} : { contextWindow: input.contextWindow }),
+    ...(input.activeSessions === undefined || input.activeSessions.length === 0 ? {} : { activeSessions: input.activeSessions }),
   };
   return doctorReportSchema.parse(doc);
 }

@@ -16,20 +16,24 @@ const STANDARD_HARNESS_PATHS = [
 ] as const;
 
 export async function collectProjectSnapshots(root: string, config: ContextBrakeConfig | null, extraTargets: readonly string[] = []): Promise<FileSnapshot[]> {
+  return snapshotFiles(root, projectPaths(config, extraTargets, true));
+}
+export async function collectDoctorSnapshots(root: string, config: ContextBrakeConfig | null): Promise<FileSnapshot[]> {
+  return snapshotFiles(root, projectPaths(config, [], config?.lightMode === undefined));
+}
+function projectPaths(config: ContextBrakeConfig | null, extraTargets: readonly string[], includeState: boolean): string[] {
   const protocol = config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md';
   const plan = config?.stateStorage.planFile ?? 'task_plan.json';
   const checkpoint = config?.stateStorage.checkpointFile ?? 'state_checkpoint.json';
   const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
-  const paths = Array.from(new Set([
+  return Array.from(new Set([
     'context-brake.config.json',
     '.gitignore',
     MANIFEST_RELATIVE_PATH,
     protocol,
-    plan,
-    checkpoint,
+    ...(includeState ? [plan, checkpoint] : []),
     ...instTargets,
     ...extraTargets,
     ...STANDARD_HARNESS_PATHS,
   ]));
-  return snapshotFiles(root, paths);
 }

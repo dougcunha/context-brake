@@ -1,6 +1,7 @@
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { HarnessId } from '../contracts/harness.js';
 import type { BlockLine, ErrorLine, SessionLine } from '../contracts/session-ledger.js';
+import type { HarnessLedger } from './active-sessions.js';
 
 export const BLOCKS_LOG_RELATIVE_PATH = '.context-brake/runtime/blocks.jsonl';
 export const ERRORS_LOG_RELATIVE_PATH = '.context-brake/runtime/errors.jsonl';
@@ -16,6 +17,7 @@ export type RuntimeStateReading = {
   readonly sessions: readonly SessionLine[];
   readonly blocks: readonly BlockLine[];
   readonly errors: readonly ErrorLine[];
+  readonly ledgers?: readonly HarnessLedger[] | undefined;
 };
 
 export function selectRecentErrors(errors: readonly ErrorLine[], now: Date): ErrorLine[] {

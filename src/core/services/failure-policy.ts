@@ -54,7 +54,7 @@ export function runWithinDeadline<T>(work: Promise<T>, deadlineMilliseconds = IN
 export async function resolveFailure(input: FailureResolutionInput): Promise<RuntimeDecision> {
   await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail });
   if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return deadlineBootDecision(input);
-  if (input.event.kind !== 'pre_tool') return { kind: 'neutral' };
+  if (input.event.kind !== 'pre_tool' || input.config?.lightMode !== undefined) return { kind: 'neutral' };
   if ((await lastRecordedZone(input.ledger, input.event.session)) !== 'CRITICAL') return { kind: 'neutral' };
   const guidance = await resolveFailureGuidance(guidanceSources(input));
   if (await guidance.allows(input.event.tool)) return { kind: 'neutral' };
@@ -62,7 +62,7 @@ export async function resolveFailure(input: FailureResolutionInput): Promise<Run
 }
 async function deadlineBootDecision(input: FailureResolutionInput): Promise<RuntimeDecision> {
   const guidance = await resolveFailureGuidance(guidanceSources(input));
-  if (guidance.mode !== 'delegated') return { kind: 'context', block: renderBootOmission() };
+  if (guidance.mode === 'plan') return { kind: 'context', block: renderBootOmission() };
   return guidance.resumeText === null ? { kind: 'neutral' } : { kind: 'context', block: guidance.resumeText };
 }
 function guidanceSources(input: FailureResolutionInput): GuidanceSources {

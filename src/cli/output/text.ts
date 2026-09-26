@@ -1,5 +1,7 @@
 import type { CliErrorDocument, DiagnosticFinding, DoctorReport, InstallReport, PlanStatusReport } from '../../core/contracts/diagnostics.js';
 import type { PlanInitResult } from '../commands/plan.js';
+import { renderCheckpointModeLine } from './doctor-mode-text.js';
+import { renderActiveSessionsText } from './doctor-sessions-text.js';
 
 export function renderFinding(f: DiagnosticFinding): string {
   const label = f.severity === 'error' ? '[ERROR]' : f.severity === 'warning' ? '[WARN]' : '[OK]';
@@ -13,7 +15,7 @@ export function findingPrintKey(code: string, path: string | null): string {
   return `${code}|${path ?? ''}`;
 }
 
-export function renderInstallText(report: InstallReport, alreadyPrinted?: ReadonlySet<string>): void {
+export function renderInstallText(report: InstallReport, alreadyPrinted?: ReadonlySet<string>, planHint = true): void {
   const stream = report.status === 'errors' ? process.stderr : process.stdout;
   const label = report.status === 'errors' ? '[ERROR]' : report.status === 'warnings' ? '[WARN]' : '[OK]';
   stream.write(`${label} ContextBrake ${report.command} (${report.mode})\n`);
@@ -33,7 +35,7 @@ export function renderInstallText(report: InstallReport, alreadyPrinted?: Readon
     if (alreadyPrinted?.has(findingPrintKey(f.code, f.path))) continue;
     stream.write(`${renderFinding(f)}\n`);
   }
-  if (report.command === 'init' && report.status === 'success' && report.mode === 'applied' && report.plan.changes.length > 0) {
+  if (planHint && report.command === 'init' && report.status === 'success' && report.mode === 'applied' && report.plan.changes.length > 0) {
     stream.write('\nNext step: run context-brake plan init to create task plan.\n');
   }
 }
@@ -55,7 +57,8 @@ export function renderDoctorText(report: DoctorReport): void {
   const mode = report.checkpointMode;
   const window = report.contextWindow;
   if (window) stream.write(`  - context window: ${window.source} (bridge: ${window.bridge}, last window: ${window.lastWindowTokens ?? 'unknown'})\n`);
-  if (mode?.delegatedSnapshot) stream.write(`  - checkpoint mode: ${mode.effective} (${mode.reason}, snapshot command: ${mode.delegatedSnapshot.snapshotCommand})\n`);
+  stream.write(renderCheckpointModeLine(mode) ?? '');
+  stream.write(renderActiveSessionsText(report.activeSessions, new Date()));
   for (const f of report.findings) stream.write(`${renderFinding(f)}\n`);
 }
 

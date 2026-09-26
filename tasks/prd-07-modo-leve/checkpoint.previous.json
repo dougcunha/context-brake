@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "generation": 19,
+  "feature": "prd-07-modo-leve",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": "session_01TBeDgaQbko97hrGYSbmGig",
+  "objective": "Explicit light mode (init --light): ContextBrake only measures context and injects the v2 telemetry block with size, zone, and a generic snapshot/checkpoint action at the trigger zone; no snapshot command, no plan/checkpoint/protocol/instruction/.gitignore files, no brake, no boot. Plus: doctor lists active sessions (last 30 min) with current context usage in every mode.",
+  "constraints": [
+    "plan and delegated modes stay byte-identical without light mode (NFR-01)",
+    "telemetry block format v1 unchanged",
+    "never delete user plan/checkpoint files"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "2b8f0f33fdff2f16efd99989d999965bc56439bcdec673711b99b5493a39e17c",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "189cbcb2ffd257f72052ffc731a441fca6e59db3a3b7dc5cf5558cf8d8c9aafb",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "0a30bc6f994939d194338eb9151522a4b9c19ce2f2cbb35dc54dcb52c6866381",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-02",
+    "DEC-CORR-01"
+  ],
+  "git_base": "c3fb6a894ca056fde67b19a6c0350544b51f6b11",
+  "worktree_evidence": "workflow.md#Milestone History (pre-existing dogfood install changes)",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "reservations+HIL 3",
+    "question": "Correct codereview_02/OI-01 or finalize; accept the delivery with the NFR-01 deviations, pending Linux/macOS CI, and optional manual acceptance",
+    "affected": [
+      "codereview_02/OI-01",
+      "NFR-01",
+      "NFR-03"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "Record the reservations HIL and HIL 3 answers in workflow.md; if finalized and accepted, mark checkpoint completed and snapshot closed; if OI-01 is corrected, plan it with sdd-plan-corrections from codereview_02, then re-review in a new session.",
+    "read": [
+      {
+        "path": "tasks/prd-07-modo-leve/context-snapshot.md",
+        "section": "Next step brief"
+      },
+      {
+        "path": "tasks/prd-07-modo-leve/codereview_02/codereview.md",
+        "section": "Limitations and open items"
+      }
+    ]
+  }
+}

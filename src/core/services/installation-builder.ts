@@ -1,11 +1,14 @@
 import { resolve } from 'node:path';
-import { DEFAULT_CONFIG, type ContextBrakeConfig, type HarnessId } from '../contracts/configuration.js';
+import { configurationSchema, DEFAULT_CONFIG, type ContextBrakeConfig, type HarnessId } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange } from '../contracts/changes.js';
 import { applyDelegatedSnapshot, type DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
+import { applyLightMode, type LightModeUpdate } from './light-mode-merge.js';
 import { normalizeTurnLimits } from './config-legacy-checks.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
 
 const KEEP: DelegatedSnapshotUpdate = { kind: 'keep' };
+const CONFIG_KEY_ORDER = Object.keys(configurationSchema.shape);
+const LIGHT_SUMMARY = { set: 'set the light mode section (telemetry only: no brake, plan, checkpoint, protocol, or instruction blocks)', remove: 'remove the light mode section' } as const;
 const CONFIG_SUMMARY = 'Configure ContextBrake active harnesses and zones';
 
 export type ConfigChangeInput = {
@@ -14,6 +17,7 @@ export type ConfigChangeInput = {
   active: readonly HarnessId[];
   snapshot?: FileSnapshot | null | undefined;
   delegatedSnapshot?: DelegatedSnapshotUpdate | undefined;
+  lightMode?: LightModeUpdate | undefined;
 };
 
 export function planConfigChange(
@@ -27,7 +31,8 @@ export function planConfigChange(
   const snap = typeof rootOrInput === 'string' ? null : rootOrInput.snapshot;
   const merged = Array.from(new Set([...(curr?.activeHarnesses ?? []), ...act])).sort();
   const update = typeof rootOrInput === 'string' ? KEEP : rootOrInput.delegatedSnapshot ?? KEEP;
-  const config: ContextBrakeConfig = applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update);
+  const light = typeof rootOrInput === 'string' ? KEEP : rootOrInput.lightMode ?? KEEP;
+  const config: ContextBrakeConfig = inSchemaOrder(applyLightMode(applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update), light));
   const content = `${JSON.stringify(config, null, 2)}\n`;
   const defaultPath = resolve(root, 'context-brake.config.json').replace(/\\/g, '/');
   const realPath = (snap?.realPath ?? defaultPath).replace(/\\/g, '/');
@@ -37,9 +42,18 @@ export function planConfigChange(
     kind: curr ? 'update' : 'create',
     owner: 'config',
     content,
-    preview: { summary: update.kind === 'keep' ? CONFIG_SUMMARY : `${CONFIG_SUMMARY}; ${update.kind === 'set' ? 'set' : 'remove'} the delegated snapshot section` },
+    preview: { summary: configSummary(update, light) },
   };
   return { config, change };
+}
+
+function inSchemaOrder(config: ContextBrakeConfig): ContextBrakeConfig {
+  return Object.fromEntries(CONFIG_KEY_ORDER.filter((key) => key in config).map((key) => [key, config[key as keyof ContextBrakeConfig]])) as ContextBrakeConfig;
+}
+function configSummary(delegated: DelegatedSnapshotUpdate, light: LightModeUpdate): string {
+  const delegatedPart = delegated.kind === 'keep' ? [] : [`${delegated.kind} the delegated snapshot section`];
+  const lightPart = light.kind === 'keep' ? [] : [LIGHT_SUMMARY[light.kind]];
+  return [CONFIG_SUMMARY, ...delegatedPart, ...lightPart].join('; ');
 }
 
 export type ManifestChangeInput = {

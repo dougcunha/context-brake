@@ -1,7 +1,7 @@
 import type { ToolCall } from './runtime.js';
 import type { UsageReading, Zone } from './zones.js';
 
-export const CHECKPOINT_MODES = ['plan', 'delegated'] as const;
+export const CHECKPOINT_MODES = ['plan', 'delegated', 'light'] as const;
 export type CheckpointMode = (typeof CHECKPOINT_MODES)[number];
 
 export interface PlanPresence {

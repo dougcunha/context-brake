@@ -13,7 +13,7 @@ import { diagnoseProject } from '../../core/services/doctor-service.js';
 import { readClaudeContextWindow } from '../../infrastructure/harnesses/claude-code/statusline-context-window.js';
 import { renderJsonOutput } from '../output/json.js';
 import { renderDoctorText } from '../output/text.js';
-import { collectProjectSnapshots } from '../snapshot-helper.js';
+import { collectDoctorSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 
 async function readConfigSafely(root: string): Promise<{ config: ContextBrakeConfig | null; configError: Error | null }> {
@@ -30,7 +30,7 @@ async function readConfigSafely(root: string): Promise<{ config: ContextBrakeCon
 export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promise<number> {
   const { config, configError } = await readConfigSafely(env.projectRoot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
-  const allSnapshots = await collectProjectSnapshots(env.projectRoot, config);
+  const allSnapshots = await collectDoctorSnapshots(env.projectRoot, config);
   const protocolSnap = allSnapshots.find((s) => s.path === (config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md'))!;
   const gitignoreSnap = allSnapshots.find((s) => s.path === '.gitignore')!;
   const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
@@ -48,7 +48,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap,
     ...(planSnap ? { planSnapshot: planSnap } : {}), ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
     manifest, allSnapshots, packageVersion, contextWindow: await readClaudeContextWindow(env.projectRoot),
-    runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(),
+    runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(), now: systemClock.now(),
   });
   if (args.json) {
     renderJsonOutput(report);

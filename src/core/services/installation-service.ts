@@ -7,13 +7,12 @@ import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, t
 import { protectModifiedAssets } from './asset-currency.js';
 import { createChangePlan, hashString } from './change-plan-service.js';
 import { detectHarnesses } from './detection-service.js';
-import { planGitignoreInstall } from './gitignore-service.js';
 import { buildManagedAssets, conflictFindings } from './installation-findings.js';
 import { detectLegacyFindings, legacyFinding } from './legacy-preview.js';
 import { planConfigChange, planManifestChange } from './installation-builder.js';
-import { planInstructionChanges } from './instruction-service.js';
-import { planProtocolChange } from './protocol-service.js';
 import type { DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
+import type { LightModeUpdate } from './light-mode-merge.js';
+import { planSupportFiles } from './support-files.js';
 
 export type InstallationInput = {
   projectRoot: string;
@@ -31,6 +30,7 @@ export type InstallationInput = {
   previousManifest?: InstallationManifest | null;
   packageVersion: string;
   delegatedSnapshot?: DelegatedSnapshotUpdate | undefined;
+  lightMode?: LightModeUpdate | undefined;
 };
 
 export type InstallationResult = {
@@ -76,10 +76,8 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const active = detections.filter((d) => d.state === 'project');
   if (active.length === 0) return emptyResult(input.projectRoot, detections, detectLegacyFindings(input.instructionSnapshots, input.config ?? DEFAULT_CONFIG));
   const activeIds: HarnessId[] = active.map((d) => d.harness);
-  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), delegatedSnapshot: input.delegatedSnapshot });
-  const proto = planProtocolChange(cfg.config, input.protocolSnapshot, Boolean(input.previousManifest?.assets.some((a) => a.kind === 'protocol')));
-  const inst = planInstructionChanges({ snapshots: input.instructionSnapshots, config: cfg.config, createInstructions: input.createInstructions, migrateLegacy: input.migrateLegacy });
-  const gi = planGitignoreInstall({ snapshot: input.gitignoreSnapshot, config: cfg.config });
+  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), delegatedSnapshot: input.delegatedSnapshot, lightMode: input.lightMode });
+  const support = planSupportFiles(input, cfg.config);
   const ap = await planAdapters(input.adapters, active, input.context);
   const protection = protectModifiedAssets(ap.changes, input.previousManifest ?? null, input.allSnapshots);
   const modifiedPaths = new Set(protection.conflicts.map((c) => c.path));
@@ -87,13 +85,13 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets];
   const allAssets = buildManagedAssets(cfg.config, cfg.change.content ?? '', adapterAssets);
   const manifestChange = planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) });
-  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...inst.changes, ...gi.changes, ...protection.changes];
-  if (proto.change) plannedChanges.push(proto.change);
-  const conflicts = [...inst.conflicts, ...gi.conflicts, ...(proto.conflict ? [proto.conflict] : []), ...ap.conflicts, ...protection.conflicts];
+  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...support.changes, ...protection.changes, ...support.protocolChanges];
+  const conflicts = [...support.conflicts, ...ap.conflicts, ...protection.conflicts];
   const findings: DiagnosticFinding[] = [
     ...conflictFindings(conflicts),
     ...ap.findings,
-    ...inst.legacyDetected.map((path) => legacyFinding(path, cfg.config)),
+    ...support.findings,
+    ...support.legacyDetected.map((path) => legacyFinding(path, cfg.config)),
   ];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: ap.harnesses });
   return { detections, plan, findings };

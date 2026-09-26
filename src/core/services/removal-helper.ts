@@ -9,17 +9,21 @@ export function removeReferenceFromBody(content: string): string {
   const e = content.indexOf(CURRENT_END_MARKER);
   if (s === -1 || e === -1 || s >= e) return content;
   const endIdx = e + CURRENT_END_MARKER.length;
-  let before = content.slice(0, s);
+  const before = stripTrailingEol(content.slice(0, s));
   let after = content.slice(endIdx);
-  if (before.endsWith('\r\n')) before = before.slice(0, -2);
-  else if (before.endsWith('\n')) before = before.slice(0, -1);
+  const endsFile = after === '';
   if (after.startsWith('\r\n')) after = after.slice(2);
   else if (after.startsWith('\n')) after = after.slice(1);
   if (!before && !after) return '';
   if (!before) return after;
-  if (!after) return `${before}\n`;
+  if (endsFile && before.endsWith('\n')) return stripTrailingEol(before);
+  if (!after) return before.endsWith('\n') ? before : `${before}\n`;
   const sep = content.includes('\r\n') ? '\r\n' : '\n';
   return `${before}${sep}${after}`;
+}
+function stripTrailingEol(text: string): string {
+  if (text.endsWith('\r\n')) return text.slice(0, -2);
+  return text.endsWith('\n') ? text.slice(0, -1) : text;
 }
 
 export function planInstructionRemoval(snapshots: readonly FileSnapshot[]): PlannedChange[] {

@@ -35,6 +35,7 @@ async function handleEvent(options: BrakeEngineOptions, event: RuntimeEvent, inp
   }
 }
 async function handlePreTool(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'pre_tool' }, input: RuntimeInput): Promise<RuntimeDecision> {
+  if (options.config.lightMode !== undefined) return NEUTRAL;
   const summary = await readSummary(options.ledger, event.session);
   const { reading, percentage, zone } = readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input.measured });
   if (zone !== 'CRITICAL') return NEUTRAL;
@@ -69,7 +70,7 @@ async function handleSessionReset(options: BrakeEngineOptions, event: RuntimeEve
   if (!options.descriptor.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported')) return NEUTRAL;
   if (event.reason === 'compact' && !COMPACTION_BOOT_HARNESSES.includes(options.descriptor.harness)) return NEUTRAL;
   const guidance = await readGuidance(options);
-  if (guidance.mode === 'delegated') return guidance.resumeText === null ? NEUTRAL : { kind: 'context', block: guidance.resumeText };
+  if (guidance.mode !== 'plan') return guidance.resumeText === null ? NEUTRAL : { kind: 'context', block: guidance.resumeText };
   if (!options.readBoot) return NEUTRAL;
   try {
     const decision = await options.readBoot();

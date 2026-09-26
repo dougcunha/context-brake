@@ -21,7 +21,7 @@ export function conflictFindings(conflicts: readonly PlanConflict[]): Diagnostic
 export function buildManagedAssets(config: ContextBrakeConfig, configContent: string, adapterAssets: readonly ManagedAsset[]): ManagedAsset[] {
   return [
     { path: 'context-brake.config.json', kind: 'config', sha256: hashString(configContent) },
-    { path: config.instructionFiles.protocolFile, kind: 'protocol', sha256: hashString(renderProtocol(config)) },
+    ...(config.lightMode === undefined ? [{ path: config.instructionFiles.protocolFile, kind: 'protocol' as const, sha256: hashString(renderProtocol(config)) }] : []),
     ...adapterAssets,
   ];
 }

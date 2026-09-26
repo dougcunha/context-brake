@@ -17,6 +17,7 @@ export class RunCommandError extends Error {
 
 const RERUN = 'then rerun context-brake run';
 const SUPPORTED_HARNESSES = 'claude-code, codex-cli';
+const LIGHT_MODE_REFUSAL = `context-brake run needs the full mode, but this repository uses the light mode. Run context-brake init --no-light, then create a plan with context-brake plan init --task="<name>", ${RERUN}.`;
 
 export async function requireLauncher(args: ParsedRunArgs): Promise<SessionLauncher> {
   const preparation = await prepareHarness({ harness: args.harness, harnessArgs: args.harnessArgs });
@@ -29,6 +30,7 @@ export async function requireLauncher(args: ParsedRunArgs): Promise<SessionLaunc
 }
 
 export async function requireRunnablePlan(projectRoot: string, config: ContextBrakeConfig): Promise<PlanReadiness> {
+  if (config.lightMode !== undefined) throw new RunCommandError('RUN_PLAN_NOT_RUNNABLE', LIGHT_MODE_REFUSAL);
   const preflight = await readPlanForRun(projectRoot, config);
   if (preflight.kind === 'missing_plan') {
     const delegated = config.delegatedSnapshot === undefined ? '' : `; context-brake run needs a plan and does not support the delegated snapshot mode`;

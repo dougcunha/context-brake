@@ -1,6 +1,8 @@
 import { readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { HARNESS_IDS, type HarnessId } from '../../core/contracts/harness.js';
 import type { BlockLine, Clock, ErrorLine, SessionLine } from '../../core/contracts/session-ledger.js';
+import type { HarnessLedger } from '../../core/services/active-sessions.js';
 import { blockLineSchema, errorLineSchema, parseLedgerLines } from '../../core/contracts/session-ledger.js';
 import { selectRecentErrors, type RuntimeStateReading } from '../../core/services/brake-session-checks.js';
 import { listRuntimeStateFiles } from '../storage/runtime-state-files.js';
@@ -16,21 +18,29 @@ export class NodeRuntimeStateReader {
     if (!(await isDirectory(runtimeDirectory(this.projectRoot)))) return null;
     const files = await listRuntimeStateFiles(this.projectRoot);
     const ledgerFiles = files.filter((file) => file.startsWith(SESSIONS_RELATIVE_PREFIX) && file.endsWith(LEDGER_FILE_EXTENSION));
+    const ledgers = await this.readLedgers(ledgerFiles);
     return {
-      sessions: await this.readSessionLines(ledgerFiles),
+      sessions: ledgers.flatMap((ledger) => ledger.lines.filter((line): line is SessionLine => line.type === 'session')),
+      ledgers,
       blocks: await readBlockLines(this.projectRoot),
       errors: selectRecentErrors(await readErrorLines(this.projectRoot), this.clock.now()),
     };
   }
 
-  private async readSessionLines(files: readonly string[]): Promise<SessionLine[]> {
-    const sessions: SessionLine[] = [];
+  private async readLedgers(files: readonly string[]): Promise<HarnessLedger[]> {
+    const ledgers: HarnessLedger[] = [];
     for (const file of files) {
-      const content = await readTextIfPresent(resolve(this.projectRoot, file));
-      for (const line of parseLedgerLines(content ?? '')) if (line.type === 'session') sessions.push(line);
+      const harness = harnessOf(file);
+      const lines = parseLedgerLines((await readTextIfPresent(resolve(this.projectRoot, file))) ?? '');
+      if (harness !== null) ledgers.push({ harness, lines });
     }
-    return sessions;
+    return ledgers;
   }
+}
+
+function harnessOf(file: string): HarnessId | null {
+  const segment = file.slice(SESSIONS_RELATIVE_PREFIX.length).split('/')[0] ?? '';
+  return HARNESS_IDS.find((id) => id === segment) ?? null;
 }
 
 async function isDirectory(path: string): Promise<boolean> {

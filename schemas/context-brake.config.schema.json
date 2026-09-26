@@ -219,6 +219,20 @@
       ],
       "additionalProperties": false
     },
+    "lightMode": {
+      "type": "object",
+      "properties": {
+        "triggerZone": {
+          "default": "RED",
+          "type": "string",
+          "enum": [
+            "YELLOW",
+            "RED"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "runner": {
       "default": {
         "maxSessions": 20,

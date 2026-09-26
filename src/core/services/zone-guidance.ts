@@ -5,6 +5,7 @@ import type { Zone } from '../contracts/zones.js';
 import { renderBlockMessage, renderFailureBlockMessage } from './block-message.js';
 import { isToolCallAllowed } from './brake-allowlist.js';
 import { delegatedGuidance } from './delegated-guidance.js';
+import { lightGuidance } from './light-guidance.js';
 import { compactZoneAction, isPlanAwareZone } from './zone-actions.js';
 
 export type ValidationCommandSource = () => Promise<string | null>;
@@ -16,10 +17,12 @@ export type GuidanceSources = {
 };
 
 export async function resolveCheckpointMode(config: ContextBrakeConfig, presence: PlanPresence | undefined): Promise<CheckpointMode> {
+  if (config.lightMode !== undefined) return 'light';
   if (config.delegatedSnapshot === undefined || presence === undefined) return 'plan';
   return (await presence.exists()) ? 'plan' : 'delegated';
 }
 export async function resolveGuidance(sources: GuidanceSources): Promise<ZoneGuidance> {
+  if (sources.config.lightMode !== undefined) return lightGuidance(sources.config, sources.config.lightMode);
   const section = sources.config.delegatedSnapshot;
   if (section === undefined) return planGuidance(sources, await isPlanPresentForActions(sources));
   const planPresent = sources.planPresence === undefined ? true : await sources.planPresence.exists();
@@ -52,6 +55,7 @@ async function isPlanCallAllowed(call: ToolCall, sources: GuidanceSources): Prom
   return isToolCallAllowed(call, { config: sources.config, validationCommand });
 }
 function unionGuidance(sources: GuidanceSources): ZoneGuidance {
+  if (sources.config.lightMode !== undefined) return lightGuidance(sources.config, sources.config.lightMode);
   const plan = planGuidance(sources);
   const section = sources.config.delegatedSnapshot;
   if (section === undefined) return plan;

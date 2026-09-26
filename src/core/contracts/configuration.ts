@@ -1,6 +1,8 @@
 import { z } from 'zod/mini';
 import { HARNESS_IDS } from './harness.js';
+import { lightModeSchema } from './light-mode.js';
 import { RUNNER_DEFAULTS, runnerConfigurationSchema } from './runner-configuration.js';
+import { SNAPSHOT_TRIGGER_ZONES } from './zones.js';
 
 export const INJECTION_MODES = ['threshold_only', 'always'] as const;
 const CANONICAL_PATH_RULE = 'must be a canonical repository-relative POSIX file path';
@@ -44,7 +46,6 @@ const additionalAllowedCommand = z.string().check(z.minLength(1), (ctx) => {
 const additionalAllowedCommandsSchema = z.array(additionalAllowedCommand).check(z.maxLength(MAX_ADDITIONAL_ALLOWED_COMMANDS, ADDITIONAL_ALLOWED_COMMANDS_RULE), uniqueCheck(DUPLICATE_ENTRIES_RULE));
 
 const brakeSchema = z.strictObject({ additionalAllowedCommands: z._default(additionalAllowedCommandsSchema, []) });
-export const SNAPSHOT_TRIGGER_ZONES = ['YELLOW', 'RED'] as const;
 export const MAX_AGENT_COMMAND_LENGTH = 200;
 const MAX_DELEGATED_ENTRIES = 20;
 const DELEGATED_ENTRIES_RULE = `must have at most ${MAX_DELEGATED_ENTRIES} entries`;
@@ -72,8 +73,9 @@ function checkTurnPair(ctx: z.core.ParsePayload, zones: { greenMaxTurn?: number 
   if (zones.greenMaxTurn !== undefined && zones.yellowMaxTurn !== undefined && zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue(ctx, { code: 'custom', path: ['greenMaxTurn'], input: zones.greenMaxTurn, message: 'must be less than yellowMaxTurn' });
 }
 const telemetrySchema = z.strictObject({ injectionMode: z.enum(INJECTION_MODES), activationThresholdPercentage: percentage, contextWindowCeiling: positiveInt, turnCeiling: optionalPositiveInt, zones: zonesSchema });
-export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: z.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: positiveInt }), instructionFiles: z.strictObject({ targets: z.array(relativePath).check(z.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: z._default(brakeSchema, { additionalAllowedCommands: [] }), delegatedSnapshot: z.optional(delegatedSnapshotSchema), runner: z._default(runnerConfigurationSchema, { ...RUNNER_DEFAULTS }) });
+export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: z.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: positiveInt }), instructionFiles: z.strictObject({ targets: z.array(relativePath).check(z.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: z._default(brakeSchema, { additionalAllowedCommands: [] }), delegatedSnapshot: z.optional(delegatedSnapshotSchema), lightMode: z.optional(lightModeSchema), runner: z._default(runnerConfigurationSchema, { ...RUNNER_DEFAULTS }) });
 export type ContextBrakeConfig = z.infer<typeof configurationSchema>;
 export { HARNESS_IDS } from './harness.js';
+export { SNAPSHOT_TRIGGER_ZONES } from './zones.js';
 export type { HarnessId } from './harness.js';
 export const DEFAULT_CONFIG: ContextBrakeConfig = { $schema: 'https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json', schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: 'threshold_only', activationThresholdPercentage: 50, contextWindowCeiling: 128000, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 } }, stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 }, instructionFiles: { targets: ['CLAUDE.md', 'AGENTS.md'], protocolFile: 'docs/context-brake-protocol.md' }, brake: { additionalAllowedCommands: [] }, runner: { ...RUNNER_DEFAULTS } };

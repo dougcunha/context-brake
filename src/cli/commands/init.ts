@@ -15,8 +15,8 @@ import { findingPrintKey, renderInstallText, renderFinding } from '../output/tex
 import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 import { authorizeWrite } from '../confirmation.js';
-import { CliArgumentError } from '../argument-validator.js';
-import { mergeDelegatedSnapshot, type DelegatedSnapshotFlags, type DelegatedSnapshotUpdate } from '../../core/services/delegated-snapshot-merge.js';
+import { planConfigUpdates } from '../init-config-updates.js';
+import { isLightModeInEffect } from '../../core/services/light-mode-merge.js';
 
 export type CommandEnv = { projectRoot: string; runner?: ProcessRunner; userHome?: string };
 
@@ -28,11 +28,11 @@ async function loadExistingConfig(root: string) {
   }
 }
 
-function outputReport(report: InstallReport, json: boolean, alreadyPrinted?: ReadonlySet<string>): number {
+function outputReport(report: InstallReport, json: boolean, text: { printed?: ReadonlySet<string>; planHint?: boolean } = {}): number {
   if (json) {
     renderJsonOutput(report);
   } else {
-    renderInstallText(report, alreadyPrinted);
+    renderInstallText(report, text.printed, text.planHint);
   }
   return report.exitCode;
 }
@@ -61,7 +61,7 @@ export function emitLegacyPreview(findings: readonly DiagnosticFinding[], gate: 
 
 export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<number> {
   const config = await loadExistingConfig(env.projectRoot);
-  const delegatedSnapshot = delegatedUpdate(config, args.delegatedSnapshot);
+  const updates = planConfigUpdates(config, args);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
   const adapters = getAllAdapters();
@@ -71,7 +71,7 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
-    packageVersion: await readPackageVersion(), delegatedSnapshot,
+    packageVersion: await readPackageVersion(), delegatedSnapshot: updates.delegatedSnapshot, lightMode: updates.lightMode,
   });
   assertStatuslineBridgeTarget(args.statuslineBridge, result.detections);
   if (args.dryRun) {
@@ -84,13 +84,8 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const applier = new NodeChangeApplier();
   const applyReport = await applier.apply(result.plan);
   const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
-  return outputReport(report, args.json, printed);
-}
-function delegatedUpdate(config: ContextBrakeConfig | null, flags: DelegatedSnapshotFlags | undefined): DelegatedSnapshotUpdate {
-  if (flags === undefined) return { kind: 'keep' };
-  const merge = mergeDelegatedSnapshot(config?.delegatedSnapshot, flags);
-  if ('error' in merge) throw new CliArgumentError(merge.error);
-  return merge.update;
+  const lightMode = isLightModeInEffect(config?.lightMode, { light: args.light ?? false, noLight: args.noLight ?? false });
+  return outputReport(report, args.json, { printed, planHint: !lightMode });
 }
 function harnessSelection(args: ParsedInitArgs) {
   return {

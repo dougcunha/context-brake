@@ -7,14 +7,23 @@ const CONFIG_PATH = 'context-brake.config.json';
 
 export function checkpointModeReport(config: ContextBrakeConfig | null, planExists: boolean): CheckpointModeReport {
   const section = config?.delegatedSnapshot ?? null;
+  if (config?.lightMode !== undefined) return { effective: 'light', reason: 'light_mode', delegatedSnapshot: section, lightMode: config.lightMode };
   if (section === null) return { effective: 'plan', reason: 'no_section', delegatedSnapshot: null };
   return planExists ? { effective: 'plan', reason: 'plan_present', delegatedSnapshot: section } : { effective: 'delegated', reason: 'plan_missing', delegatedSnapshot: section };
 }
 export function delegatedSnapshotFindings(config: ContextBrakeConfig | null, harnesses: readonly HarnessId[]): DiagnosticFinding[] {
   const section = config?.delegatedSnapshot;
   if (section === undefined) return [];
+  if (config?.lightMode !== undefined) return [inactiveFinding()];
   const pathFindings = section.allowedPaths.length > 0 ? [] : [noPathsFinding()];
   return [...pathFindings, ...harnesses.filter((harness) => !SKILL_AWARE_HARNESSES.has(harness)).map(unrecognizedSkillFinding)];
+}
+function inactiveFinding(): DiagnosticFinding {
+  return {
+    code: 'DELEGATED_SNAPSHOT_INACTIVE', severity: 'ok', scope: 'project', harness: null, path: CONFIG_PATH,
+    message: 'The delegated snapshot section is inactive while the light mode is on.', impact: null,
+    remediation: 'Remove it with context-brake init --no-delegated-snapshot, or leave the light mode with --no-light.',
+  };
 }
 function noPathsFinding(): DiagnosticFinding {
   return {

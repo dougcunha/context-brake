@@ -9,7 +9,7 @@
 > Keep long tasks from degrading as the context window fills, and carry their state safely into a fresh session.
 
 > [!NOTE]
-> The MVP (installation and diagnostics, telemetry and brake, plan, checkpoint, and boot) is implemented, along with the automatic reset runner, delegated snapshot mode, and the usage-based brake with measured usage in Claude Code. CI runs on Linux, macOS, and Windows. Commands and configuration below reflect the current CLI.
+> The MVP (installation and diagnostics, telemetry and brake, plan, checkpoint, and boot) is implemented, along with the automatic reset runner, delegated snapshot mode, light mode, and the usage-based brake with measured usage in Claude Code. CI runs on Linux, macOS, and Windows. Commands and configuration below reflect the current CLI.
 
 ---
 
@@ -215,6 +215,40 @@ While the section exists and the plan file does not, ContextBrake runs in delega
 
 `context-brake doctor --json` reports the mode in effect under `checkpointMode`. `context-brake run` still needs a plan. To go back to plan-only behavior, run `context-brake init --no-delegated-snapshot`.
 
+### Light Mode (telemetry only)
+
+If your workflow already manages checkpoints and snapshots, as the SDD skills in this repository do, light mode makes ContextBrake a pure context sensor:
+
+```bash
+npx context-brake init --light
+```
+
+This adds a `lightMode` section to the configuration:
+
+```json
+{
+  "lightMode": { "triggerZone": "RED" }
+}
+```
+
+What light mode does:
+
+- **Measures:** it measures context usage exactly as before. For real Claude Code windows, add the [status line bridge](#claude-code-status-line-bridge).
+- **Injects:** it injects the telemetry block with the usage, the tokens, and the zone.
+- **Asks for a snapshot:** from `triggerZone` on (`RED` by default, or `YELLOW` with `--snapshot-trigger YELLOW`), the action becomes `save your snapshot or checkpoint now, then end reply with [REQUEST_SESSION_RESET]`, and in `CRITICAL` it becomes `…immediately…`. The action names no skill or command; the agent uses the mechanism its own workflow defines.
+
+What light mode does not do:
+
+- **Files:** it creates, reads, and configures no plan, checkpoint, snapshot, or protocol file. It writes no reference block to instruction files and no `.gitignore` block.
+- **Brake:** it never blocks a tool call, in any zone.
+- **Session start:** it injects nothing at session start, after `/clear`, or after compaction.
+
+Switching an existing installation to light mode removes the managed protocol (unless you edited it), the reference blocks, and the `.gitignore` block. The `.gitignore` block stays while a plan or checkpoint file exists, and those files are never deleted. The options of the other modes (`--snapshot-command`, `--snapshot-path`, `--snapshot-skill`, `--resume-command`, `--create-instructions`, `--migrate-legacy`, `--instruction-file`) are rejected while light mode is on. `doctor` reports `checkpointMode.effective: "light"` and flags leftovers from a full installation. `context-brake run` does not support light mode. To go back to the full mode, run `context-brake init --no-light`. If you edited the protocol, light mode keeps it unmanaged: delete or move it first, or `--no-light` stops with `UNMANAGED_PROTOCOL_CONFLICT`.
+
+### Active Sessions in `doctor`
+
+In every mode, `context-brake doctor` lists the repository's active sessions with their current context usage: percentage, tokens, window, zone, and whether the reading was measured or estimated. It also shows the time of each session's last activity. The data comes from the session ledger ContextBrake already keeps under `.context-brake/sessions/`, using the newest reading after the last reset, from the status line bridge or from the last tool call. ContextBrake cannot tell whether a harness process is still running. A session counts as active when its last recorded activity is within 30 minutes, and at most 10 sessions are listed. `doctor --json` reports them under `activeSessions`, and the list is omitted when no session is active.
+
 ### Claude Code Status Line Bridge
 
 Claude Code sends the active model's context window only to the status line command, never to hooks. The optional bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`:
@@ -237,8 +271,8 @@ The bridge records only the window, the input tokens, the used percentage, the m
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot`, `--statusline-bridge`, `--no-statusline-bridge` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
-| `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, and measures overhead p95. |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot`, `--light`, `--no-light`, `--statusline-bridge`, `--no-statusline-bridge` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
+| `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json`, `--remove-state` | Safely uninstalls integrations, removes protocol, and cleans reference blocks; keeps plan/checkpoint unless `--remove-state` is provided. |
 | `context-brake plan init --task="<name>"` | `--yes` (`-y`), `--json` | Creates `task_plan.json` and `state_checkpoint.json`. |
 | `context-brake plan status` | `--json` | Shows step progress and the last checkpoint, and validates both state files. |
@@ -268,6 +302,7 @@ Both files are local state: `init` lists them in `.gitignore` between `# CONTEXT
 | [Automatic reset runner](./tasks/prd-04-runner-de-reinicio-automatico/prd.md) | Post-MVP `run` and `wrap` | Implemented |
 | [Release automation](./tasks/prd-05-automacao-de-release-e-publicacao/prd.md) | Automated release and npm publishing | Implemented |
 | [Delegated snapshot mode](./tasks/prd-06-modo-snapshot-delegado/prd.md) | Telemetry and brake without a task plan, using your own snapshot command | Implemented |
+| [Light mode](./tasks/prd-07-modo-leve/prd.md) | Telemetry only, with a generic snapshot action, and active-session usage in `doctor` | Implemented |
 
 The PRDs are written in Portuguese.
 

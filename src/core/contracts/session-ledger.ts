@@ -1,6 +1,7 @@
 import { z } from 'zod/mini';
 import { HARNESS_IDS, type HarnessId } from './harness.js';
 import type { BrakeMode, SessionKey } from './runtime.js';
+import { statuslineLineSchema, type StatuslineLine, type StatuslineLineInput } from './statusline-line.js';
 import { USAGE_SOURCES, ZONES, type UsageSource, type Zone } from './zones.js';
 
 export const SESSION_RETENTION_DAYS = 14;
@@ -23,12 +24,12 @@ export const toolLineSchema = z.strictObject({ v: version, type: z.literal('tool
 export const resetLineSchema = z.strictObject({ v: version, type: z.literal('reset'), at: timestamp, reason: z.enum(RESET_REASONS) });
 export const blockLineSchema = z.strictObject({ v: version, at: timestamp, ...sessionIdFields, tool: z.string(), zone: z.enum(ZONES), turn: z.int().check(z.nonnegative()), percentage: z.nullable(z.int()), source: z.nullable(z.enum(USAGE_SOURCES)), reason: z.enum(BLOCK_REASONS) });
 export const errorLineSchema = z.strictObject({ v: version, at: timestamp, harness: z.enum(HARNESS_IDS), event: z.string(), code: z.enum(RUNTIME_ERROR_CODES), detail: z.string() });
-const ledgerLineSchema = z.union([sessionLineSchema, toolLineSchema, resetLineSchema]);
+const ledgerLineSchema = z.union([sessionLineSchema, toolLineSchema, resetLineSchema, statuslineLineSchema]);
 
 export type SessionLine = z.infer<typeof sessionLineSchema>;
 export type ToolLine = z.infer<typeof toolLineSchema>;
 export type ResetLine = z.infer<typeof resetLineSchema>;
-export type LedgerLine = SessionLine | ToolLine | ResetLine;
+export type LedgerLine = SessionLine | ToolLine | ResetLine | StatuslineLine;
 export type BlockLine = z.infer<typeof blockLineSchema>;
 export type ErrorLine = z.infer<typeof errorLineSchema>;
 
@@ -45,6 +46,7 @@ export interface SessionLedger {
   appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void>;
   appendToolLine(key: SessionKey, input: ToolLineInput): Promise<void>;
   appendResetLine(key: SessionKey, reason: ResetReason): Promise<void>;
+  appendStatuslineLine(key: SessionKey, input: StatuslineLineInput): Promise<void>;
   pruneStaleSessions(): Promise<number>;
 }
 export interface BlockLog {

@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "generation": 8,
+  "feature": "prd-02.2-janela-de-contexto-do-claude-code",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "corrections",
+  "status": "active",
+  "safe_to_stop": false,
+  "owner_session": "33e595e5-7996-4a90-bd7a-54c61013c5bf",
+  "objective": "Claude Code telemetry uses the real context window reported to the status line (bridge in .claude/settings.local.json), keeping the user's status line intact.",
+  "constraints": [
+    "PRD 2.1 behavior unchanged without the bridge (OBJ-03), unless an approved DEC-06 amendment says otherwise",
+    "Bridge opt-in, local settings only; stdout belongs to the status line",
+    "Commit or push only with user authorization"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_01/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "REJECTED",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "447cd637ef060121bb7ff2827c98adc143670fdbeb8b375cae899c3ea0551a26",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "94b988a9f0154874109f05c620f41478e33a503a426d0eb0f923fd9f0989088f",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "c7f8dd9c494f8ddda2248f98172c78031305b309ad8f558dd67b56f294e9afd5",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-03",
+    "DEC-HIL-04"
+  ],
+  "git_base": "5917593",
+  "worktree_evidence": "HEAD 5917593; T01-T05 uncommitted plus dogfooding init changes; see workflow.md EV-01..EV-03 and codereview_01 Sources and scope",
+  "active_work": [
+    {
+      "kind": "process",
+      "handle": "git branch feat/prd-02.2-claude-context-window + draft PR",
+      "owner": "33e595e5",
+      "scope": "T12 CI run",
+      "state": "starting"
+    }
+  ],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "run",
+    "instruction": "T12 in progress: branch feat/prd-02.2-claude-context-window pushed with a draft PR; collect CI results and p95 per OS into codereview_01/task_12.md handoff, then write the snapshot; re-review (codereview_02) in a session that made no corrections.",
+    "read": [
+      {
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/workflow.md",
+        "section": "Events"
+      },
+      {
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_01/task_12.md",
+        "section": "Requirements"
+      }
+    ]
+  }
+}

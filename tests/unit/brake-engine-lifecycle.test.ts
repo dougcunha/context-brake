@@ -25,6 +25,7 @@ class TestLedger implements SessionLedger {
   async appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'session', at: AT, harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input }); }
   async appendToolLine(key: SessionKey, input: ToolLineInput): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'tool', at: AT, ...input }); }
   async appendResetLine(key: SessionKey, reason: ResetReason): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'reset', at: AT, reason }); }
+  async appendStatuslineLine(): Promise<void> { return undefined; }
   async pruneStaleSessions(): Promise<number> { this.prunes += 1; return 0; }
 }
 const blocks: BlockLog = { append: async () => Promise.resolve() };

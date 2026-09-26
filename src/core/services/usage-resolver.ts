@@ -23,7 +23,7 @@ export function resolveUsage(input: UsageResolutionInput): UsageReading {
   if (measured && measured.tokens !== null) {
     return { source: 'measured', usedTokens: measured.tokens, windowTokens: measured.contextWindow ?? input.contextWindowCeiling, measuredTokens: measured.tokens };
   }
-  return { source: 'estimated', usedTokens: estimate, windowTokens: input.contextWindowCeiling, measuredTokens: estimate };
+  return { source: 'estimated', usedTokens: estimate, windowTokens: measured?.contextWindow ?? input.contextWindowCeiling, measuredTokens: estimate };
 }
 export function resolveUsageWithConfig(input: Omit<UsageResolutionInput, 'contextWindowCeiling'>, config: ContextBrakeConfig): UsageReading {
   return resolveUsage({ ...input, contextWindowCeiling: config.telemetry.contextWindowCeiling });

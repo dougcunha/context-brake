@@ -4,7 +4,8 @@ import { MANIFEST_RELATIVE_PATH } from '../core/contracts/manifest.js';
 import { snapshotFiles } from '../infrastructure/storage/node-file-system.js';
 
 const STANDARD_HARNESS_PATHS = [
-  '.claude/settings.json', '.claude/hooks/context-brake.mjs',
+  '.claude/settings.json', '.claude/settings.local.json', '.claude/hooks/context-brake.mjs', '.claude/hooks/context-brake-statusline.mjs',
+  '.context-brake/runtime/claude-statusline.json',
   '.codex/hooks.json', '.codex/config.toml', '.codex/hooks/context-brake.mjs',
   '.cursor/hooks.json', '.cursor/hooks/context-brake.mjs',
   '.github/copilot/settings.json', '.github/hooks/context-brake.json', '.github/hooks/context-brake.mjs',

@@ -8,6 +8,7 @@ export type BundledAsset = { readonly text: string; readonly metafile: Metafile 
 export const ASSET_ENTRIES: readonly AssetEntry[] = [
   { source: 'assets/runtime/entry.ts', destination: 'dist/assets/runtime/context-brake-runtime.mjs' },
   { source: 'assets/runtime/claude-code-hook.ts', destination: 'dist/assets/runtime/claude-code-hook.mjs' },
+  { source: 'assets/runtime/claude-code-statusline.ts', destination: 'dist/assets/runtime/claude-code-statusline.mjs' },
   { source: 'assets/runtime/codex-cli-hook.ts', destination: 'dist/assets/runtime/codex-cli-hook.mjs' },
   { source: 'assets/runtime/cursor-hook.ts', destination: 'dist/assets/runtime/cursor-hook.mjs' },
   { source: 'assets/runtime/github-copilot-cli-hook.ts', destination: 'dist/assets/runtime/github-copilot-cli-hook.mjs' },

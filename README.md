@@ -68,7 +68,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
-| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; a hook timeout or failure without an explicit deny lets the call proceed |
+| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; the context window comes from the optional status line bridge; a hook timeout or failure without an explicit deny lets the call proceed |
 | Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Partial | Hosted tools such as web search bypass hooks; hook errors and timeouts let the call proceed |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | A hook timeout lets the tool call proceed |
@@ -176,7 +176,7 @@ npx context-brake doctor
 }
 ```
 
-`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it. Claude Code reports usage but not the window, so there the percentages measure usage against this budget; a model with a 200,000 or 1,000,000-token window reaches `CRITICAL` at 96,000 tokens with the default 128,000. Raise it to let sessions run longer. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
+`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it. Claude Code reports usage but not the window to hooks, so there the percentages measure usage against this budget; a model with a 200,000 or 1,000,000-token window reaches `CRITICAL` at 96,000 tokens with the default 128,000. Raise it to let sessions run longer, or install the [status line bridge](#claude-code-status-line-bridge) so Claude Code sessions use the model's real window. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
 
 ### Delegated Snapshot Mode (without a task plan)
 
@@ -215,13 +215,29 @@ While the section exists and the plan file does not, ContextBrake runs in delega
 
 `context-brake doctor --json` reports the mode in effect under `checkpointMode`. `context-brake run` still needs a plan. To go back to plan-only behavior, run `context-brake init --no-delegated-snapshot`.
 
+### Claude Code Status Line Bridge
+
+Claude Code sends the active model's context window only to the status line command, never to hooks. The optional bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`:
+
+```bash
+npx context-brake init --statusline-bridge
+```
+
+- **Local scope, per developer:** the option writes `statusLine` into `.claude/settings.local.json`, the local, unversioned settings file, with the absolute path of `.claude/hooks/context-brake-statusline.mjs`. The versioned `.claude/settings.json` does not change, and a later `init` without the option keeps the bridge. Keep `.claude/settings.local.json` ignored by Git; `doctor` warns when it is not.
+- **Your status line stays the same:** the bridge runs the status line that was in effect before (local, then project, then user settings) through a pipe, with the same input, output, and exit code, and keeps `padding` and `refreshInterval`. If you had no status line, it prints nothing. Note that Claude Code hides most footer keyboard hints (such as `esc to interrupt` and `? for shortcuts`) whenever a status line is configured, even an empty one, which is why the bridge is opt-in.
+- **Zones on 1M models:** after the status line first runs in a session, the telemetry block shows `tokens=<used>/<window>` with the model's `context_window_size`. With a 1,000,000-token model, `RED` starts above 650,000 tokens, and `contextWindowCeiling` no longer limits Claude Code sessions. After `/model`, the window changes with the next assistant response. When the transcript has no usage reading, the bridge's input tokens are used, following the same reset rule.
+- **Non-interactive sessions:** Claude Code runs the status line only in interactive sessions, so `claude -p`, including the sessions of `context-brake run`, keep using `contextWindowCeiling`.
+- **Windows:** Claude Code runs the status line through Git Bash, or through PowerShell when Git Bash is absent. The bridge command is a `sh` pipeline, verified with Git Bash; Windows without Git Bash (PowerShell only) is not verified.
+
+The bridge records only the window, the input tokens, the used percentage, the model id, and the time, per session, in the session ledger. `context-brake doctor` shows where the window comes from under `contextWindow` and warns when the local status line no longer runs the bridge, when the script is missing, or when the project or user status line changed after installation. `context-brake init --no-statusline-bridge` or `context-brake remove` restores the previous local status line, or removes the key and the file when the bridge created them.
+
 ---
 
 ## 📋 CLI Commands
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot`, `--statusline-bridge`, `--no-statusline-bridge` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json`, `--remove-state` | Safely uninstalls integrations, removes protocol, and cleans reference blocks; keeps plan/checkpoint unless `--remove-state` is provided. |
 | `context-brake plan init --task="<name>"` | `--yes` (`-y`), `--json` | Creates `task_plan.json` and `state_checkpoint.json`. |

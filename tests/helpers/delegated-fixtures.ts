@@ -36,6 +36,7 @@ export class MemoryLedger implements SessionLedger {
   async appendSessionLine(): Promise<void> { return undefined; }
   async appendToolLine(): Promise<void> { return undefined; }
   async appendResetLine(): Promise<void> { return undefined; }
+  async appendStatuslineLine(): Promise<void> { return undefined; }
   async pruneStaleSessions(): Promise<number> { return 0; }
 }
 export class MemoryBlocks implements BlockLog {

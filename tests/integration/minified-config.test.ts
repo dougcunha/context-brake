@@ -46,7 +46,7 @@ function hooksOf(parsed: Record<string, unknown>): Record<string, unknown> {
 describe('minified JSON config editing (CR-01, RF6, file-changes.md)', () => {
   it('keeps a minified Claude settings document valid and preserves user hooks', async () => {
     await withMinified(async (dir) => {
-      const parsed = await planMinified(dir, { configPath: '.claude/settings.json', harness: 'claude-code', file: 'minified-settings.json', planner: planClaudeInstall });
+      const parsed = await planMinified(dir, { configPath: '.claude/settings.json', harness: 'claude-code', file: 'minified-settings.json', planner: (root) => planClaudeInstall({ projectRoot: root }) });
       expect(hooksOf(parsed).UserHook).toBe('node custom.js');
       expect(hooksOf(parsed).PreToolUse).toBeDefined();
     });
@@ -82,7 +82,7 @@ describe('minified JSON config failures (CR-01, RF7)', () => {
   it('isolates a malformed minified document as a conflict', async () => {
     await withMinified(async (dir) => {
       await writeConfig(dir, '.claude/settings.json', '{"hooks":');
-      const plan = await planClaudeInstall(dir);
+      const plan = await planClaudeInstall({ projectRoot: dir });
       expect(plan.conflicts[0]?.code).toBe('INVALID_HARNESS_CONFIG');
       expect(plan.changes.find((c) => c.path === '.claude/settings.json')).toBeUndefined();
     });

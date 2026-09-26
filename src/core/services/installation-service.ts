@@ -53,12 +53,14 @@ async function planAdapters(adapters: readonly HarnessAdapter[], active: readonl
   const entries: ManagedEntry[] = [];
   const assets: ManagedAsset[] = [];
   const harnesses: HarnessInstallPlan[] = [];
+  const findings: DiagnosticFinding[] = [];
   for (const d of active) {
     const adapter = adapters.find((a) => a.id === d.harness);
     if (!adapter) continue;
     const aPlan = await adapter.planInstall(ctx);
     changes.push(...aPlan.changes);
     conflicts.push(...aPlan.conflicts);
+    findings.push(...(aPlan.findings ?? []));
     entries.push(...aPlan.entries);
     for (const c of aPlan.changes) if (c.owner === 'runtime_asset' && c.content) assets.push({ path: c.path, kind: 'runtime_asset', sha256: hashString(c.content) });
     if (aPlan.assets) assets.push(...aPlan.assets);
@@ -66,7 +68,7 @@ async function planAdapters(adapters: readonly HarnessAdapter[], active: readonl
     const profile = adapter.capabilityProfile();
     harnesses.push({ harness: d.harness, outcome, supportLevel: profile.supportLevel, limitations: [...profile.limitations] });
   }
-  return { changes, conflicts, entries, assets, harnesses };
+  return { changes, conflicts, entries, assets, harnesses, findings };
 }
 
 export async function planInstallation(input: InstallationInput): Promise<InstallationResult> {
@@ -90,6 +92,7 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const conflicts = [...inst.conflicts, ...gi.conflicts, ...(proto.conflict ? [proto.conflict] : []), ...ap.conflicts, ...protection.conflicts];
   const findings: DiagnosticFinding[] = [
     ...conflictFindings(conflicts),
+    ...ap.findings,
     ...inst.legacyDetected.map((path) => legacyFinding(path, cfg.config)),
   ];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: ap.harnesses });

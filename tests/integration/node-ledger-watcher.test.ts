@@ -69,7 +69,7 @@ describe('ledger watcher lifecycle (DEC-06)', () => {
   it('keeps the last reading when the ledger cannot be read', async () => {
     let fail = false;
     const ledger = new NodeSessionLedger(projectRoot, clock);
-    const flaky: SessionLedger = { ...ledger, pruneStaleSessions: async () => 0, appendSessionLine: async () => undefined, appendToolLine: async () => undefined, appendResetLine: async () => undefined, readLines: async (key) => { if (fail) throw new Error('locked'); return ledger.readLines(key); } };
+    const flaky: SessionLedger = { ...ledger, pruneStaleSessions: async () => 0, appendSessionLine: async () => undefined, appendToolLine: async () => undefined, appendResetLine: async () => undefined, appendStatuslineLine: async () => undefined, readLines: async (key) => { if (fail) throw new Error('locked'); return ledger.readLines(key); } };
     await ledger.appendToolLine(SESSION, toolLine(1, 'YELLOW', 70000));
     const watch = new NodeLedgerWatcher(flaky, POLL_MS).watch(SESSION, () => undefined);
     await delay(POLL_MS * 3);

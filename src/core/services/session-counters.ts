@@ -1,5 +1,6 @@
 import type { LedgerLine, SessionLine, ToolLine } from '../contracts/session-ledger.js';
 import type { Zone } from '../contracts/zones.js';
+import { summarizeStatusline, type StatuslineSummary } from './statusline-summary.js';
 
 export type SessionSummary = {
   readonly turns: number;
@@ -9,6 +10,7 @@ export type SessionSummary = {
   readonly sessionLine: SessionLine | null;
   readonly toolUseIds: ReadonlySet<string>;
   readonly lastResetAt: string | null;
+  readonly statusline: StatuslineSummary;
 };
 
 export function nextTurn(summary: SessionSummary): number {
@@ -32,7 +34,7 @@ export function summarizeLedger(lines: readonly LedgerLine[]): SessionSummary {
     lastReading = line;
   }
   const lastResetAt = lines[resetIndex]?.at ?? null;
-  return { turns, observedCharacters, lastReading, lastZone: lastReading?.zone ?? null, sessionLine, toolUseIds, lastResetAt };
+  return { turns, observedCharacters, lastReading, lastZone: lastReading?.zone ?? null, sessionLine, toolUseIds, lastResetAt, statusline: summarizeStatusline(lines, resetIndex) };
 }
 function lastResetIndex(lines: readonly LedgerLine[]): number {
   let index = -1;

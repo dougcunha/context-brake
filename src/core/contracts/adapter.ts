@@ -9,11 +9,14 @@ import type {
 import type { InstallationManifest, ManagedAsset, ManagedEntry } from './manifest.js';
 import type { ProcessRunner } from './processes.js';
 
+export type StatuslineBridgeRequest = 'install' | 'remove';
+
 export type HarnessContext = {
   readonly projectRoot: string;
   readonly runner?: ProcessRunner;
   readonly userHome?: string;
   readonly manifest?: InstallationManifest | null;
+  readonly statuslineBridge?: StatuslineBridgeRequest;
 };
 
 export type AdapterPlan = {
@@ -23,6 +26,7 @@ export type AdapterPlan = {
   readonly entries: readonly ManagedEntry[];
   readonly assets?: readonly ManagedAsset[];
   readonly assetPaths?: readonly string[];
+  readonly findings?: readonly DiagnosticFinding[];
 };
 
 export type BenchmarkFixture = {

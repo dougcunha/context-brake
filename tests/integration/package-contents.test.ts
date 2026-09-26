@@ -19,6 +19,7 @@ const REQUIRED_FILES: readonly string[] = [
   'docs/telemetry-block.md',
   'dist/assets/runtime/context-brake-runtime.mjs',
   'dist/assets/runtime/claude-code-hook.mjs',
+  'dist/assets/runtime/claude-code-statusline.mjs',
   'dist/assets/runtime/codex-cli-hook.mjs',
   'dist/assets/runtime/cursor-hook.mjs',
   'dist/assets/runtime/github-copilot-cli-hook.mjs',

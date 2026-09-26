@@ -17,6 +17,7 @@ class MemoryLedger implements SessionLedger {
   async appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void> { this.lines.push({ v: 1, type: 'session', at: AT, harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input }); }
   async appendToolLine(_key: SessionKey, input: ToolLineInput): Promise<void> { this.lines.push({ v: 1, type: 'tool', at: AT, ...input }); }
   async appendResetLine(): Promise<void> { return Promise.resolve(); }
+  async appendStatuslineLine(): Promise<void> { return undefined; }
   async pruneStaleSessions(): Promise<number> { return 0; }
 }
 class MemoryErrors implements RuntimeErrorLog {

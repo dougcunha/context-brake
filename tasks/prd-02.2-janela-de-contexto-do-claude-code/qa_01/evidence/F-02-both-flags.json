@@ -1,0 +1,7 @@
+{
+  "cwd": "C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/qa-none",
+  "command": "context-brake init --yes --statusline-bridge --no-statusline-bridge",
+  "exit": 64,
+  "stdout": "",
+  "stderr": "[ERROR] INVALID_ARGUMENTS: --statusline-bridge cannot be combined with --no-statusline-bridge.\n"
+}

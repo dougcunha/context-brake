@@ -1,0 +1,346 @@
+{
+  "node": "v24.19.0",
+  "platform": "win32 x64",
+  "shell": "sh",
+  "base": "C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp",
+  "results": [
+    {
+      "id": "FR-01",
+      "name": "init without the flag leaves statusLine untouched",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "id": "FR-01",
+      "name": "--dry-run lists settings.local.json and the state file without writing",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "id": "FR-01",
+      "name": "init --statusline-bridge writes an absolute forward-slash bridge command",
+      "ok": true,
+      "detail": {
+        "type": "command",
+        "command": "node \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/QA Root/ação/.claude/hooks/context-brake-statusline.mjs\" --pipe | ( sh \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/user-statusline.sh\"\n)",
+        "padding": 2,
+        "refreshInterval": 5
+      }
+    },
+    {
+      "id": "FR-02",
+      "name": "padding and refreshInterval copied from the previous status line",
+      "ok": true,
+      "detail": {
+        "type": "command",
+        "command": "node \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/QA Root/ação/.claude/hooks/context-brake-statusline.mjs\" --pipe | ( sh \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/user-statusline.sh\"\n)",
+        "padding": 2,
+        "refreshInterval": 5
+      }
+    },
+    {
+      "id": "FR-01",
+      "name": "other keys and comments in settings.local.json kept",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "FR-01",
+      "name": "versioned .claude/settings.json has no statusLine",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "FR-01",
+      "name": "second flagged init and a flagless init change nothing",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "FR-02/OBJ-02",
+      "name": "installed command through sh -c prints the user output byte for byte (ANSI, quotes, two lines)",
+      "ok": true,
+      "detail": {
+        "alone": "\u001b[31mctx\u001b[0m \"q\" 's\nline2\n",
+        "bridged": "\u001b[31mctx\u001b[0m \"q\" 's\nline2\n"
+      }
+    },
+    {
+      "id": "FR-03/NFR-03",
+      "name": "one statusline line with only the five values and the time",
+      "ok": true,
+      "detail": [
+        {
+          "v": 1,
+          "type": "statusline",
+          "at": "2026-09-26T18:44:53.071Z",
+          "windowTokens": 200000,
+          "inputTokens": 15500,
+          "usedPercentage": 8,
+          "model": "claude-opus-5-5"
+        }
+      ]
+    },
+    {
+      "id": "NFR-03",
+      "name": "ledger holds no cost, path, or output",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "FR-05/FR-04",
+      "name": "no transcript: bridge tokens measured over the bridge window",
+      "ok": true,
+      "detail": {
+        "v": 1,
+        "type": "tool",
+        "at": "2026-09-26T18:44:53.403Z",
+        "toolUseId": "toolu_1",
+        "observedCharacters": 43,
+        "turn": 1,
+        "usedTokens": 15500,
+        "windowTokens": 200000,
+        "estimatedTokens": 15161,
+        "source": "measured",
+        "zone": "GREEN"
+      }
+    },
+    {
+      "id": "FR-04/US-03",
+      "name": "window follows the latest status line run (model change to 1M)",
+      "ok": true,
+      "detail": {
+        "v": 1,
+        "type": "tool",
+        "at": "2026-09-26T18:44:54.011Z",
+        "toolUseId": "toolu_2",
+        "observedCharacters": 43,
+        "turn": 2,
+        "usedTokens": 200000,
+        "windowTokens": 1000000,
+        "estimatedTokens": 15322,
+        "source": "measured",
+        "zone": "GREEN"
+      }
+    },
+    {
+      "id": "FR-06/OBJ-01",
+      "name": "after /compact the estimated reading keeps the recorded 1M window",
+      "ok": true,
+      "detail": {
+        "v": 1,
+        "type": "tool",
+        "at": "2026-09-26T18:44:54.849Z",
+        "toolUseId": "toolu_3",
+        "observedCharacters": 43,
+        "turn": 1,
+        "usedTokens": 15161,
+        "windowTokens": 1000000,
+        "estimatedTokens": 15161,
+        "source": "estimated",
+        "zone": "GREEN"
+      }
+    },
+    {
+      "id": "FR-05/FR-06",
+      "name": "first post-reset status line reading is measured again",
+      "ok": true,
+      "detail": {
+        "v": 1,
+        "type": "tool",
+        "at": "2026-09-26T18:44:55.515Z",
+        "toolUseId": "toolu_4",
+        "observedCharacters": 43,
+        "turn": 2,
+        "usedTokens": 30000,
+        "windowTokens": 1000000,
+        "estimatedTokens": 15322,
+        "source": "measured",
+        "zone": "GREEN"
+      }
+    },
+    {
+      "id": "US-01/FR-04",
+      "name": "YELLOW block renders usage=60% and tokens=600000/1000000",
+      "ok": true,
+      "detail": "[ContextBrake v2] turn=3 usage=60% tokens=600000/1000000 source=measured zone=YELLOW action=keep working; finish the current unit before large new explorations"
+    },
+    {
+      "id": "US-01",
+      "name": "RED above 650,000 tokens of a 1M window (660,000 = 66%)",
+      "ok": true,
+      "detail": "[ContextBrake v2] turn=4 usage=66% tokens=660000/1000000 source=measured zone=RED action=finish or pause the current unit, record progress, end reply with [REQUEST_SESSION_RESET]"
+    },
+    {
+      "id": "FR-07/NFR-04",
+      "name": "doctor --json reports installed bridge, statusline source, last window, schemaVersion 1",
+      "ok": true,
+      "detail": {
+        "bridge": "installed",
+        "source": "statusline",
+        "lastWindowTokens": 1000000
+      }
+    },
+    {
+      "id": "FR-07",
+      "name": "STATUSLINE_LOCAL_TRACKED matches git check-ignore (ignored=false)",
+      "ok": true,
+      "detail": [
+        "STATUSLINE_LOCAL_TRACKED"
+      ]
+    },
+    {
+      "id": "FR-07/UX",
+      "name": "doctor text has one context window line, no ANSI with NO_COLOR",
+      "ok": true,
+      "detail": [
+        "    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the optional status line bridge.",
+        "  - context window: statusline (bridge: installed, last window: 1000000)"
+      ]
+    },
+    {
+      "id": "FR-07",
+      "name": "warning clears once the local file is ignored",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "id": "FR-07",
+      "name": "STATUSLINE_PREVIOUS_CHANGED when the user status line changed",
+      "ok": true,
+      "detail": [
+        "STATUSLINE_PREVIOUS_CHANGED"
+      ]
+    },
+    {
+      "id": "FR-07",
+      "name": "STATUSLINE_BRIDGE_MISSING_SCRIPT when the script is gone",
+      "ok": true,
+      "detail": [
+        "STATUSLINE_BRIDGE_MISSING_SCRIPT"
+      ]
+    },
+    {
+      "id": "FR-07",
+      "name": "STATUSLINE_BRIDGE_INACTIVE and bridge=inactive when the local command changed",
+      "ok": true,
+      "detail": {
+        "codes": [
+          "STATUSLINE_BRIDGE_INACTIVE"
+        ],
+        "cw": {
+          "bridge": "inactive",
+          "source": "statusline",
+          "lastWindowTokens": 1000000
+        }
+      }
+    },
+    {
+      "id": "FR-07",
+      "name": "every warning has a remediation",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "id": "FR-08/US-05",
+      "name": "--no-statusline-bridge restores settings.local.json byte for byte and deletes the state",
+      "ok": true,
+      "detail": "{\n  // developer notes\n  \"permissions\": { \"allow\": [\"Bash(ls)\"] },\n  \"env\": { \"A\": \"1\" }\n}\n"
+    },
+    {
+      "id": "FR-02",
+      "name": "project-scope command wrapped; same stdin, output, and exit code 3",
+      "ok": true,
+      "detail": {
+        "a": {
+          "code": 3,
+          "stdout": {
+            "type": "Buffer",
+            "data": [
+              112,
+              114,
+              111,
+              106,
+              32,
+              56,
+              54,
+              50
+            ]
+          }
+        },
+        "b": {
+          "code": 3,
+          "stdout": {
+            "type": "Buffer",
+            "data": [
+              112,
+              114,
+              111,
+              106,
+              32,
+              56,
+              54,
+              50
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "FR-08",
+      "name": "remove deletes the local file the bridge created and the state",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "id": "FR-02",
+      "name": "local scope wins and a trailing # comment keeps working",
+      "ok": true,
+      "detail": "local\n"
+    },
+    {
+      "id": "FR-08",
+      "name": "previous local statusLine value restored, no other key changed",
+      "ok": true,
+      "detail": "{ \"statusLine\": {\"type\":\"command\",\"command\":\"echo local # trailing note\"} }\n"
+    },
+    {
+      "id": "FR-02",
+      "name": "without a previous command: no --pipe, empty output, exit 0",
+      "ok": true,
+      "detail": {
+        "dCommand": "node \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/qa-none/.claude/hooks/context-brake-statusline.mjs\"",
+        "out": ""
+      }
+    },
+    {
+      "id": "NFR-02",
+      "name": "invalid stdin keeps the user output and exit code",
+      "ok": true,
+      "detail": "local\n"
+    },
+    {
+      "id": "FR-01/DEC-08",
+      "name": "no Claude Code detected: exit 64 and nothing written",
+      "ok": true,
+      "detail": {
+        "code": 64,
+        "files": []
+      }
+    },
+    {
+      "id": "DEC-08",
+      "name": "both flags: exit 64",
+      "ok": true,
+      "detail": 64
+    },
+    {
+      "id": "FR-01/DEC-02",
+      "name": "root with $ gets STATUSLINE_UNSUPPORTED_PATH and no local write",
+      "ok": true,
+      "detail": {
+        "code": 2
+      }
+    }
+  ]
+}

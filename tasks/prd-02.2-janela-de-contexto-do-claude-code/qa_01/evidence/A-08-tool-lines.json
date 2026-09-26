@@ -1,0 +1,52 @@
+{
+  "v": 1,
+  "type": "tool",
+  "at": "2026-09-26T18:44:53.403Z",
+  "toolUseId": "toolu_1",
+  "observedCharacters": 43,
+  "turn": 1,
+  "usedTokens": 15500,
+  "windowTokens": 200000,
+  "estimatedTokens": 15161,
+  "source": "measured",
+  "zone": "GREEN"
+}
+{
+  "v": 1,
+  "type": "tool",
+  "at": "2026-09-26T18:44:54.011Z",
+  "toolUseId": "toolu_2",
+  "observedCharacters": 43,
+  "turn": 2,
+  "usedTokens": 200000,
+  "windowTokens": 1000000,
+  "estimatedTokens": 15322,
+  "source": "measured",
+  "zone": "GREEN"
+}
+{
+  "v": 1,
+  "type": "tool",
+  "at": "2026-09-26T18:44:54.849Z",
+  "toolUseId": "toolu_3",
+  "observedCharacters": 43,
+  "turn": 1,
+  "usedTokens": 15161,
+  "windowTokens": 1000000,
+  "estimatedTokens": 15161,
+  "source": "estimated",
+  "zone": "GREEN"
+}
+{
+  "v": 1,
+  "type": "tool",
+  "at": "2026-09-26T18:44:55.515Z",
+  "toolUseId": "toolu_4",
+  "observedCharacters": 43,
+  "turn": 2,
+  "usedTokens": 30000,
+  "windowTokens": 1000000,
+  "estimatedTokens": 15322,
+  "source": "measured",
+  "zone": "GREEN"
+}

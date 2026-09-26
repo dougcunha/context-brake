@@ -1,0 +1,36 @@
+PASS FR-01 init without the flag leaves statusLine untouched
+PASS FR-01 --dry-run lists settings.local.json and the state file without writing
+PASS FR-01 init --statusline-bridge writes an absolute forward-slash bridge command
+PASS FR-02 padding and refreshInterval copied from the previous status line
+PASS FR-01 other keys and comments in settings.local.json kept
+PASS FR-01 versioned .claude/settings.json has no statusLine
+PASS FR-01 second flagged init and a flagless init change nothing
+PASS FR-02/OBJ-02 installed command through sh -c prints the user output byte for byte (ANSI, quotes, two lines)
+PASS FR-03/NFR-03 one statusline line with only the five values and the time
+PASS NFR-03 ledger holds no cost, path, or output
+PASS FR-05/FR-04 no transcript: bridge tokens measured over the bridge window
+PASS FR-04/US-03 window follows the latest status line run (model change to 1M)
+PASS FR-06/OBJ-01 after /compact the estimated reading keeps the recorded 1M window
+PASS FR-05/FR-06 first post-reset status line reading is measured again
+PASS US-01/FR-04 YELLOW block renders usage=60% and tokens=600000/1000000
+PASS US-01 RED above 650,000 tokens of a 1M window (660,000 = 66%)
+PASS FR-07/NFR-04 doctor --json reports installed bridge, statusline source, last window, schemaVersion 1
+PASS FR-07 STATUSLINE_LOCAL_TRACKED matches git check-ignore (ignored=false)
+PASS FR-07/UX doctor text has one context window line, no ANSI with NO_COLOR
+PASS FR-07 warning clears once the local file is ignored
+PASS FR-07 STATUSLINE_PREVIOUS_CHANGED when the user status line changed
+PASS FR-07 STATUSLINE_BRIDGE_MISSING_SCRIPT when the script is gone
+PASS FR-07 STATUSLINE_BRIDGE_INACTIVE and bridge=inactive when the local command changed
+PASS FR-07 every warning has a remediation
+PASS FR-08/US-05 --no-statusline-bridge restores settings.local.json byte for byte and deletes the state
+PASS FR-02 project-scope command wrapped; same stdin, output, and exit code 3
+PASS FR-08 remove deletes the local file the bridge created and the state
+PASS FR-02 local scope wins and a trailing # comment keeps working
+PASS FR-08 previous local statusLine value restored, no other key changed
+PASS FR-02 without a previous command: no --pipe, empty output, exit 0
+PASS NFR-02 invalid stdin keeps the user output and exit code
+PASS FR-01/DEC-08 no Claude Code detected: exit 64 and nothing written
+PASS DEC-08 both flags: exit 64
+PASS FR-01/DEC-02 root with $ gets STATUSLINE_UNSUPPORTED_PATH and no local write
+
+34/34 passed

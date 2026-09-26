@@ -44,9 +44,9 @@ PRD NFR-01/OBJ-04, TechSpec DEC-13 and TC-20, and `statusline-overhead.test.ts` 
 
 ## Work
 
-- [ ] T15.1 Amend PRD NFR-01 and OBJ-04, TechSpec DEC-13 and TC-20.
-- [ ] T15.2 Measure one Node start in the bridge case and add it to the bridge target; raise the hook target to 120 ms.
-- [ ] T15.3 Push to PR #2 and confirm TC-20 on the CI matrix (evidence goes to T12).
+- [x] T15.1 Amend PRD NFR-01 and OBJ-04, TechSpec DEC-13 and TC-20.
+- [x] T15.2 Measure one Node start in the bridge case and add it to the bridge target; raise the hook target to 120 ms.
+- [x] T15.3 Push to PR #2 and confirm TC-20 on the CI matrix (evidence goes to T12).
 
 ## Acceptance criteria
 
@@ -77,8 +77,8 @@ PRD NFR-01/OBJ-04, TechSpec DEC-13 and TC-20, and `statusline-overhead.test.ts` 
 
 > Updated by `sdd-execute-corrections` during implementation.
 
-- Produced result: Pending execution.
-- Changed files: Pending execution.
-- Checks: Pending execution.
-- Validated state: Pending execution (code or diff, configuration, platform, and environment).
-- Open items: Pending execution.
+- Produced result: Budgets revised per DEC-HIL-05. PRD NFR-01/OBJ-04: hooks without the bridge 100 ms (PRD 2.1), hooks with 200 `statusline` lines 120 ms, bridge at most 50 ms beyond one Node start. TechSpec DEC-13 and TC-20 amended. TC-20 measures the p95 of an empty `node -e` and adds it to the bridge target; the hook target is 120 ms. CI run 36257966989 on `8dd3baa` is green on all 9 jobs (Windows Node 20 green on rerun; see T12).
+- Changed files: `prd.md` (OBJ-04, NFR-01), `techspec.md` (DEC-13, TC-20), `tests/integration/statusline-overhead.test.ts` (94 lines).
+- Checks: Local Windows: `statusline-overhead` 3/3 with the local rule and with `CI=true` (bridge +62.2 vs 50+53.8; hooks +63.3, +84.9 vs 120). `npm run lint`, `npm run typecheck`, `npm run build` pass. CI: see T12 table.
+- Validated state: Commit `8dd3baa` on `feat/prd-02.2-claude-context-window`, draft PR #2, 2026-09-26.
+- Open items: Hook p95 with 200 `statusline` lines runs +48 to +78 ms on CI, well within 120; under coverage load one Windows sample set reached +124.2 ms (see T12).

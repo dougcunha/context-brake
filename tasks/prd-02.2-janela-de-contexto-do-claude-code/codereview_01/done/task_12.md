@@ -92,4 +92,19 @@ The corrected change runs on the CI matrix (Linux, macOS, Windows), and the TC-2
 - Changed files: none.
 - Checks: `gh pr checks 2`; job logs parsed for `[overhead]` lines and assertions.
 - Validated state: commit `66e46cf`, GitHub Actions ubuntu/macos/windows-latest, Node 20/22/24, 2026-09-26.
-- Open items: NFR-01/OBJ-04 are not met on macOS and Windows. Changing the budget or the bridge design is a contract change, so T12 stays open pending an exception HIL decision (BLK-01 in `checkpoint.json`).
+- Open items (first run): NFR-01/OBJ-04 were not met on macOS and Windows; resolved by BLK-01 → DEC-HIL-05 (budget revision) and T15.
+- Second run, CI 36257966989 on `8dd3baa` (T15): green on all 9 jobs. Windows Node 20 failed its first attempt only in the `npm run coverage` pass (PostToolUse +124.2 ms vs 120, one outlier with max 166.4 ms; its `npm test` pass in the same job was +47.1 / +75.7 / +76.3 ms) and passed on rerun of the failed job. p95 over baseline, `npm test` pass (bridge target = 50 + node start):
+
+  | Job | Bridge (target) | PreToolUse | PostToolUse |
+  | --- | --- | --- | --- |
+  | ubuntu Node 20 | +48.1 (76.7) | +76.2 | +78.2 |
+  | ubuntu Node 22 | +47.5 (78.5) | +74.0 | +75.1 |
+  | ubuntu Node 24 | +40.1 (77.4) | +48.3 | +51.0 |
+  | macOS Node 20 | +24.4 (80.8) | +38.7 | +49.3 |
+  | macOS Node 22 | +43.9 (130.0) | +73.6 | +56.4 |
+  | macOS Node 24 | +34.5 (101.8) | +26.2 | +26.5 |
+  | Windows Node 20 (rerun) | +61.0 (83.7) | +58.2 | +61.0 |
+  | Windows Node 22 | +49.2 (90.7) | +72.6 | +74.2 |
+  | Windows Node 24 | +62.0 (105.6) | +65.4 | +69.3 |
+
+- Final open item: TC-20 is a timing test on shared CI runners; one outlier under coverage load exceeded the hook target once in 18 test passes. Recorded for the re-review; no rule was relaxed beyond DEC-HIL-05.

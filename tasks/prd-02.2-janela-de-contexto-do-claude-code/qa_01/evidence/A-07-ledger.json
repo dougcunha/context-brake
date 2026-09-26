@@ -1,0 +1,11 @@
+[
+  {
+    "v": 1,
+    "type": "statusline",
+    "at": "2026-09-26T18:44:53.071Z",
+    "windowTokens": 200000,
+    "inputTokens": 15500,
+    "usedPercentage": 8,
+    "model": "claude-opus-5-5"
+  }
+]

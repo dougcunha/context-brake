@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "generation": 11,
+  "generation": 20,
   "feature": "prd-02.2-janela-de-contexto-do-claude-code",
   "workspace": "D:/MyProjects/ContextBrake",
-  "phase": "corrections",
+  "phase": "acceptance",
   "status": "awaiting-hil",
   "safe_to_stop": true,
-  "owner_session": "33e595e5-7996-4a90-bd7a-54c61013c5bf",
+  "owner_session": "session_01TBeDgaQbko97hrGYSbmGig",
   "objective": "Claude Code telemetry uses the real context window reported to the status line (bridge in .claude/settings.local.json), keeping the user's status line intact.",
   "constraints": [
     "PRD 2.1 behavior unchanged without the bridge (OBJ-03), unless an approved DEC-06 amendment says otherwise",
@@ -18,12 +18,12 @@
     "prd": "prd.md",
     "techspec": "techspec.md",
     "tasks": "tasks.md",
-    "review": "codereview_01/codereview.md",
-    "qa": null,
+    "review": "codereview_02/codereview.md",
+    "qa": "qa_01/qa.md",
     "snapshot": "context-snapshot.md"
   },
-  "review_status": "REJECTED",
-  "qa_status": null,
+  "review_status": "APPROVED",
+  "qa_status": "APPROVED",
   "approved_sources": [
     {
       "path": "prd.md",
@@ -42,44 +42,34 @@
     }
   ],
   "decisions_to_read": [
-    "DEC-HIL-04"
+    "DEC-HIL-04",
+    "DEC-HIL-05",
+    "DEC-HIL-06"
   ],
   "git_base": "5917593",
-  "worktree_evidence": "Branch feat/prd-02.2-claude-context-window, commit 66e46cf (feature paths), pushed; draft PR https://github.com/dougcunha/context-brake/pull/2. Dogfooding files and .agents/settings.local.json uncommitted; see workflow.md EV-06",
+  "worktree_evidence": "Code at 8dd3baa (pushed, draft PR #2, CI green); task-state edits, codereview_02 and qa_01 uncommitted; dogfooding files uncommitted by design. See workflow.md EV-06..EV-12",
   "active_work": [],
   "pending_hil": {
-    "gate": "exception",
-    "question": "BLK-01: take the bridge off the critical path (shell fan-out, background recording), revise NFR-01/OBJ-04 budgets to the measured Node start cost, or accept CR-04 open; plus session choice.",
+    "gate": "HIL 3",
+    "question": "Accept the current delivery (codereview_02 APPROVED, qa_01 APPROVED)?",
     "affected": [
-      "codereview_01/CR-04",
-      "codereview_01/T12",
-      "prd.md#NFR-01",
-      "prd.md#OBJ-04",
-      "techspec.md#DEC-02",
-      "techspec.md#DEC-03",
-      "techspec.md#DEC-13"
+      "prd-02.2"
     ]
   },
-  "blockers": [
-    {
-      "id": "BLK-01",
-      "summary": "TC-20 fails on macOS and Windows CI: the Node bridge in the pipeline adds one Node cold start (+62 to +68 ms vs the 50 ms NFR-01 budget); hooks near 100 ms on Windows, one macOS outlier +105.8 ms",
-      "evidence": "codereview_01/task_12.md#handoff"
-    }
-  ],
+  "blockers": [],
   "correction_round": 1,
   "rounds_without_progress": 0,
   "next_action": {
     "kind": "await-decision",
-    "instruction": "Answer BLK-01 (exception HIL); record it in workflow.md; plan the chosen correction as a new task in codereview_01 (T15) and re-run CI on PR #2; T12 closes on a green matrix; then end the session so codereview_02 runs in a session that made no corrections.",
+    "instruction": "Record the HIL 3 answer in workflow.md; on acceptance mark checkpoint completed and snapshot closed. Commit/push of the task-state files and PR readiness only if the user authorizes.",
     "read": [
       {
-        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/workflow.md",
-        "section": "Events"
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/qa_01/qa.md",
+        "section": "Limitations and open items"
       },
       {
-        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_01/task_12.md",
-        "section": "Handoff"
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_02/codereview.md",
+        "section": "Limitations and open items"
       }
     ]
   }

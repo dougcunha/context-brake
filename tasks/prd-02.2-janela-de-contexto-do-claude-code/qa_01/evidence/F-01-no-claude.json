@@ -1,0 +1,7 @@
+{
+  "cwd": "C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/qa-no-claude",
+  "command": "context-brake init --yes --json --statusline-bridge",
+  "exit": 64,
+  "stdout": "{\n  \"schemaVersion\": 1,\n  \"command\": \"init\",\n  \"status\": \"error\",\n  \"error\": {\n    \"code\": \"INVALID_ARGUMENTS\",\n    \"message\": \"--statusline-bridge and --no-statusline-bridge require claude-code among the target harnesses.\"\n  },\n  \"exitCode\": 64\n}\n",
+  "stderr": ""
+}

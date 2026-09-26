@@ -45,6 +45,7 @@ Harness event names, payload shapes, and config file formats stay inside that ha
 - Lint: `npm run lint`
 - Tests: `npm test`
 - Coverage: `npm run coverage`
+- Acceptance-scale tests: `npm run test:acceptance` repeats the simulated long-task and autonomy suites the number of times their PRDs require; the default run covers each distinct scenario once, and the release gate runs the full scale
 - Schema currency: `npm run schemas:check`
 - Dependency scripts: `npm run dependencies:check`
 - Package smoke: `npm run package:smoke`

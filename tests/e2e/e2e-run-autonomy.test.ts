@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { FakeSession } from '../support/fake-harness/install.js';
+import { acceptanceIndexes } from '../helpers/acceptance-scale.js';
 import { CEILING_TOOL_CHARACTERS, prepareAcceptanceProject, runAcceptance, workSteps, type AcceptanceHarness, type AcceptanceRun } from '../helpers/run-acceptance.js';
 import { createRunProject, readPlanStatuses, removeRunProject, useScenario } from '../helpers/run-project.js';
 
 const RUN_COUNT = 20;
 const STEP_COUNT = 10;
 const CONCURRENT_RUNS = 5;
+const BOUNDARY_RUNS = [0, 1, 8, 9];
+const RUN_INDEXES = acceptanceIndexes(RUN_COUNT, BOUNDARY_RUNS);
 const AUTONOMY_TIMEOUT_MS = 900_000;
 const SESSION_MINUTES_BOUND = '2';
 const CEILING_SESSION: FakeSession = { work: false, toolCharacters: CEILING_TOOL_CHARACTERS, hang: {} };
@@ -35,7 +38,7 @@ async function autonomousRun(index: number): Promise<AutonomyOutcome> {
 
 async function runAll(): Promise<AutonomyOutcome[]> {
   const outcomes: AutonomyOutcome[] = [];
-  const pending = Array.from({ length: RUN_COUNT }, (_, index) => index);
+  const pending = [...RUN_INDEXES];
   async function worker(): Promise<void> {
     for (let index = pending.shift(); index !== undefined; index = pending.shift()) outcomes.push(await autonomousRun(index));
   }
@@ -44,9 +47,9 @@ async function runAll(): Promise<AutonomyOutcome[]> {
 }
 
 describe('E2E run: autonomy objective (TC-23, CA-14, PRD "Objetivos")', () => {
-  it(`completes a ${STEP_COUNT}-step plan in ${RUN_COUNT} of ${RUN_COUNT} runs with no human input, across critical-ceiling restarts`, async () => {
+  it(`completes a ${STEP_COUNT}-step plan in ${RUN_INDEXES.length} of ${RUN_INDEXES.length} runs with no human input, across critical-ceiling restarts`, async () => {
     const outcomes = await runAll();
-    expect(outcomes).toHaveLength(RUN_COUNT);
+    expect(outcomes).toHaveLength(RUN_INDEXES.length);
     for (const { index, run, statuses } of outcomes) {
       const evidence = `run ${index}: ${run.stderr}`;
       expect(run.code, evidence).toBe(0);

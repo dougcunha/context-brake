@@ -27,9 +27,10 @@
     "lint": "eslint .",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
+    "test:acceptance": "vitest run --mode acceptance",
     "package:smoke": "npm run assets:check && tsx scripts/check-package.ts && node dist/src/cli/main.js",
     "release:verify-tag": "tsx scripts/check-release-tag.ts",
-    "release:check": "npm run schemas:check && npm run dependencies:check && npm run build && npm run typecheck && npm run lint && npm test && npm run coverage && npm run package:smoke"
+    "release:check": "npm run schemas:check && npm run dependencies:check && npm run build && npm run typecheck && npm run lint && npm run coverage -- --mode acceptance && npm run package:smoke"
   },
   "dependencies": {
     "jsonc-parser": "^3.3.1",

@@ -110,7 +110,7 @@ git push origin v1.1.0
    - Checagem de integridade de schemas e scripts de instalação;
    - Build TypeScript e compilação de assets de runtime;
    - Typecheck e Lint;
-   - Testes unitários e de integração com medição de cobertura;
+   - Testes unitários, de integração e ponta a ponta na escala de aceitação (`--mode acceptance`), com medição de cobertura;
    - Teste de fumaça de empacotamento (`package:smoke`);
    - Validação da tag via `scripts/check-release-tag.ts`;
    - Publicação autenticada com provenance no npm;

@@ -50,11 +50,8 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Run tests
-        run: npm test
-
-      - name: Verify test coverage
-        run: npm run coverage
+      - name: Run acceptance-scale tests with coverage
+        run: npm run coverage -- --mode acceptance
 
       - name: Package smoke test
         run: npm run package:smoke

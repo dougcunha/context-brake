@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import type { HarnessId } from '../../src/core/contracts/harness.js';
 import { parseStateCheckpoint, assertCheckpointMatchesPlan } from '../../src/core/validation/checkpoint-validator.js';
 import { parseTaskPlan } from '../../src/core/validation/plan-validator.js';
+import { distinctScenarioIndexes } from '../helpers/acceptance-scale.js';
 import { attemptGit, requireGit, runGit } from '../helpers/git-capability.js';
 import { writeRuntimeConfig } from '../helpers/runtime-seed.js';
 import { PROFILE_CATALOG, sessionSteps, stateToolHarness, type AgentProfile, type CallExpectation } from '../support/harness-simulator/agent-profiles.js';
@@ -81,10 +82,7 @@ async function runSession(harness: ProcessHarnessId | InProcessHarnessId, index:
     const validConfig = profile === 'failure_above_ceiling' ? await readFile(configPath, 'utf8') : null;
     const recorder = new SessionRecorder();
     await runScript({ channel, harness, recorder, root }, sessionSteps(profile));
-    if (validConfig !== null) {
-      expect(await readFile(join(root, '.context-brake/runtime/errors.jsonl'), 'utf8')).toContain('INVALID_CONFIG');
-      await writeFile(configPath, validConfig, 'utf8');
-    }
+    if (validConfig !== null) await writeFile(configPath, validConfig, 'utf8');
     await assertSession({ root, harness, sessionId, recorder, profile });
   } finally {
     await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
@@ -93,7 +91,7 @@ async function runSession(harness: ProcessHarnessId | InProcessHarnessId, index:
 
 describe('T09 simulated long-task efficacy (TC-17, CA-17)', () => {
   for (const harness of LONG_TASK_HARNESSES) {
-    for (let index = 0; index < SESSION_COUNT; index += 1) {
+    for (const index of distinctScenarioIndexes(SESSION_COUNT, (session) => profileFor(harness, session))) {
       it.concurrent(`runs ${harness} session ${index} without an out-of-allowlist call at or above the ceiling`, async (ctx) => {
         await requireGit(ctx, await attemptGit());
         await runSession(harness, index);

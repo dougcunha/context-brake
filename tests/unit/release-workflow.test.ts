@@ -34,7 +34,6 @@ describe('release workflow step sequencing', () => {
       'npm run build',
       'npm run typecheck',
       'npm run lint',
-      'npm test',
       'npm run coverage',
       'npm run package:smoke',
       'scripts/check-release-tag.ts',

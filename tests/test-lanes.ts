@@ -59,6 +59,20 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/unit/run-prompts.test.ts',
 ];
 
+export const SERIAL_LANE_FILES: readonly string[] = [
+  'tests/e2e/e2e-09.test.ts',
+  'tests/e2e/e2e-run-autonomy.test.ts',
+  'tests/e2e/e2e-simulated-boot.test.ts',
+  'tests/e2e/e2e-simulated-long-task.test.ts',
+  'tests/integration/boot-git-delivery.test.ts',
+  'tests/integration/doctor-benchmark.test.ts',
+  'tests/integration/node-process-runner.test.ts',
+  'tests/integration/runtime-overhead.test.ts',
+  'tests/integration/shell-validation-executor.test.ts',
+  'tests/integration/statusline-overhead.test.ts',
+  'tests/unit/overhead-measurer.test.ts',
+];
+
 export const PROCESS_MARKERS: readonly string[] = [
   'node:child_process',
   'cli-runner',
@@ -74,6 +88,10 @@ export const PROCESS_MARKERS: readonly string[] = [
 export function processLaneGlobs(): string[] {
   const directoryGlobs = PROCESS_LANE_DIRECTORIES.map((directory) => `${directory}**/*${TEST_FILE_SUFFIX}`);
   return [...directoryGlobs, ...PROCESS_LANE_FILES];
+}
+
+export function isSerialLaneFile(file: string): boolean {
+  return SERIAL_LANE_FILES.includes(file);
 }
 
 export function isProcessLaneFile(file: string): boolean {

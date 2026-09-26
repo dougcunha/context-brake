@@ -12,6 +12,7 @@ import { CLAUDE_CAPABILITIES } from './capabilities.js';
 import { isTargetGroup } from './claude-merger.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
 import { CLAUDE_CONFIG_FILE, CLAUDE_HOOK_FILE, planClaudeInstall, planClaudeRemove } from './planner.js';
+import { diagnoseStatusline } from './statusline-diagnostics.js';
 
 export class ClaudeAdapter implements HarnessAdapter {
   readonly id = 'claude-code';
@@ -30,7 +31,7 @@ export class ClaudeAdapter implements HarnessAdapter {
   }
 
   planInstall(context: HarnessContext) {
-    return planClaudeInstall(context.projectRoot);
+    return planClaudeInstall(context);
   }
 
   planRemove(context: HarnessContext) {
@@ -62,6 +63,7 @@ export class ClaudeAdapter implements HarnessAdapter {
       }
     }
     if (!(await pathExists(hookPath))) findings.push(createAssetMissingFinding(this.id, CLAUDE_HOOK_FILE));
+    findings.push(...await diagnoseStatusline(context));
     return findings;
   }
 

@@ -29,7 +29,7 @@ export type DoctorInput = {
   manifest: InstallationManifest | null;
   allSnapshots: readonly FileSnapshot[];
   packageVersion: string;
-  runtimeState?: RuntimeStateReading | null;
+  runtimeState?: RuntimeStateReading | null; contextWindow?: DoctorReport['contextWindow'];
 };
 
 function deriveIntegrationState(findings: readonly DiagnosticFinding[]): 'installed' | 'missing' | 'broken' {
@@ -96,5 +96,5 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
   if (input.config && !input.configError) allFindings.push(...checkGitignore(input.gitignoreSnapshot, input.config));
   if (input.runtimeState) allFindings.push(...brakeSessionFindings(input.runtimeState));
   allFindings.push(...delegatedSnapshotFindings(input.config, [...targetIds]));
-  return buildDoctorReport({ detections, integrations, findings: allFindings, checkpointMode: checkpointModeReport(input.config, input.planSnapshot?.exists ?? false) });
+  return buildDoctorReport({ detections, integrations, findings: allFindings, checkpointMode: checkpointModeReport(input.config, input.planSnapshot?.exists ?? false), contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined });
 }

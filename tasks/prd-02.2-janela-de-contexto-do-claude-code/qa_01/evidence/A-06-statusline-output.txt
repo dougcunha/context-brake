@@ -1,0 +1,6 @@
+{
+  "alone": "G1szMW1jdHgbWzBtICJxIiAncwpsaW5lMgo=",
+  "bridged": "G1szMW1jdHgbWzBtICJxIiAncwpsaW5lMgo=",
+  "aloneCode": 0,
+  "bridgedCode": 0
+}

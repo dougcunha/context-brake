@@ -1,6 +1,7 @@
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } from '../../core/contracts/runtime.js';
 import type { Clock, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLineInput } from '../../core/contracts/session-ledger.js';
+import type { StatuslineLineInput } from '../../core/contracts/statusline-line.js';
 import type { RuntimeInput } from '../../core/services/brake-engine.js';
 import { failureDetail, failureErrorCode, resolveFailure, runWithinDeadline } from '../../core/services/failure-policy.js';
 import { NodeSessionLedger } from './node-session-ledger.js';
@@ -63,6 +64,10 @@ class CachedSessionLedger implements SessionLedger {
   async appendResetLine(key: SessionKey, reason: ResetReason): Promise<void> {
     await this.inner.appendResetLine(key, reason);
     this.cache.get(entryKey(key))?.push({ v: 1, type: 'reset', at: this.clock.now().toISOString(), reason });
+  }
+  async appendStatuslineLine(key: SessionKey, input: StatuslineLineInput): Promise<void> {
+    await this.inner.appendStatuslineLine(key, input);
+    this.cache.get(entryKey(key))?.push({ v: 1, type: 'statusline', at: this.clock.now().toISOString(), ...input });
   }
   async pruneStaleSessions(): Promise<number> {
     const pruned = await this.inner.pruneStaleSessions();

@@ -10,7 +10,7 @@ const VERSION: VersionProbe = { status: 'resolved', display: '1.0.0', normalized
 
 const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
   'claude-code': { level: 'full', states: 'SSSS?U', limitations: [
-    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate.'],
+    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the optional status line bridge.'],
     ['timeout_fail_closed', 'A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.'],
   ] },
   'codex-cli': { level: 'partial', states: 'SUSSUU', limitations: [

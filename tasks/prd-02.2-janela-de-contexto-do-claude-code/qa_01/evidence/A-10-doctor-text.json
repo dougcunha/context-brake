@@ -1,0 +1,7 @@
+{
+  "cwd": "C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/QA Root/ação",
+  "command": "context-brake doctor --harness claude-code",
+  "exit": 1,
+  "stdout": "[WARN] ContextBrake doctor: warnings\n  - claude-code: installed (support: full, overhead: 292.6ms/100ms (fail))\n    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the optional status line bridge.\n    * timeout_fail_closed: A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.\n    * pre_tool_block: The minimum harness version is unverified, so version compatibility cannot be claimed.\n  - context window: statusline (bridge: installed, last window: 1000000)\n  [WARN] STATUSLINE_LOCAL_TRACKED: .claude/settings.local.json is not ignored by Git.\n    Impact: The machine-specific status line command can be committed.\n    Remediation: Add .claude/settings.local.json to .gitignore.\n  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.\n    Impact: ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.\n    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.\n  [OK] BRAKE_BLOCKS_RECORDED: ContextBrake recorded 0 blocked tool calls in .context-brake/runtime/blocks.jsonl.\n",
+  "stderr": ""
+}

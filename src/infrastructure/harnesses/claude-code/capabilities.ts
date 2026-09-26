@@ -5,6 +5,6 @@ export const CLAUDE_CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'tool_coverage', state: 'supported' },
   { id: 'post_tool_telemetry', state: 'supported' },
   { id: 'session_boot', state: 'supported' },
-  { id: 'context_usage', state: 'unknown', impact: 'Read from the session transcript, whose format is undocumented; falls back to an estimate.' },
+  { id: 'context_usage', state: 'unknown', impact: 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the optional status line bridge.' },
   { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.' },
 ];

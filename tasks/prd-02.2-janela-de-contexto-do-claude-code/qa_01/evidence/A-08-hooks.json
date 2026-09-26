@@ -1,0 +1,42 @@
+{
+  "event": "PostToolUse",
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}
+{
+  "event": "PostToolUse",
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}
+{
+  "event": "SessionStart",
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}
+{
+  "event": "PostToolUse",
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}
+{
+  "event": "PostToolUse",
+  "exit": 0,
+  "stdout": "",
+  "stderr": ""
+}
+{
+  "event": "PostToolUse",
+  "exit": 0,
+  "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[ContextBrake v2] turn=3 usage=60% tokens=600000/1000000 source=measured zone=YELLOW action=keep working; finish the current unit before large new explorations\"}}",
+  "stderr": ""
+}
+{
+  "event": "PostToolUse",
+  "exit": 0,
+  "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[ContextBrake v2] turn=4 usage=66% tokens=660000/1000000 source=measured zone=RED action=finish or pause the current unit, record progress, end reply with [REQUEST_SESSION_RESET]\"}}",
+  "stderr": ""
+}

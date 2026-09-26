@@ -18,7 +18,7 @@ function toolLines(characters: readonly number[]): ToolLine[] {
   return characters.map((observedCharacters, index) => ({ v: 1, type: 'tool', at: AT, toolUseId: `toolu_${index + 1}`, observedCharacters, turn: index + 1, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: 'GREEN' }));
 }
 function engineFor(lines: readonly LedgerLine[]) {
-  const ledger: SessionLedger = { readLines: async () => lines, appendSessionLine: async () => undefined, appendToolLine: async () => undefined, appendResetLine: async () => undefined, pruneStaleSessions: async () => 0 };
+  const ledger: SessionLedger = { readLines: async () => lines, appendSessionLine: async () => undefined, appendToolLine: async () => undefined, appendResetLine: async () => undefined, appendStatuslineLine: async () => undefined, pruneStaleSessions: async () => 0 };
   return createBrakeEngine({ descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, ledger, blocks: { append: async () => undefined }, readValidationCommand: async () => null, planPresence: { exists: async () => true } });
 }
 

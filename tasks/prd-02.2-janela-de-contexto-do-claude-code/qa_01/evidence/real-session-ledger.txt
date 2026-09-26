@@ -1,0 +1,4 @@
+# Real Claude Code session on this repository (old single-line bridge command), ledger e59e781a7ef9ad38ebbc2c1b19197b33.jsonl, read 2026-09-26
+statusline lines: 214
+{"v":1,"type":"statusline","at":"2026-09-26T18:46:08.933Z","windowTokens":1000000,"inputTokens":201884,"usedPercentage":20,"model":"claude-opus-5-5"}
+{"v":1,"type":"tool","at":"2026-09-26T18:46:00.912Z","toolUseId":"toolu_017Vjaf4QznAb8491Pd9zRoy","observedCharacters":986,"turn":47,"usedTokens":200797,"windowTokens":1000000,"estimatedTokens":144948,"source":"measured","zone":"GREEN"}

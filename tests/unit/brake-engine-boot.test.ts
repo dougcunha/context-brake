@@ -22,7 +22,7 @@ function createMockLedger(): SessionLedger {
     readLines: async () => [],
     appendSessionLine: async () => undefined,
     appendToolLine: async () => undefined,
-    appendResetLine: async () => undefined,
+    appendResetLine: async () => undefined, appendStatuslineLine: async () => undefined,
     pruneStaleSessions: async () => 0,
   };
 }

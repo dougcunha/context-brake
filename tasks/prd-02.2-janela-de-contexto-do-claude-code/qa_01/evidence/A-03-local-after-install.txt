@@ -1,0 +1,12 @@
+{
+  // developer notes
+  "permissions": { "allow": ["Bash(ls)"] },
+  "env": { "A": "1" },
+  "statusLine": {
+    "type": "command",
+    "command": "node \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/QA Root/ação/.claude/hooks/context-brake-statusline.mjs\" --pipe | ( sh \"C:/Users/Admin/AppData/Local/Temp/cb-qa-cYR6Qp/user-statusline.sh\"\n)",
+    "padding": 2,
+    "refreshInterval": 5
+  }
+}
+

@@ -33,7 +33,7 @@ describe('symlinked Claude Code configuration (T10.4, CR-01)', () => {
     await requireLink(ctx, await setupClaudeRepo(tempDir), join(tempDir, '.claude'));
     const adapter = new ClaudeAdapter();
     const plan = await adapter.planInstall({ projectRoot: tempDir });
-    const paths = ['.claude/settings.json', '.claude/hooks/context-brake.mjs'];
+    const paths = ['.claude/settings.json', '.claude/hooks/context-brake.mjs', '.claude/hooks/context-brake-statusline.mjs'];
     const snapshots = await snapshotFiles(tempDir, paths);
     const configChange = plan.changes.find((c) => c.path === '.claude/settings.json');
     const configSnap = snapshots.find((s) => s.path === '.claude/settings.json');

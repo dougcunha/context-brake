@@ -10,6 +10,7 @@ import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
 import { systemClock } from '../../infrastructure/runtime/runtime-composition.js';
 import { NodeRuntimeStateReader } from '../../infrastructure/runtime/runtime-state-reader.js';
 import { diagnoseProject } from '../../core/services/doctor-service.js';
+import { readClaudeContextWindow } from '../../infrastructure/harnesses/claude-code/statusline-context-window.js';
 import { renderJsonOutput } from '../output/json.js';
 import { renderDoctorText } from '../output/text.js';
 import { collectProjectSnapshots } from '../snapshot-helper.js';
@@ -45,9 +46,9 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,
     ...(args.harness.length > 0 ? { explicitHarnesses: args.harness } : {}), measurer,
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap,
-    ...(planSnap ? { planSnapshot: planSnap } : {}),
-    ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
-    manifest, allSnapshots, packageVersion, runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(),
+    ...(planSnap ? { planSnapshot: planSnap } : {}), ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
+    manifest, allSnapshots, packageVersion, contextWindow: await readClaudeContextWindow(env.projectRoot),
+    runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(),
   });
   if (args.json) {
     renderJsonOutput(report);

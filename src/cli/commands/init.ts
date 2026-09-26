@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import type { ParsedInitArgs } from '../argument-parser.js';
+import { assertStatuslineBridgeTarget, type ParsedInitArgs } from '../init-arguments.js';
 import type { ProcessRunner } from '../../core/contracts/processes.js';
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { DiagnosticFinding, InstallReport } from '../../core/contracts/diagnostics.js';
@@ -65,15 +65,15 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
   const adapters = getAllAdapters();
-  const ctx = buildHarnessContext(env, manifest);
+  const ctx = buildHarnessContext(env, manifest, args.statuslineBridge);
   const sources = await collectHarnessSources(adapters, ctx);
-  const packageVersion = await readPackageVersion();
   const result = await planInstallation({
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
-    packageVersion, delegatedSnapshot,
+    packageVersion: await readPackageVersion(), delegatedSnapshot,
   });
+  assertStatuslineBridgeTarget(args.statuslineBridge, result.detections);
   if (args.dryRun) {
     const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: result.findings });
     return outputReport(report, args.json);

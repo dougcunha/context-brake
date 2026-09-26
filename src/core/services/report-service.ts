@@ -4,6 +4,7 @@ import {
   type HarnessDiagnostic, type InstallReport,
 } from '../contracts/diagnostics.js';
 import type { ApplyOutcome, ChangePlan } from '../contracts/changes.js';
+import type { ContextWindowReport } from '../contracts/context-window-report.js';
 import type { HarnessDetection } from '../contracts/harness.js';
 
 const SEVERITY_ORDER: Record<string, number> = { error: 0, warning: 1, ok: 2 };
@@ -65,6 +66,7 @@ export function buildInstallReport(input: BuildInstallReportInput): InstallRepor
 export type BuildDoctorReportInput = {
   detections: readonly HarnessDetection[]; integrations: readonly HarnessDiagnostic[]; findings: readonly DiagnosticFinding[];
   checkpointMode?: CheckpointModeReport | undefined;
+  contextWindow?: ContextWindowReport | undefined;
 };
 
 export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
@@ -73,6 +75,7 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
     schemaVersion: 1 as const, command: 'doctor' as const, status, exitCode,
     detections: [...input.detections], integrations: [...input.integrations], findings: sortFindings(input.findings),
     ...(input.checkpointMode === undefined ? {} : { checkpointMode: input.checkpointMode }),
+    ...(input.contextWindow === undefined ? {} : { contextWindow: input.contextWindow }),
   };
   return doctorReportSchema.parse(doc);
 }

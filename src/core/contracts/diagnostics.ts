@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { CHANGE_OWNERS } from './changes.js';
 import { configurationSchema, delegatedSnapshotSchema } from './configuration.js';
+import { contextWindowReportSchema } from './context-window-report.js';
 import { CAPABILITY_IDS, CAPABILITY_STATES, DETECTION_ORIGINS, DETECTION_STATES, HARNESS_IDS, SUPPORT_LEVELS } from './harness.js';
 
 const severity = z.enum(['ok', 'warning', 'error']);
@@ -20,7 +21,7 @@ const outcome = z.object({ path: z.string(), status: z.enum(['planned', 'applied
 const plan = z.object({ schemaVersion: z.literal(1), projectRoot: z.string(), changes: z.array(fileChange), conflicts: z.array(conflict), harnesses: z.array(harnessPlan), requiresConfirmation: z.boolean() }).strict();
 export const installReportSchema = z.object({ schemaVersion: z.literal(1), command: z.enum(['init', 'remove']), mode: z.enum(['dry_run', 'applied']), status: z.enum(['success', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), plan, outcomes: z.array(outcome), findings: z.array(finding) }).strict();
 const checkpointMode = z.object({ effective: z.enum(['plan', 'delegated']), reason: z.enum(['no_section', 'plan_present', 'plan_missing']), delegatedSnapshot: z.nullable(delegatedSnapshotSchema) }).strict();
-export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding), checkpointMode: checkpointMode.optional() }).strict();
+export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding), checkpointMode: checkpointMode.optional(), contextWindow: contextWindowReportSchema.optional() }).strict();
 const stepStatus = z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']);
 const statusStep = z.object({ id: z.union([z.string(), z.number().int()]), title: z.string(), status: stepStatus }).strict();
 const statusPlan = z.object({ taskId: z.string(), title: z.string(), currentStepId: z.union([z.string(), z.number().int()]).nullable(), activeStep: statusStep.nullable(), steps: z.array(statusStep) }).strict();

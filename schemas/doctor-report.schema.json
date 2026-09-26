@@ -503,6 +503,44 @@
         "delegatedSnapshot"
       ],
       "additionalProperties": false
+    },
+    "contextWindow": {
+      "type": "object",
+      "properties": {
+        "bridge": {
+          "type": "string",
+          "enum": [
+            "absent",
+            "installed",
+            "inactive"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "statusline",
+            "contextWindowCeiling"
+          ]
+        },
+        "lastWindowTokens": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "bridge",
+        "source",
+        "lastWindowTokens"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

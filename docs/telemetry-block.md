@@ -15,7 +15,7 @@ The telemetry block is a single-line ASCII string appended or injected into tool
 1. **Header**: `[ContextBrake v2]` identifies the block specification version.
 2. **`turn=<t>[/<redStartTurn>]`**: completed tool turns since the last reset. The `/<redStartTurn>` suffix appears only when optional turn limits (`greenMaxTurn` and `yellowMaxTurn`) are configured, and shows the turn where `RED` starts (`yellowMaxTurn + 1`). Turns never block tool calls.
 3. **`usage=<p>%`**: context usage as an integer percentage, computed as `floor(usedTokens * 100 / windowTokens)`.
-4. **`tokens=<used>/<window>`**: tokens currently used and the active context window. When the harness reports no window, the window is `contextWindowCeiling`, the session's context budget. If measured usage is unavailable, estimated tokens are shown.
+4. **`tokens=<used>/<window>`**: tokens currently used and the active context window. When the harness reports no window, the window is `contextWindowCeiling`, the session's context budget. If measured usage is unavailable, estimated tokens are shown over the same window: the harness-reported window first, then the Claude Code status line window, then `contextWindowCeiling`. A reset drops the measured tokens but keeps the window.
 5. **`source=<measured|estimated>`**:
    - `measured`: token count reported by the harness (Pi and Oh-My-Pi extension APIs) or read from the `usage` of the latest main-thread assistant message in the Claude Code session transcript, whose format is undocumented.
    - `estimated`: token count estimated from observed tool inputs, outputs, baseline tokens, and turns.
@@ -133,11 +133,12 @@ All local runtime state is stored strictly inside `.context-brake/runtime/`, whi
 - **Session Ledgers**: `.context-brake/runtime/sessions/<harness>/<key>.jsonl`
   - `key` is the first 32 characters of `sha256(sessionId + "\0" + (agentId ?? ""))`.
   - Appended on each post-tool event; records session metadata, turns, token counts, and reset events.
+  - With the Claude Code status line bridge, each status line run appends a `statusline` line for the main session, for example `{"v":1,"type":"statusline","at":"2026-09-25T12:00:00.000Z","windowTokens":1000000,"inputTokens":200000,"usedPercentage":20,"model":"claude-opus-5-5"}`. Hooks take the window from the last non-null `windowTokens`, across resets, and use `inputTokens` only when the transcript gives no reading and the line is newer than the last reset. Null values never replace earlier ones. Versions that do not know the line skip it.
 - **Block Log**: `.context-brake/runtime/blocks.jsonl`
   - Records denied tool calls with timestamp, harness, session ID, tool name, zone, and reason code.
 - **Error Log**: `.context-brake/runtime/errors.jsonl`
-  - Records integration errors and deadline timeouts with timestamp, harness, event name, error code, and error class name.
+  - Records integration errors and deadline timeouts with timestamp, harness, event name, error code, and error class name. Status line bridge write failures use the event `StatusLine`.
 
 ### Metadata-Only Rule
 
-In compliance with project privacy requirements, ContextBrake never writes prompt contents, user queries, tool arguments, tool outputs, file contents, or shell command strings into ledgers or log files. Only metadata (identifiers, counts, zones, and reason codes) is persisted.
+In compliance with project privacy requirements, ContextBrake never writes prompt contents, user queries, tool arguments, tool outputs, file contents, or shell command strings into ledgers or log files. Only metadata (identifiers, counts, zones, and reason codes) is persisted. The status line bridge stores only the window size, input tokens, used percentage, model id, and time; costs, paths, workspace names, and the status line output are never stored.

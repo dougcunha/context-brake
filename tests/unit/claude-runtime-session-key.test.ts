@@ -16,6 +16,7 @@ class PerSessionLedger implements SessionLedger {
   async appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void> { this.push(key, { v: 1, type: 'session', at: AT, harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input }); }
   async appendToolLine(key: SessionKey, input: ToolLineInput): Promise<void> { this.push(key, { v: 1, type: 'tool', at: AT, ...input }); }
   async appendResetLine(key: SessionKey, reason: ResetReason): Promise<void> { this.push(key, { v: 1, type: 'reset', at: AT, reason }); }
+  async appendStatuslineLine(): Promise<void> { return undefined; }
   async pruneStaleSessions(): Promise<number> { return 0; }
   summary(key: SessionKey) { return summarizeLedger(this.lines.get(this.id(key)) ?? []); }
   private id(key: SessionKey): string { return `${key.sessionId}\0${key.agentId ?? ''}`; }

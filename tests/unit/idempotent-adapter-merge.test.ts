@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { planClaudeInstall } from '../../src/infrastructure/harnesses/claude-code/planner.js';
 
 async function applyClaudePlan(dir: string): Promise<string> {
-  const plan = await planClaudeInstall(dir);
+  const plan = await planClaudeInstall({ projectRoot: dir });
   expect(plan.conflicts).toHaveLength(0);
   const change = plan.changes.find((c) => c.path === '.claude/settings.json')!;
   await writeFile(change.realPath, change.content!, 'utf8');

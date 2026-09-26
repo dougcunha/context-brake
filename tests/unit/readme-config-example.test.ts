@@ -29,3 +29,26 @@ describe('README delegated snapshot example (TC-15, FR-09)', () => {
     expect(configurationSchema.safeParse({ ...DEFAULT_CONFIG, ...example }).success).toBe(true);
   });
 });
+
+describe('README and telemetry docs for the status line bridge (PRD 2.2 FR-09, DEC-12, TC-19)', () => {
+  const readme = readFileSync(join(__dirname, '../../README.md'), 'utf8');
+  const telemetry = readFileSync(join(__dirname, '../../docs/telemetry-block.md'), 'utf8');
+
+  it('documents the flag, its removal, and the local scope', () => {
+    expect(readme).toContain('npx context-brake init --statusline-bridge');
+    expect(readme).toContain('`context-brake init --no-statusline-bridge`');
+    expect(readme).toContain('`statusLine` into `.claude/settings.local.json`, the local, unversioned settings file');
+  });
+
+  it('documents the footer effect, the 1M zones, and the non-interactive and Windows limits', () => {
+    expect(readme).toContain('hides most footer keyboard hints');
+    expect(readme).toContain('With a 1,000,000-token model, `RED` starts above 650,000 tokens');
+    expect(readme).toContain('so `claude -p`, including the sessions of `context-brake run`, keep using `contextWindowCeiling`');
+    expect(readme).toContain('Windows without Git Bash (PowerShell only) is not verified');
+  });
+
+  it('lists the statusline ledger line in the telemetry specification', () => {
+    expect(telemetry).toContain('{"v":1,"type":"statusline","at":"2026-09-25T12:00:00.000Z","windowTokens":1000000,"inputTokens":200000,"usedPercentage":20,"model":"claude-opus-5-5"}');
+    expect(telemetry).toContain('event `StatusLine`');
+  });
+});

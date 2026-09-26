@@ -66,10 +66,10 @@ async function checkEstimated(root: string): Promise<void> {
   const absent = await runToolResult(handlers, root, undefined);
   expect(absent).toContain('source=estimated');
   expect(absent).toContain('/24000');
-  const nullTokens = await runToolResult(handlers, root, { tokens: null, contextWindow: 200000, percent: null });
-  expect(nullTokens).toContain('source=estimated');
-  expect(nullTokens).toContain('/24000');
   expect(await lastToolLine(root)).toMatchObject({ source: 'estimated', windowTokens: 24000 });
+  const payload = { toolName: 'bash', toolCallId: nextCallId(), input: { command: 'ls' }, content: [{ type: 'text', text: 'done' }] };
+  await handlers.get('tool_result')!(payload, context(root, { tokens: null, contextWindow: 200000, percent: null }));
+  expect(await lastToolLine(root)).toMatchObject({ source: 'estimated', windowTokens: 200000 });
 }
 
 async function checkPiReset(root: string): Promise<void> {
@@ -91,7 +91,7 @@ describe('Pi measured and estimated usage (RF5, RF6, RF7, RF8, TC-11)', () => {
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
   it('reports source=measured with the API tokens and window when the API returns them', async () => { await checkMeasured(root); });
-  it('falls back to estimated with the configured window when the API returns undefined or null tokens', async () => { await checkEstimated(root); });
+  it('falls back to estimated over the configured window without usage and over the API window with null tokens (PRD 2.2 DEC-06)', async () => { await checkEstimated(root); });
   it('resets the count on session_compact', async () => { await checkPiReset(root); });
   it('takes a reported window change into effect on the next reading', async () => { await checkWindowChange(root); });
 });

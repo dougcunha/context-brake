@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const RUNTIME_ASSET_DIR = 'dist/assets/runtime';
 const PROCESS_HOOK_ASSET = 'claude-code-hook.mjs';
-const RUNTIME_ASSET_COUNT = 9;
+const RUNTIME_ASSET_COUNT = 10;
 const STALE_MARKER = '\n// stale marker\n';
 
 async function describeRuntimeAssets(): Promise<string> {

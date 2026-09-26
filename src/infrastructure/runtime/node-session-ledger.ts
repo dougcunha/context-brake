@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import type { SessionKey } from '../../core/contracts/runtime.js';
 import { parseLedgerLines, resetLineSchema, sessionLineSchema, toolLineSchema, SESSION_RETENTION_DAYS } from '../../core/contracts/session-ledger.js';
 import type { Clock, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLineInput } from '../../core/contracts/session-ledger.js';
+import { statuslineLineSchema, type StatuslineLineInput } from '../../core/contracts/statusline-line.js';
 import { listRuntimeStateFiles } from '../storage/runtime-state-files.js';
 import { ensureSessionDirectory, isMissingFileError, LEDGER_FILE_EXTENSION, sessionLedgerPath, SESSIONS_RELATIVE_PREFIX } from './runtime-paths.js';
 
@@ -29,6 +30,10 @@ export class NodeSessionLedger implements SessionLedger {
 
   async appendResetLine(key: SessionKey, reason: ResetReason): Promise<void> {
     await this.append(key, resetLineSchema.parse({ v: 1, type: 'reset', at: this.timestamp(), reason }));
+  }
+
+  async appendStatuslineLine(key: SessionKey, input: StatuslineLineInput): Promise<void> {
+    await this.append(key, statuslineLineSchema.parse({ v: 1, type: 'statusline', at: this.timestamp(), ...input }));
   }
 
   async pruneStaleSessions(): Promise<number> {

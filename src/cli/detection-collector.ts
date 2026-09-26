@@ -1,4 +1,4 @@
-import type { HarnessAdapter, HarnessContext } from '../core/contracts/adapter.js';
+import type { HarnessAdapter, HarnessContext, StatuslineBridgeRequest } from '../core/contracts/adapter.js';
 import type { DetectionInput, DetectionSources, VersionProbe } from '../core/contracts/harness.js';
 import type { ProcessRunner } from '../core/contracts/processes.js';
 import type { InstallationManifest } from '../core/contracts/manifest.js';
@@ -24,11 +24,12 @@ export async function collectHarnessSources(adapters: readonly HarnessAdapter[],
   return sources as Partial<DetectionSources>;
 }
 
-export function buildHarnessContext(env: { projectRoot: string; runner?: ProcessRunner; userHome?: string }, manifest?: InstallationManifest | null): HarnessContext {
+export function buildHarnessContext(env: { projectRoot: string; runner?: ProcessRunner; userHome?: string }, manifest?: InstallationManifest | null, statuslineBridge?: StatuslineBridgeRequest): HarnessContext {
   return {
     projectRoot: env.projectRoot,
     ...(env.runner ? { runner: env.runner } : {}),
     ...(env.userHome ? { userHome: env.userHome } : {}),
     ...(manifest !== undefined ? { manifest } : {}),
+    ...(statuslineBridge !== undefined ? { statuslineBridge } : {}),
   };
 }

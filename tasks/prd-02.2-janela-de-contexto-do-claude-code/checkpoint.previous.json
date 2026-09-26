@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "generation": 20,
+  "feature": "prd-02.2-janela-de-contexto-do-claude-code",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": "session_01TBeDgaQbko97hrGYSbmGig",
+  "objective": "Claude Code telemetry uses the real context window reported to the status line (bridge in .claude/settings.local.json), keeping the user's status line intact.",
+  "constraints": [
+    "PRD 2.1 behavior unchanged without the bridge (OBJ-03), unless an approved DEC-06 amendment says otherwise",
+    "Bridge opt-in, local settings only; stdout belongs to the status line",
+    "Commit or push only with user authorization"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": "qa_01/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "447cd637ef060121bb7ff2827c98adc143670fdbeb8b375cae899c3ea0551a26",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "94b988a9f0154874109f05c620f41478e33a503a426d0eb0f923fd9f0989088f",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "c7f8dd9c494f8ddda2248f98172c78031305b309ad8f558dd67b56f294e9afd5",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-04",
+    "DEC-HIL-05",
+    "DEC-HIL-06"
+  ],
+  "git_base": "5917593",
+  "worktree_evidence": "Code at 8dd3baa (pushed, draft PR #2, CI green); task-state edits, codereview_02 and qa_01 uncommitted; dogfooding files uncommitted by design. See workflow.md EV-06..EV-12",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the current delivery (codereview_02 APPROVED, qa_01 APPROVED)?",
+    "affected": [
+      "prd-02.2"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "Record the HIL 3 answer in workflow.md; on acceptance mark checkpoint completed and snapshot closed. Commit/push of the task-state files and PR readiness only if the user authorizes.",
+    "read": [
+      {
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/qa_01/qa.md",
+        "section": "Limitations and open items"
+      },
+      {
+        "path": "tasks/prd-02.2-janela-de-contexto-do-claude-code/codereview_02/codereview.md",
+        "section": "Limitations and open items"
+      }
+    ]
+  }
+}

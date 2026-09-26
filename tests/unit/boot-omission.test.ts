@@ -15,6 +15,7 @@ class TestLedger implements SessionLedger {
   appendSessionLine(): Promise<void> { return Promise.resolve(); }
   appendToolLine(): Promise<void> { return Promise.resolve(); }
   appendResetLine(): Promise<void> { return Promise.resolve(); }
+  async appendStatuslineLine(): Promise<void> { return undefined; }
   pruneStaleSessions(): Promise<number> { return Promise.resolve(0); }
 }
 class TestErrorLog implements RuntimeErrorLog {

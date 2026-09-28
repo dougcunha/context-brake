@@ -15,7 +15,7 @@ describe('init light flags (TC-07, FR-01, DEC-07)', () => {
     expect(parseInit(['--no-light'])).toMatchObject({ light: false, noLight: true });
   });
   it('sets the section with the default trigger on --light', () => {
-    expect(updates(null, ['--light'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'set', section: { triggerZone: 'RED' } } });
+    expect(updates(null, ['--light'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'set', section: { triggerZone: 'RED' } }, debug: { kind: 'keep' } });
   });
   it('routes --snapshot-trigger to the light section when light mode is in effect', () => {
     expect(updates(LIGHT, ['--snapshot-trigger', 'YELLOW']).lightMode).toEqual({ kind: 'set', section: { triggerZone: 'YELLOW' } });
@@ -29,10 +29,11 @@ describe('init light flags (TC-07, FR-01, DEC-07)', () => {
     expect(updates(LIGHT_WITH_DELEGATED, ['--no-light', '--snapshot-trigger', 'YELLOW'])).toEqual({
       delegatedSnapshot: { kind: 'set', section: { ...SNAPSHOT_SECTION, triggerZone: 'YELLOW' } },
       lightMode: { kind: 'remove' },
+      debug: { kind: 'keep' },
     });
   });
   it('leaves configs without light mode unchanged', () => {
-    expect(updates(DEFAULT_CONFIG, [])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' } });
+    expect(updates(DEFAULT_CONFIG, [])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'keep' } });
   });
 });
 

@@ -652,6 +652,10 @@
         ],
         "additionalProperties": false
       }
+    },
+    "debugMode": {
+      "type": "boolean",
+      "const": true
     }
   },
   "required": [

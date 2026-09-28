@@ -1,3 +1,6 @@
+import type { ContextBrakeConfig } from '../contracts/configuration.js';
+import { isDebugModeInEffect } from './debug-mode-merge.js';
+
 export const CURRENT_START_MARKER = '<!-- CONTEXTBRAKE:START -->' as const;
 export const CURRENT_END_MARKER = '<!-- CONTEXTBRAKE:END -->' as const;
 export const LEGACY_START_MARKER = '<!-- CONTEXTOPS:START -->' as const;
@@ -14,12 +17,20 @@ const LEGACY_PROTOCOL_PATTERNS = [
   /Gest[aã]o Aut[oô]noma/i,
 ];
 
-export function renderReferenceBlock(planFile: string, protocolFile: string, eol = '\n'): string {
+export const DEBUG_MODE_LINE = 'Debug mode: end each reply that received a ContextBrake telemetry block with the line `📊 ContextBrake: <usage>% · <used>/<window> · <source> · <ZONE>`, copied from the latest block.';
+
+export type ReferenceBlockOptions = { readonly planFile: string; readonly protocolFile: string; readonly debug: boolean };
+
+export function renderReferenceBlock(options: ReferenceBlockOptions, eol = '\n'): string {
   return [
     CURRENT_START_MARKER,
-    `When \`${planFile}\` exists or tool results include a ContextBrake telemetry block, follow \`${protocolFile}\`.`,
+    `When \`${options.planFile}\` exists or tool results include a ContextBrake telemetry block, follow \`${options.protocolFile}\`.`,
+    ...(options.debug ? [DEBUG_MODE_LINE] : []),
     CURRENT_END_MARKER,
   ].join(eol);
+}
+export function referenceBlockFor(config: ContextBrakeConfig, eol = '\n'): string {
+  return renderReferenceBlock({ planFile: config.stateStorage.planFile, protocolFile: config.instructionFiles.protocolFile, debug: isDebugModeInEffect(config) }, eol);
 }
 
 export function extractUnmatchedLegacyContent(legacyBody: string, eol: string): string {

@@ -245,6 +245,26 @@ What light mode does not do:
 
 Switching an existing installation to light mode removes the managed protocol (unless you edited it), the reference blocks, and the `.gitignore` block. The `.gitignore` block stays while a plan or checkpoint file exists, and those files are never deleted. The options of the other modes (`--snapshot-command`, `--snapshot-path`, `--snapshot-skill`, `--resume-command`, `--create-instructions`, `--migrate-legacy`, `--instruction-file`) are rejected while light mode is on. `doctor` reports `checkpointMode.effective: "light"` and flags leftovers from a full installation. `context-brake run` does not support light mode. To go back to the full mode, run `context-brake init --no-light`. If you edited the protocol, light mode keeps it unmanaged: delete or move it first, or `--no-light` stops with `UNMANAGED_PROTOCOL_CONFLICT`.
 
+### Debug Mode
+
+To check ContextBrake's usage reading against the real value from the harness (`/context` or the Claude Code status line), turn on debug mode:
+
+```bash
+npx context-brake init --debug
+```
+
+This writes `"debug": true` to the configuration and adds one line to the reference block in each instruction file. That line tells the agent to end each reply that received a telemetry block with the latest reading:
+
+```text
+📊 ContextBrake: 42% · 53760/128000 · measured · GREEN
+```
+
+- **Injects on every call:** while debug mode is on, ContextBrake adds the telemetry block to every tool result, in every zone, as if `injectionMode` were `always`. This costs up to 60 tokens per tool call. The `injectionMode` saved in the configuration does not change.
+- **Relies on the agent:** the agent prints the line because the instructions ask it to. ContextBrake does not check that the line was printed.
+- **Not in light mode:** light mode writes no instruction files, so `--light --debug` and `--debug` with light mode configured are rejected. With debug mode on, `--light` alone is rejected too; `init --light --no-debug` turns debug mode off and switches to light mode in one command.
+
+`context-brake doctor` shows `debug mode: on`, and `doctor --json` reports `debugMode: true`. Debug mode does not change the `doctor` status or exit code. To turn it off, run `context-brake init --no-debug`, which restores the reference block and the configuration to their state before debug mode.
+
 ### Active Sessions in `doctor`
 
 In every mode, `context-brake doctor` lists the repository's active sessions with their current context usage: percentage, tokens, window, zone, and whether the reading was measured or estimated. It also shows the time of each session's last activity. The data comes from the session ledger ContextBrake already keeps under `.context-brake/sessions/`, using the newest reading after the last reset, from the status line bridge or from the last tool call. ContextBrake cannot tell whether a harness process is still running. A session counts as active when its last recorded activity is within 30 minutes, and at most 10 sessions are listed. `doctor --json` reports them under `activeSessions`, and the list is omitted when no session is active.
@@ -271,7 +291,7 @@ The bridge records only the window, the input tokens, the used percentage, the m
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot`, `--light`, `--no-light`, `--statusline-bridge`, `--no-statusline-bridge` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--instruction-file <path>`, `--create-instructions`, `--migrate-legacy`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--snapshot-path <pattern>`, `--snapshot-skill <name>`, `--no-delegated-snapshot`, `--light`, `--no-light`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge` | Detects harnesses, registers integrations, creates protocol and config, and inserts instruction markers. |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json`, `--remove-state` | Safely uninstalls integrations, removes protocol, and cleans reference blocks; keeps plan/checkpoint unless `--remove-state` is provided. |
 | `context-brake plan init --task="<name>"` | `--yes` (`-y`), `--json` | Creates `task_plan.json` and `state_checkpoint.json`. |

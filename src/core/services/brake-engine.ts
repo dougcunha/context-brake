@@ -7,6 +7,7 @@ import type { Zone } from '../contracts/zones.js';
 import type { BootDecision } from './boot-policy.js';
 import { deriveBrakeMode } from './brake-mode.js';
 import { LedgerUnreadableError } from './failure-policy.js';
+import { isDebugModeInEffect } from './debug-mode-merge.js';
 import { decideInjection } from './injection-policy.js';
 import { hasResetSignal, renderResetNotice } from './reset-notice.js';
 import { nextTurn, summarizeLedger, type SessionSummary } from './session-counters.js';
@@ -60,7 +61,7 @@ async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEv
   return telemetryDecision(options, summary.turns, readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input.measured }));
 }
 async function telemetryDecision(options: BrakeEngineOptions, turn: number, view: ZoneReading): Promise<RuntimeDecision> {
-  if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage })) return NEUTRAL;
+  if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config) })) return NEUTRAL;
   const action = (await readGuidance(options, view.zone)).actionFor(view.zone);
   return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action }) };
 }

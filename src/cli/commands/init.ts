@@ -71,7 +71,7 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
-    packageVersion: await readPackageVersion(), delegatedSnapshot: updates.delegatedSnapshot, lightMode: updates.lightMode,
+    packageVersion: await readPackageVersion(), delegatedSnapshot: updates.delegatedSnapshot, lightMode: updates.lightMode, debug: updates.debug,
   });
   assertStatuslineBridgeTarget(args.statuslineBridge, result.detections);
   if (args.dryRun) {

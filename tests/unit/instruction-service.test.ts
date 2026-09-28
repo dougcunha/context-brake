@@ -6,7 +6,7 @@ import { planInstructionChanges } from '../../src/core/services/instruction-serv
 
 describe('instruction reference block budgeting (RF11, CA-08)', () => {
   it('canonical reference block has three lines and points to protocol (UT-07, CA-08)', () => {
-    const block = renderReferenceBlock('task_plan.json', 'docs/context-brake-protocol.md');
+    const block = renderReferenceBlock({ planFile: 'task_plan.json', protocolFile: 'docs/context-brake-protocol.md', debug: false });
     const lines = block.split('\n');
     expect(lines).toHaveLength(3);
     expect(lines[0]).toBe(CURRENT_START_MARKER);
@@ -42,7 +42,7 @@ describe('instruction target deduplication and missing files (RF12, RF13, CA-07,
   });
 
   it('recognizes already matching reference block without planning change', () => {
-    const block = renderReferenceBlock('task_plan.json', 'docs/context-brake-protocol.md', '\n');
+    const block = renderReferenceBlock({ planFile: 'task_plan.json', protocolFile: 'docs/context-brake-protocol.md', debug: false }, '\n');
     const matchingSnap: FileSnapshot = { path: 'CLAUDE.md', realPath: '/repo/CLAUDE.md', exists: true, content: `# Header\n${block}\n# Footer`, sha256: '2', isSymlink: false, fileIdentity: 'id2' };
     const result = planInstructionChanges({ snapshots: [matchingSnap], config: DEFAULT_CONFIG });
     expect(result.changes).toHaveLength(0);

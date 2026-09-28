@@ -1,11 +1,11 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { FileSnapshot } from '../contracts/changes.js';
-import { renderReferenceBlock } from './instruction-markers.js';
+import { referenceBlockFor } from './instruction-markers.js';
 import { planInstructionChanges } from './instruction-service.js';
 
 export function legacyFinding(path: string, config: ContextBrakeConfig): DiagnosticFinding {
-  const block = renderReferenceBlock(config.stateStorage.planFile, config.instructionFiles.protocolFile, '\n');
+  const block = referenceBlockFor(config, '\n');
   return {
     code: 'LEGACY_BLOCK_DETECTED',
     severity: 'warning',

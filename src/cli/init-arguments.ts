@@ -9,7 +9,7 @@ export type ParsedInitArgs = {
   harness: readonly HarnessId[]; excludeHarness: readonly HarnessId[];
   instructionFile: readonly string[]; createInstructions: boolean; migrateLegacy: boolean;
   delegatedSnapshot?: DelegatedSnapshotFlags | undefined;
-  light?: boolean | undefined; noLight?: boolean | undefined;
+  light?: boolean | undefined; noLight?: boolean | undefined; debug?: boolean | undefined; noDebug?: boolean | undefined;
   statuslineBridge?: StatuslineBridgeRequest | undefined;
 };
 
@@ -23,7 +23,7 @@ const INIT_OPTIONS = {
   'snapshot-command': { type: 'string' }, 'snapshot-trigger': { type: 'string' }, 'resume-command': { type: 'string' },
   'snapshot-path': { type: 'string', multiple: true, default: [] as string[] }, 'snapshot-skill': { type: 'string', multiple: true, default: [] as string[] },
   'no-delegated-snapshot': { type: 'boolean', default: false },
-  light: { type: 'boolean', default: false }, 'no-light': { type: 'boolean', default: false },
+  light: { type: 'boolean', default: false }, 'no-light': { type: 'boolean', default: false }, debug: { type: 'boolean', default: false }, 'no-debug': { type: 'boolean', default: false },
   'statusline-bridge': { type: 'boolean', default: false }, 'no-statusline-bridge': { type: 'boolean', default: false },
 } as const;
 type InitValues = ReturnType<typeof parseArgs<{ args: string[]; options: typeof INIT_OPTIONS; strict: true }>>['values'];
@@ -37,7 +37,7 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
     command: 'init', dryRun: values['dry-run'], yes: values.yes, json: values.json,
     harness, excludeHarness, instructionFile: validateInstructionPaths(values['instruction-file']),
     createInstructions: values['create-instructions'], migrateLegacy: values['migrate-legacy'],
-    delegatedSnapshot: delegatedFlags(values), light: values.light, noLight: values['no-light'], statuslineBridge: statuslineBridgeRequest(values, { harness, excludeHarness }),
+    delegatedSnapshot: delegatedFlags(values), light: values.light, noLight: values['no-light'], debug: values.debug, noDebug: values['no-debug'], statuslineBridge: statuslineBridgeRequest(values, { harness, excludeHarness }),
   };
 }
 function delegatedFlags(values: InitValues): DelegatedSnapshotFlags {

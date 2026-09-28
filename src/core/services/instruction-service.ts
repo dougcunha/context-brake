@@ -1,6 +1,6 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
-import { countOccurrences, CURRENT_END_MARKER, CURRENT_START_MARKER, extractUnmatchedLegacyContent, LEGACY_END_MARKER, LEGACY_START_MARKER, renderReferenceBlock } from './instruction-markers.js';
+import { countOccurrences, CURRENT_END_MARKER, CURRENT_START_MARKER, extractUnmatchedLegacyContent, LEGACY_END_MARKER, LEGACY_START_MARKER, referenceBlockFor } from './instruction-markers.js';
 
 export type InstructionPlanInput = {
   snapshots: readonly FileSnapshot[];
@@ -29,14 +29,14 @@ function deduplicateSnapshots(snapshots: readonly FileSnapshot[]): FileSnapshot[
 
 function planMissingInstruction(snap: FileSnapshot, config: ContextBrakeConfig, create: boolean): PlannedChange | null {
   if (!create) return null;
-  const block = `${renderReferenceBlock(config.stateStorage.planFile, config.instructionFiles.protocolFile, '\n')}\n`;
+  const block = `${referenceBlockFor(config, '\n')}\n`;
   return { path: snap.path, realPath: snap.realPath, kind: 'create', owner: 'instruction_block', content: block, preview: { summary: 'Create instruction file with ContextBrake reference block' } };
 }
 
 function migrateLegacyBlock(content: string, span: { start: number; end: number }, ctx: { config: ContextBrakeConfig; eol: string }): string {
   const body = content.slice(span.start + LEGACY_START_MARKER.length, span.end);
   const unmatched = extractUnmatchedLegacyContent(body, ctx.eol);
-  const target = renderReferenceBlock(ctx.config.stateStorage.planFile, ctx.config.instructionFiles.protocolFile, ctx.eol);
+  const target = referenceBlockFor(ctx.config, ctx.eol);
   const migrated = unmatched.length > 0 ? `${unmatched}${ctx.eol}${ctx.eol}${target}` : target;
   return `${content.slice(0, span.start)}${migrated}${content.slice(span.end + LEGACY_END_MARKER.length)}`;
 }
@@ -63,7 +63,7 @@ function planExistingInstruction(snap: FileSnapshot, config: ContextBrakeConfig,
     const e = content.indexOf(CURRENT_END_MARKER);
     if (s > e) return { conflict: { path: snap.path, code: 'MALFORMED_INSTRUCTION_MARKERS', detail: 'Start marker after end marker' } };
     const existing = content.slice(s, e + CURRENT_END_MARKER.length);
-    const target = renderReferenceBlock(config.stateStorage.planFile, config.instructionFiles.protocolFile, eol);
+    const target = referenceBlockFor(config, eol);
     if (existing === target) return {};
     const updated = `${content.slice(0, s)}${target}${content.slice(e + CURRENT_END_MARKER.length)}`;
     return { change: { path: snap.path, realPath: snap.realPath, kind: 'update', owner: 'instruction_block', content: updated, preview: { summary: 'Update ContextBrake reference block' } } };
@@ -76,7 +76,7 @@ function planExistingInstruction(snap: FileSnapshot, config: ContextBrakeConfig,
     const updated = migrateLegacyBlock(content, { start: s, end: e }, { config, eol });
     return { change: { path: snap.path, realPath: snap.realPath, kind: 'update', owner: 'instruction_block', content: updated, preview: { summary: 'Migrate legacy CONTEXTOPS block to ContextBrake reference' } } };
   }
-  const target = renderReferenceBlock(config.stateStorage.planFile, config.instructionFiles.protocolFile, eol);
+  const target = referenceBlockFor(config, eol);
   const hasTrail = content.endsWith('\n') || content.endsWith('\r\n');
   const prefix = content.length === 0 ? '' : (hasTrail ? eol : `${eol}${eol}`);
   const updated = `${content}${prefix}${target}${hasTrail ? eol : ''}`;

@@ -68,6 +68,7 @@ export type BuildDoctorReportInput = {
   checkpointMode?: CheckpointModeReport | undefined;
   contextWindow?: ContextWindowReport | undefined;
   activeSessions?: DoctorReport['activeSessions'];
+  debugMode?: boolean;
 };
 
 export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
@@ -78,6 +79,7 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
     ...(input.checkpointMode === undefined ? {} : { checkpointMode: input.checkpointMode }),
     ...(input.contextWindow === undefined ? {} : { contextWindow: input.contextWindow }),
     ...(input.activeSessions === undefined || input.activeSessions.length === 0 ? {} : { activeSessions: input.activeSessions }),
+    ...(input.debugMode === true ? { debugMode: true as const } : {}),
   };
   return doctorReportSchema.parse(doc);
 }

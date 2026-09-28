@@ -56,3 +56,13 @@ describe('doctor outside light mode (TC-09, NFR-01)', () => {
     expect(codes(report)).not.toContain('LIGHT_MODE_LEFTOVER');
   });
 });
+
+describe('doctor with a debug key in light mode (codereview_01/CR-01, FR-06, DEC-07)', () => {
+  it('reports no debug mode in JSON or text', async () => {
+    await runCli(root, [...LIGHT_INIT]);
+    await writeFile(join(root, CONFIG_PATH), JSON.stringify({ ...(await readConfig(root)), debug: true }), 'utf8');
+    expect((await doctor()).debugMode).toBeUndefined();
+    const run = await runCli(root, ['doctor']);
+    expect(run.stdout + run.stderr).not.toContain('debug mode:');
+  });
+});

@@ -1,6 +1,6 @@
 import type { CliErrorDocument, DiagnosticFinding, DoctorReport, InstallReport, PlanStatusReport } from '../../core/contracts/diagnostics.js';
 import type { PlanInitResult } from '../commands/plan.js';
-import { renderCheckpointModeLine } from './doctor-mode-text.js';
+import { renderModeLines } from './doctor-mode-text.js';
 import { renderActiveSessionsText } from './doctor-sessions-text.js';
 
 export function renderFinding(f: DiagnosticFinding): string {
@@ -54,10 +54,9 @@ export function renderDoctorText(report: DoctorReport): void {
     stream.write(`${line}\n`);
     for (const lim of integ.support.limitations) stream.write(`    * ${lim.capability}: ${lim.impact}\n`);
   }
-  const mode = report.checkpointMode;
   const window = report.contextWindow;
   if (window) stream.write(`  - context window: ${window.source} (bridge: ${window.bridge}, last window: ${window.lastWindowTokens ?? 'unknown'})\n`);
-  stream.write(renderCheckpointModeLine(mode) ?? '');
+  stream.write(renderModeLines(report));
   stream.write(renderActiveSessionsText(report.activeSessions, new Date()));
   for (const f of report.findings) stream.write(`${renderFinding(f)}\n`);
 }

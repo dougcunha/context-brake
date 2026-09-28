@@ -233,6 +233,9 @@
       },
       "additionalProperties": false
     },
+    "debug": {
+      "type": "boolean"
+    },
     "runner": {
       "default": {
         "maxSessions": 20,

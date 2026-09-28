@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "generation": 17,
+  "feature": "prd-08-modo-debug",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "completed",
+  "status": "completed",
+  "safe_to_stop": true,
+  "owner_session": "session_012UFSLu4nVNJ5SBBZyBqZJP",
+  "objective": "Add `context-brake init --debug` so the agent prints the context usage percentage from time to time, highlighted with an emoji, to compare with the real value.",
+  "constraints": [
+    "sdd-lean: short PRD, HIL 1 and HIL 2 merged after TechSpec and plan, 1-2 tasks, independent review kept (DEC-STOPS-01)",
+    "Open product decisions (cadence, value, placement, disable flag, light mode, harness scope, emoji) go to the human before code"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED",
+  "jev": "shadow",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "d8bd29be3749dd4781a45b7132610bc1efadddb3c34edfe83347750f7bf7b940",
+      "decision_id": "DEC-HIL-12"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "c2e612f4df53b73b6d220ebba53cd76d2c7a50169705248d2520fdf7822d2299",
+      "decision_id": "DEC-HIL-12"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "45ed55468ddcd4f8c8ca5597d959eb0e55513fb73f9db90bedae1e91962b79e7",
+      "decision_id": "DEC-HIL-12"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-14"
+  ],
+  "git_base": "791defe2f6651f6595f701e7494c797cdfc58e81",
+  "worktree_evidence": "workflow.md#Feature Summary (pre-existing changes)",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "close",
+    "instruction": "Feature accepted at HIL 3 (DEC-HIL-14); nothing pending. Commit or PR only on request.",
+    "read": [
+      {
+        "path": "tasks/prd-08-modo-debug/workflow.md",
+        "section": "DEC-HIL-14"
+      }
+    ]
+  }
+}

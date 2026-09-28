@@ -37,3 +37,14 @@ describe('status line bridge flags after detection (DEC-08, TC-15, codereview_01
     expect(() => assertStatuslineBridgeTarget(undefined, [])).not.toThrow();
   });
 });
+
+describe('init debug flags (TC-02, FR-01, FR-04)', () => {
+  it.each([
+    [[], false, false],
+    [['--debug'], true, false],
+    [['--no-debug'], false, true],
+    [['--debug', '--no-debug'], true, true],
+  ])('parses %j as debug=%s and noDebug=%s', (args, debug, noDebug) => {
+    expect(parseInit(args)).toMatchObject({ debug, noDebug });
+  });
+});

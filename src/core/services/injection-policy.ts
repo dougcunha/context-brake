@@ -5,9 +5,10 @@ export type InjectionInput = {
   readonly telemetry: ContextBrakeConfig['telemetry'];
   readonly zone: Zone;
   readonly usagePercentage: number;
+  readonly debug: boolean;
 };
 
 export function decideInjection(input: InjectionInput): boolean {
-  if (input.telemetry.injectionMode === 'always') return true;
+  if (input.debug || input.telemetry.injectionMode === 'always') return true;
   return input.zone !== 'GREEN' || input.usagePercentage >= input.telemetry.activationThresholdPercentage;
 }

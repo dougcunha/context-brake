@@ -8,6 +8,7 @@ import { resolveChangeTarget } from '../common/change-target.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
 import { getUserHome } from '../common/path-helpers.js';
 import { asRecord } from '../common/runtime-support.js';
+import { clearStatuslineOptOut, hasStatuslineOptOut, planStatuslineOptOut, softenDefaultConflict } from './statusline-default.js';
 import { planStatuslineRestore, statuslinePlanConflict, type StatuslinePlan } from './statusline-restore.js';
 import { bridgeCommand, CLAUDE_LOCAL_SETTINGS_FILE, CLAUDE_SETTINGS_FILE, firstPreviousStatusline, isBridgeStatusline, readSettings, STATUSLINE_BRIDGE_FILE, STATUSLINE_KEY, statuslineOf, statuslineOptions, toCommandRoot, type SettingsRead, type StatuslineObject } from './statusline-settings.js';
 import { readStatuslineState, serializeStatuslineState, STATUSLINE_STATE_FILE, type StatuslineState } from './statusline-state.js';
@@ -18,12 +19,18 @@ const EMPTY_PLAN: StatuslinePlan = { changes: [], conflicts: [], findings: [] };
 type Origin = Omit<StatuslineState, 'v' | 'installedCommand'> & { readonly options: StatuslineObject; readonly findings: readonly DiagnosticFinding[] };
 
 export async function planStatuslineInstall(context: HarnessContext): Promise<StatuslinePlan> {
-  const plan = context.statuslineBridge === 'remove' ? await planStatuslineRestore(context.projectRoot) : await planStatuslineEntry(context);
+  const plan = context.statuslineBridge === 'remove' ? await planStatuslineOptOut(context.projectRoot) : await requestedEntry(context);
   return { ...plan, changes: [await bridgeAssetChange(context.projectRoot), ...plan.changes] };
+}
+async function requestedEntry(context: HarnessContext): Promise<StatuslinePlan> {
+  if (context.statuslineBridge === 'install') return clearStatuslineOptOut(context.projectRoot, await planStatuslineEntry(context, true));
+  const isDefault = context.statuslineBridge === 'default' && !(await hasStatuslineOptOut(context.projectRoot));
+  const plan = await planStatuslineEntry(context, isDefault);
+  return isDefault ? softenDefaultConflict(plan) : plan;
 }
 
 export async function planStatuslineRemove(projectRoot: string): Promise<StatuslinePlan> {
-  const plan = await planStatuslineRestore(projectRoot);
+  const plan = await clearStatuslineOptOut(projectRoot, await planStatuslineRestore(projectRoot));
   const realPath = await resolveChangeTarget(projectRoot, STATUSLINE_BRIDGE_FILE);
   const deletion: PlannedChange = { path: STATUSLINE_BRIDGE_FILE, realPath, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete the status line bridge script' } };
   return { ...plan, changes: [...plan.changes, deletion] };
@@ -34,8 +41,7 @@ async function bridgeAssetChange(projectRoot: string): Promise<PlannedChange> {
   return { path: STATUSLINE_BRIDGE_FILE, realPath, kind: 'create', owner: 'runtime_asset', content: await loadRuntimeAsset('claude-code-statusline.mjs'), preview: { summary: 'Install the status line bridge script' } };
 }
 
-async function planStatuslineEntry(context: HarnessContext): Promise<StatuslinePlan> {
-  const isRequested = context.statuslineBridge === 'install';
+async function planStatuslineEntry(context: HarnessContext, isRequested: boolean): Promise<StatuslinePlan> {
   const state = await readStatuslineState(context.projectRoot);
   if (!isRequested && state === null) return EMPTY_PLAN;
   const local = await readSettings(resolve(context.projectRoot, CLAUDE_LOCAL_SETTINGS_FILE));

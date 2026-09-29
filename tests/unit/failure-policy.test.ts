@@ -25,7 +25,7 @@ class TestErrorLog implements RuntimeErrorLog {
   async append(harness: SessionKey['harness'], input: ErrorRecordInput): Promise<void> { this.records.push({ v: 1, at: AT, harness, ...input }); }
 }
 function toolLine(zone: ToolLine['zone']): ToolLine {
-  return { v: 1, type: 'tool', at: AT, toolUseId: null, observedCharacters: 0, turn: 1, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone };
+  return { v: 1, type: 'tool', at: AT, toolUseId: null, observedCharacters: 0, turn: 1, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone, windowOrigin: 'harness' };
 }
 type FailureCall = { readonly event: RuntimeEvent; readonly ledger: SessionLedger; readonly errors: RuntimeErrorLog; readonly config?: ContextBrakeConfig | null };
 function failure(input: FailureCall) {

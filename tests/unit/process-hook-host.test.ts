@@ -16,7 +16,7 @@ const clock: Clock = { now: () => new Date('2026-09-15T12:00:00.000Z') };
 const realSetTimeout = setTimeout;
 async function slowStdin(): Promise<string> { await new Promise((resolve) => realSetTimeout(resolve, 50)); return '{}'; }
 function toolInput(turn: number, zone: ToolLineInput['zone'] = 'GREEN'): ToolLineInput {
-  return { toolUseId: `toolu_${turn}`, observedCharacters: 0, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone };
+  return { toolUseId: `toolu_${turn}`, observedCharacters: 0, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone, windowOrigin: 'harness' };
 }
 type Captured = { readonly stdout: string[]; readonly stderr: string[]; readonly context: ProcessHookContext };
 function capture(argv: string[], overrides: Partial<ProcessHookContext> = {}): Captured {
@@ -88,7 +88,7 @@ describe('process hook host failure policy and input (DEC-09, DEC-11, TC-17)', (
   });
   it('awaits an asynchronous input mapper that receives the runtime error log (DEC-11)', async () => {
     const { stdout, context } = capture(['node', 'hook', 'PreToolUse']);
-    const measuring = adapter(root, { mapInput: async (_event, _payload, errors) => { await errors.append('claude-code', { event: 'PreToolUse', code: 'UNEXPECTED', detail: 'probe' }); return { measured: { tokens: 120000, contextWindow: null } }; } });
+    const measuring = adapter(root, { mapInput: async (_event, _payload, errors) => { await errors.append('claude-code', { event: 'PreToolUse', code: 'UNEXPECTED', detail: 'probe' }); return { measured: { tokens: 120000, contextWindow: 128000 } }; } });
     expect(await runProcessHook(measuring, context)).toBe(0);
     expect(JSON.parse(stdout[0] ?? '{}')).toMatchObject({ kind: 'deny', reason: 'critical_ceiling' });
     expect(await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8')).toContain('"detail":"probe"');

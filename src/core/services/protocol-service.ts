@@ -37,7 +37,7 @@ export function renderProtocol(config: ContextBrakeConfig): string {
     '# ContextBrake Protocol', '',
     `Applies while this repository has a \`${planFile}\` or tool results include a ContextBrake telemetry block. The limits below are defaults; \`context-brake.config.json\` overrides them.`, '',
     '## Telemetry', '',
-    'A telemetry block reports the session turn, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call. When turn limits are configured, the turn also shows where `RED` starts. Turns never block tool calls; only context usage reaches `CRITICAL`.', '',
+    'A telemetry block reports the session turn, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call. When turn limits are configured, the turn also shows where `RED` starts. Turns never block tool calls; only context usage reaches `CRITICAL`. The `window=` field says where the window size came from: `harness` (reported by the harness), `declared` (`telemetry.declaredContextWindow`), or `config` (the `contextWindowCeiling` fallback). With `window=config`, nothing is blocked in any zone, and the action says so.', '',
     `In \`YELLOW\` and \`RED\`, the action depends on whether \`${planFile}\` exists. Without it, keep doing the requested work; never stop only because no plan exists.`, '',
     '## Zones', '', 'When several conditions match, the highest zone applies.', '',
     '| Zone | Default condition | What to do |', '| --- | --- | --- |', ...rows, '',

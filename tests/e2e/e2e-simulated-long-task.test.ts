@@ -8,7 +8,7 @@ import { parseStateCheckpoint, assertCheckpointMatchesPlan } from '../../src/cor
 import { parseTaskPlan } from '../../src/core/validation/plan-validator.js';
 import { distinctScenarioIndexes } from '../helpers/acceptance-scale.js';
 import { attemptGit, requireGit, runGit } from '../helpers/git-capability.js';
-import { writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { writeRuntimeConfig, seedBridgeWindow } from '../helpers/runtime-seed.js';
 import { PROFILE_CATALOG, sessionSteps, stateToolHarness, type AgentProfile, type CallExpectation } from '../support/harness-simulator/agent-profiles.js';
 import { IN_PROCESS_HARNESSES, createInProcessSession, type InProcessHarnessId } from '../support/harness-simulator/in-process-driver.js';
 import { createProcessSession, installHarness, type ProcessHarnessId } from '../support/harness-simulator/process-driver.js';
@@ -78,6 +78,7 @@ async function runSession(harness: ProcessHarnessId | InProcessHarnessId, index:
   try {
     const channel = await prepareChannel({ harness, root, sessionId, window });
     await seedRedSession({ root, harness, window, sessionId });
+    if (harness === 'claude-code') await seedBridgeWindow(root, { harness, sessionId, agentId: null }, window);
     const configPath = join(root, 'context-brake.config.json');
     const validConfig = profile === 'failure_above_ceiling' ? await readFile(configPath, 'utf8') : null;
     const recorder = new SessionRecorder();

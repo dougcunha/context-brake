@@ -9,8 +9,8 @@ import { assetCurrencyFindings } from './asset-currency.js';
 import { brakeSessionFindings, type RuntimeStateReading } from './brake-session-checks.js';
 import { detectHarnesses } from './detection-service.js';
 import { checkConfig } from './doctor-checks.js';
-import { checkpointModeReport, delegatedSnapshotFindings } from './delegated-diagnostics.js';
-import { isDebugModeInEffect } from './debug-mode-merge.js';
+import { delegatedSnapshotFindings } from './delegated-diagnostics.js';
+import { doctorReportExtras } from './doctor-report-extras.js';
 import { projectFileFindings } from './project-file-checks.js';
 import { buildDoctorReport } from './report-service.js';
 
@@ -96,5 +96,5 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
   if (input.runtimeState) allFindings.push(...brakeSessionFindings(input.runtimeState));
   allFindings.push(...delegatedSnapshotFindings(input.config, [...targetIds]));
   const sessions = input.now === undefined ? [] : activeSessions(input.runtimeState?.ledgers ?? [], { now: input.now, zones: effective.telemetry.zones });
-  return buildDoctorReport({ detections, integrations, findings: allFindings, checkpointMode: checkpointModeReport(input.config, input.planSnapshot?.exists ?? false), contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, activeSessions: sessions, debugMode: isDebugModeInEffect(input.config) });
+  return buildDoctorReport({ detections, integrations, ...doctorReportExtras({ config: input.config, planPresent: input.planSnapshot?.exists ?? false, contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, sessions, integrations }, allFindings) });
 }

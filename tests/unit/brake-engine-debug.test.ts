@@ -19,7 +19,7 @@ describe('telemetry injection in the debug mode (TC-05, FR-03, DEC-04)', () => {
   it('injects the telemetry block at 10% GREEN with threshold_only when the debug mode is on', async () => {
     const decision = await postToolDecision({ ...DEFAULT_CONFIG, debug: true });
     expect(decision).toMatchObject({ kind: 'context' });
-    expect(decision.kind === 'context' ? decision.block : '').toContain(`${TELEMETRY_BLOCK_PREFIX} turn=1 usage=10% tokens=12800/128000 source=measured zone=GREEN`);
+    expect(decision.kind === 'context' ? decision.block : '').toContain(`${TELEMETRY_BLOCK_PREFIX} turn=1 usage=10% tokens=12800/128000 source=measured window=harness zone=GREEN`);
   });
   it('stays neutral at 10% GREEN when the debug mode is off', async () => {
     expect(await postToolDecision({ ...DEFAULT_CONFIG, debug: false })).toEqual({ kind: 'neutral' });

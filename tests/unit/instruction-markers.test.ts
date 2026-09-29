@@ -5,7 +5,7 @@ import { CURRENT_END_MARKER, CURRENT_START_MARKER, DEBUG_MODE_LINE, referenceBlo
 
 const TOKEN_BUDGET = 60;
 const REFERENCE_LINE = 'When `task_plan.json` exists or tool results include a ContextBrake telemetry block, follow `docs/context-brake-protocol.md`.';
-const EXPECTED_DEBUG_LINE = 'Debug mode: end each reply that received a ContextBrake telemetry block with the line `📊 ContextBrake: <usage>% · <used>/<window> · <source> · <ZONE>`, copied from the latest block.';
+const EXPECTED_DEBUG_LINE = 'Debug mode: end each reply that received a ContextBrake telemetry block with the line `📊 ContextBrake: <usage>% · <used>/<window> (<window origin>) · <source> · <ZONE>`, copied from the latest block.';
 const DEBUG_CONFIG = { ...DEFAULT_CONFIG, debug: true };
 
 describe('reference block with the debug mode (TC-03, FR-02, NFR-01, DEC-03)', () => {

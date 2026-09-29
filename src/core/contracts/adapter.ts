@@ -9,7 +9,7 @@ import type {
 import type { InstallationManifest, ManagedAsset, ManagedEntry } from './manifest.js';
 import type { ProcessRunner } from './processes.js';
 
-export type StatuslineBridgeRequest = 'install' | 'remove';
+export type StatuslineBridgeRequest = 'install' | 'remove' | 'default';
 
 export type HarnessContext = {
   readonly projectRoot: string;

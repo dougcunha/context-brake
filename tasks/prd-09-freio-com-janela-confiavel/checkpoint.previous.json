@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "generation": 30,
+  "feature": "prd-09-freio-com-janela-confiavel",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": "session_012UFSLu4nVNJ5SBBZyBqZJP",
+  "objective": "The brake denies tool calls only when the context window comes from a reliable harness-reported source; with the contextWindowCeiling fallback it only warns; the Claude Code status line bridge becomes mandatory.",
+  "constraints": [
+    "sdd-lean: short PRD, HIL 1 and HIL 2 merged after TechSpec and plan, 1-2 tasks, independent review kept (DEC-STOPS-01)",
+    "Product direction DEC-PD-00; open product decisions go to the human before the PRD"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_03/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "jev": "shadow",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "1e62acf2640594d32fab8903318602ed9bcb0d7d90db2c0c10b10217ca77d8ce",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "17e4519686ed9a2ad5ffb97960d18734f9426351228fe64091b18e6006ca15df",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "395748a19113042768b7af579cc0e355bf865c5bf644a1818d331fdc91bd6dfd",
+      "decision_id": "DEC-HIL-01"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-01",
+    "DEC-HIL-03",
+    "DEC-HIL-04"
+  ],
+  "git_base": "e0a9604ea8349c2c66bfe9137e94dbd2abf3b6c7",
+  "worktree_evidence": "workflow.md#Feature Summary (pre-existing changes)",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the current PRD-09 delivery (codereview_03 APPROVED WITH RESERVATIONS, finalized by DEC-HIL-04; QA skipped by DEC-HIL-01; jev-summary.md)?",
+    "affected": [
+      "prd.md",
+      "techspec.md",
+      "codereview_03",
+      "jev-summary.md"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 2,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "HIL 3: on acceptance record DEC-HIL-05, mark checkpoint completed (next_action close) and snapshot closed.",
+    "read": [
+      {
+        "path": "tasks/prd-09-freio-com-janela-confiavel/context-snapshot.md",
+        "section": "all"
+      },
+      {
+        "path": "tasks/prd-09-freio-com-janela-confiavel/jev-summary.md",
+        "section": "all"
+      }
+    ]
+  }
+}

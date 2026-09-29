@@ -13,7 +13,7 @@ describe('usage resolver estimation (RF6, RF7, RF8, CA-10, TC-28)', () => {
     const estimate = estimatedTokens({ observedCharacters: 1840, turns: 4 }, constants);
     expect(estimate).toBe(15000 + 460 + 600);
     const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, constants, contextWindowCeiling: ceiling });
-    expect(reading).toEqual({ source: 'estimated', usedTokens: 16060, windowTokens: 128000, measuredTokens: 16060 });
+    expect(reading).toEqual({ source: 'estimated', usedTokens: 16060, windowTokens: 128000, measuredTokens: 16060, windowOrigin: 'config' });
   });
   it('rounds observed characters up', () => {
     expect(estimatedTokens({ observedCharacters: 1, turns: 0 }, constants)).toBe(15001);
@@ -32,11 +32,11 @@ describe('usage resolver estimation (RF6, RF7, RF8, CA-10, TC-28)', () => {
 describe('usage resolver measured readings (RF5, RF7, CA-09, TC-11)', () => {
   it('uses the harness tokens and window and marks the source measured', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 999999, turns: 9 }, measured: { tokens: 54000, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
-    expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 200000, measuredTokens: 54000 });
+    expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 200000, measuredTokens: 54000, windowOrigin: 'harness' });
   });
   it('falls back to the estimate over the harness window when the harness reports null tokens (PRD 2.2 DEC-06, TC-22)', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: null, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
-    expect(reading).toEqual({ source: 'estimated', usedTokens: 16060, windowTokens: 200000, measuredTokens: 16060 });
+    expect(reading).toEqual({ source: 'estimated', usedTokens: 16060, windowTokens: 200000, measuredTokens: 16060, windowOrigin: 'harness' });
   });
   it('estimates over the configured ceiling when the harness reports neither tokens nor window', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: null, contextWindow: null }, constants, contextWindowCeiling: ceiling });
@@ -50,7 +50,7 @@ describe('usage resolver measured readings (RF5, RF7, CA-09, TC-11)', () => {
   });
   it('uses the configured ceiling as the window of a measurement without one (FR-07, DEC-10, TC-10)', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 0, turns: 1 }, measured: { tokens: 54000, contextWindow: null }, constants, contextWindowCeiling: 150000 });
-    expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 150000, measuredTokens: 54000 });
+    expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 150000, measuredTokens: 54000, windowOrigin: 'config' });
   });
   it('keeps the parallel estimate available for measured sessions', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: 54000, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
@@ -60,7 +60,7 @@ describe('usage resolver measured readings (RF5, RF7, CA-09, TC-11)', () => {
 });
 
 describe('zone reading without status line lines matches the resolver (OBJ-03, PRD 2.2 TC-05)', () => {
-  const settings = { descriptor: { estimation: constants }, config: DEFAULT_CONFIG };
+  const settings = { descriptor: { estimation: constants, capabilities: [] }, config: DEFAULT_CONFIG };
   it.each([
     ['no measurement', undefined],
     ['null tokens', { tokens: null, contextWindow: null }],

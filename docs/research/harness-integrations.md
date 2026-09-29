@@ -26,6 +26,16 @@ Itens marcados como *não documentado* não apareceram nas páginas consultadas,
 - **Reinício:** nenhum hook documentado abre sessão nova, exceto em Pi e Oh-My-Pi (`ctx.newSession`). Comandos verificados: `/clear` no Claude Code; `/new` e `/clear` no Codex CLI; `/new`, com alias `/clear`, no OpenCode; `/new` no Pi.
 - **Latência:** Claude Code, Codex CLI, Cursor, GitHub Copilot CLI e Antigravity CLI iniciam um processo por evento; Claude Code e GitHub Copilot CLI também aceitam hooks HTTP para um endpoint já em execução. OpenCode, Pi e Oh-My-Pi rodam a integração dentro do processo do harness.
 
+## Fonte da janela e freio (PRD-09)
+
+Registrado em 28/09/2026, a partir das verificações das seções de cada harness abaixo (sem nova consulta aos fornecedores nesta data). O ContextBrake só nega uma chamada de ferramenta quando a janela de contexto é confiável; com a janela de `contextWindowCeiling`, ele só avisa.
+
+| Harness | Fonte da janela | Origem no bloco (`window=`) | Pode bloquear |
+| --- | --- | --- | --- |
+| Claude Code | Status line (`context_window.context_window_size`), pela ponte instalada por padrão | `harness` com a ponte; `config` sem ela, antes da primeira execução da status line, em `claude -p` e em subagentes | Só com registro da ponte na sessão |
+| Pi, Oh-My-Pi | `ctx.getContextUsage().contextWindow` | `harness` | Sim |
+| Codex CLI, Cursor, GitHub Copilot CLI, Antigravity CLI, OpenCode | Nenhuma para hooks | `declared` com `telemetry.declaredContextWindow`; `config` sem ela | Só com a janela declarada |
+
 ## Claude Code
 
 - **Registro:** chave `hooks` em `.claude/settings.json` (projeto, versionável), `.claude/settings.local.json` (local), `~/.claude/settings.json` (usuário), políticas gerenciadas, `hooks/hooks.json` de plugins e frontmatter de skills e subagents. A estrutura é evento, depois grupo com `matcher` (por exemplo, `"Bash"`), depois handlers com `type` e `command`, além de `if`, `timeout`, `async` e `statusMessage` opcionais. Um script em `.claude/hooks/` só roda quando referenciado nessa chave.

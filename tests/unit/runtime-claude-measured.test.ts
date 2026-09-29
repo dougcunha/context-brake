@@ -27,8 +27,9 @@ class MemoryErrors implements RuntimeErrorLog {
 async function payloadOf(fixture: string, overrides: Record<string, unknown>): Promise<Record<string, unknown>> {
   return { ...(await loadHarnessPayload('claude-code', fixture) as Record<string, unknown>), ...overrides };
 }
-async function handle(eventName: string, payload: Record<string, unknown>) {
+async function handle(eventName: string, payload: Record<string, unknown>, bridge: LedgerLine[] = []) {
   const ledger = new MemoryLedger();
+  ledger.lines.push(...bridge);
   const errors = new MemoryErrors();
   const engine = createBrakeEngine({ descriptor: claudeDescriptor, config: DEFAULT_CONFIG, ledger, blocks: { append: async () => Promise.resolve() }, readValidationCommand: async () => null, planPresence: { exists: async () => false } });
   const input = await mapClaudeInput(eventName, payload, errors);
@@ -45,9 +46,10 @@ describe('Claude Code measured usage from the transcript (FR-04, FR-05, DEC-08, 
     expect(errors.records).toEqual([]);
   });
 
-  it('passes the measurement to the pre-tool event, which denies a code read at the critical ceiling', async () => {
+  it('passes the measurement to the pre-tool event, which denies a code read at the critical ceiling over the bridge window (prd-09 FR-02)', async () => {
     const payload = await payloadOf('pre-tool-use.json', { tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, transcript_path: MAIN_TRANSCRIPT });
-    const { input, decision } = await handle('PreToolUse', payload);
+    const bridge: LedgerLine = { v: 1, type: 'statusline', at: '2026-09-25T10:00:00.000Z', windowTokens: 128000, inputTokens: null, usedPercentage: null, model: null };
+    const { input, decision } = await handle('PreToolUse', payload, [bridge]);
     expect(input).toEqual({ measured: { tokens: 194_431, contextWindow: null, at: '2026-09-25T10:00:10.500Z' } });
     expect(decision).toMatchObject({ kind: 'deny', reason: 'critical_ceiling' });
   });

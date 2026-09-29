@@ -4,6 +4,7 @@ import type { RuntimeDescriptor, SessionKey, ToolCall } from '../../src/core/con
 import type { BlockLog, BlockRecordInput, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLine, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
 import { createBrakeEngine } from '../../src/core/services/brake-engine.js';
 
+import { BRIDGE_WINDOW_LINE } from '../helpers/delegated-fixtures.js';
 const AT = '2026-09-15T12:00:00.000Z';
 const CRITICAL_CHARACTERS_PER_TURN = 30000;
 const LONG_SESSION_CALLS = 200;
@@ -11,7 +12,7 @@ const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentI
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
 const CHECKPOINT_WRITE: ToolCall = { name: 'Write', category: 'file_write', paths: ['state_checkpoint.json'], command: null };
 const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'pre_tool_block', state: 'supported' }, { id: 'tool_coverage', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
-const DENY = '[ContextBrake v2] BLOCKED tool=Read zone=CRITICAL turn=12 usage=83% tokens=106800/128000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
+const DENY = '[ContextBrake v3] BLOCKED tool=Read zone=CRITICAL turn=12 usage=83% tokens=106800/128000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
 
 function toolLine(observedCharacters: number, turn: number, toolUseId: string | null = `toolu_${turn}`): ToolLine {
   return { v: 1, type: 'tool', at: AT, toolUseId, observedCharacters, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: 'GREEN' };
@@ -40,7 +41,7 @@ function setup(lines: LedgerLine[] = [], config: ContextBrakeConfig = DEFAULT_CO
   return { ledger, blocks, engine };
 }
 function criticalSession(): LedgerLine[] {
-  return Array.from({ length: 12 }, (_, index) => toolLine(CRITICAL_CHARACTERS_PER_TURN, index + 1));
+  return [BRIDGE_WINDOW_LINE, ...Array.from({ length: 12 }, (_, index) => toolLine(CRITICAL_CHARACTERS_PER_TURN, index + 1))];
 }
 
 describe('brake engine pre-tool deny (RF17, CA-14, TC-15)', () => {
@@ -49,7 +50,7 @@ describe('brake engine pre-tool deny (RF17, CA-14, TC-15)', () => {
     const decision = await engine.handle({ kind: 'pre_tool', session: KEY, tool: READ });
     expect(decision).toEqual({ kind: 'deny', tool: 'Read', reason: 'critical_ceiling', message: DENY });
     expect(blocks.records).toEqual([{ tool: 'Read', zone: 'CRITICAL', turn: 12, percentage: 83, source: 'estimated', reason: 'critical_ceiling' }]);
-    expect(ledger.lines).toHaveLength(12);
+    expect(ledger.lines).toHaveLength(criticalSession().length);
   });
   it('stays neutral below the ceiling without writing anything', async () => {
     const { ledger, blocks, engine } = setup();

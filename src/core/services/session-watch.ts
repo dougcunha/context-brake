@@ -4,6 +4,7 @@ import type { Zone } from '../contracts/zones.js';
 import { HARNESS_DETAIL_CHARACTERS, MILLISECONDS_PER_SECOND, SIGNAL_EXIT_GRACE_MILLISECONDS, type RunContext } from './run-context.js';
 import { sessionLimitEnd, type SessionDeadline } from './run-limits.js';
 import { endsWithResetSignal } from './reset-notice.js';
+import { isTrustedWindow } from './window-trust.js';
 
 export type WatchEnd = { readonly forced: SessionEndReason | null; readonly exit: HarnessSessionExit };
 
@@ -80,7 +81,7 @@ export class SessionWatch {
   }
 
   private isCriticalGraceOver(now: number): boolean {
-    if (this.reading.zone !== 'CRITICAL') return false;
+    if (this.reading.zone !== 'CRITICAL' || !isTrustedWindow(this.reading.windowOrigin)) return false;
     this.criticalAt ??= now;
     return now >= this.criticalAt + this.context.settings.limits.criticalGraceSeconds * MILLISECONDS_PER_SECOND;
   }

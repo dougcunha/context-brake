@@ -17,7 +17,7 @@ const LEGACY_PROTOCOL_PATTERNS = [
   /Gest[aã]o Aut[oô]noma/i,
 ];
 
-export const DEBUG_MODE_LINE = 'Debug mode: end each reply that received a ContextBrake telemetry block with the line `📊 ContextBrake: <usage>% · <used>/<window> · <source> · <ZONE>`, copied from the latest block.';
+export const DEBUG_MODE_LINE = 'Debug mode: end each reply that received a ContextBrake telemetry block with the line `📊 ContextBrake: <usage>% · <used>/<window> (<window origin>) · <source> · <ZONE>`, copied from the latest block.';
 
 export type ReferenceBlockOptions = { readonly planFile: string; readonly protocolFile: string; readonly debug: boolean };
 

@@ -31,7 +31,7 @@ function blockPayload(decision: unknown): string | null {
   const content = (decision as { content?: unknown } | undefined)?.content;
   if (!Array.isArray(content)) return null;
   const texts = content.flatMap((part) => (typeof (part as { text?: unknown }).text === 'string' ? [(part as { text: string }).text] : []));
-  return texts.find((text) => text.startsWith('[ContextBrake v2]')) ?? null;
+  return texts.find((text) => text.startsWith('[ContextBrake v3]')) ?? null;
 }
 function isBlocked(decision: unknown): boolean {
   return (decision as { block?: unknown } | undefined)?.block === true;

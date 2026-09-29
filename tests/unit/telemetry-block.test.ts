@@ -7,32 +7,32 @@ import { renderTelemetryBlock, TELEMETRY_BLOCK_VERSION } from '../../src/core/se
 const RED_START_TURN = 100;
 
 function read(usedTokens: number, windowTokens: number): UsageReading {
-  return { source: 'estimated', usedTokens, windowTokens, measuredTokens: usedTokens };
+  return { source: 'estimated', usedTokens, windowTokens, measuredTokens: usedTokens, windowOrigin: 'config' };
 }
 function measured(usedTokens: number, windowTokens: number): UsageReading {
-  return { source: 'measured', usedTokens, windowTokens, measuredTokens: usedTokens };
+  return { source: 'measured', usedTokens, windowTokens, measuredTokens: usedTokens, windowOrigin: 'harness' };
 }
 
-describe('telemetry block v2 (RF12, RF15, RF16, CA-01, CA-09, CA-10, NFR-04)', () => {
-  it('declares version 2', () => {
-    expect(TELEMETRY_BLOCK_VERSION).toBe(2);
+describe('telemetry block v3 (RF12, RF15, RF16, CA-01, CA-09, CA-10, NFR-04, prd-09 FR-06, TC-06)', () => {
+  it('declares version 3', () => {
+    expect(TELEMETRY_BLOCK_VERSION).toBe(3);
   });
   it('renders the documented example line', () => {
     const block = renderTelemetryBlock({ turn: 9, turnCeiling: null, usagePercentage: 55, usage: read(70400, 128000), zone: 'YELLOW', action: compactZoneAction('YELLOW', true) });
-    expect(block).toBe('[ContextBrake v2] turn=9 usage=55% tokens=70400/128000 source=estimated zone=YELLOW action=finish the current edit, start no new step, run the step validation');
+    expect(block).toBe('[ContextBrake v3] turn=9 usage=55% tokens=70400/128000 source=estimated window=config zone=YELLOW action=finish the current edit, start no new step, run the step validation');
   });
   it('marks a measured reading with the same value the harness reported', () => {
     const block = renderTelemetryBlock({ turn: 7, turnCeiling: null, usagePercentage: 42, usage: measured(54000, 128000), zone: 'GREEN', action: compactZoneAction('GREEN', false) });
-    expect(block).toBe('[ContextBrake v2] turn=7 usage=42% tokens=54000/128000 source=measured zone=GREEN action=work normally');
+    expect(block).toBe('[ContextBrake v3] turn=7 usage=42% tokens=54000/128000 source=measured window=harness zone=GREEN action=work normally');
   });
   it('renders a null usage without a token value as zero', () => {
-    const usage: UsageReading = { source: 'measured', usedTokens: null, windowTokens: 128000, measuredTokens: null };
+    const usage: UsageReading = { source: 'measured', usedTokens: null, windowTokens: 128000, measuredTokens: null, windowOrigin: 'config' };
     const block = renderTelemetryBlock({ turn: 1, turnCeiling: null, usagePercentage: 0, usage, zone: 'GREEN', action: compactZoneAction('GREEN', true) });
     expect(block).toContain('tokens=0/128000 source=measured');
   });
   it('keeps the byte order of the fields', () => {
     const block = renderTelemetryBlock({ turn: 9, turnCeiling: null, usagePercentage: 55, usage: read(70400, 128000), zone: 'YELLOW', action: compactZoneAction('YELLOW', true) });
-    const order = ['[ContextBrake v2]', 'turn=', 'usage=', 'tokens=', 'source=', 'zone=', 'action='];
+    const order = ['[ContextBrake v3]', 'turn=', 'usage=', 'tokens=', 'source=', 'window=', 'zone=', 'action='];
     const positions = order.map((token) => block.indexOf(token));
     expect(positions).toEqual([...positions].sort((left, right) => left - right));
   });
@@ -42,11 +42,11 @@ describe('telemetry block turn rendering (FR-03, DEC-04, TC-05)', () => {
   it('omits the ceiling when the default configuration has no turn limits', () => {
     expect(DEFAULT_CONFIG.telemetry.zones.yellowMaxTurn).toBeUndefined();
     const block = renderTelemetryBlock({ turn: 12, turnCeiling: null, usagePercentage: 55, usage: read(70400, 128000), zone: 'YELLOW', action: compactZoneAction('YELLOW', true) });
-    expect(block).toContain('[ContextBrake v2] turn=12 usage=55%');
+    expect(block).toContain('[ContextBrake v3] turn=12 usage=55%');
   });
   it('shows the turn where RED starts when turn limits are on', () => {
     const block = renderTelemetryBlock({ turn: 12, turnCeiling: RED_START_TURN, usagePercentage: 10, usage: read(12800, 128000), zone: 'GREEN', action: compactZoneAction('GREEN', true) });
-    expect(block).toContain('[ContextBrake v2] turn=12/100 usage=10%');
+    expect(block).toContain('[ContextBrake v3] turn=12/100 usage=10%');
   });
 });
 

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import { doctorReportSchema } from '../../src/core/contracts/diagnostics.js';
 import { attemptGit, requireGit, runGit } from '../helpers/git-capability.js';
-import { writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { writeRuntimeConfig, seedBridgeWindow } from '../helpers/runtime-seed.js';
 import { brakeWorkFlow, deniedRead, operatorTrap, saveSequence, workStep } from '../support/harness-simulator/agent-profiles.js';
 import { createProcessSession, installHarness } from '../support/harness-simulator/process-driver.js';
 import { SessionRecorder, initializeRepository, lastCommitSubject, runScript } from '../support/harness-simulator/session-recorder.js';
@@ -34,8 +34,8 @@ async function createFixture(harness: 'claude-code' | 'codex-cli'): Promise<stri
   return root;
 }
 async function driveClaude(root: string, recorder: SessionRecorder): Promise<void> {
-  const session = createProcessSession({ root, harness: 'claude-code', sessionId: CLAUDE_SESSION });
-  const input = { channel: session, harness: 'claude-code', recorder, root };
+  await seedBridgeWindow(root, { harness: 'claude-code', sessionId: CLAUDE_SESSION, agentId: null }, 32000);
+  const input = { channel: createProcessSession({ root, harness: 'claude-code', sessionId: CLAUDE_SESSION }), harness: 'claude-code', recorder, root };
   await runScript(input, brakeWorkFlow(LARGE_READ_CHARACTERS));
   for (const [id, text] of [['work-1', 'turn=1 '], ['work-1', 'zone=YELLOW'], ['work-6', 'zone=RED'], ['work-9', 'zone=CRITICAL']] as const) expect(recorder.find(id)?.block).toContain(text);
   await runScript(input, [deniedRead('critical-read-code', 'src/app.ts'), ...saveSequence(), operatorTrap('critical-operator')]);

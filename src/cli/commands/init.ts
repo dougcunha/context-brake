@@ -65,7 +65,8 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
   const adapters = getAllAdapters();
-  const ctx = buildHarnessContext(env, manifest, args.statuslineBridge);
+  const lightMode = isLightModeInEffect(config?.lightMode, { light: args.light ?? false, noLight: args.noLight ?? false });
+  const ctx = buildHarnessContext(env, manifest, args.statuslineBridge ?? (lightMode ? undefined : 'default'));
   const sources = await collectHarnessSources(adapters, ctx);
   const result = await planInstallation({
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
@@ -84,7 +85,6 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const applier = new NodeChangeApplier();
   const applyReport = await applier.apply(result.plan);
   const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
-  const lightMode = isLightModeInEffect(config?.lightMode, { light: args.light ?? false, noLight: args.noLight ?? false });
   return outputReport(report, args.json, { printed, planHint: !lightMode });
 }
 function harnessSelection(args: ParsedInitArgs) {

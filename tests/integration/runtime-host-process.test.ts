@@ -7,6 +7,7 @@ import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import type { Clock, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths.js';
+import { seedBridgeWindow } from '../helpers/runtime-seed.js';
 
 const HOST_ENTRY = resolve('tests/fixtures/runtime-host/host-entry.ts');
 const SPAWN_TIMEOUT_MS = 20000;
@@ -41,6 +42,7 @@ describe('process hook host end to end (CMP-17, TC-15, TC-16)', () => {
 
   it('denies a code read above the ceiling, records the block, and exits zero', async () => {
     await seedCriticalSession(projectRoot);
+    await seedBridgeWindow(projectRoot, KEY, 128000);
     const result = await runHost('PreToolUse', { session_id: 'session-1', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_use_id: 'toolu_x' }, projectRoot);
     expect(result.code).toBe(0);
     expect(result.stderr).toBe('');

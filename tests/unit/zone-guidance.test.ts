@@ -7,7 +7,7 @@ import { resolveCheckpointMode, resolveGuidance } from '../../src/core/services/
 import { CountingPresence, delegatedConfig } from '../helpers/delegated-fixtures.js';
 
 const ACTION = 'run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]';
-const USAGE = { source: 'estimated', usedTokens: 90000, windowTokens: 128000, measuredTokens: null } as const;
+const USAGE = { source: 'estimated', usedTokens: 90000, windowTokens: 128000, measuredTokens: null, windowOrigin: 'config' } as const;
 async function guidanceFor(present: boolean, section = {}) {
   return resolveGuidance({ config: delegatedConfig(section), planPresence: new CountingPresence(present), readValidationCommand: async () => null });
 }
@@ -34,10 +34,10 @@ describe('delegated zone actions (TC-03, FR-03, FR-04, FR-05, NFR-05)', () => {
   it('keeps the plan actions while the plan file exists', async () => {
     expect((await guidanceFor(true)).actionFor('RED')).toBe(ZONE_ACTIONS.RED.withPlan.compact);
   });
-  it('renders a v2 block without plan, checkpoint, validation, or commit words', async () => {
+  it('renders a v3 block without plan, checkpoint, validation, or commit words', async () => {
     const action = (await guidanceFor(false)).actionFor('RED');
     const block = renderTelemetryBlock({ turn: 11, turnCeiling: 12, usagePercentage: 70, usage: USAGE, zone: 'RED', action });
-    expect(block).toBe(`[ContextBrake v2] turn=11/12 usage=70% tokens=90000/128000 source=estimated zone=RED action=${ACTION}`);
+    expect(block).toBe(`[ContextBrake v3] turn=11/12 usage=70% tokens=90000/128000 source=estimated window=config zone=RED action=${ACTION}`);
     expect(block).not.toMatch(/task_plan|state_checkpoint|validation|commit/);
   });
   it('stays under 400 characters with a 200-character command', async () => {

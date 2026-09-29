@@ -23,7 +23,7 @@ function zoneFor(lines: readonly LedgerLine[], measured?: MeasuredUsage) {
 describe('estimated readings keep the recorded window after a reset (FR-06, OBJ-01, DEC-06, TC-22)', () => {
   it('estimates over the status line window after a compaction with a stale transcript reading', () => {
     const result = zoneFor([statusline(BEFORE, 1000000, 500000), RESET, statusline(AFTER, 1000000, null)], { tokens: 900000, contextWindow: null, at: BEFORE });
-    expect(result.reading).toEqual({ source: 'estimated', usedTokens: 15150, windowTokens: 1000000, measuredTokens: 15150 });
+    expect(result.reading).toEqual({ source: 'estimated', usedTokens: 15150, windowTokens: 1000000, measuredTokens: 15150, windowOrigin: 'harness' });
     expect(result.percentage).toBe(1);
     expect(result.zone).toBe('GREEN');
   });

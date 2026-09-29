@@ -28,7 +28,7 @@ ContextBrake plugs into the extension mechanism each harness already documents, 
 
 - 🔍 **Detection and setup:** `context-brake init` finds the harnesses a project uses, registers the integration in each one's own configuration, and reports the support level it can guarantee.
 - 🚦 **Telemetry:** as soon as the session leaves `GREEN`, or context usage reaches the activation threshold, tool results reach the agent with the session turn, context usage (measured by the harness or estimated), zone, and recommended action.
-- 🪓 **Brake:** once context usage reaches the critical threshold, tool calls are blocked except the ones needed to save state. The number of tool calls alone never blocks.
+- 🪓 **Brake:** once context usage reaches the critical threshold, tool calls are blocked except the ones needed to save state, as long as the context window is trusted (reported by the harness or declared); with the `contextWindowCeiling` fallback, the brake only warns. The number of tool calls alone never blocks.
 - 💾 **Checkpoint and boot:** the agent saves progress to `task_plan.json` and `state_checkpoint.json`, local files that `init` adds to `.gitignore`. After you run `/clear` or `/new`, the new session starts with a boot summary and validates the inherited state before editing code.
 
 ---
@@ -50,7 +50,7 @@ Blocking is available on harnesses with **Full** or **Partial** support, but onl
 
 ### Brake Behavior & State-Saving Allowlist
 
-At the critical threshold (by default, 75% context usage), ContextBrake engages the tool-call brake on supported harnesses. General tool executions are intercepted and denied before execution with an agent-facing block message.
+At the critical threshold (by default, 75% context usage), ContextBrake engages the tool-call brake on supported harnesses. General tool executions are intercepted and denied before execution with an agent-facing block message, but only when the context window is trusted: reported by the harness, or declared in `telemetry.declaredContextWindow` for harnesses that report none. With the `contextWindowCeiling` fallback (`window=config`), the `CRITICAL` zone only warns (see `contextWindowCeiling` under Configuration).
 
 Only allowlisted operations pass through:
 1. **Plan & Checkpoint Files:** Reading or writing the configured plan file (`task_plan.json`) and checkpoint file (`state_checkpoint.json`).
@@ -68,7 +68,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
-| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; the context window comes from the optional status line bridge; a hook timeout or failure without an explicit deny lets the call proceed |
+| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; the context window comes from the status line bridge, which `init` installs by default, and without it the brake only warns; a hook timeout or failure without an explicit deny lets the call proceed |
 | Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Partial | Hosted tools such as web search bypass hooks; hook errors and timeouts let the call proceed |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | A hook timeout lets the tool call proceed |
@@ -77,7 +77,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 | Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Timeout behavior of extension handlers is not documented |
 | Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Partial | Telemetry is injected through `PreInvocation`; hook coverage in the CLI is unconfirmed, and `PreToolUse` `allow` auto-approves calls |
 
-For Antigravity CLI, `PreToolUse` requires an explicit decision (`allow` or `deny`). ContextBrake emits `allow` below the ceiling to permit tool execution, which auto-approves the call and replaces the harness's normal permission prompt. Above the ceiling, `deny` is returned.
+For Antigravity CLI, `PreToolUse` requires an explicit decision (`allow` or `deny`). ContextBrake emits `allow` below the ceiling to permit tool execution, which auto-approves the call and replaces the harness's normal permission prompt. Antigravity reports no context window, so `deny` is returned above the ceiling only when `telemetry.declaredContextWindow` is set; otherwise `allow` is returned in every zone.
 
 Aider is not supported because it has no hook mechanism. The full capability matrix and its sources are in the [installation PRD](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md).
 
@@ -176,7 +176,7 @@ npx context-brake doctor
 }
 ```
 
-`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it. Claude Code reports usage but not the window to hooks, so there the percentages measure usage against this budget; a model with a 200,000 or 1,000,000-token window reaches `CRITICAL` at 96,000 tokens with the default 128,000. Raise it to let sessions run longer, or install the [status line bridge](#claude-code-status-line-bridge) so Claude Code sessions use the model's real window. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
+`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it. A window taken from `contextWindowCeiling` never blocks a tool call: the telemetry block shows `window=config`, and `CRITICAL` only warns. Blocking needs a window the harness reports (`window=harness`: Pi and Oh-My-Pi, and Claude Code through the [status line bridge](#claude-code-status-line-bridge), which `init` installs by default) or, for the harnesses that report none (Codex, Cursor, GitHub Copilot, Antigravity, OpenCode), a window you declare in `telemetry.declaredContextWindow` (`window=declared`). A declared window is ignored by Claude Code, Pi, and Oh-My-Pi, whose window comes from the harness. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns. `brake.additionalAllowedCommands` defines extra shell commands allowed in the `CRITICAL` zone (matched against leading tokens, without shell operators). With `instructCheckpointCommit`, the protocol tells the agent to commit the code; ContextBrake never commits on its own.
 
 ### Delegated Snapshot Mode (without a task plan)
 
@@ -256,7 +256,7 @@ npx context-brake init --debug
 This writes `"debug": true` to the configuration and adds one line to the reference block in each instruction file. That line tells the agent to end each reply that received a telemetry block with the latest reading:
 
 ```text
-📊 ContextBrake: 42% · 53760/128000 · measured · GREEN
+📊 ContextBrake: 42% · 53760/128000 (harness) · measured · GREEN
 ```
 
 - **Injects on every call:** while debug mode is on, ContextBrake adds the telemetry block to every tool result, in every zone, as if `injectionMode` were `always`. This costs up to 60 tokens per tool call. The `injectionMode` saved in the configuration does not change.
@@ -271,19 +271,19 @@ In every mode, `context-brake doctor` lists the repository's active sessions wit
 
 ### Claude Code Status Line Bridge
 
-Claude Code sends the active model's context window only to the status line command, never to hooks. The optional bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`:
+Claude Code sends the active model's context window only to the status line command, never to hooks. The bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`, and it is what lets the brake block in Claude Code. `init` installs it by default in full mode (not in light mode, which never blocks). To turn it back on after an opt-out:
 
 ```bash
 npx context-brake init --statusline-bridge
 ```
 
 - **Local scope, per developer:** the option writes `statusLine` into `.claude/settings.local.json`, the local, unversioned settings file, with the absolute path of `.claude/hooks/context-brake-statusline.mjs`. The versioned `.claude/settings.json` does not change, and a later `init` without the option keeps the bridge. Keep `.claude/settings.local.json` ignored by Git; `doctor` warns when it is not.
-- **Your status line stays the same:** the bridge runs the status line that was in effect before (local, then project, then user settings) through a pipe, with the same input, output, and exit code, and keeps `padding` and `refreshInterval`. If you had no status line, it prints nothing. Note that Claude Code hides most footer keyboard hints (such as `esc to interrupt` and `? for shortcuts`) whenever a status line is configured, even an empty one, which is why the bridge is opt-in.
+- **Your status line stays the same:** the bridge runs the status line that was in effect before (local, then project, then user settings) through a pipe, with the same input, output, and exit code, and keeps `padding` and `refreshInterval`. If you had no status line, it prints nothing. Note that Claude Code hides most footer keyboard hints (such as `esc to interrupt` and `? for shortcuts`) whenever a status line is configured, even an empty one. To keep the footer, opt out with `context-brake init --no-statusline-bridge`: later plain `init` runs remember the choice, and the brake then only warns in Claude Code.
 - **Zones on 1M models:** after the status line first runs in a session, the telemetry block shows `tokens=<used>/<window>` with the model's `context_window_size`. With a 1,000,000-token model, `RED` starts above 650,000 tokens, and `contextWindowCeiling` no longer limits Claude Code sessions. After `/model`, the window changes with the next assistant response. When the transcript has no usage reading, the bridge's input tokens are used, following the same reset rule.
-- **Non-interactive sessions:** Claude Code runs the status line only in interactive sessions, so `claude -p`, including the sessions of `context-brake run`, keep using `contextWindowCeiling`.
+- **Non-interactive sessions:** Claude Code runs the status line only in interactive sessions, so `claude -p`, including the sessions of `context-brake run`, keep using `contextWindowCeiling`. There the brake only warns, and the runner does not end a session at `CRITICAL`. The first tool calls of a new session, before the status line first runs, and Claude Code subagents also only warn.
 - **Windows:** Claude Code runs the status line through Git Bash, or through PowerShell when Git Bash is absent. The bridge command is a `sh` pipeline, verified with Git Bash; Windows without Git Bash (PowerShell only) is not verified.
 
-The bridge records only the window, the input tokens, the used percentage, the model id, and the time, per session, in the session ledger. `context-brake doctor` shows where the window comes from under `contextWindow` and warns when the local status line no longer runs the bridge, when the script is missing, or when the project or user status line changed after installation. `context-brake init --no-statusline-bridge` or `context-brake remove` restores the previous local status line, or removes the key and the file when the bridge created them.
+The bridge records only the window, the input tokens, the used percentage, the model id, and the time, per session, in the session ledger. `context-brake doctor` shows where the window comes from under `contextWindow`, lists per harness whether the brake can block under `brakeWindow`, warns with `STATUSLINE_BRIDGE_ABSENT` when Claude Code has no bridge, and warns when the local status line no longer runs the bridge, when the script is missing, or when the project or user status line changed after installation. `context-brake init --no-statusline-bridge` or `context-brake remove` restores the previous local status line, or removes the key and the file when the bridge created them.
 
 ---
 

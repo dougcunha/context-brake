@@ -11,7 +11,7 @@ import { runtimeDirectory, sessionLedgerPath } from '../../src/infrastructure/ru
 
 const KEY: SessionKey = { harness: 'opencode', sessionId: 'session-1', agentId: null };
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'opencode', capabilities: [{ id: 'pre_tool_block', state: 'supported' }, { id: 'tool_coverage', state: 'unknown', impact: 'coverage unknown' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: null };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'opencode', capabilities: [{ id: 'pre_tool_block', state: 'supported' }, { id: 'tool_coverage', state: 'unknown', impact: 'coverage unknown' }, { id: 'context_usage', state: 'unsupported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: null };
 const clock: Clock = { now: () => new Date('2026-09-15T12:00:00.000Z') };
 
 function toolInput(turn: number, toolUseId: string | null = `toolu_${turn}`): ToolLineInput {
@@ -23,7 +23,8 @@ describe('in-process host decisions (TC-32, DEC-16)', () => {
   let runtime: ReturnType<typeof createInProcessRuntime>;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cb-t04-inproc-'));
-    runtime = createInProcessRuntime({ projectRoot: root, descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, clock });
+    const declared = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, declaredContextWindow: 128000 } };
+    runtime = createInProcessRuntime({ projectRoot: root, descriptor: DESCRIPTOR, config: declared, clock });
   });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 

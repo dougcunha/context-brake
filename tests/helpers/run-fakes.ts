@@ -17,6 +17,7 @@ function sessions(world: RunWorld): HarnessSessionProcess {
 function startSession(world: RunWorld, request: HarnessSessionRequest, script: SessionScript): ReturnType<HarnessSessionProcess['start']> {
   world.launches.push({ command: request.command, environment: request.environment });
   world.watchZone = script.zone ?? null;
+  world.watchOrigin = script.windowOrigin ?? 'harness';
   world.watchFinalReading = script.finalReading ?? null;
   script.agent?.(world);
   for (const event of script.events ?? []) request.onEvent(event);
@@ -53,7 +54,7 @@ function store(world: RunWorld): RunStore {
 
 function watcher(world: RunWorld): LedgerWatcher {
   return { watch: (_key, onReading) => {
-    const reading = { zone: world.watchZone, tokens: world.watchZone === null ? null : { value: 90_000, source: 'estimated' as const } };
+    const reading = { zone: world.watchZone, tokens: world.watchZone === null ? null : { value: 90_000, source: 'estimated' as const }, windowOrigin: world.watchOrigin };
     if (world.watchZone !== null) onReading(reading);
     return { latest: () => reading, stop: async () => {
       const final = world.watchFinalReading ?? reading;

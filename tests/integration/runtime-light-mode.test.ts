@@ -42,7 +42,7 @@ describe('light mode through the Claude Code runtime (TC-10, FR-03, FR-05, FR-06
   it('injects the light action after a tool call', async () => {
     const payload = { session_id: SESSION, hook_event_name: 'PostToolUse', tool_name: 'Read', tool_input: { file_path: 'a.ts' }, tool_response: {}, tool_use_id: 'toolu_light' };
     const decision = await dispatch('PostToolUse', payload);
-    expect(decision).toEqual({ kind: 'context', block: expect.stringMatching(/^\[ContextBrake v2\] .* zone=CRITICAL action=save your snapshot or checkpoint immediately, then end reply with \[REQUEST_SESSION_RESET\]$/) });
+    expect(decision).toEqual({ kind: 'context', block: expect.stringMatching(/^\[ContextBrake v3\] .* zone=CRITICAL action=save your snapshot or checkpoint immediately, then end reply with \[REQUEST_SESSION_RESET\]$/) });
   });
   it('allows a write to any path above the critical ceiling', async () => {
     const payload = { session_id: SESSION, hook_event_name: 'PreToolUse', tool_name: 'Write', tool_input: { file_path: join(projectRoot, 'src', 'a.ts'), content: '' }, tool_use_id: 'toolu_pre' };

@@ -21,7 +21,7 @@ describe('wrap inside a runner session (TC-16, RF16, CA-12, DEC-19)', () => {
     const ledger = await seedToolLine(projectRoot, 'claude-code', GREEN_LINE);
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
-    expect(output.stdout.join('')).toMatch(/^stdout:3\r?\n\n\[ContextBrake v2\] turn=2 .* zone=GREEN .*\n$/s);
+    expect(output.stdout.join('')).toMatch(/^stdout:3\r?\n\n\[ContextBrake v3\] turn=2 .* zone=GREEN .*\n$/s);
     expect(output.stderr.join('')).toContain('stderr:line');
     expect(await ledger.readLines({ harness: 'claude-code', sessionId: SESSION_ID, agentId: null })).toHaveLength(1);
   });
@@ -32,14 +32,14 @@ describe('wrap inside a runner session (TC-16, RF16, CA-12, DEC-19)', () => {
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
     const lines = await new NodeSessionLedger(projectRoot, clock).readLines({ harness: 'opencode', sessionId: SESSION_ID, agentId: null });
     expect(lines.filter((line) => line.type === 'tool')).toHaveLength(1);
-    expect(output.stdout.join('')).toContain('[ContextBrake v2] turn=1 ');
+    expect(output.stdout.join('')).toContain('[ContextBrake v3] turn=1 ');
   });
 
   it('finds the run from a subdirectory of the project', async () => {
     await startRunnerSession(projectRoot, 'claude-code');
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot: await makeSubdirectory(projectRoot) })).toBe(3);
-    expect(output.stdout.join('')).toContain('[ContextBrake v2] turn=1 ');
+    expect(output.stdout.join('')).toContain('[ContextBrake v3] turn=1 ');
   });
 });
 
@@ -56,7 +56,7 @@ describe('wrap outside a runner session (TC-16, DEC-19)', () => {
     process.env['CONTEXT_BRAKE_RUN_ID'] = 'run-unknown';
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
-    expect(output.stdout.join('')).not.toContain('[ContextBrake v2]');
+    expect(output.stdout.join('')).not.toContain('[ContextBrake v3]');
   });
 
   it('keeps the exit code and warns when the telemetry cannot be computed', async () => {
@@ -65,7 +65,7 @@ describe('wrap outside a runner session (TC-16, DEC-19)', () => {
     const output = captureOutput();
     expect(await runWrap(EXIT_THREE, { projectRoot })).toBe(3);
     expect(output.stderr.join('')).toContain('[WARN] context-brake wrap: session telemetry is unavailable');
-    expect(output.stdout.join('')).not.toContain('[ContextBrake v2]');
+    expect(output.stdout.join('')).not.toContain('[ContextBrake v3]');
   });
 });
 

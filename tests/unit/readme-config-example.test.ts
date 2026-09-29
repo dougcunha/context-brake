@@ -47,6 +47,13 @@ describe('README and telemetry docs for the status line bridge (PRD 2.2 FR-09, D
     expect(readme).toContain('Windows without Git Bash (PowerShell only) is not verified');
   });
 
+  it('documents the window origin rule, the default bridge, and the declared window (prd-09 FR-08, TC-14)', () => {
+    expect(readme).toContain('A window taken from `contextWindowCeiling` never blocks a tool call');
+    expect(readme).toContain('`telemetry.declaredContextWindow` (`window=declared`)');
+    expect(readme).toContain('`init` installs it by default in full mode');
+    expect(telemetry).toContain('window=<harness|declared|config>');
+  });
+
   it('lists the statusline ledger line in the telemetry specification', () => {
     expect(telemetry).toContain('{"v":1,"type":"statusline","at":"2026-09-25T12:00:00.000Z","windowTokens":1000000,"inputTokens":200000,"usedPercentage":20,"model":"claude-opus-5-5"}');
     expect(telemetry).toContain('event `StatusLine`');

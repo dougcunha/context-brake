@@ -4,10 +4,10 @@ import type { HarnessId } from '../contracts/harness.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../contracts/runtime.js';
 import type { RuntimeErrorCode, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
 import type { SessionKey } from '../contracts/runtime.js';
-import type { Zone } from '../contracts/zones.js';
 import { InvalidConfigurationError } from '../validation/configuration-validator.js';
 import { renderBootOmission } from './boot-summary.js';
 import { summarizeLedger } from './session-counters.js';
+import { isTrustedWindow } from './window-trust.js';
 import { resolveFailureGuidance, type GuidanceSources } from './zone-guidance.js';
 
 export const INTERNAL_DEADLINE_MILLISECONDS = 1500;
@@ -55,7 +55,7 @@ export async function resolveFailure(input: FailureResolutionInput): Promise<Run
   await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail });
   if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return deadlineBootDecision(input);
   if (input.event.kind !== 'pre_tool' || input.config?.lightMode !== undefined) return { kind: 'neutral' };
-  if ((await lastRecordedZone(input.ledger, input.event.session)) !== 'CRITICAL') return { kind: 'neutral' };
+  if (!(await wasTrustedCritical(input.ledger, input.event.session))) return { kind: 'neutral' };
   const guidance = await resolveFailureGuidance(guidanceSources(input));
   if (await guidance.allows(input.event.tool)) return { kind: 'neutral' };
   return { kind: 'deny', tool: input.event.tool.name, reason: 'integration_failure', message: guidance.failureMessage(input.event.tool.name) };
@@ -79,11 +79,12 @@ export async function recordRuntimeFailure(errors: RuntimeErrorLog, record: Runt
 function sessionBootSupported(descriptor: RuntimeDescriptor | null): boolean {
   return descriptor?.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported') ?? false;
 }
-async function lastRecordedZone(ledger: SessionLedger, session: SessionKey): Promise<Zone | null> {
+async function wasTrustedCritical(ledger: SessionLedger, session: SessionKey): Promise<boolean> {
   try {
-    return summarizeLedger(await ledger.readLines(session)).lastZone;
+    const last = summarizeLedger(await ledger.readLines(session)).lastReading;
+    return last?.zone === 'CRITICAL' && isTrustedWindow(last.windowOrigin);
   } catch {
-    return null;
+    return false;
   }
 }
 async function readTolerantly(reader: () => Promise<string | null>): Promise<string | null> {

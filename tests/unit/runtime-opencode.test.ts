@@ -79,7 +79,7 @@ async function checkOpenCodeLifecycle(root: string): Promise<void> {
 async function checkOpenCodeExactBlock(root: string): Promise<void> {
   await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
   const hooks = createOpenCodePlugin({ directory: root });
-  const expected = '[ContextBrake v2] BLOCKED tool=bash zone=CRITICAL turn=12 usage=570% tokens=136800/24000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
+  const expected = '[ContextBrake v3] BLOCKED tool=bash zone=CRITICAL turn=12 usage=570% tokens=136800/24000 source=estimated reason=critical_ceiling. Allowed: read or write task_plan.json and state_checkpoint.json, the step validation command, git status, git add, git commit. Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].';
   await expect(hooks['tool.execute.before']!({ tool: 'bash', sessionID: 'opencode-critical', callID: 'call-deny' }, { args: { command: 'rm -rf src' } })).rejects.toThrow(expected);
 }
 

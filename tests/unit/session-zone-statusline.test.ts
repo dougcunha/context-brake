@@ -23,7 +23,7 @@ function zoneFor(lines: readonly LedgerLine[], measured?: MeasuredUsage) {
 describe('zone over the status line window (FR-04, DEC-06, TC-03)', () => {
   it('computes the percentage over the recorded window with transcript tokens', () => {
     const result = zoneFor([statusline(BEFORE, 1000000, null)], { tokens: 200000, contextWindow: null, at: AFTER });
-    expect(result.reading).toEqual({ source: 'measured', usedTokens: 200000, windowTokens: 1000000, measuredTokens: 200000 });
+    expect(result.reading).toEqual({ source: 'measured', usedTokens: 200000, windowTokens: 1000000, measuredTokens: 200000, windowOrigin: 'harness' });
     expect(result.percentage).toBe(20);
     expect(result.zone).toBe('GREEN');
   });
@@ -46,7 +46,7 @@ describe('zone over the status line window (FR-04, DEC-06, TC-03)', () => {
 describe('status line tokens as the fallback measurement (FR-05, FR-06, TC-04)', () => {
   it('measures from status line tokens recorded after the last reset without a transcript reading', () => {
     const result = zoneFor([RESET, statusline(AFTER, 1000000, 660000)]);
-    expect(result.reading).toEqual({ source: 'measured', usedTokens: 660000, windowTokens: 1000000, measuredTokens: 660000 });
+    expect(result.reading).toEqual({ source: 'measured', usedTokens: 660000, windowTokens: 1000000, measuredTokens: 660000, windowOrigin: 'harness' });
     expect(result.zone).toBe('RED');
   });
 
@@ -74,7 +74,7 @@ describe('status line tokens as the fallback measurement (FR-05, FR-06, TC-04)',
 describe('zone without the bridge and with a harness window (OBJ-03, FR-04, TC-05)', () => {
   it('uses contextWindowCeiling when the ledger has no statusline lines', () => {
     const result = zoneFor([], { tokens: 100000, contextWindow: null });
-    expect(result.reading).toEqual({ source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000 });
+    expect(result.reading).toEqual({ source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000, windowOrigin: 'config' });
   });
 
   it('lets a Pi-reported window win over the status line window', () => {

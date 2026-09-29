@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 import { installedHookPath, runInstalledHook } from '../helpers/built-hook.js';
-import { fixedClock, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { fixedClock, writeRuntimeConfig, seedBridgeWindow } from '../helpers/runtime-seed.js';
 import { installHarness } from '../support/harness-simulator/process-driver.js';
 
 const SESSION = 'measured-e2e-claude';
@@ -21,6 +21,7 @@ async function createFixture(): Promise<string> {
   await mkdir(join(root, '.claude'), { recursive: true });
   await writeFile(join(root, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
   await installHarness(root, 'claude-code');
+  await seedBridgeWindow(root, KEY, WINDOW);
   return root;
 }
 async function writeTranscript(path: string, tokens: number): Promise<void> {

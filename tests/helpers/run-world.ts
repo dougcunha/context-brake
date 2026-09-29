@@ -3,7 +3,7 @@ import type { CommandForApproval, LedgerReading, SessionCommand, SessionStreamEv
 import type { ApprovalsFile, RunRecord, RunSessionLine } from '../../src/core/contracts/run-records.js';
 import type { StateCheckpoint } from '../../src/core/contracts/state-checkpoint.js';
 import type { PlanStep, TaskPlan } from '../../src/core/contracts/task-plan.js';
-import type { Zone } from '../../src/core/contracts/zones.js';
+import type { WindowOrigin, Zone } from '../../src/core/contracts/zones.js';
 import { SESSION_RESET_SIGNAL } from '../../src/core/services/reset-notice.js';
 import { checkpointAt } from './run-plans.js';
 
@@ -11,6 +11,7 @@ export type SessionScript = {
   readonly agent?: (world: RunWorld) => void;
   readonly events?: readonly SessionStreamEvent[];
   readonly zone?: Zone;
+  readonly windowOrigin?: WindowOrigin;
   readonly finalReading?: LedgerReading;
   readonly hang?: boolean;
   readonly exitCode?: number;
@@ -41,6 +42,7 @@ export class RunWorld {
   readonly progress: RunProgressEvent[] = [];
   interruptRequested = false;
   watchZone: Zone | null = null;
+  watchOrigin: WindowOrigin = 'harness';
   watchFinalReading: LedgerReading | null = null;
   afterSession: ((world: RunWorld) => void) | null = null;
   stops = 0;

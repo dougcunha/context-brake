@@ -30,6 +30,7 @@ export function normalizeTurnLimits(telemetry: Telemetry): Telemetry {
   const { greenMaxPercentage, yellowMaxPercentage, criticalPercentage, greenMaxTurn, yellowMaxTurn } = telemetry.zones;
   const percentages = { greenMaxPercentage, yellowMaxPercentage, criticalPercentage };
   const keepPair = greenMaxTurn !== undefined && !hasRetiredTurns(telemetry);
-  const { injectionMode, activationThresholdPercentage, contextWindowCeiling } = telemetry;
-  return { injectionMode, activationThresholdPercentage, contextWindowCeiling, zones: keepPair ? { ...percentages, greenMaxTurn, yellowMaxTurn } : percentages };
+  const { injectionMode, activationThresholdPercentage, contextWindowCeiling, declaredContextWindow } = telemetry;
+  const declared = declaredContextWindow === undefined ? {} : { declaredContextWindow };
+  return { injectionMode, activationThresholdPercentage, contextWindowCeiling, ...declared, zones: keepPair ? { ...percentages, greenMaxTurn, yellowMaxTurn } : percentages };
 }

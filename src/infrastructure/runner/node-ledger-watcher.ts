@@ -9,7 +9,7 @@ const EMPTY_READING: LedgerReading = { zone: null, tokens: null };
 export function readingFromLedger(summary: ReturnType<typeof summarizeLedger>): LedgerReading {
   const last = summary.lastReading;
   if (last === null) return EMPTY_READING;
-  return { zone: last.zone, tokens: { value: last.usedTokens, source: last.source } };
+  return { zone: last.zone, tokens: { value: last.usedTokens, source: last.source }, windowOrigin: last.windowOrigin };
 }
 
 export class NodeLedgerWatcher implements LedgerWatcher {

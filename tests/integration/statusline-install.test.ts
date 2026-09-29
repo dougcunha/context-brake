@@ -31,10 +31,10 @@ describe('status line bridge install and restore (FR-01, FR-02, FR-08, DEC-11, T
     expect(await exists(BRIDGE_PATH)).toBe(true);
   });
 
-  it('does not create a status line without the flag', async () => {
+  it('creates the status line without the flag now that the bridge is the default (prd-09 FR-04)', async () => {
     await run(['init', '--yes', '--json']);
-    expect(await exists(LOCAL_PATH)).toBe(false);
-    expect(await exists(STATE_PATH)).toBe(false);
+    expect(await exists(LOCAL_PATH)).toBe(true);
+    expect(await exists(STATE_PATH)).toBe(true);
   });
 
   it('lists both files in a dry run without writing them (TC-15)', async () => {

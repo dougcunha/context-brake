@@ -25,10 +25,11 @@ export class FailingPresence implements PlanPresence {
   async exists(): Promise<boolean> { throw new Error('stat failed'); }
 }
 export function delegatedToolLine(turn: number): ToolLine {
-  return { v: 1, type: 'tool', at: DELEGATED_AT, toolUseId: `toolu_${turn}`, observedCharacters: CRITICAL_CHARACTERS_PER_LINE, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: turn >= 11 ? 'CRITICAL' : 'GREEN' };
+  return { v: 1, type: 'tool', at: DELEGATED_AT, toolUseId: `toolu_${turn}`, observedCharacters: CRITICAL_CHARACTERS_PER_LINE, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: turn >= 11 ? 'CRITICAL' : 'GREEN', windowOrigin: 'harness' };
 }
+export const BRIDGE_WINDOW_LINE: LedgerLine = { v: 1, type: 'statusline', at: DELEGATED_AT, windowTokens: 128000, inputTokens: null, usedPercentage: null, model: 'claude-opus-5-5' };
 export function sessionAtTurn(turns: number): LedgerLine[] {
-  return Array.from({ length: turns }, (_, index) => delegatedToolLine(index + 1));
+  return [BRIDGE_WINDOW_LINE, ...Array.from({ length: turns }, (_, index) => delegatedToolLine(index + 1))];
 }
 export class MemoryLedger implements SessionLedger {
   constructor(readonly lines: LedgerLine[] = []) {}

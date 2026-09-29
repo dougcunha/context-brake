@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DoctorReport } from '../../src/core/contracts/diagnostics.js';
 import { installedHookPath, runInstalledHookWithEnvironment, type BuiltHookResult } from '../helpers/built-hook.js';
 import { runBuiltCli } from './cli-runner.js';
+import { seedBridgeWindow } from '../helpers/runtime-seed.js';
 
 const SESSION = 'delegated-e2e';
 const E2E_TIMEOUT_MS = 120000;
@@ -45,6 +46,7 @@ async function driveTo(turn: number): Promise<string[]> {
 describe('delegated snapshot mode with the built CLI and Claude Code hook (TC-14, OBJ-01, OBJ-02, OBJ-03)', () => {
   it('injects the snapshot command, brakes with the allowlist, and yields to a plan once it exists', async () => {
     const init = await runBuiltCli(['init', '--yes', '--json', '--snapshot-command', '/sdd-snapshot', '--snapshot-path', 'tasks/**/context-snapshot.md'], root);
+    await seedBridgeWindow(root, { harness: 'claude-code', sessionId: SESSION, agentId: null }, 128000);
     expect(init.code, init.stderr).toBe(0);
     const blocks = await driveTo(12);
     expect(blocks[7]).toContain('zone=YELLOW');

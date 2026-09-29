@@ -55,7 +55,7 @@ async function checkOmp(root: string): Promise<void> {
   await seedCriticalSession(root, { harness: 'oh-my-pi', sessionId: 'omp-built', agentId: null });
   const stop = await loadHarnessPayload('oh-my-pi', 'session-stop.json');
   await expect(handlers.get('session_stop')!(stop, piContext(root, 'omp-built', undefined))).resolves.toBeUndefined();
-  const blocked = await handlers.get('tool_call')!({ toolName: 'bash', input: { command: 'rm -rf x' } }, piContext(root, 'omp-built', undefined)) as { block: boolean; reason: string };
+  const blocked = await handlers.get('tool_call')!({ toolName: 'bash', input: { command: 'rm -rf x' } }, piContext(root, 'omp-built', { tokens: null, contextWindow: 128000 })) as { block: boolean; reason: string };
   expect(blocked).toMatchObject({ block: true });
   expect(blocked.reason).toContain('zone=CRITICAL');
 }
@@ -68,7 +68,7 @@ async function checkOpenCode(root: string): Promise<void> {
   await expect(hooks['tool.execute.before']!(green, before.output)).resolves.toBeUndefined();
   await expect(hooks['tool.execute.after']!(green, { args: { command: 'npm test' }, output: 'done' })).resolves.toBeUndefined();
   await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
-  await expect(hooks['tool.execute.before']!(critical, before.output)).rejects.toThrow('[ContextBrake v2] BLOCKED');
+  await expect(hooks['tool.execute.before']!(critical, before.output)).rejects.toThrow('[ContextBrake v3] BLOCKED');
   await expect(hooks.event!(await loadHarnessPayload('opencode', 'session-compacted.json'))).resolves.toBeUndefined();
 }
 

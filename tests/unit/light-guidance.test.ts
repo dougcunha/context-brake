@@ -11,7 +11,7 @@ const SAVE_NOW = 'save your snapshot or checkpoint now, then end reply with [REQ
 const SAVE_IMMEDIATELY = 'save your snapshot or checkpoint immediately, then end reply with [REQUEST_SESSION_RESET]';
 const KEEP_WORKING = 'keep working; finish the current unit before large new explorations';
 const FORBIDDEN = /\/|task_plan|state_checkpoint|validation|commit|blocked/;
-const WORST_CASE: UsageReading = { source: 'estimated', usedTokens: 9999999, windowTokens: 1000000, measuredTokens: 9999999 };
+const WORST_CASE: UsageReading = { source: 'estimated', usedTokens: 9999999, windowTokens: 1000000, measuredTokens: 9999999, windowOrigin: 'declared' };
 const encoding = getEncoding('o200k_base');
 const lightConfig: ContextBrakeConfig = { ...DEFAULT_CONFIG, lightMode: { triggerZone: 'RED' }, delegatedSnapshot: SNAPSHOT_SECTION };
 
@@ -36,7 +36,7 @@ describe('light actions per zone and trigger (TC-02, FR-05, DEC-04)', () => {
 describe('light telemetry block budget (TC-02, FR-03, NFR-04)', () => {
   it.each(ZONES)('keeps the worst-case %s block within 60 tokens and 220 characters', (zone) => {
     const block = renderTelemetryBlock({ turn: 99999, turnCeiling: 100000, usagePercentage: 999, usage: WORST_CASE, zone, action: lightAction(zone, { triggerZone: 'YELLOW' }) });
-    expect(block).toMatch(/^\[ContextBrake v2\] turn=\S+ usage=\S+ tokens=\S+ source=\S+ zone=\S+ action=/);
+    expect(block).toMatch(/^\[ContextBrake v3\] turn=\S+ usage=\S+ tokens=\S+ source=\S+ window=\S+ zone=\S+ action=/);
     expect(block.length).toBeLessThanOrEqual(220);
     expect(encoding.encode(block).length).toBeLessThanOrEqual(60);
   });

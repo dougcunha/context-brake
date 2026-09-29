@@ -1,7 +1,7 @@
 import type { HarnessId } from './harness.js';
 import type { ActiveSession, ApprovalsFile, RunRecord, RunSessionLine, TokenCount } from './run-records.js';
 import type { PlanStep, PlanStepId } from './task-plan.js';
-import type { Zone } from './zones.js';
+import type { Zone, WindowOrigin } from './zones.js';
 
 export type SessionStreamEvent =
   | { readonly kind: 'started'; readonly sessionId: string }
@@ -76,7 +76,7 @@ export interface StepApprover {
   approve(step: PlanStep): Promise<boolean>;
 }
 
-export type LedgerReading = { readonly zone: Zone | null; readonly tokens: TokenCount | null };
+export type LedgerReading = { readonly zone: Zone | null; readonly tokens: TokenCount | null; readonly windowOrigin?: WindowOrigin | undefined };
 export interface LedgerWatch {
   latest(): LedgerReading;
   stop(): Promise<LedgerReading>;

@@ -9,7 +9,7 @@ import { runBuiltCli } from './cli-runner.js';
 const SESSION = 'debug-e2e';
 const E2E_TIMEOUT_MS = 120000;
 const DEBUG_LINE = 'Debug mode:';
-const TELEMETRY_HEADER = '[ContextBrake v2]';
+const TELEMETRY_HEADER = '[ContextBrake v3]';
 let root: string;
 beforeEach(async () => { root = await createLightProject('cb-e2e-debug-'); });
 afterEach(async () => { await removeProject(root); });

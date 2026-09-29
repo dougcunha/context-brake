@@ -38,7 +38,7 @@ describe('session zone extraction matches the brake engine (TC-16, DEC-20)', () 
     const lines = toolLines([100]);
     const summary = summarizeLedger(lines);
     expect(await engineFor(lines).handle({ kind: 'pre_invocation', session: KEY })).toEqual({ kind: 'neutral' });
-    expect(renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, WITH_PLAN.actionFor)).toMatch(/^\[ContextBrake v2\] turn=1 .* zone=GREEN /);
+    expect(renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, WITH_PLAN.actionFor)).toMatch(/^\[ContextBrake v3\] turn=1 .* zone=GREEN /);
   });
 });
 
@@ -82,6 +82,6 @@ describe('session zone stale measurements after a reset (FR-06, DEC-09, TC-11)',
   });
   it('keeps a timestamped measurement when the session has no reset', () => {
     const reading = readZone(SETTINGS, { summary: summarizeLedger([]), turns: 0, observedCharacters: 0, measured: { tokens: 100000, contextWindow: null, at: AT } });
-    expect(reading.reading).toEqual({ source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000 });
+    expect(reading.reading).toEqual({ source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000, windowOrigin: 'config' });
   });
 });

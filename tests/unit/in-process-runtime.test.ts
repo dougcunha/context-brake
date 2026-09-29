@@ -3,7 +3,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createOmpExtension, type OmpApi } from '../../src/infrastructure/harnesses/oh-my-pi/runtime.js';
-import { createOpenCodePlugin } from '../../src/infrastructure/harnesses/opencode/runtime.js';
 import { createPiExtension, type PiApi } from '../../src/infrastructure/harnesses/pi/runtime.js';
 import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths.js';
 import { seedCriticalSession, writeInvalidRuntimeConfig, writeRuntimeConfig } from '../helpers/runtime-seed.js';
@@ -17,11 +16,11 @@ function registration(): Registration {
 }
 
 function piContext(root: string, sessionId: string, notify: (message: string, level?: string) => void = () => {}): unknown {
-  return { cwd: root, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => undefined, ui: { notify } };
+  return { cwd: root, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => ({ tokens: null, contextWindow: 24000 }), ui: { notify } };
 }
 
 function ompContext(root: string, sessionId: string): unknown {
-  return { cwd: root, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => undefined, ui: { notify: () => {} } };
+  return { cwd: root, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => ({ tokens: null, contextWindow: 24000 }), ui: { notify: () => {} } };
 }
 
 function call(handlers: Map<string, Handler>, event: string): (payload: unknown, context: unknown) => Promise<unknown> {
@@ -49,15 +48,6 @@ describe('in-process harness deny semantics (RF17, RF19, TC-32)', () => {
     expect(piBlocked.reason).toContain('zone=CRITICAL');
     expect(ompBlocked.block).toBe(true);
     expect(ompBlocked.reason).toContain('zone=CRITICAL');
-  });
-
-  it('throws the block message from OpenCode tool.execute.before above the ceiling', async () => {
-    const hooks = createOpenCodePlugin({ directory: root });
-    const green = { tool: 'bash', sessionID: 'opencode-green', callID: 'call-green' };
-    const critical = { tool: 'bash', sessionID: 'opencode-critical', callID: 'call-critical' };
-    await expect(hooks['tool.execute.before']!(green, { args: { command: 'rm -rf src' } })).resolves.toBeUndefined();
-    await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
-    await expect(hooks['tool.execute.before']!(critical, { args: { command: 'rm -rf src' } })).rejects.toThrow('[ContextBrake v2] BLOCKED');
   });
 });
 

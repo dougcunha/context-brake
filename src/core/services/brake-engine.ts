@@ -14,6 +14,7 @@ import { nextTurn, summarizeLedger, type SessionSummary } from './session-counte
 import { readZone, type MeasuredUsage, type ZoneReading } from './session-zone.js';
 import { renderTelemetryBlock } from './telemetry-block.js';
 import { redStartTurn } from './zone-classifier.js';
+import { isTrustedWindow, telemetryAction } from './window-trust.js';
 import { resolveGuidance } from './zone-guidance.js';
 
 export type ValidationCommandReader = () => Promise<string | null>;
@@ -39,7 +40,7 @@ async function handlePreTool(options: BrakeEngineOptions, event: RuntimeEvent & 
   if (options.config.lightMode !== undefined) return NEUTRAL;
   const summary = await readSummary(options.ledger, event.session);
   const { reading, percentage, zone } = readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input.measured });
-  if (zone !== 'CRITICAL') return NEUTRAL;
+  if (zone !== 'CRITICAL' || !isTrustedWindow(reading.windowOrigin)) return NEUTRAL;
   const guidance = await readGuidance(options);
   if (await guidance.allows(event.tool)) return NEUTRAL;
   await options.blocks.append(event.session, { tool: event.tool.name, zone: 'CRITICAL', turn: summary.turns, percentage, source: reading.source, reason: 'critical_ceiling' });
@@ -53,7 +54,7 @@ async function handlePostTool(options: BrakeEngineOptions, event: RuntimeEvent &
   const view = readZone(options, { summary, turns: turn, observedCharacters, measured: input.measured });
   const { reading, zone } = view;
   await ensureSessionLine(options, event.session, summary);
-  await options.ledger.appendToolLine(event.session, { toolUseId: event.toolUseId, observedCharacters, turn, usedTokens: reading.usedTokens ?? 0, windowTokens: reading.windowTokens, estimatedTokens: view.estimate, source: reading.source, zone });
+  await options.ledger.appendToolLine(event.session, { toolUseId: event.toolUseId, observedCharacters, turn, usedTokens: reading.usedTokens ?? 0, windowTokens: reading.windowTokens, estimatedTokens: view.estimate, source: reading.source, zone, windowOrigin: reading.windowOrigin });
   return telemetryDecision(options, turn, view);
 }
 async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'pre_invocation' }, input: RuntimeInput): Promise<RuntimeDecision> {
@@ -62,7 +63,7 @@ async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEv
 }
 async function telemetryDecision(options: BrakeEngineOptions, turn: number, view: ZoneReading): Promise<RuntimeDecision> {
   if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config) })) return NEUTRAL;
-  const action = (await readGuidance(options, view.zone)).actionFor(view.zone);
+  const action = telemetryAction(view.zone, view.reading.windowOrigin, (await readGuidance(options, view.zone)).actionFor(view.zone));
   return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action }) };
 }
 async function handleSessionReset(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'session_reset' }): Promise<RuntimeDecision> {

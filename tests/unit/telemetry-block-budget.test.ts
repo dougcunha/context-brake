@@ -13,10 +13,10 @@ const WORST_CASE_WINDOW = 1000000;
 const WORST_CASE_USED = 9999999;
 
 const encoding = getEncoding('o200k_base');
-const worstCase: UsageReading = { source: 'estimated', usedTokens: WORST_CASE_USED, windowTokens: WORST_CASE_WINDOW, measuredTokens: WORST_CASE_USED };
+const worstCase: UsageReading = { source: 'estimated', usedTokens: WORST_CASE_USED, windowTokens: WORST_CASE_WINDOW, measuredTokens: WORST_CASE_USED, windowOrigin: 'declared' };
 const variants = ZONES.flatMap((zone) => [true, false].map((planPresent) => ({ zone, planPresent })));
 
-describe('telemetry block v2 budget (CA-13, NFR-04, TC-06)', () => {
+describe('telemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)', () => {
   it.each(variants)('keeps the worst-case $zone block with planPresent=$planPresent within the token and character budget', ({ zone, planPresent }) => {
     const block = renderTelemetryBlock({ turn: WORST_CASE_TURN, turnCeiling: WORST_CASE_RED_START, usagePercentage: 999, usage: worstCase, zone, action: compactZoneAction(zone, planPresent) });
     expect(block.length).toBeLessThanOrEqual(CHARACTER_BUDGET);

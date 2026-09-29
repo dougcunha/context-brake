@@ -19,6 +19,7 @@
     "snapshot": null
   },
   "review_status": null,
+  "jev": "off",
   "qa_status": null,
   "approved_sources": [],
   "decisions_to_read": [],

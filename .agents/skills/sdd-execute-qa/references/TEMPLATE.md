@@ -3,6 +3,7 @@
 ## Summary
 
 - Status: APPROVED / REJECTED / BLOCKED
+- Execution: independent session / delegated QA runner / authoring session — see limitations
 - Code state: `[commit or diff reference]`
 - Latest review: `codereview_[num]/codereview.md`
 - Previous QA: `[path or —]`

@@ -1,13 +1,13 @@
 ---
 name: sdd-execute-corrections
-description: SDD execution when tasks from a code review or QA report need correction; implements each correction task in this session with read-only explorers and moves on between tasks until the context threshold; does not create or reclassify findings.
+description: SDD execution when tasks from a code review or QA report need correction; implements each correction task in this session with read-only explorers and moves on between tasks until the context threshold, and delegates the re-review to a fresh-context subagent; does not create or reclassify findings.
 argument-hint: --prd feature-name --report codereview_[num]|qa_[num]
 disable-model-invocation: true
 ---
 
 # Execute SDD corrections
 
-The session that runs this skill is the only writer: it implements every correction task itself and owns the moves inside the report folder. Subagents are read-only explorers; they never edit files, run builds or tests that write shared resources, or talk to the user. Execution is one task at a time; between tasks the session moves on by itself until the session pause says stop. The session that corrects the code does not issue the re-review.
+The session that runs this skill is the only writer: it implements every correction task itself and owns the moves inside the report folder. Subagents are read-only explorers; they never edit files, run builds or tests that write shared resources, or talk to the user. The exception is the delegated reviewer of step 7, with its own contract. Execution is one task at a time; between tasks the session moves on by itself until the session pause says stop. The session that corrects the code does not issue the re-review: it delegates it.
 
 If the caller limits execution to one task, return after step 6 instead of running the session pause: `task-completed` with the next eligible IDs, or `blocked` with evidence. When all tasks are complete, run step 7 before returning. A task return does not end the review or the QA cycle.
 
@@ -21,10 +21,11 @@ If the caller limits execution to one task, return after step 6 instead of runni
    Update only the task and its single `## Handoff` with result, files, commands, validated version, and pending items. Preserve the report, other tasks, and global state.
    **Output:** implementation and evidence, or a reproducible block.
 5. Re-read the diff and handoff against the finding, acceptance, and rules as if another author wrote them. Reuse proven tests from the same state; run only missing or invalidated checks. Fix what fails; after two attempts without new evidence, record a block and advance independent work. An architecture or scope divergence requires HIL when not covered by existing authorization.
+   With the `sdd-jev` skill in `shadow` or `active`, apply point `J3` after this reread and before step 6.
    **Output:** acceptance of the task proven, or a specific pending item; unexecuted essential manual work prevents approval.
 6. Move an approved task to `done/`, preserving its name and checking absolute paths inside the report folder. Preserve the immutable report. Recalculate the DAG from the remaining files. Then, with no explorer or process running, run the session pause from `session-continuity.md` with stage `corrections`, `authored_code: yes`, and the next eligible task as next step; on the `Move on` destination, return to step 3.
    **Output:** approved task moved, pending tasks at the root; the next task started, or the snapshot written before the question and the user's choice applied. On interruption, check report and handoff before inferring completion from the folder.
-7. Validate the integrated set without repeating already valid commands. Check every actionable finding and its evidence. The re-review runs in a session that did not make these corrections: in the orchestrated flow, return the execution report so the caller schedules `sdd-review-code`, and `sdd-execute-qa` again when the source was a QA report; in standalone use, run the session pause with `sdd-review-code` as next step, which recommends ending this session.
-   **Output:** tasks complete with integrated evidence and the re-review left to an independent session or explicitly returned to the caller; persistent or new findings remain open until a decision.
+7. Validate the integrated set without repeating already valid commands. Check every actionable finding and its evidence. The re-review runs in a context that did not make these corrections: in the orchestrated flow, return the execution report so the caller delegates `sdd-review-code`, and `sdd-execute-qa` again when the source was a QA report; in standalone use, apply the independence rule of the session pause: delegate the re-review through the protocol in `.agents/skills/sdd-review-code/references/delegated-review.md`, with this review as the previous one, and then, when the source was a QA report, a new QA run the same way with this report as the previous QA; read the status in the new report and run the end-of-standalone-use session pause with the next step it indicates. Without an eligible reviewer, the pause names `sdd-review-code` and recommends ending this session.
+   **Output:** tasks complete with integrated evidence and the re-review delegated and received, left to an independent session, or explicitly returned to the caller; persistent or new findings remain open until a decision.
 
 If the environment prevents acceptance, keep the affected task pending with command, error, and impact. Pre-existing or foreign changes that collide with the task's files stop the task until they are reconciled.

@@ -28,7 +28,6 @@ Send only data, as paths, in this order:
 - `--base` as a resolved commit (`git_base` from the checkpoint or the base the caller recorded);
 - the reserved folder `codereview_[num]/` and, in a re-review, the path of the previous review and the corrections folder;
 - with `context-snapshot.md` in the feature folder, the path `.agents/skills/sdd-snapshot/references/load.md`;
-- the `jev` mode and, with `shadow` or `active`, the path of `.agents/skills/sdd-jev/SKILL.md`;
 - the contract below and the return format.
 
 Do not send the conversation, diffs you analyzed, handoff summaries, justifications, or a readiness assessment ("it's ready", "only the review is left"). The reviewer reads handoffs as part of the sources, under the skill's rules.
@@ -36,9 +35,9 @@ Do not send the conversation, diffs you analyzed, handoff summaries, justificati
 ### Reviewer contract
 
 - Run `sdd-review-code` in full, in step order, as an independent session. Load the snapshot, if any, through the independent-stage filter of `.agents/skills/sdd-snapshot/references/load.md`.
-- Write only `codereview_[num]/codereview.md` in the reserved folder. With jev in `shadow` or `active`, append lines to `jev-log.jsonl` as `session: reviewing` and `control: delegated`, without reading the existing lines.
+- Write only `codereview_[num]/codereview.md` in the reserved folder. Do not read `jev-log.jsonl` or call jev: with jev in `shadow` or `active`, this review is the control group of point `J3`.
 - You may run the builds, tests, and quality profile commands the review requires, including those that write `dist/`, `coverage/`, or fixtures. Do not edit code, tasks, manifest, handoffs, `workflow.md`, checkpoint, or snapshot, and do not commit, stash, check out, or clean the worktree.
-- Do not ask the user and do not run the session pause. A missing source, an unavailable environment, jev unavailable, or a doubt becomes a limitation or block in the report, including whatever the skill would record in `workflow.md`.
+- Do not ask the user and do not run the session pause. A missing source, an unavailable environment, or a doubt becomes a limitation or block in the report, including whatever the skill would record in `workflow.md`.
 - Do not delegate to another reviewer. Use read-only explorers only if the host allows them for this subagent; otherwise, direct searches.
 - Return: report path, literal status, and one line per block or limitation. Nothing else.
 
@@ -48,7 +47,7 @@ The authoring session writes nothing to the repository and runs no build or test
 
 ## Receive
 
-1. With the terminal state confirmed, update `active_work` and check the worktree against what Prepare recorded. Expected: the `codereview_[num]/` folder, lines appended to `jev-log.jsonl`, and the build, test, and fixture outputs of the commands the report records. A change to code, tasks, manifest, handoffs, `workflow.md`, checkpoint, snapshot, or another SDD artifact, or to a file no recorded command explains, is a contaminated review: do not use it as evidence and do not revert it on your own; record it in `workflow.md`, or in the handoff in standalone use, and take it to **exception HIL** with the paths.
+1. With the terminal state confirmed, update `active_work` and check the worktree against what Prepare recorded. Expected: the `codereview_[num]/` folder, and the build, test, and fixture outputs of the commands the report records. A change to code, tasks, manifest, handoffs, `workflow.md`, checkpoint, snapshot, or another SDD artifact, or to a file no recorded command explains, is a contaminated review: do not use it as evidence and do not revert it on your own; record it in `workflow.md`, or in the handoff in standalone use, and take it to **exception HIL** with the paths.
 2. Read `codereview_[num]/codereview.md` from disk. The subagent's return is a hint; the report is the source. Check that the status is exactly `APPROVED`, `APPROVED WITH RESERVATIONS`, or `REJECTED` and that the report records `Execution: delegated reviewer`.
 3. With no report, an incomplete report, or an unrecognizable status, delegate once more, to a new reviewer, reserving the next suffix and recording the incomplete folder as interrupted, without deleting it. If the failure persists, follow the independence rule as with no eligible subagent.
 4. Record the status and path where the caller keeps the review result (`review_status` and `sources.review` under the flow) and follow the caller's destination.

@@ -6,7 +6,8 @@ import { resolveChangeTarget } from '../common/change-target.js';
 import { NodeProcessRunner } from '../../process/node-process-runner.js';
 import { normalizeSeparators } from '../../storage/path-boundary.js';
 import { getUserHome } from '../common/path-helpers.js';
-import { localStatuslineCommand } from './statusline-context-window.js';
+import { STATUSLINE_PIPE_FLAG } from './statusline-bridge.js';
+import { lastRecordedShell, localStatuslineCommand } from './statusline-context-window.js';
 import { CLAUDE_LOCAL_SETTINGS_FILE, CLAUDE_SETTINGS_FILE, firstPreviousStatusline, readSettings, STATUSLINE_BRIDGE_FILE, statuslineOf } from './statusline-settings.js';
 import { parseStatuslineState, STATUSLINE_STATE_FILE, type StatuslineState } from './statusline-state.js';
 
@@ -14,18 +15,21 @@ const GIT_TIMEOUT_MILLISECONDS = 2000;
 const GIT_NOT_IGNORED_EXIT_CODE = 1;
 const BRIDGE_SCRIPT_PATTERN = /^node "([^"]+)"/;
 const REINSTALL = 'Run context-brake init --statusline-bridge.';
+const WINDOWS_PLATFORM = 'win32';
 
-type FindingText = { readonly code: string; readonly path: string; readonly message: string; readonly impact: string; readonly remediation: string };
+type FindingText = { readonly code: string; readonly path: string | null; readonly message: string; readonly impact: string; readonly remediation: string };
 
 const STATE_INVALID: FindingText = { code: 'STATUSLINE_STATE_INVALID', path: STATUSLINE_STATE_FILE, message: `${STATUSLINE_STATE_FILE} does not match the expected format.`, impact: 'Removal cannot restore the previous local status line.', remediation: REINSTALL };
 const BRIDGE_INACTIVE: FindingText = { code: 'STATUSLINE_BRIDGE_INACTIVE', path: CLAUDE_LOCAL_SETTINGS_FILE, message: 'The local statusLine no longer runs the ContextBrake bridge.', impact: 'Zones use contextWindowCeiling instead of the model window.', remediation: `${REINSTALL} Use --no-statusline-bridge to forget the bridge instead.` };
 const MISSING_SCRIPT: FindingText = { code: 'STATUSLINE_BRIDGE_MISSING_SCRIPT', path: STATUSLINE_BRIDGE_FILE, message: 'The status line command points to a bridge script that does not exist.', impact: 'The status line and the window recording fail until the script is restored.', remediation: REINSTALL };
 const PREVIOUS_CHANGED: FindingText = { code: 'STATUSLINE_PREVIOUS_CHANGED', path: CLAUDE_LOCAL_SETTINGS_FILE, message: 'The project or user status line changed after the bridge was installed.', impact: 'The bridge still runs the status line command recorded at install.', remediation: 'Run context-brake init --no-statusline-bridge, then context-brake init --statusline-bridge.' };
+const OUTDATED: FindingText = { code: 'STATUSLINE_BRIDGE_OUTDATED', path: CLAUDE_LOCAL_SETTINGS_FILE, message: 'The status line command is the shell pipeline of an older ContextBrake version, which PowerShell cannot run.', impact: 'When Claude Code runs the status line through PowerShell, the status line is blank.', remediation: 'Run context-brake init.' };
+const POWERSHELL_FALLBACK: FindingText = { code: 'STATUSLINE_POWERSHELL_FALLBACK', path: null, message: 'Claude Code ran the status line through PowerShell because it did not find Git Bash.', impact: 'The previous status line and the Bash tool run without Git Bash; a status line written for Bash can fail.', remediation: 'Set CLAUDE_CODE_GIT_BASH_PATH to the bash.exe of Git for Windows (for example C:\\Program Files\\Git\\bin\\bash.exe), then restart Claude Code.' };
 function localTracked(path: string): FindingText {
   return { code: 'STATUSLINE_LOCAL_TRACKED', path, message: `${path} is not ignored by Git.`, impact: 'The machine-specific status line command can be committed.', remediation: `Add ${path} to .gitignore.` };
 }
 
-export async function diagnoseStatusline(context: HarnessContext): Promise<DiagnosticFinding[]> {
+export async function diagnoseStatusline(context: HarnessContext, platform: NodeJS.Platform = process.platform): Promise<DiagnosticFinding[]> {
   const raw = await readFile(resolve(context.projectRoot, STATUSLINE_STATE_FILE), 'utf8').catch(() => null);
   if (raw === null) return [];
   const state = parseStatuslineState(raw);
@@ -35,6 +39,8 @@ export async function diagnoseStatusline(context: HarnessContext): Promise<Diagn
     !(await isScriptPresent(state)) && MISSING_SCRIPT,
     (await currentPreviousCommand(context, state)) !== state.previousCommand && PREVIOUS_CHANGED,
     await trackedLocalSettings(context),
+    state.installedCommand.includes(` ${STATUSLINE_PIPE_FLAG} | `) && OUTDATED,
+    platform === WINDOWS_PLATFORM && (await lastRecordedShell(context.projectRoot)) === 'powershell' && POWERSHELL_FALLBACK,
   ];
   return failed.filter((text): text is FindingText => text !== false && text !== null).map(finding);
 }

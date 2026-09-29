@@ -31,7 +31,7 @@ export function workSteps(count: number): StepFixture[] {
 
 export async function prepareAcceptanceProject(world: RunProject, options: ProjectOptions): Promise<void> {
   await cp(ACCEPTANCE_FIXTURE, world.project, { recursive: true });
-  const init = await runBuiltCli(['init', '--yes', '--harness', options.harness], world.project, await runEnvironment(world, { withHarness: false }));
+  const init = await runBuiltCli(['init', '--yes', '--no-light', '--harness', options.harness], world.project, await runEnvironment(world, { withHarness: false }));
   if (init.code !== 0) throw new AcceptanceSetupError(init.stderr);
   const configPath = join(world.project, 'context-brake.config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8')) as { runner?: Partial<RunnerConfiguration> };

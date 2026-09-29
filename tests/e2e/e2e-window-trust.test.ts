@@ -28,7 +28,7 @@ describe('window trust in the built Codex hook (prd-09 FR-02, FR-05, TC-12)', ()
   it('denies at CRITICAL only when the window is declared', async () => {
     await mkdir(join(root, '.codex'), { recursive: true });
     await writeFile(join(root, '.codex/hooks.json'), '{\n  "hooks": {}\n}\n', 'utf8');
-    expect((await runBuiltCli(['init', '--yes', '--json'], root)).code).toBe(0);
+    expect((await runBuiltCli(['init', '--yes', '--no-light', '--json'], root)).code).toBe(0);
     await setTelemetry({ contextWindowCeiling: SMALL_WINDOW });
     expect(await hook('codex-cli', 'PreToolUse', { ...codexPreTool, cwd: root })).not.toContain('deny');
     await setTelemetry({ declaredContextWindow: SMALL_WINDOW });
@@ -38,7 +38,7 @@ describe('window trust in the built Codex hook (prd-09 FR-02, FR-05, TC-12)', ()
 
 describe('window trust in the built Claude Code hook (prd-09 FR-02, FR-04, FR-06, TC-12)', () => {
   it('only warns without a bridge record and labels the block window=config', async () => {
-    expect((await runBuiltCli(['init', '--yes', '--json'], root)).code).toBe(0);
+    expect((await runBuiltCli(['init', '--yes', '--no-light', '--json'], root)).code).toBe(0);
     await setTelemetry({ contextWindowCeiling: SMALL_WINDOW, declaredContextWindow: SMALL_WINDOW });
     const bash = { session_id: 'claude-window', hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command: 'npm test' }, tool_use_id: 'toolu_pre' };
     expect(await hook('claude-code', 'PreToolUse', bash)).not.toContain('deny');

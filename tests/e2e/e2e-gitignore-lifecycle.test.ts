@@ -15,7 +15,7 @@ describe('E2E-11: built CLI previews the ignore block (CA-11, CA-21)', () => {
     const user = '# user comment\n*.log\n';
     await writeFile(join(dir, '.gitignore'), user, 'utf8');
 
-    const dry = await runBuiltCli(['init', '--dry-run', '--json'], dir);
+    const dry = await runBuiltCli(['init', '--dry-run', '--json', '--no-light'], dir);
     expect(dry.code).toBe(0);
     const report = installReportSchema.parse(JSON.parse(dry.stdout));
     const change = report.plan.changes.find((c) => c.path === '.gitignore');
@@ -25,7 +25,7 @@ describe('E2E-11: built CLI previews the ignore block (CA-11, CA-21)', () => {
   });
 
   it('dry-run plans a create for an absent .gitignore without writing it', async () => {
-    const dry = await runBuiltCli(['init', '--dry-run', '--json'], dir);
+    const dry = await runBuiltCli(['init', '--dry-run', '--json', '--no-light'], dir);
     expect(dry.code).toBe(0);
     const report = installReportSchema.parse(JSON.parse(dry.stdout));
     expect(report.plan.changes.find((c) => c.path === '.gitignore')?.kind).toBe('create');
@@ -43,7 +43,7 @@ describe('E2E-11: built CLI idempotent confirmed installs (CA-11, CA-21)', () =>
     await writeFile(join(dir, '.gitignore'), user, 'utf8');
 
     for (let run = 0; run < 3; run += 1) {
-      expect((await runBuiltCli(['init', '--yes'], dir)).code).toBe(0);
+      expect((await runBuiltCli(['init', '--yes', '--no-light'], dir)).code).toBe(0);
     }
 
     const content = await readFile(join(dir, '.gitignore'), 'utf8');

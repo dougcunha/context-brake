@@ -36,13 +36,13 @@ describe('delegated zone actions (TC-03, FR-03, FR-04, FR-05, NFR-05)', () => {
   });
   it('renders a v3 block without plan, checkpoint, validation, or commit words', async () => {
     const action = (await guidanceFor(false)).actionFor('RED');
-    const block = renderTelemetryBlock({ turn: 11, turnCeiling: 12, usagePercentage: 70, usage: USAGE, zone: 'RED', action });
+    const block = renderTelemetryBlock({ turn: 11, turnCeiling: 12, usagePercentage: 70, usage: USAGE, zone: 'RED', action, debug: false });
     expect(block).toBe(`[ContextBrake v3] turn=11/12 usage=70% tokens=90000/128000 source=estimated window=config zone=RED action=${ACTION}`);
     expect(block).not.toMatch(/task_plan|state_checkpoint|validation|commit/);
   });
   it('stays under 400 characters with a 200-character command', async () => {
     const action = (await guidanceFor(false, { snapshotCommand: 'x'.repeat(200) })).actionFor('CRITICAL');
-    const block = renderTelemetryBlock({ turn: 12, turnCeiling: 12, usagePercentage: 100, usage: USAGE, zone: 'CRITICAL', action });
+    const block = renderTelemetryBlock({ turn: 12, turnCeiling: 12, usagePercentage: 100, usage: USAGE, zone: 'CRITICAL', action, debug: false });
     expect(block.length).toBeLessThan(400);
   });
 });

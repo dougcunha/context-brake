@@ -45,7 +45,7 @@ async function driveTo(turn: number): Promise<string[]> {
 
 describe('delegated snapshot mode with the built CLI and Claude Code hook (TC-14, OBJ-01, OBJ-02, OBJ-03)', () => {
   it('injects the snapshot command, brakes with the allowlist, and yields to a plan once it exists', async () => {
-    const init = await runBuiltCli(['init', '--yes', '--json', '--snapshot-command', '/sdd-snapshot', '--snapshot-path', 'tasks/**/context-snapshot.md'], root);
+    const init = await runBuiltCli(['init', '--yes', '--no-light', '--json', '--snapshot-command', '/sdd-snapshot', '--snapshot-path', 'tasks/**/context-snapshot.md'], root);
     await seedBridgeWindow(root, { harness: 'claude-code', sessionId: SESSION, agentId: null }, 128000);
     expect(init.code, init.stderr).toBe(0);
     const blocks = await driveTo(12);

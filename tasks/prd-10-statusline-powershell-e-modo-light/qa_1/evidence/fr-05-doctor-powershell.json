@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "pre_tool_block",
+            "state": "supported"
+          },
+          {
+            "id": "tool_coverage",
+            "state": "supported"
+          },
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "timeout_fail_closed",
+            "state": "unsupported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the brake only warns."
+          },
+          {
+            "capability": "timeout_fail_closed",
+            "impact": "A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed."
+          },
+          {
+            "capability": "pre_tool_block",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 348.8,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "STATUSLINE_POWERSHELL_FALLBACK",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "Claude Code ran the status line through PowerShell because it did not find Git Bash.",
+      "impact": "The previous status line and the Bash tool run without Git Bash; a status line written for Bash can fail.",
+      "remediation": "Set CLAUDE_CODE_GIT_BASH_PATH to the bash.exe of Git for Windows (for example C:\\Program Files\\Git\\bin\\bash.exe), then restart Claude Code."
+    },
+    {
+      "code": "STATUSLINE_PREVIOUS_CHANGED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": "The project or user status line changed after the bridge was installed.",
+      "impact": "The bridge still runs the status line command recorded at install.",
+      "remediation": "Run context-brake init --no-statusline-bridge, then context-brake init --statusline-bridge."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "BRAKE_BLOCKS_RECORDED",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/runtime/blocks.jsonl",
+      "message": "ContextBrake recorded 0 blocked tool calls in .context-brake/runtime/blocks.jsonl.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "checkpointMode": {
+    "effective": "light",
+    "reason": "light_mode",
+    "delegatedSnapshot": null,
+    "lightMode": {
+      "triggerZone": "RED"
+    }
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "statusline",
+    "lastWindowTokens": 200000
+  },
+  "activeSessions": [
+    {
+      "harness": "claude-code",
+      "sessionId": null,
+      "lastActivityAt": "2026-09-29T17:55:16.063Z",
+      "usage": {
+        "percentage": 7,
+        "usedTokens": 15500,
+        "windowTokens": 200000,
+        "zone": "GREEN",
+        "source": "measured",
+        "at": "2026-09-29T17:55:16.063Z"
+      }
+    }
+  ]
+}

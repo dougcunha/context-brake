@@ -3,7 +3,6 @@ import { sep } from 'node:path';
 import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
 import { parseAndValidateJson, validateJsonDocument } from '../../storage/json-document-editor.js';
 import { asRecord } from '../common/runtime-support.js';
-import { STATUSLINE_PIPE_FLAG } from './statusline-bridge.js';
 import type { StatuslineScope } from './statusline-state.js';
 
 export const CLAUDE_LOCAL_SETTINGS_FILE = '.claude/settings.local.json';
@@ -71,8 +70,7 @@ export function toCommandRoot(realRoot: string, separator: string = sep): string
   return separator === WINDOWS_SEPARATOR ? realRoot.split(WINDOWS_SEPARATOR).join('/') : realRoot;
 }
 
-export function bridgeCommand(commandRoot: string, previousCommand: string | null): string | null {
+export function bridgeCommand(commandRoot: string): string | null {
   if (UNSUPPORTED_ROOT_CHARACTERS.test(commandRoot)) return null;
-  const bridge = `node "${commandRoot}/${STATUSLINE_BRIDGE_FILE}"`;
-  return previousCommand === null ? bridge : `${bridge} ${STATUSLINE_PIPE_FLAG} | ( ${previousCommand}\n)`;
+  return `node "${commandRoot}/${STATUSLINE_BRIDGE_FILE}"`;
 }

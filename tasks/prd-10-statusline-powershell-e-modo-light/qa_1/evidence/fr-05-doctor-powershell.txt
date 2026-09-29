@@ -1,0 +1,19 @@
+[WARN] ContextBrake doctor: warnings
+  - claude-code: installed (support: full, overhead: 325.8ms/100ms (fail))
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the brake only warns.
+    * timeout_fail_closed: A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.
+    * pre_tool_block: The minimum harness version is unverified, so version compatibility cannot be claimed.
+  - context window: statusline (bridge: installed, last window: 200000)
+  - checkpoint mode: light (trigger: RED)
+  - active sessions:
+    * claude-code (unknown session): 7% (15500/200000, GREEN, measured), last activity 0 min ago
+  [WARN] STATUSLINE_POWERSHELL_FALLBACK: Claude Code ran the status line through PowerShell because it did not find Git Bash.
+    Impact: The previous status line and the Bash tool run without Git Bash; a status line written for Bash can fail.
+    Remediation: Set CLAUDE_CODE_GIT_BASH_PATH to the bash.exe of Git for Windows (for example C:\Program Files\Git\bin\bash.exe), then restart Claude Code.
+  [WARN] STATUSLINE_PREVIOUS_CHANGED: The project or user status line changed after the bridge was installed.
+    Impact: The bridge still runs the status line command recorded at install.
+    Remediation: Run context-brake init --no-statusline-bridge, then context-brake init --statusline-bridge.
+  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.
+    Impact: ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.
+    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.
+  [OK] BRAKE_BLOCKS_RECORDED: ContextBrake recorded 0 blocked tool calls in .context-brake/runtime/blocks.jsonl.

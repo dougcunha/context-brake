@@ -67,7 +67,7 @@ async function resolveOrigin(context: HarnessContext, local: SettingsRead, state
 }
 
 async function buildEntryPlan(projectRoot: string, local: SettingsRead, origin: Origin): Promise<StatuslinePlan> {
-  const command = bridgeCommand(toCommandRoot(await realpath(projectRoot)), origin.previousCommand);
+  const command = bridgeCommand(toCommandRoot(await realpath(projectRoot)));
   if (command === null) return statuslinePlanConflict(CLAUDE_LOCAL_SETTINGS_FILE, 'The repository path contains ", `, $, or \\, which the status line command cannot quote safely.', 'STATUSLINE_UNSUPPORTED_PATH');
   const text = setJsonProperty(local.kind === 'valid' ? local.text : EMPTY_SETTINGS_TEXT, [STATUSLINE_KEY], { type: 'command', command, ...origin.options });
   const state: StatuslineState = { v: 1, installedCommand: command, previousLocal: origin.previousLocal, previousSource: origin.previousSource, previousCommand: origin.previousCommand, createdLocalFile: origin.createdLocalFile };

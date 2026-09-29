@@ -3,13 +3,14 @@ import type { CapabilityDefinition } from '../contracts/harness.js';
 import type { EstimationConstants } from '../contracts/runtime.js';
 import type { UsageReading, Zone } from '../contracts/zones.js';
 import type { SessionSummary } from './session-counters.js';
+import { isDebugModeInEffect } from './debug-mode-merge.js';
 import { renderTelemetryBlock } from './telemetry-block.js';
 import { estimatedTokens, resolveUsage } from './usage-resolver.js';
 import { acceptsDeclaredWindow, telemetryAction } from './window-trust.js';
 import { classifyZone, redStartTurn, usagePercentage } from './zone-classifier.js';
 
 export type MeasuredUsage = { readonly tokens: number | null; readonly contextWindow: number | null; readonly at?: string | undefined };
-export type ZoneSettings = { readonly descriptor: { readonly estimation: EstimationConstants; readonly capabilities: readonly CapabilityDefinition[] }; readonly config: Pick<ContextBrakeConfig, 'telemetry'> };
+export type ZoneSettings = { readonly descriptor: { readonly estimation: EstimationConstants; readonly capabilities: readonly CapabilityDefinition[] }; readonly config: Pick<ContextBrakeConfig, 'telemetry' | 'debug'> };
 export type ZoneInputs = { readonly summary: SessionSummary; readonly turns: number; readonly observedCharacters: number; readonly measured?: MeasuredUsage | undefined };
 export type ZoneReading = { readonly reading: UsageReading; readonly estimate: number; readonly percentage: number; readonly zone: Zone };
 
@@ -39,5 +40,6 @@ function isStale(measured: Pick<MeasuredUsage, 'at'> | undefined, lastResetAt: s
 
 export function renderSessionTelemetry(settings: ZoneSettings, inputs: ZoneInputs, actionFor: (zone: Zone) => string): string {
   const { reading, percentage, zone } = readZone(settings, inputs);
-  return renderTelemetryBlock({ turn: inputs.turns, turnCeiling: redStartTurn(settings.config.telemetry.zones), usagePercentage: percentage, usage: reading, zone, action: telemetryAction(zone, reading.windowOrigin, actionFor(zone)) });
+  const action = telemetryAction(zone, reading.windowOrigin, actionFor(zone));
+  return renderTelemetryBlock({ turn: inputs.turns, turnCeiling: redStartTurn(settings.config.telemetry.zones), usagePercentage: percentage, usage: reading, zone, action, debug: isDebugModeInEffect(settings.config) });
 }

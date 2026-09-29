@@ -1,0 +1,30 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/boot-reader.test.ts[2m > [22mboot reader Git inspection gate (RF14, TC-09)[2m > [22mskips Git for missing, invalid, and completed plans[32m 22[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/boot-reader.test.ts[2m > [22mboot reader Git comparison (RF14, RF16, TC-09, TC-10, TC-12)[2m > [22mpasses the recorded commit and renders actual divergences[32m 13[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/boot-reader.test.ts[2m > [22mboot reader Git comparison (RF14, RF16, TC-09, TC-10, TC-12)[2m > [22mreports omitted checks for missing Git and an inspection exception[32m 12[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/boot-reader.test.ts[2m > [22mboot reader phases (FR-11, DEC-12, TC-16)[2m > [22mmarks the file step and then the git step of a boot[32m 9[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/boot-reader.test.ts[2m > [22mboot reader phases (FR-11, DEC-12, TC-16)[2m > [22mstops at the file step when no git check is needed[32m 3[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts[2m > [22msession start deadline (FR-10, DEC-11, TC-15)[2m > [22muses 1,500 ms for events and 5,000 ms for session start by default[32m 7[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/hook-deadline.test.ts[2m > [22mhook deadline selection (FR-10, DEC-11, TC-15)[2m > [22mgives session reset the session-start limit and every other event the event limit[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/hook-deadline.test.ts[2m > [22mhook deadline selection (FR-10, DEC-11, TC-15)[2m > [22mmeasures an extension from the hook start[32m 55[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/hook-deadline.test.ts[2m > [22mhook deadline selection (FR-10, DEC-11, TC-15)[2m > [22mresolves work that finishes in time and ignores extensions after it[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts[2m > [22msession start deadline (FR-10, DEC-11, TC-15)[2m > [22mlets a session start finish past the event deadline but within its own[32m 273[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/hook-deadline.test.ts[2m > [22msession reset phases (FR-11, DEC-12, TC-16)[2m > [22mreports the git step of the boot when the deadline elapses there[32m 94[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/hook-deadline.test.ts[2m > [22msession reset phases (FR-11, DEC-12, TC-16)[2m > [22mhas no timing for other failures[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/in-process-host-deadline.test.ts[2m > [22min-process deadline selection (FR-10, FR-11, DEC-11, DEC-12, TC-15)[2m > [22mgives the session start its own limit, so the same work passes there and fails as a tool call[32m 26[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts[2m > [22msession start deadline (FR-10, DEC-11, TC-15)[2m > [22mrecords DEADLINE_EXCEEDED when a session start passes its own deadline[33m 513[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts[2m > [22msession start deadline (FR-10, DEC-11, TC-15)[2m > [22mkeeps the event deadline for a tool call of the same duration[32m 128[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/runtime-error-line.test.ts[2m > [22mruntime error line compatibility (FR-11, NFR-03, TC-17)[2m > [22maccepts lines written before the phase fields existed[32m 2[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/runtime-error-line.test.ts[2m > [22mruntime error line compatibility (FR-11, NFR-03, TC-17)[2m > [22maccepts the phase and elapsed milliseconds of a deadline[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/runtime-error-line.test.ts[2m > [22mruntime error line compatibility (FR-11, NFR-03, TC-17)[2m > [22mrejects an unknown phase and a negative duration[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/runtime-error-line.test.ts[2m > [22mruntime error line compatibility (FR-11, NFR-03, TC-17)[2m > [22mselects recent old and new lines alike for doctor[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts[2m > [22mdeadline phase record (FR-11, DEC-12, TC-16)[2m > [22mnames the running phase and the elapsed milliseconds[33m 558[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts[2m > [22mdeadline phase record (FR-11, DEC-12, TC-16)[2m > [22mnames the phase of a failure before the event is known[32m 25[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m5 passed[39m[22m[90m (5)[39m
+[2m      Tests [22m [1m[32m21 passed[39m[22m[90m (21)[39m
+[2m   Start at [22m 15:01:53
+[2m   Duration [22m 2.53s[2m (transform 439ms, setup 0ms, collect 1.49s, tests 1.75s, environment 1ms, prepare 467ms)[22m
+

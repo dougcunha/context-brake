@@ -1,50 +1,85 @@
 {
   "schema_version": 1,
-  "generation": 1,
+  "generation": 22,
   "feature": "prd-10-statusline-powershell-e-modo-light",
   "workspace": "D:/MyProjects/ContextBrake",
-  "phase": "product",
-  "status": "paused",
+  "phase": "acceptance",
+  "status": "active",
   "safe_to_stop": true,
-  "owner_session": "session_012UFSLu4nVNJ5SBBZyBqZJP",
+  "owner_session": "ses_f12a689c0ffelUsgY5ntkeLK5B",
   "objective": "Status line bridge that works when Claude Code runs the status line through PowerShell (and warns otherwise); debug mode available in light mode; light mode as the default; no repeated SessionStart DEADLINE_EXCEEDED.",
   "constraints": [
     "sdd-lean with four outcomes: short PRD covering each, HIL 1 and HIL 2 merged, independent review kept (DEC-STOPS-01)",
-    "Open product decisions go to the human before the PRD (DEC-STOPS-01); light default conflicts with PRD-09's bridge direction",
-    "PRD-09 diff is uncommitted: commit it or record a new base before the first task"
+    "Open product decisions go to the human before the PRD (DEC-STOPS-01); light default conflicts with PRD-09's bridge direction"
   ],
   "sources": {
     "workflow": "workflow.md",
-    "prd": null,
-    "techspec": null,
-    "tasks": null,
-    "review": null,
-    "qa": null,
-    "snapshot": null
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_2/codereview.md",
+    "qa": "qa_1/qa.md",
+    "snapshot": "context-snapshot.md"
   },
-  "review_status": null,
+  "review_status": "APPROVED WITH RESERVATIONS",
   "jev": "active",
-  "qa_status": null,
-  "approved_sources": [],
-  "decisions_to_read": [
-    "DEC-PD-00",
-    "DEC-HIL-00",
-    "DEC-STOPS-01"
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "d08cdbf54466422640e5bb9e42bb4209ccd5efdfdc15cc84195e4e3393a81d42",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "8d7b2e88e4282f06eff3e5cd872e3f05f5238f552cfa53916915e82da4a42cd0",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "023e377eb23e5425e8f653668a1b97fcdceb810cc5ab1b7263ac45ba1c0cd050",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "done/task_01.md",
+      "sha256": "c20eb13217cec3316904b42bc594b758a3d3ef2b75cdc1e6fa20f515d39c9e2d",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "done/task_02.md",
+      "sha256": "4ef165308abf9dd59ec8dc081f988b36a1786bccfa71994fa71bb06aec95160e",
+      "decision_id": "DEC-HIL-01"
+    }
   ],
-  "git_base": "e0a9604ea8349c2c66bfe9137e94dbd2abf3b6c7",
-  "worktree_evidence": "workflow.md#Feature Summary (pre-existing changes)",
+  "decisions_to_read": [
+    "DEC-STOPS-01",
+    "DEC-HIL-01",
+    "DEC-JEV-01",
+    "DEC-PD-01",
+    "DEC-PD-02",
+    "DEC-PD-03",
+    "DEC-PD-04",
+    "DEC-PD-05",
+    "DEC-PD-06"
+  ],
+  "git_base": "1906d4152be3f7e25189a003e5f1dcbb3a43904a",
+  "worktree_evidence": "workflow.md#Feature Summary (pre-existing changes); the delegated review of codereview_1 left the worktree uncontaminated",
   "active_work": [],
-  "pending_hil": null,
+  "pending_hil": { "gate": "HIL 3", "question": "Accept the current delivery of prd-10 with the recorded limitations, accepted reservations, and pending manual steps?", "affected": [] },
   "blockers": [],
-  "correction_round": 0,
+  "correction_round": 1,
   "rounds_without_progress": 0,
   "next_action": {
     "kind": "run",
-    "instruction": "In a new session: read sdd-jev (active), ask the user the open product decisions from workflow.md#diagnosis (light default scope and migration, debug channel in light mode, status line command across shells, SessionStart deadline expectations), then sdd-create-prd.",
+    "instruction": "qa_1 APPROVED with no BUG-NN and no blocks. Present HIL 3: paths, results, limitations, manual acceptance (O-02, O-03), the accepted reservations (DEC-RES-01, O-05, O-06), the jev pilot summary, and ADR candidates. On acceptance mark the checkpoint completed and the snapshot closed; publish or commit only if asked.",
     "read": [
       {
-        "path": "tasks/prd-10-statusline-powershell-e-modo-light/workflow.md",
-        "section": "all"
+        "path": "tasks/prd-10-statusline-powershell-e-modo-light/codereview_1/codereview.md",
+        "section": "Findings, Limitations and open items"
+      },
+      {
+        "path": "tasks/prd-10-statusline-powershell-e-modo-light/context-snapshot.md",
+        "section": "Header, Next step brief, Open threads"
       }
     ]
   }

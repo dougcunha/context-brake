@@ -26,11 +26,11 @@ describe('E2E legacy preview (CR-02, RF14, CA-10)', () => {
   it('reports the proposed migration and leaves the file unchanged without the flag', async () => {
     const dir = await setupRepo();
     try {
-      const dry = await runBuiltCli(['init', '--dry-run', '--json'], dir);
+      const dry = await runBuiltCli(['init', '--dry-run', '--json', '--no-light'], dir);
       expect(dry.code).toBe(1);
       expect(dry.stdout).toContain('LEGACY_BLOCK_DETECTED');
       expect(await readFile(join(dir, 'AGENTS.md'), 'utf8')).toBe(LEGACY);
-      const applied = await runBuiltCli(['init', '--yes'], dir);
+      const applied = await runBuiltCli(['init', '--yes', '--no-light'], dir);
       expect(applied.code).toBe(1);
       expect(applied.stdout).toContain('--migrate-legacy');
       expect(await readFile(join(dir, 'AGENTS.md'), 'utf8')).toBe(LEGACY);
@@ -42,7 +42,7 @@ describe('E2E legacy preview (CR-02, RF14, CA-10)', () => {
   it('emits the legacy preview before a missing confirmation', async () => {
     const dir = await setupRepo();
     try {
-      const res = await runBuiltCli(['init'], dir);
+      const res = await runBuiltCli(['init', '--no-light'], dir);
       expect(res.code).toBe(2);
       expect(res.stderr).toContain('LEGACY_BLOCK_DETECTED');
       expect(await readFile(join(dir, 'AGENTS.md'), 'utf8')).toBe(LEGACY);
@@ -56,7 +56,7 @@ describe('E2E legacy preview de-duplication (FR-10, TC-06)', () => {
   it('prints LEGACY_BLOCK_DETECTED exactly once in the combined text output with --yes (FR-10, TC-06)', async () => {
     const dir = await setupRepo();
     try {
-      const res = await runBuiltCli(['init', '--yes'], dir);
+      const res = await runBuiltCli(['init', '--yes', '--no-light'], dir);
       const combined = `${res.stdout}${res.stderr}`;
       expect(countOccurrences(combined, 'LEGACY_BLOCK_DETECTED')).toBe(1);
     } finally {
@@ -67,7 +67,7 @@ describe('E2E legacy preview de-duplication (FR-10, TC-06)', () => {
   it('prints LEGACY_BLOCK_DETECTED exactly once, in JSON only, with --dry-run --json (FR-10, TC-06)', async () => {
     const dir = await setupRepo();
     try {
-      const res = await runBuiltCli(['init', '--dry-run', '--json'], dir);
+      const res = await runBuiltCli(['init', '--dry-run', '--json', '--no-light'], dir);
       expect(countOccurrences(res.stderr, 'LEGACY_BLOCK_DETECTED')).toBe(0);
       expect(countOccurrences(res.stdout, 'LEGACY_BLOCK_DETECTED')).toBe(1);
     } finally {
@@ -80,7 +80,7 @@ describe('E2E legacy migration (CR-02, RF14, CA-10)', () => {
   it('migrates only with --migrate-legacy and preserves unmatched text', async () => {
     const dir = await setupRepo();
     try {
-      const res = await runBuiltCli(['init', '--yes', '--migrate-legacy'], dir);
+      const res = await runBuiltCli(['init', '--yes', '--no-light', '--migrate-legacy'], dir);
       expect(res.code).toBe(0);
       const content = await readFile(join(dir, 'AGENTS.md'), 'utf8');
       expect(content).toContain('<!-- CONTEXTBRAKE:START -->');

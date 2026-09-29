@@ -3,8 +3,10 @@ import { join, relative } from 'node:path';
 import { createClaudeProject, runCli, type CommandRun } from './delegated-world.js';
 
 export const USER_AGENTS = '# Agent rules\n\nStay here.\n';
-export const LIGHT_INIT = ['init', '--yes', '--json', '--light'] as const;
-export const FULL_INIT = ['init', '--yes', '--json'] as const;
+export const LEGACY_DEBUG_MODE_LINE = 'Debug mode: end each reply that received a ContextBrake telemetry block with the line `📊 ContextBrake: <usage>% · <used>/<window> (<window origin>) · <source> · <ZONE>`, copied from the latest block.';
+export const PLAIN_INIT = ['init', '--yes', '--json'] as const;
+export const LIGHT_INIT = [...PLAIN_INIT, '--light'] as const;
+export const FULL_INIT = [...PLAIN_INIT, '--no-light'] as const;
 const SKIPPED_DIRECTORIES = new Set(['sessions', 'runtime']);
 
 export async function createLightProject(prefix: string): Promise<string> {

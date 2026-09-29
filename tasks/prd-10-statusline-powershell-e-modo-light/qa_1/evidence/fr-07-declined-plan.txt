@@ -1,0 +1,10 @@
+[OK] ContextBrake init (dry_run)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the brake only warns.
+    * timeout_fail_closed: A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] .gitignore (ignore_block)
+    [update] CLAUDE.md (instruction_block)
+    [update] context-brake.config.json (config)
+    [delete] docs/context-brake-protocol.md (protocol)

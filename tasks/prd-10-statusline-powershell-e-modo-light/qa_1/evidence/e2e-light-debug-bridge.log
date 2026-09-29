@@ -1,0 +1,16 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-light-mode.test.ts[2m > [22mlight mode with the built CLI and Claude Code hook (TC-13, OBJ-01, OBJ-02, OBJ-03, OBJ-05)[2m > [22minstalls the minimal footprint with the bridge, injects only light telemetry, never denies, and shows the session in doctor[33m 8922[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-light-mode.test.ts[2m > [22ma plain init is the light mode (TC-14, FR-07, FR-08, FR-09, NFR-01)[2m > [22minstalls light mode with the bridge, accepts --debug, and creates no instruction file[33m 6618[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-light-mode.test.ts[2m > [22ma plain init is the light mode (TC-14, FR-07, FR-08, FR-09, NFR-01)[2m > [22mkeeps full mode on a plain init once init --no-light recorded the choice (FR-08, TC-12)[33m 5076[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-debug-mode.test.ts[2m > [22mdebug mode with the built CLI and Claude Code hook (TC-11, TC-12, FR-03, FR-06, NFR-02)[2m > [22mreports the mode in doctor, injects telemetry at low usage, and leaves no debug line after remove[33m 20794[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-light-mode.test.ts[2m > [22mfull install to light mode and back with the built CLI (TC-13, FR-09)[2m > [22mremoves the managed files and restores a fresh full install[33m 3642[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-statusline-bridge.test.ts[2m > [22mE2E status line bridge on a path with spaces and accents (NFR-06, TC-21)[2m > [22minstalls, records a window, reports it in doctor, and restores the local file on remove[33m 7567[2mms[22m[39m
+ [32mÔ£ô[39m [30m[43m process [49m[39m tests/e2e/e2e-statusline-bridge.test.ts[2m > [22mE2E doctor after a status line run through PowerShell (FR-05, DEC-06, TC-07)[2m > [22mwarns on Windows with the Git Bash remediation, and the report follows the schema[33m 5064[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 14:53:27
+[2m   Duration [22m 38.27s[2m (transform 1.91s, setup 0ms, collect 7.42s, tests 57.69s, environment 1ms, prepare 509ms)[22m
+

@@ -23,7 +23,7 @@ describe('warning-only action at CRITICAL (prd-09 FR-06, DEC-06, TC-07)', () => 
     expect(telemetryAction('CRITICAL', 'config', delegatedAction('/snapshot'))).toBe(delegatedAction('/snapshot'));
   });
   it('keeps the worst-case warning-only block within the v3 budget (TC-06)', () => {
-    const block = renderTelemetryBlock({ turn: 99999, turnCeiling: 100000, usagePercentage: 999, usage: WORST_CASE, zone: 'CRITICAL', action: UNTRUSTED_CRITICAL_ACTION });
+    const block = renderTelemetryBlock({ turn: 99999, turnCeiling: 100000, usagePercentage: 999, usage: WORST_CASE, zone: 'CRITICAL', action: UNTRUSTED_CRITICAL_ACTION, debug: false });
     expect(block.length).toBeLessThanOrEqual(220);
     expect(getEncoding('o200k_base').encode(block).length).toBeLessThanOrEqual(60);
   });

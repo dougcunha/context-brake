@@ -1,0 +1,3 @@
+{"v":1,"at":"2026-09-20T10:00:00.000Z","harness":"claude-code","event":"SessionStart","code":"DEADLINE_EXCEEDED","detail":"TimeoutError"}
+{"v":1,"at":"2026-09-29T11:30:00.000Z","harness":"claude-code","event":"SessionStart","code":"DEADLINE_EXCEEDED","detail":"DeadlineExceededError","phase":"boot_git","elapsedMs":5003}
+{"v":1,"at":"2026-09-29T11:31:00.000Z","harness":"claude-code","event":"SessionStart","code":"DEADLINE_EXCEEDED","detail":"x","phase":"not_a_phase","elapsedMs":-1}

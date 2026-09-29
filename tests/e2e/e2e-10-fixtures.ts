@@ -33,7 +33,7 @@ export async function verifySymlinkScenario(dir: string): Promise<void> {
 
 export async function testClaudeInstall(runner: (args: string[]) => Promise<{ code: number | null; stdout: string }>, dir: string): Promise<void> {
   await setupClaudeFixture(dir);
-  const res = await runner(['init', '--yes']);
+  const res = await runner(['init', '--yes', '--no-light']);
   expect(res.code).toBe(0);
   expect(res.stdout).toContain('claude-code');
   await verifyClaudeInstalled(dir);
@@ -42,7 +42,7 @@ export async function testClaudeInstall(runner: (args: string[]) => Promise<{ co
 export async function testIdempotency(runner: (args: string[]) => Promise<{ code: number | null; stdout: string }>, dir: string): Promise<void> {
   await setupClaudeFixture(dir);
   for (let i = 0; i < 3; i += 1) {
-    const res = await runner(['init', '--yes']);
+    const res = await runner(['init', '--yes', '--no-light']);
     expect(res.code).toBe(0);
   }
   await verifyClaudeInstalled(dir);
@@ -55,7 +55,7 @@ export async function testSymlinkTarget(runner: (args: string[]) => Promise<{ co
   await writeFile(join(dir, 'CLAUDE.md'), '# Instructions\n', 'utf8');
   await requireLink(ctx, await attemptLink('CLAUDE.md', agentsPath, 'file'), agentsPath);
   expect((await lstat(agentsPath)).isSymbolicLink()).toBe(true);
-  const res = await runner(['init', '--yes']);
+  const res = await runner(['init', '--yes', '--no-light']);
   expect(res.code).toBe(0);
   await verifySymlinkScenario(dir);
 }

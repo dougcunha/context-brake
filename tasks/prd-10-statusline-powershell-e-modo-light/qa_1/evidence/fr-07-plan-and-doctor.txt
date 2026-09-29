@@ -1,0 +1,22 @@
+=== FR-07d: plain init WITHOUT --yes on a legacy full install (plan asks) ===
+  exit=2 (2 means CONFIRMATION_REQUIRED)
+  CONFIRMATION_REQUIRED in output: True
+  plan names the light mode section: False
+  plan lists a removal: False
+  protocol file still present after the decline: True
+  .gitignore block still present after the decline: True
+  configuration untouched (no lightMode, no fullMode): lightMode=False fullMode=False
+=== FR-07e: the applied run text names --no-light and the switch ===
+  exit=0
+  text says the installation switched to light mode: True
+  text names init --no-light: True
+  plan mentioned the light mode section: True
+    [OK] LIGHT_MODE_DEFAULT_APPLIED: The installation switched to the light mode, which is the default: telemetry only, with no brake, plan, checkpoint, protocol, or instruction blocks.
+    Remediation: Run context-brake init --no-light to keep the full mode, or context-brake init --light to return to the light mode.
+=== FR-07f: doctor status and exit code with and without LIGHT_MODE_DEFAULT_PENDING ===
+  legacy full: exit=1 status=warnings codes=VERSION_FLOOR_UNVERIFIED,BRAKE_BLOCKS_RECORDED,LIGHT_MODE_DEFAULT_PENDING
+  after --no-light: exit=1 status=warnings codes=VERSION_FLOOR_UNVERIFIED,BRAKE_BLOCKS_RECORDED
+  exit code unchanged: True
+  status unchanged: True
+  PENDING severity: ok
+  PENDING present after --no-light: False

@@ -1,0 +1,6 @@
+deadlineFor(session_reset) = 5000
+deadlineFor(pre_tool)      = 1500
+deadlineFor(unknown event) = 1500
+2 s session start -> normal boot content
+2 s pre_tool -> undefined phase=project_root elapsedMs=1504
+extended after 1.2 s: fired at ~5002 ms (5,000 from start), elapsedMs=5002

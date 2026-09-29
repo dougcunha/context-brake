@@ -1,0 +1,5 @@
+lines in errors.jsonl: 3
+  VALID   code=DEADLINE_EXCEEDED phase=<none> elapsedMs=<none>
+  VALID   code=DEADLINE_EXCEEDED phase=boot_git elapsedMs=5003
+  INVALID code=DEADLINE_EXCEEDED phase=not_a_phase elapsedMs=-1 issues=["phase:invalid_value","elapsedMs:too_small"]
+selectRecentErrors returns 1 record(s): DEADLINE_EXCEEDED/boot_git

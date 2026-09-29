@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CliArgumentError, parseCliArgs } from '../../src/cli/argument-parser.js';
 import { createClaudeProject, PROTOCOL_PATH, readConfig, readProjectFile, removeProject, runCli, USER_CLAUDE } from '../helpers/delegated-world.js';
 
-const ADD = ['init', '--yes', '--json', '--snapshot-command', '/sdd-snapshot', '--snapshot-path', 'tasks/**/context-snapshot.md', '--resume-command', '/sdd-orchestrate-flow'];
+const FULL = ['init', '--yes', '--json', '--no-light'];
+const ADD = [...FULL, '--snapshot-command', '/sdd-snapshot', '--snapshot-path', 'tasks/**/context-snapshot.md', '--resume-command', '/sdd-orchestrate-flow'];
 let root: string;
 beforeEach(async () => { root = await createClaudeProject('cb-init-delegated-'); });
 afterEach(async () => { await removeProject(root); });
@@ -26,18 +27,23 @@ describe('init adds the delegated snapshot section (TC-11, FR-09)', () => {
   });
   it('updates only the given fields on a later run', async () => {
     await runCli(root, ADD);
-    await runCli(root, ['init', '--yes', '--json', '--snapshot-trigger', 'YELLOW']);
+    await runCli(root, [...FULL, '--snapshot-trigger', 'YELLOW']);
     expect((await readConfig(root))['delegatedSnapshot']).toMatchObject({ snapshotCommand: '/sdd-snapshot', triggerZone: 'YELLOW' });
+  });
+  it('refuses the section in the light mode, which is now the default (FR-07, FR-10, TC-11)', async () => {
+    const result = await runCli(root, ['init', '--yes', '--snapshot-command', '/sdd-snapshot']);
+    expect(result.code).toBe(64);
+    expect(result.stderr).toContain('--snapshot-command is not available in the light mode.');
   });
 });
 
 describe('init removes the delegated snapshot section (TC-11, FR-10)', () => {
   it('restores the plan-only protocol and keeps existing plan files', async () => {
-    await runCli(root, ['init', '--yes', '--json']);
+    await runCli(root, [...FULL]);
     const planOnly = await readProjectFile(root, PROTOCOL_PATH);
     await runCli(root, ADD);
     await writeFile(join(root, 'task_plan.json'), '{"keep":true}\n', 'utf8');
-    expect((await runCli(root, ['init', '--yes', '--json', '--no-delegated-snapshot'])).code).toBe(0);
+    expect((await runCli(root, [...FULL, '--no-delegated-snapshot'])).code).toBe(0);
     expect('delegatedSnapshot' in (await readConfig(root))).toBe(false);
     expect(await readProjectFile(root, PROTOCOL_PATH)).toBe(planOnly);
     expect(await readProjectFile(root, 'task_plan.json')).toBe('{"keep":true}\n');
@@ -45,11 +51,12 @@ describe('init removes the delegated snapshot section (TC-11, FR-10)', () => {
 });
 
 describe('init rejects invalid delegated snapshot options (TC-11, FR-02)', () => {
+  const PLAIN_FULL = ['init', '--yes', '--no-light'];
   it.each([
-    ['a path without a snapshot command', ['init', '--yes', '--snapshot-path', 'a/*.md'], '--snapshot-command is required'],
-    ['removal combined with a command', ['init', '--yes', '--no-delegated-snapshot', '--snapshot-command', '/x'], 'cannot be combined'],
-    ['an unknown trigger zone', ['init', '--yes', '--snapshot-command', '/x', '--snapshot-trigger', 'GREEN'], 'delegatedSnapshot.triggerZone'],
-    ['a traversal pattern', ['init', '--yes', '--snapshot-command', '/x', '--snapshot-path', '../x'], 'delegatedSnapshot.allowedPaths.0'],
+    ['a path without a snapshot command', [...PLAIN_FULL, '--snapshot-path', 'a/*.md'], '--snapshot-command is required'],
+    ['removal combined with a command', [...PLAIN_FULL, '--no-delegated-snapshot', '--snapshot-command', '/x'], 'cannot be combined'],
+    ['an unknown trigger zone', [...PLAIN_FULL, '--snapshot-command', '/x', '--snapshot-trigger', 'GREEN'], 'delegatedSnapshot.triggerZone'],
+    ['a traversal pattern', [...PLAIN_FULL, '--snapshot-command', '/x', '--snapshot-path', '../x'], 'delegatedSnapshot.allowedPaths.0'],
   ])('exits 64 for %s', async (_, argv, message) => {
     const result = await runCli(root, argv);
     expect(result.code).toBe(64);

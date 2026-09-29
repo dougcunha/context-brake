@@ -143,11 +143,11 @@ All local runtime state is stored strictly inside `.context-brake/runtime/`, whi
 - **Session Ledgers**: `.context-brake/runtime/sessions/<harness>/<key>.jsonl`
   - `key` is the first 32 characters of `sha256(sessionId + "\0" + (agentId ?? ""))`.
   - Appended on each post-tool event; records session metadata, turns, token counts, and reset events.
-  - With the Claude Code status line bridge, each status line run appends a `statusline` line for the main session, for example `{"v":1,"type":"statusline","at":"2026-09-25T12:00:00.000Z","windowTokens":1000000,"inputTokens":200000,"usedPercentage":20,"model":"claude-opus-5-5"}`. Hooks take the window from the last non-null `windowTokens`, across resets, and use `inputTokens` only when the transcript gives no reading and the line is newer than the last reset. Null values never replace earlier ones. Versions that do not know the line skip it.
+  - With the Claude Code status line bridge, each status line run appends a `statusline` line for the main session, for example `{"v":1,"type":"statusline","at":"2026-09-25T12:00:00.000Z","windowTokens":1000000,"inputTokens":200000,"usedPercentage":20,"model":"claude-opus-5-5"}`. When the bridge also ran the previous status line, the line carries `shell` (`sh`, `git-bash`, or `powershell`), which `doctor` reads to warn on Windows when Claude Code fell back to PowerShell. Hooks take the window from the last non-null `windowTokens`, across resets, and use `inputTokens` only when the transcript gives no reading and the line is newer than the last reset. Null values never replace earlier ones. Versions that do not know the line skip it.
 - **Block Log**: `.context-brake/runtime/blocks.jsonl`
   - Records denied tool calls with timestamp, harness, session ID, tool name, zone, and reason code.
 - **Error Log**: `.context-brake/runtime/errors.jsonl`
-  - Records integration errors and deadline timeouts with timestamp, harness, event name, error code, and error class name. Status line bridge write failures use the event `StatusLine`.
+  - Records integration errors and deadline timeouts with timestamp, harness, event name, error code, and error class name. Status line bridge write failures use the event `StatusLine`. A `DEADLINE_EXCEEDED` record also carries `phase`, the step that was running (`boot_git`, for example), and `elapsedMs`; lines written before those fields stay valid.
 
 ### Metadata-Only Rule
 

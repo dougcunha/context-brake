@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { ContextWindowReport } from '../../../core/contracts/context-window-report.js';
 import { parseLedgerLines } from '../../../core/contracts/session-ledger.js';
+import type { StatuslineShell } from '../../../core/contracts/statusline-line.js';
 import { summarizeStatusline } from '../../../core/services/statusline-summary.js';
 import { LEDGER_FILE_EXTENSION, sessionsDirectory } from '../../runtime/runtime-paths.js';
 import { CLAUDE_LOCAL_SETTINGS_FILE, commandOf, readSettings } from './statusline-settings.js';
@@ -32,6 +33,16 @@ async function lastRecordedWindow(projectRoot: string): Promise<number | null> {
     const content = await readFile(ledger.path, 'utf8').catch(() => '');
     const windowTokens = summarizeStatusline(parseLedgerLines(content), ALL_LINES).windowTokens;
     if (windowTokens !== null) return windowTokens;
+  }
+  return null;
+}
+
+export async function lastRecordedShell(projectRoot: string): Promise<StatuslineShell | null> {
+  for (const ledger of await ledgersNewestFirst(sessionsDirectory(projectRoot, 'claude-code'))) {
+    const content = await readFile(ledger.path, 'utf8').catch(() => '');
+    const shells = parseLedgerLines(content).flatMap((line) => (line.type === 'statusline' && line.shell !== undefined ? [line.shell] : []));
+    const shell = shells.at(-1);
+    if (shell !== undefined) return shell;
   }
   return null;
 }

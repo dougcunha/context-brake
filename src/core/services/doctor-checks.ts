@@ -6,6 +6,7 @@ import type { StateCheckpoint } from '../contracts/state-checkpoint.js';
 import { parseTaskPlan } from '../validation/plan-validator.js';
 import { checkpointAgainstPlanIssues, parseStateCheckpoint } from '../validation/checkpoint-validator.js';
 import { checkLegacyTurnLimits } from './config-legacy-checks.js';
+import { isLightDefaultPending, lightDefaultPendingFinding } from './light-default-findings.js';
 import { CURRENT_START_MARKER } from './instruction-markers.js';
 import { renderProtocol } from './protocol-service.js';
 
@@ -24,7 +25,7 @@ export function checkConfig(config: ContextBrakeConfig | null, error?: Error | n
     };
     return { effective: DEFAULT_CONFIG, findings: [finding] };
   }
-  return { effective: config, findings: checkLegacyTurnLimits(config) };
+  return { effective: config, findings: [...checkLegacyTurnLimits(config), ...(isLightDefaultPending(config) ? [lightDefaultPendingFinding()] : [])] };
 }
 
 export function checkInstructionFiles(targets: readonly FileSnapshot[]): DiagnosticFinding[] {

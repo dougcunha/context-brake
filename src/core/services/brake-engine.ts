@@ -1,10 +1,9 @@
 import type { PlanPresence, ZoneGuidance } from '../contracts/checkpoint-mode.js';
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
-import type { HarnessId } from '../contracts/harness.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } from '../contracts/runtime.js';
 import type { BlockLog, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
 import type { Zone } from '../contracts/zones.js';
-import type { BootDecision } from './boot-policy.js';
+import type { PhaseMark } from '../contracts/hook-phase.js';
 import { deriveBrakeMode } from './brake-mode.js';
 import { LedgerUnreadableError } from './failure-policy.js';
 import { isDebugModeInEffect } from './debug-mode-merge.js';
@@ -16,23 +15,23 @@ import { renderTelemetryBlock } from './telemetry-block.js';
 import { redStartTurn } from './zone-classifier.js';
 import { isTrustedWindow, telemetryAction } from './window-trust.js';
 import { resolveGuidance } from './zone-guidance.js';
+import { handleSessionReset, type BootReader } from './session-reset-handler.js';
 
 export type ValidationCommandReader = () => Promise<string | null>;
-export type BootReader = () => Promise<BootDecision>;
+export type { BootReader } from './session-reset-handler.js';
 export type { MeasuredUsage } from './session-zone.js';
-export type RuntimeInput = { readonly measured?: MeasuredUsage | undefined; readonly observedCharacters?: number | undefined };
+export type RuntimeInput = { readonly measured?: MeasuredUsage | undefined; readonly observedCharacters?: number | undefined; readonly onPhase?: PhaseMark | undefined };
 export type BrakeEngineOptions = { readonly descriptor: RuntimeDescriptor; readonly config: ContextBrakeConfig; readonly ledger: SessionLedger; readonly blocks: BlockLog; readonly readValidationCommand: ValidationCommandReader; readonly readBoot?: BootReader | undefined; readonly errors?: RuntimeErrorLog | undefined; readonly planPresence?: PlanPresence | undefined };
 export interface BrakeEngine { handle(event: RuntimeEvent, input?: RuntimeInput): Promise<RuntimeDecision>; }
 
 const NEUTRAL: RuntimeDecision = { kind: 'neutral' };
-const COMPACTION_BOOT_HARNESSES: readonly HarnessId[] = ['claude-code', 'codex-cli', 'pi', 'oh-my-pi'];
 export function createBrakeEngine(options: BrakeEngineOptions): BrakeEngine { return { handle: (event, input) => handleEvent(options, event, input ?? {}) }; }
 async function handleEvent(options: BrakeEngineOptions, event: RuntimeEvent, input: RuntimeInput): Promise<RuntimeDecision> {
   switch (event.kind) {
     case 'pre_tool': return handlePreTool(options, event, input);
     case 'post_tool': return handlePostTool(options, event, input);
     case 'pre_invocation': return handlePreInvocation(options, event, input);
-    case 'session_reset': return handleSessionReset(options, event);
+    case 'session_reset': return handleSessionReset(options, event, input.onPhase);
     case 'response_end': return handleResponseEnd(options, event);
   }
 }
@@ -64,23 +63,7 @@ async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEv
 async function telemetryDecision(options: BrakeEngineOptions, turn: number, view: ZoneReading): Promise<RuntimeDecision> {
   if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config) })) return NEUTRAL;
   const action = telemetryAction(view.zone, view.reading.windowOrigin, (await readGuidance(options, view.zone)).actionFor(view.zone));
-  return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action }) };
-}
-async function handleSessionReset(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'session_reset' }): Promise<RuntimeDecision> {
-  await options.ledger.appendResetLine(event.session, event.reason);
-  if (event.reason === 'new') await options.ledger.pruneStaleSessions();
-  if (!options.descriptor.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported')) return NEUTRAL;
-  if (event.reason === 'compact' && !COMPACTION_BOOT_HARNESSES.includes(options.descriptor.harness)) return NEUTRAL;
-  const guidance = await readGuidance(options);
-  if (guidance.mode !== 'plan') return guidance.resumeText === null ? NEUTRAL : { kind: 'context', block: guidance.resumeText };
-  if (!options.readBoot) return NEUTRAL;
-  try {
-    const decision = await options.readBoot();
-    return decision.kind === 'boot' || decision.kind === 'invalid_state' ? { kind: 'context', block: decision.text } : NEUTRAL;
-  } catch (error) {
-    if (options.errors) await options.errors.append(options.descriptor.harness, { event: 'session_reset', code: 'UNEXPECTED', detail: error instanceof Error ? error.message : String(error) }).catch(() => undefined);
-    return NEUTRAL;
-  }
+  return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action, debug: isDebugModeInEffect(options.config) }) };
 }
 async function handleResponseEnd(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'response_end' }): Promise<RuntimeDecision> {
   if (options.descriptor.newSessionCommand === null || !hasResetSignal(event.text)) return NEUTRAL;

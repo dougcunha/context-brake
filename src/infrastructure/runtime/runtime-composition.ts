@@ -70,7 +70,7 @@ export function createRuntimePorts(input: RuntimePortsInput): RuntimePorts {
     blocks: new NodeBlockLog(input.projectRoot, input.clock),
     errors,
     readValidationCommand: () => planReader.readValidationCommand(),
-    readBoot: () => bootReader.readBoot(),
+    readBoot: (onPhase) => bootReader.readBoot(onPhase),
     planPresence: new NodePlanPresence(input.projectRoot, config.stateStorage.planFile),
   };
 }

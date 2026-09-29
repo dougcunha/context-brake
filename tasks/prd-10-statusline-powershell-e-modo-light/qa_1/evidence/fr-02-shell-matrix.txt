@@ -1,0 +1,11 @@
+=== RESULTS ===
+alone-gitbash: exit=0 stdoutBytes=17 stdoutHex=1b5b33326d6f6e651b5b306d0a74776f0a
+bridge-gitbash: exit=0 stdoutBytes=17 stdoutHex=1b5b33326d6f6e651b5b306d0a74776f0a
+alone-pwsh: exit=0 stdoutBytes=17 stdoutHex=1b5b33326d6f6e651b5b306d0a74776f0a
+bridge-pwsh: exit=0 stdoutBytes=17 stdoutHex=1b5b33326d6f6e651b5b306d0a74776f0a
+alone-winps: exit=0 stdoutBytes=17 stdoutHex=1b5b33326d6f6e651b5b306d0a74776f0a
+bridge-winps: exit=0 stdoutBytes=17 stdoutHex=1b5b33326d6f6e651b5b306d0a74776f0a
+=== COMPARISON (byte-identical output required) ===
+alone-gitbash vs bridge-gitbash: byteIdentical=True aloneExit=0 bridgedExit=0
+alone-pwsh vs bridge-pwsh: byteIdentical=True aloneExit=0 bridgedExit=0
+alone-winps vs bridge-winps: byteIdentical=True aloneExit=0 bridgedExit=0

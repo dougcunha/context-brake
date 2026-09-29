@@ -19,7 +19,8 @@ describe('status line bridge install and restore (FR-01, FR-02, FR-08, DEC-11, T
   it('wraps the local status line, stays unchanged on reruns, and restores the file byte for byte', async () => {
     await writeFile(join(world.root, LOCAL_PATH), LOCAL_WITH_STATUSLINE, 'utf8');
     expect((await run(INSTALL)).exitCode).toBe(0);
-    expect(localStatusline(await read(LOCAL_PATH))).toEqual({ type: 'command', command: `node "${world.root.replace(/\\/g, '/')}/${BRIDGE_PATH}" --pipe | ( ~/.claude/statusline.sh\n)`, padding: 2 });
+    expect(localStatusline(await read(LOCAL_PATH))).toEqual({ type: 'command', command: `node "${world.root.replace(/\\/g, '/')}/${BRIDGE_PATH}"`, padding: 2 });
+    expect(JSON.parse((await read(STATE_PATH)) ?? '{}')).toMatchObject({ previousCommand: '~/.claude/statusline.sh' });
     expect(await exists(BRIDGE_PATH)).toBe(true);
     const installed = [await read(LOCAL_PATH), await read(STATE_PATH)];
     await run(INSTALL);
@@ -50,10 +51,32 @@ describe('status line bridge removal of a created file (FR-08, TC-13)', () => {
     await mkdir(join(world.home, '.claude'), { recursive: true });
     await writeFile(join(world.home, '.claude', 'settings.json'), '{ "statusLine": { "type": "command", "command": "user.sh", "refreshInterval": 5 } }\n', 'utf8');
     await run(INSTALL);
-    expect(localStatusline(await read(LOCAL_PATH))).toMatchObject({ command: expect.stringContaining('--pipe | ( user.sh\n)') as unknown, refreshInterval: 5 });
+    expect(localStatusline(await read(LOCAL_PATH))).toMatchObject({ command: expect.stringMatching(/context-brake-statusline\.mjs"$/) as unknown, refreshInterval: 5 });
+    expect(JSON.parse((await read(STATE_PATH)) ?? '{}')).toMatchObject({ previousCommand: 'user.sh', previousSource: 'user' });
     expect((await run(['remove', '--yes', '--json'])).exitCode).toBe(0);
     expect(await exists(LOCAL_PATH)).toBe(false);
     expect(await exists(STATE_PATH)).toBe(false);
+  });
+});
+
+describe('migration from the PRD-09 pipeline (FR-04, DEC-05, TC-05)', () => {
+  it('flags the pipeline, rewrites it on init, stays unchanged on a rerun, and restores on remove', async () => {
+    await writeFile(join(world.root, LOCAL_PATH), LOCAL_WITH_STATUSLINE, 'utf8');
+    await run(INSTALL);
+    const current = localStatusline(await read(LOCAL_PATH))['command'] as string;
+    const legacy = `${current} --pipe | ( ~/.claude/statusline.sh\n)`;
+    await writeFile(join(world.root, LOCAL_PATH), (await read(LOCAL_PATH))!.replace(JSON.stringify(current), JSON.stringify(legacy)), 'utf8');
+    await writeFile(join(world.root, STATE_PATH), (await read(STATE_PATH))!.replace(JSON.stringify(current), JSON.stringify(legacy)), 'utf8');
+    expect((await run(['doctor', '--json'])).findings.map((finding) => finding.code)).toContain('STATUSLINE_BRIDGE_OUTDATED');
+    await run(['init', '--yes', '--json']);
+    expect(localStatusline(await read(LOCAL_PATH))['command']).toBe(current);
+    expect(JSON.parse((await read(STATE_PATH))!)).toMatchObject({ installedCommand: current, previousCommand: '~/.claude/statusline.sh' });
+    const migrated = [await read(LOCAL_PATH), await read(STATE_PATH)];
+    expect((await run(['init', '--yes', '--json'])).plan.changes.map((change) => change.path)).not.toContain(LOCAL_PATH);
+    expect([await read(LOCAL_PATH), await read(STATE_PATH)]).toEqual(migrated);
+    expect((await run(['doctor', '--json'])).findings.map((finding) => finding.code)).not.toContain('STATUSLINE_BRIDGE_OUTDATED');
+    expect((await run(['remove', '--yes', '--json'])).exitCode).toBe(0);
+    expect(await read(LOCAL_PATH)).toBe(LOCAL_WITH_STATUSLINE);
   });
 });
 

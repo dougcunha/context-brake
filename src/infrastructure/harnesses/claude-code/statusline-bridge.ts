@@ -1,9 +1,13 @@
-import type { Clock } from '../../../core/contracts/session-ledger.js';
+import type { Clock, LedgerLine } from '../../../core/contracts/session-ledger.js';
 import { failureDetail, failureErrorCode, recordRuntimeFailure, runWithinDeadline } from '../../../core/services/failure-policy.js';
 import { NodeRuntimeErrorLog } from '../../runtime/node-runtime-logs.js';
 import { NodeSessionLedger } from '../../runtime/node-session-ledger.js';
 import { assetProjectRoot } from '../common/runtime-support.js';
+import { renderFallbackLine } from './statusline-output.js';
 import { mapStatuslinePayload, type StatuslineRecord } from './statusline-payload.js';
+import { runPreviousStatusline } from './statusline-previous.js';
+import { processShellHost, resolveStatuslineShell, type ShellHost } from './statusline-shell.js';
+import { readStatuslineState } from './statusline-state.js';
 
 export const STATUSLINE_PIPE_FLAG = '--pipe';
 export const STATUSLINE_PARSE_LIMIT_BYTES = 1024 * 1024;
@@ -16,6 +20,8 @@ export type StatuslineBridgeContext = {
   readonly stdin: NodeJS.ReadableStream;
   readonly stdout: NodeJS.WritableStream;
   readonly resolveProjectRoot: () => Promise<string>;
+  readonly shellHost?: ShellHost | undefined;
+  readonly previousTimeoutMilliseconds?: number | undefined;
 };
 type ChunkWriter = (chunk: Buffer) => void;
 
@@ -24,10 +30,22 @@ function processContext(): StatuslineBridgeContext {
 }
 
 export async function runClaudeStatuslineBridge(context: StatuslineBridgeContext = processContext()): Promise<number> {
-  const writer = context.argv.includes(STATUSLINE_PIPE_FLAG) ? tolerantWriter(context.stdout) : null;
-  const buffered = await passThrough(context.stdin, writer);
-  const record = buffered === null ? null : mapStatuslinePayload(parseJson(buffered));
-  if (record !== null) await recordStatusline(record, await context.resolveProjectRoot());
+  const isPipe = context.argv.includes(STATUSLINE_PIPE_FLAG);
+  const input = await readInput(context.stdin, isPipe ? tolerantWriter(context.stdout) : null);
+  const record = input === null || input.length > STATUSLINE_PARSE_LIMIT_BYTES ? null : mapStatuslinePayload(parseJson(input));
+  const projectRoot = await context.resolveProjectRoot();
+  const previousCommand = isPipe ? null : (await readStatuslineState(projectRoot))?.previousCommand ?? null;
+  if (previousCommand === null || input === null) {
+    if (record !== null) await recordStatusline(record, projectRoot);
+    return 0;
+  }
+  const shell = await resolveStatuslineShell(previousCommand, context.shellHost ?? processShellHost);
+  const [result] = await Promise.all([
+    runPreviousStatusline({ shell, stdin: input, timeoutMilliseconds: context.previousTimeoutMilliseconds }),
+    record === null ? undefined : recordStatusline({ ...record, line: { ...record.line, shell: shell.label } }, projectRoot),
+  ]);
+  const output = result.kind === 'output' ? result.stdout : Buffer.from(renderFallbackLine({ reason: result.reason, ledger: await readLedger(record, projectRoot), payload: record?.line ?? null }));
+  tolerantWriter(context.stdout)(output);
   return 0;
 }
 
@@ -37,20 +55,18 @@ function tolerantWriter(stream: NodeJS.WritableStream): ChunkWriter {
   return (chunk) => { if (!isBroken) stream.write(chunk); };
 }
 
-async function passThrough(stdin: NodeJS.ReadableStream, writer: ChunkWriter | null): Promise<Buffer | null> {
+async function readInput(stdin: NodeJS.ReadableStream, writer: ChunkWriter | null): Promise<Buffer | null> {
   const chunks: Buffer[] = [];
-  let size = 0;
   try {
     for await (const chunk of stdin) {
       const data = typeof chunk === 'string' ? Buffer.from(chunk) : chunk;
       writer?.(data);
-      size += data.length;
-      if (size <= STATUSLINE_PARSE_LIMIT_BYTES) chunks.push(data);
+      chunks.push(data);
     }
   } catch {
     return null;
   }
-  return size > STATUSLINE_PARSE_LIMIT_BYTES ? null : Buffer.concat(chunks);
+  return Buffer.concat(chunks);
 }
 
 function parseJson(buffered: Buffer): unknown {
@@ -59,6 +75,11 @@ function parseJson(buffered: Buffer): unknown {
   } catch {
     return null;
   }
+}
+
+async function readLedger(record: StatuslineRecord | null, projectRoot: string): Promise<readonly LedgerLine[]> {
+  if (record === null) return [];
+  return new NodeSessionLedger(projectRoot, systemClock).readLines(record.session).catch(() => []);
 }
 
 async function recordStatusline(record: StatuslineRecord, projectRoot: string): Promise<void> {

@@ -1,0 +1,11 @@
+=== FR-03 fallback line ===
+fail-gitbash: exit=0 lines=1 text=ContextBrake 8% · previous status line failed (exit 3) · run context-brake doctor
+
+fail-pwsh: exit=0 lines=1 text=ContextBrake 8% · previous status line failed (exit 1) · run context-brake doctor
+
+silent-gitbash: exit=0 lines=1 text=ContextBrake 8% · previous status line failed (no output) · run context-brake doctor
+
+slow-gitbash: exit=0 lines=1 text=ContextBrake 8% · previous status line failed (timed out) · run context-brake doctor
+
+missing-gitbash: exit=0 lines=1 text=ContextBrake 8% · previous status line failed (exit 127) · run context-brake doctor
+

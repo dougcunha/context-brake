@@ -1,6 +1,7 @@
 import type { PlanPresence } from '../contracts/checkpoint-mode.js';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../contracts/configuration.js';
 import type { HarnessId } from '../contracts/harness.js';
+import type { HookPhase, PhaseTiming } from '../contracts/hook-phase.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../contracts/runtime.js';
 import type { RuntimeErrorCode, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
 import type { SessionKey } from '../contracts/runtime.js';
@@ -13,7 +14,7 @@ import { resolveFailureGuidance, type GuidanceSources } from './zone-guidance.js
 export const INTERNAL_DEADLINE_MILLISECONDS = 1500;
 
 export class DeadlineExceededError extends Error {
-  constructor() { super('The internal deadline elapsed.'); this.name = 'DeadlineExceededError'; }
+  constructor(readonly phase?: HookPhase, readonly elapsedMs?: number) { super('The internal deadline elapsed.'); this.name = 'DeadlineExceededError'; }
 }
 export class LedgerUnreadableError extends Error {
   constructor(options?: ErrorOptions) { super('The session ledger could not be read.', options); this.name = 'LedgerUnreadableError'; }
@@ -32,6 +33,7 @@ export type FailureResolutionInput = {
   readonly errors: RuntimeErrorLog;
   readonly readValidationCommand: () => Promise<string | null>;
   readonly planPresence?: PlanPresence | undefined;
+  readonly timing?: PhaseTiming | undefined;
 };
 
 export function failureErrorCode(error: unknown): RuntimeErrorCode {
@@ -52,7 +54,7 @@ export function runWithinDeadline<T>(work: Promise<T>, deadlineMilliseconds = IN
   });
 }
 export async function resolveFailure(input: FailureResolutionInput): Promise<RuntimeDecision> {
-  await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail });
+  await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail, ...input.timing });
   if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return deadlineBootDecision(input);
   if (input.event.kind !== 'pre_tool' || input.config?.lightMode !== undefined) return { kind: 'neutral' };
   if (!(await wasTrustedCritical(input.ledger, input.event.session))) return { kind: 'neutral' };
@@ -68,10 +70,10 @@ async function deadlineBootDecision(input: FailureResolutionInput): Promise<Runt
 function guidanceSources(input: FailureResolutionInput): GuidanceSources {
   return { config: input.config ?? DEFAULT_CONFIG, planPresence: input.planPresence, readValidationCommand: () => readTolerantly(input.readValidationCommand) };
 }
-export type RuntimeFailureRecord = { readonly harness: HarnessId; readonly event: string; readonly code: RuntimeErrorCode; readonly detail: string };
+export type RuntimeFailureRecord = PhaseTiming & { readonly harness: HarnessId; readonly event: string; readonly code: RuntimeErrorCode; readonly detail: string };
 export async function recordRuntimeFailure(errors: RuntimeErrorLog, record: RuntimeFailureRecord): Promise<void> {
   try {
-    await errors.append(record.harness, { event: record.event, code: record.code, detail: record.detail });
+    await errors.append(record.harness, { event: record.event, code: record.code, detail: record.detail, phase: record.phase, elapsedMs: record.elapsedMs });
   } catch {
     return;
   }

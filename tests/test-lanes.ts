@@ -51,10 +51,12 @@ export const PROCESS_LANE_FILES: readonly string[] = [
   'tests/integration/runtime-state-removal.test.ts',
   'tests/integration/safe-removal.test.ts',
   'tests/integration/shell-validation-executor.test.ts',
+  'tests/integration/statusline-bridge-previous.test.ts',
   'tests/integration/statusline-bridge.test.ts',
   'tests/integration/statusline-install-invalid.test.ts',
   'tests/integration/statusline-install.test.ts',
   'tests/integration/statusline-overhead.test.ts',
+  'tests/integration/statusline-previous-overhead.test.ts',
   'tests/integration/wrap-command.test.ts',
   'tests/integration/wrap-light-mode.test.ts',
   'tests/unit/init-legacy-preview.test.ts',
@@ -73,6 +75,7 @@ export const SERIAL_LANE_FILES: readonly string[] = [
   'tests/integration/runtime-overhead.test.ts',
   'tests/integration/shell-validation-executor.test.ts',
   'tests/integration/statusline-overhead.test.ts',
+  'tests/integration/statusline-previous-overhead.test.ts',
   'tests/unit/overhead-measurer.test.ts',
 ];
 

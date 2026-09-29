@@ -1,8 +1,9 @@
-import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../../core/contracts/runtime.js';
 import type { RuntimeInput } from '../../core/services/brake-engine.js';
-import { failureDetail, failureErrorCode, recordRuntimeFailure, resolveFailure, runWithinDeadline } from '../../core/services/failure-policy.js';
-import { composeRuntime, createRuntimePorts, loadRuntimeConfiguration, systemClock, type RuntimePorts } from './runtime-composition.js';
+import { failureErrorCode, INTERNAL_DEADLINE_MILLISECONDS } from '../../core/services/failure-policy.js';
+import { deadlineFor, HookDeadline, SESSION_START_DEADLINE_MILLISECONDS, type DeadlineLimits } from './hook-deadline.js';
+import { failureDecision, type HookState } from './hook-failure.js';
+import { composeRuntime, loadRuntimeConfiguration, systemClock, type RuntimePorts } from './runtime-composition.js';
 import { normalizeEventToolPaths } from './tool-path-normalizer.js';
 
 export const MAXIMUM_STDIN_BYTES = 16 * 1024 * 1024;
@@ -21,14 +22,15 @@ export type ProcessHookContext = {
   readonly writeStdout: (text: string) => void;
   readonly writeStderr: (text: string) => void;
   readonly deadlineMilliseconds: number;
+  readonly sessionStartDeadlineMilliseconds?: number | undefined;
 };
-type HookState = { event: RuntimeEvent | null; projectRoot: string | null; config: ContextBrakeConfig | null };
 export const defaultProcessHookContext: ProcessHookContext = {
   argv: process.argv,
   readStdin: () => readStdinUpTo(process.stdin, MAXIMUM_STDIN_BYTES),
   writeStdout: (text) => { process.stdout.write(text); },
   writeStderr: (text) => { process.stderr.write(text); },
-  deadlineMilliseconds: 1500,
+  deadlineMilliseconds: INTERNAL_DEADLINE_MILLISECONDS,
+  sessionStartDeadlineMilliseconds: SESSION_START_DEADLINE_MILLISECONDS,
 };
 
 export function readStdinUpTo(stream: NodeJS.ReadableStream, maximumBytes: number): Promise<string> {
@@ -49,42 +51,38 @@ export function readStdinUpTo(stream: NodeJS.ReadableStream, maximumBytes: numbe
 export async function runProcessHook(adapter: ProcessHarnessAdapter, context: ProcessHookContext = defaultProcessHookContext): Promise<number> {
   const eventName = context.argv[2] ?? '';
   const state: HookState = { event: null, projectRoot: null, config: null };
+  const deadline = new HookDeadline(context.deadlineMilliseconds, 'project_root');
+  const limits = { event: context.deadlineMilliseconds, sessionStart: context.sessionStartDeadlineMilliseconds ?? SESSION_START_DEADLINE_MILLISECONDS };
   try {
-    const decision = await runWithinDeadline(dispatchHook({ adapter, context, eventName, state }), context.deadlineMilliseconds);
+    const decision = await deadline.run(dispatchHook({ adapter, context, eventName, state, deadline, limits }));
     writeDecision({ adapter, context, decision, eventName });
   } catch (error) {
-    const decision = await failureDecision({ adapter, state, error, eventName });
+    const decision = await failureDecision({ descriptor: adapter.descriptor, state, error, eventName });
     writeDecision({ adapter, context, decision, eventName });
     context.writeStderr(`ContextBrake: ${failureErrorCode(error)}\n`);
   }
   return 0;
 }
-type HookDispatch = { readonly adapter: ProcessHarnessAdapter; readonly context: ProcessHookContext; readonly eventName: string; readonly state: HookState };
+type HookDispatch = { readonly adapter: ProcessHarnessAdapter; readonly context: ProcessHookContext; readonly eventName: string; readonly state: HookState; readonly deadline: HookDeadline; readonly limits: DeadlineLimits };
 async function dispatchHook(input: HookDispatch): Promise<RuntimeDecision> {
+  const { deadline } = input;
   const projectRoot = await input.adapter.resolveProjectRoot({ eventName: input.eventName, payload: null });
   input.state.projectRoot = projectRoot;
+  deadline.mark('stdin');
   const payload = parsePayload(await input.context.readStdin());
+  deadline.mark('event');
   const event = await normalizeEventToolPaths(input.adapter.mapEvent(input.eventName, payload), projectRoot);
   input.state.event = event;
+  deadline.extendTo(deadlineFor(event, input.limits));
+  deadline.mark('config');
   const config = await loadRuntimeConfiguration(projectRoot);
   input.state.config = config;
   if (event === null) return NEUTRAL;
   const services = composeRuntime({ projectRoot, descriptor: input.adapter.descriptor, config, clock: systemClock });
-  return services.engine.handle(event, await input.adapter.mapInput(input.eventName, payload, services.errors));
-}
-type FailureInput = { readonly adapter: ProcessHarnessAdapter; readonly state: HookState; readonly error: unknown; readonly eventName: string };
-async function failureDecision(input: FailureInput): Promise<RuntimeDecision> {
-  if (input.state.projectRoot === null) return NEUTRAL;
-  const ports = createRuntimePorts({ projectRoot: input.state.projectRoot, config: input.state.config, clock: systemClock });
-  if (input.state.event === null) {
-    await recordRuntimeFailure(ports.errors, { harness: input.adapter.descriptor.harness, event: input.eventName, code: failureErrorCode(input.error), detail: failureDetail(input.error) });
-    return NEUTRAL;
-  }
-  try {
-    return await resolveFailure({ event: input.state.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.state.config, descriptor: input.adapter.descriptor, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand, planPresence: ports.planPresence });
-  } catch {
-    return NEUTRAL;
-  }
+  deadline.mark('input');
+  const engineInput = await input.adapter.mapInput(input.eventName, payload, services.errors);
+  deadline.mark('engine');
+  return services.engine.handle(event, { ...engineInput, onPhase: deadline.mark });
 }
 type DecisionWrite = { readonly adapter: ProcessHarnessAdapter; readonly context: ProcessHookContext; readonly decision: RuntimeDecision; readonly eventName: string };
 function writeDecision(input: DecisionWrite): void {

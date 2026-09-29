@@ -30,29 +30,26 @@ describe('previous status line resolution (FR-02, DEC-09, TC-10)', () => {
     expect(statuslineOptions(undefined)).toEqual({});
   });
 
-  it('wraps the previous command in a pipeline and omits --pipe without one', () => {
-    expect(bridgeCommand('/repo', '~/.claude/statusline.sh')).toBe(`node "/repo/${SCRIPT}" --pipe | ( ~/.claude/statusline.sh\n)`);
-    expect(bridgeCommand('/repo', null)).toBe(`node "/repo/${SCRIPT}"`);
-  });
-
-  it('closes the subshell on its own line so a trailing comment stays inside it (codereview_01/CR-05)', () => {
-    expect(bridgeCommand('/repo', 'ccstatusline # note')).toBe(`node "/repo/${SCRIPT}" --pipe | ( ccstatusline # note\n)`);
+  it('is only the quoted bridge script, with no shell operator, whatever the previous command (FR-01, DEC-01, TC-01)', () => {
+    const command = bridgeCommand('/repo');
+    expect(command).toBe(`node "/repo/${SCRIPT}"`);
+    expect(command).not.toMatch(/[|(;&\n]/);
   });
 });
 
 describe('bridge command roots (FR-01, NFR-06, DEC-02, TC-11)', () => {
   it.each(['/tmp/re"po', '/tmp/re$po', '/tmp/re`po', '/tmp/re\\po'])('refuses the root %s', (root) => {
-    expect(bridgeCommand(root, 'prev.sh')).toBeNull();
+    expect(bridgeCommand(root)).toBeNull();
   });
 
   it('quotes a root with spaces and accents', () => {
-    expect(bridgeCommand('/home/dev/Meus Projetos/ação', null)).toBe(`node "/home/dev/Meus Projetos/ação/${SCRIPT}"`);
+    expect(bridgeCommand('/home/dev/Meus Projetos/ação')).toBe(`node "/home/dev/Meus Projetos/ação/${SCRIPT}"`);
   });
 
   it('converts a Windows root to forward slashes before quoting', () => {
     const root = toCommandRoot('D:\\Meus Projetos\\ação', '\\');
     expect(root).toBe('D:/Meus Projetos/ação');
-    expect(bridgeCommand(root, 'prev.sh')).toBe(`node "D:/Meus Projetos/ação/${SCRIPT}" --pipe | ( prev.sh\n)`);
+    expect(bridgeCommand(root)).toBe(`node "D:/Meus Projetos/ação/${SCRIPT}"`);
   });
 
   it('keeps a POSIX root unchanged', () => {

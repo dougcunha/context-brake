@@ -1,0 +1,3 @@
+doctor --json validates against doctorReportSchema: OK
+status=warnings exitCode=1
+findings: STATUSLINE_POWERSHELL_FALLBACK, STATUSLINE_PREVIOUS_CHANGED, VERSION_FLOOR_UNVERIFIED, BRAKE_BLOCKS_RECORDED

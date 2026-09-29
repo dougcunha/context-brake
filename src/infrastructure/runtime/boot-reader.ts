@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { GitComparison, GitInspector, GitState } from '../../core/contracts/git.js';
+import type { PhaseMark } from '../../core/contracts/hook-phase.js';
 import type { Clock } from '../../core/contracts/session-ledger.js';
 import { decideBoot, type BootDecision, type BootFileInput } from '../../core/services/boot-policy.js';
 import { compareGitState } from '../../core/services/git-divergence.js';
@@ -21,7 +22,8 @@ type BootReaderInput = {
 export class NodeBootReader {
   constructor(private readonly input: BootReaderInput) {}
 
-  async readBoot(): Promise<BootDecision> {
+  async readBoot(onPhase?: PhaseMark): Promise<BootDecision> {
+    onPhase?.('boot_files');
     const planFile = this.input.config.stateStorage.planFile;
     const checkpointFile = this.input.config.stateStorage.checkpointFile;
     const plan = await this.readFileState(planFile, invalidPlanSyntaxError);
@@ -31,6 +33,7 @@ export class NodeBootReader {
     const initial = decideBoot({ plan, checkpoint, planFile, checkpointFile, git: emptyGit, maxTokens });
     if (initial.kind !== 'boot' || checkpoint.kind !== 'value') return initial;
     const recorded = parseStateCheckpoint(checkpoint.value, checkpointFile).gitState;
+    onPhase?.('boot_git');
     const current = await this.inspectGit(recorded.lastCommitHash);
     const git = compareGitState({ recorded, current, now: this.input.clock.now() });
     return decideBoot({ plan, checkpoint, planFile, checkpointFile, git, maxTokens });

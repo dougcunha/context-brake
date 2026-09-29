@@ -21,8 +21,13 @@ describe('status line bridge by default (prd-09 FR-04, DEC-08, TC-09)', () => {
     await runJson(world, PLAIN);
     expect([await readWorldFile(world, LOCAL_PATH), await readWorldFile(world, STATE_PATH)]).toEqual(installed);
   });
-  it('keeps the bridge statusLine off in light mode', async () => {
+  it('installs the bridge in light mode too (FR-09, TC-13)', async () => {
     expect((await runJson(world, [...PLAIN, '--light'])).exitCode).toBe(0);
+    expect(localStatusline(await readWorldFile(world, LOCAL_PATH))).toMatchObject({ type: 'command' });
+    expect(await exists(STATE_PATH)).toBe(true);
+  });
+  it('keeps the bridge off in light mode with --no-statusline-bridge (FR-09, TC-13)', async () => {
+    expect((await runJson(world, [...PLAIN, '--light', '--no-statusline-bridge'])).exitCode).toBe(0);
     expect(await exists(LOCAL_PATH)).toBe(false);
     expect(await exists(STATE_PATH)).toBe(false);
   });
@@ -33,7 +38,7 @@ describe('default bridge with unparseable local settings (prd-09 DEC-08, TC-09, 
   beforeEach(async () => { await writeFile(join(world.root, LOCAL_PATH), MALFORMED); });
   it('warns instead of failing a plain init, installs the hooks, and leaves the file untouched', async () => {
     const report = await runJson(world, PLAIN);
-    expect([report.exitCode, report.findings.map((finding) => finding.code)]).toEqual([1, ['STATUSLINE_SETTINGS_INVALID']]);
+    expect([report.exitCode, report.findings.map((finding) => finding.code)]).toEqual([1, ['STATUSLINE_SETTINGS_INVALID', 'LIGHT_MODE_DEFAULT_APPLIED']]);
     expect(await readWorldFile(world, '.claude/settings.json')).toContain('context-brake');
     expect(await readWorldFile(world, LOCAL_PATH)).toBe(MALFORMED);
     expect(await exists(STATE_PATH)).toBe(false);

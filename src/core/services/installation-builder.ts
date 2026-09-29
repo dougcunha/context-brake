@@ -7,10 +7,10 @@ import { applyLightMode, type LightModeUpdate } from './light-mode-merge.js';
 import { normalizeTurnLimits } from './config-legacy-checks.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
 
-const KEEP: DelegatedSnapshotUpdate = { kind: 'keep' };
+const KEEP = { kind: 'keep' } as const;
 const CONFIG_KEY_ORDER = Object.keys(configurationSchema.shape);
 const DEBUG_SUMMARY = { set: 'set the debug mode (agent prints context usage)', remove: 'remove the debug mode' } as const;
-const LIGHT_SUMMARY = { set: 'set the light mode section (telemetry only: no brake, plan, checkpoint, protocol, or instruction blocks)', remove: 'remove the light mode section' } as const;
+const LIGHT_SUMMARY = { set: 'set the light mode section (telemetry only: no brake, plan, checkpoint, protocol, or instruction blocks)', full: 'record the full mode choice and remove the light mode section' } as const;
 const CONFIG_SUMMARY = 'Configure ContextBrake active harnesses and zones';
 
 export type ConfigChangeInput = {

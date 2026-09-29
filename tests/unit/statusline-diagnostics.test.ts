@@ -21,13 +21,12 @@ async function write(path: string, content: unknown): Promise<void> {
   await writeFile(join(root, path), typeof content === 'string' ? content : JSON.stringify(content), 'utf8');
 }
 async function codes(exitCode = 0): Promise<string[]> {
-  return (await diagnoseStatusline({ projectRoot: root, userHome: home, runner: runnerExiting(exitCode) })).map((finding) => finding.code);
+  return (await diagnoseStatusline({ projectRoot: root, userHome: home, runner: runnerExiting(exitCode) }, 'linux')).map((finding) => finding.code);
 }
-
 beforeEach(async () => {
   root = await realpath(await mkdtemp(join(tmpdir(), 'cb-statusline-doctor-')));
   home = await mkdtemp(join(tmpdir(), 'cb-statusline-doctor-home-'));
-  installedCommand = `node "${toCommandRoot(root)}/${BRIDGE}" --pipe | ( project.sh )`;
+  installedCommand = `node "${toCommandRoot(root)}/${BRIDGE}"`;
   await write(BRIDGE, '');
   await write('.claude/settings.json', { statusLine: { type: 'command', command: 'project.sh' } });
   await write(LOCAL, { statusLine: { type: 'command', command: installedCommand } });

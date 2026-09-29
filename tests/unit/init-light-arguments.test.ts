@@ -7,15 +7,13 @@ import { SNAPSHOT_SECTION } from '../helpers/delegated-fixtures.js';
 
 const LIGHT: ContextBrakeConfig = { ...DEFAULT_CONFIG, lightMode: { triggerZone: 'RED' } };
 const LIGHT_WITH_DELEGATED: ContextBrakeConfig = { ...LIGHT, delegatedSnapshot: SNAPSHOT_SECTION };
+const FULL: ContextBrakeConfig = { ...DEFAULT_CONFIG, fullMode: true };
 function updates(config: ContextBrakeConfig | null, argv: string[]) { return planConfigUpdates(config, parseInit(argv)); }
 
-describe('init light flags (TC-07, FR-01, DEC-07)', () => {
+describe('init light flags (TC-07, TC-11, TC-12, FR-07, FR-08, DEC-08)', () => {
   it('parses --light and --no-light', () => {
     expect(parseInit(['--light'])).toMatchObject({ light: true, noLight: false });
     expect(parseInit(['--no-light'])).toMatchObject({ light: false, noLight: true });
-  });
-  it('sets the section with the default trigger on --light', () => {
-    expect(updates(null, ['--light'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'set', section: { triggerZone: 'RED' } }, debug: { kind: 'keep' } });
   });
   it('routes --snapshot-trigger to the light section when light mode is in effect', () => {
     expect(updates(LIGHT, ['--snapshot-trigger', 'YELLOW']).lightMode).toEqual({ kind: 'set', section: { triggerZone: 'YELLOW' } });
@@ -25,15 +23,31 @@ describe('init light flags (TC-07, FR-01, DEC-07)', () => {
     expect(updates(LIGHT_WITH_DELEGATED, []).delegatedSnapshot).toEqual({ kind: 'keep' });
     expect(updates(LIGHT_WITH_DELEGATED, ['--no-delegated-snapshot']).delegatedSnapshot).toEqual({ kind: 'remove' });
   });
-  it('removes the light section on --no-light and routes the trigger back to the delegated section', () => {
+});
+
+describe('init mode defaults (TC-11, TC-12, FR-07, FR-08, DEC-08)', () => {
+  it('sets the section with the default trigger on --light', () => {
+    expect(updates(null, ['--light'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'set', section: { triggerZone: 'RED' } }, debug: { kind: 'keep' } });
+  });
+  it('sets the section on a plain run, with or without an existing configuration (FR-07)', () => {
+    expect(updates(null, []).lightMode).toEqual({ kind: 'set', section: { triggerZone: 'RED' } });
+    expect(updates(DEFAULT_CONFIG, []).lightMode).toEqual({ kind: 'set', section: { triggerZone: 'RED' } });
+  });
+  it('keeps full mode on a plain run once the choice is recorded (FR-08)', () => {
+    expect(updates(FULL, []).lightMode).toEqual({ kind: 'keep' });
+    expect(updates(FULL, ['--light']).lightMode).toEqual({ kind: 'set', section: { triggerZone: 'RED' } });
+  });
+  it('records the full choice on --no-light and routes the trigger back to the delegated section', () => {
     expect(updates(LIGHT_WITH_DELEGATED, ['--no-light', '--snapshot-trigger', 'YELLOW'])).toEqual({
       delegatedSnapshot: { kind: 'set', section: { ...SNAPSHOT_SECTION, triggerZone: 'YELLOW' } },
-      lightMode: { kind: 'remove' },
+      lightMode: { kind: 'full' },
       debug: { kind: 'keep' },
     });
+    expect(updates(DEFAULT_CONFIG, ['--no-light']).lightMode).toEqual({ kind: 'full' });
   });
-  it('leaves configs without light mode unchanged', () => {
-    expect(updates(DEFAULT_CONFIG, [])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'keep' } });
+  it('accepts --debug in light mode and keeps the debug key out of the light rejections (FR-06)', () => {
+    expect(updates(LIGHT, ['--debug'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'set' } });
+    expect(updates({ ...LIGHT, debug: true }, [])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'keep' } });
   });
 });
 
@@ -50,6 +64,9 @@ describe('init light option rejections (TC-07, FR-10)', () => {
     const message = `${option} is not available in the light mode. Remove the option, or leave the light mode with --no-light.`;
     expect(() => updates(null, ['--light', ...argv])).toThrow(new CliArgumentError(message));
     expect(() => updates(LIGHT, argv)).toThrow(new CliArgumentError(message));
+  });
+  it('accepts the same options once full mode is recorded (FR-08)', () => {
+    expect(updates(FULL, ['--create-instructions']).lightMode).toEqual({ kind: 'keep' });
   });
   it('rejects --light with --no-light', () => {
     expect(() => updates(null, ['--light', '--no-light'])).toThrow(new CliArgumentError('--light cannot be combined with --no-light.'));

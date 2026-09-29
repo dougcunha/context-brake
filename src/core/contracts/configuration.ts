@@ -47,6 +47,7 @@ const additionalAllowedCommandsSchema = z.array(additionalAllowedCommand).check(
 
 const brakeSchema = z.strictObject({ additionalAllowedCommands: z._default(additionalAllowedCommandsSchema, []) });
 export const MAX_AGENT_COMMAND_LENGTH = 200;
+const FULL_MODE_RULE = 'must not be set together with lightMode';
 const MAX_DELEGATED_ENTRIES = 20;
 const DELEGATED_ENTRIES_RULE = `must have at most ${MAX_DELEGATED_ENTRIES} entries`;
 const SKILL_NAME_RULE = 'must be a skill name made of letters, digits, colons, dots, underscores, or hyphens';
@@ -73,7 +74,10 @@ function checkTurnPair(ctx: z.core.ParsePayload, zones: { greenMaxTurn?: number 
   if (zones.greenMaxTurn !== undefined && zones.yellowMaxTurn !== undefined && zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue(ctx, { code: 'custom', path: ['greenMaxTurn'], input: zones.greenMaxTurn, message: 'must be less than yellowMaxTurn' });
 }
 const telemetrySchema = z.strictObject({ injectionMode: z.enum(INJECTION_MODES), activationThresholdPercentage: percentage, contextWindowCeiling: positiveInt, declaredContextWindow: optionalPositiveInt, turnCeiling: optionalPositiveInt, zones: zonesSchema });
-export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: z.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: positiveInt }), instructionFiles: z.strictObject({ targets: z.array(relativePath).check(z.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: z._default(brakeSchema, { additionalAllowedCommands: [] }), delegatedSnapshot: z.optional(delegatedSnapshotSchema), lightMode: z.optional(lightModeSchema), debug: z.optional(z.boolean()), runner: z._default(runnerConfigurationSchema, { ...RUNNER_DEFAULTS }) });
+export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: z.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: positiveInt }), instructionFiles: z.strictObject({ targets: z.array(relativePath).check(z.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: z._default(brakeSchema, { additionalAllowedCommands: [] }), delegatedSnapshot: z.optional(delegatedSnapshotSchema), lightMode: z.optional(lightModeSchema), fullMode: z.optional(z.literal(true)), debug: z.optional(z.boolean()), runner: z._default(runnerConfigurationSchema, { ...RUNNER_DEFAULTS }) }).check(checkModeChoice);
+function checkModeChoice(ctx: z.core.ParsePayload<z.core.output<typeof configurationSchema>>): void {
+  if (ctx.value.lightMode !== undefined && ctx.value.fullMode !== undefined) addIssue(ctx, { code: 'custom', path: ['fullMode'], input: true, message: FULL_MODE_RULE });
+}
 export type ContextBrakeConfig = z.infer<typeof configurationSchema>;
 export { HARNESS_IDS } from './harness.js';
 export { SNAPSHOT_TRIGGER_ZONES } from './zones.js';

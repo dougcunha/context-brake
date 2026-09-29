@@ -14,8 +14,12 @@ describe('Doctor pure diagnostic checks: config and instructions', () => {
     expect(errRes.findings[0]?.code).toBe('INVALID_CONTEXTBRAKE_CONFIG');
     const missRes = checkConfig(null);
     expect(missRes.findings[0]?.code).toBe('CONFIG_MISSING');
-    const validRes = checkConfig(DEFAULT_CONFIG);
-    expect(validRes.findings).toHaveLength(0);
+    expect(checkConfig({ ...DEFAULT_CONFIG, fullMode: true }).findings).toHaveLength(0);
+  });
+
+  it('tells a full installation that never chose that the next init goes light (FR-07, DEC-09, TC-11)', () => {
+    expect(checkConfig(DEFAULT_CONFIG).findings).toEqual([expect.objectContaining({ code: 'LIGHT_MODE_DEFAULT_PENDING', severity: 'ok', remediation: expect.stringContaining('--no-light') as unknown })]);
+    expect(checkConfig({ ...DEFAULT_CONFIG, lightMode: { triggerZone: 'RED' } }).findings).toEqual([]);
   });
 
   it('checks instruction file markers', () => {

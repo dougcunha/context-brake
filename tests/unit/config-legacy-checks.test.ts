@@ -14,9 +14,10 @@ function withTurns(turns: Turns): ContextBrakeConfig {
 describe('LEGACY_TURN_LIMITS in doctor (TC-19, FR-09, DEC-03)', () => {
   it('reports the retired defaults for 7/10/12', () => {
     const findings = checkConfig(withTurns({ green: 7, yellow: 10, critical: 12 })).findings;
-    expect(findings).toEqual([expect.objectContaining({ code: 'LEGACY_TURN_LIMITS', severity: 'warning', remediation: 'Run context-brake init --yes.' })]);
+    expect(findings[0]).toEqual(expect.objectContaining({ code: 'LEGACY_TURN_LIMITS', severity: 'warning', remediation: 'Run context-brake init --yes.' }));
     expect(findings[0]?.message).toContain('retired defaults (7, 10, 12)');
   });
+
   it('reports ignored fields for custom limits 20/30/40', () => {
     const [finding] = checkLegacyTurnLimits(withTurns({ green: 20, yellow: 30, critical: 40 }));
     expect(finding?.message).toContain('criticalTurn and turnCeiling in context-brake.config.json are ignored');
@@ -25,9 +26,13 @@ describe('LEGACY_TURN_LIMITS in doctor (TC-19, FR-09, DEC-03)', () => {
     expect(checkLegacyTurnLimits(withTurns({ green: 7, yellow: 10, critical: 15 }))[0]?.message).toContain('are ignored');
   });
   it('reports nothing for a normalized config', () => {
-    expect(checkConfig(DEFAULT_CONFIG).findings).toEqual([]);
+    expect(checkConfig({ ...DEFAULT_CONFIG, fullMode: true }).findings).toEqual([]);
     const custom = withTurns({ green: 20, yellow: 30, critical: 40 });
     expect(checkLegacyTurnLimits({ ...custom, telemetry: normalizeTurnLimits(custom.telemetry) })).toEqual([]);
+  });
+  it('adds the light default notice to a configuration that never chose (FR-07, DEC-09, TC-11)', () => {
+    expect(checkConfig(DEFAULT_CONFIG).findings).toEqual([expect.objectContaining({ code: 'LIGHT_MODE_DEFAULT_PENDING', severity: 'ok' })]);
+    expect(checkConfig({ ...DEFAULT_CONFIG, lightMode: { triggerZone: 'RED' } }).findings).toEqual([]);
   });
 });
 

@@ -1,0 +1,39 @@
+=== doctor BEFORE migration ===
+doctor exit=2
+outdated finding present: True
+
+  [WARN] STATUSLINE_BRIDGE_OUTDATED: The status line command is the shell pipeline of an older ContextBrake version, which PowerShell cannot run.
+=== init --yes (FR-01 command written) ===
+init exit=0
+new command: node "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-04b/proj/.claude/hooks/context-brake-statusline.mjs"
+shell operator present: False
+previousCommand kept: ~/.claude/statusline.sh
+=== second init is a no-op ===
+second init exit=0
+files changed by the second init: 0
+=== doctor AFTER migration ===
+doctor exit=1
+outdated finding still present: False
+=== remove --yes restores byte for byte ===
+remove exit=0
+byte-for-byte equal to the original local file: False
+--- restored ---
+{
+  // developer overrides
+  "permissions": { "allow": [] },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 2
+  }
+}
+
+--- original ---
+{
+  // developer overrides
+  "permissions": { "allow": [] },
+  "statusLine": { "type": "command", "command": "~/.claude/statusline.sh", "padding": 2 }
+}
+
+state file removed: True
+

@@ -35,7 +35,7 @@ describe('light actions per zone and trigger (TC-02, FR-05, DEC-04)', () => {
 
 describe('light telemetry block budget (TC-02, FR-03, NFR-04)', () => {
   it.each(ZONES)('keeps the worst-case %s block within 60 tokens and 220 characters', (zone) => {
-    const block = renderTelemetryBlock({ turn: 99999, turnCeiling: 100000, usagePercentage: 999, usage: WORST_CASE, zone, action: lightAction(zone, { triggerZone: 'YELLOW' }) });
+    const block = renderTelemetryBlock({ turn: 99999, turnCeiling: 100000, usagePercentage: 999, usage: WORST_CASE, zone, action: lightAction(zone, { triggerZone: 'YELLOW' }), debug: false });
     expect(block).toMatch(/^\[ContextBrake v3\] turn=\S+ usage=\S+ tokens=\S+ source=\S+ window=\S+ zone=\S+ action=/);
     expect(block.length).toBeLessThanOrEqual(220);
     expect(encoding.encode(block).length).toBeLessThanOrEqual(60);

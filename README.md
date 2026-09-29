@@ -124,18 +124,21 @@ npx context-brake init --yes
 npx context-brake doctor
 ```
 
+`init` installs the **light mode** by default: telemetry only, with the status line bridge and no brake. Add `--no-light` for the full mode, with the plan, checkpoint, protocol file, and instruction blocks; that choice is recorded in the configuration and later plain `init` runs keep it.
+
 ### What `context-brake init` does:
 
 1. **Detects coding-agent harnesses:** Identifies Claude Code, Cursor, Codex CLI, GitHub Copilot CLI, Antigravity CLI, OpenCode, Pi, and Oh-My-Pi from repository signals and machine configuration.
-2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments.
-3. **Initializes protocol & config:** Creates `docs/context-brake-protocol.md` and `context-brake.config.json`.
-4. **Adds reference markers:** Inserts a short three-line pointer between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` in existing `CLAUDE.md` and `AGENTS.md` instruction files without modifying any other content.
-5. **Ignores local state:** Adds the plan and checkpoint paths to `.gitignore` between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END`, creating the file when needed, updating the paths when the configuration changes, and leaving the rest of the file untouched. Plans and checkpoints stay on your machine and are never committed.
+2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments, and installs the [status line bridge](#claude-code-status-line-bridge) for Claude Code.
+3. **Initializes config:** Creates `context-brake.config.json` with a `lightMode` section, or, with `--no-light`, the full-mode sections.
+4. **Full mode only (`--no-light`): creates the protocol, the reference markers, and the `.gitignore` block.** It creates `docs/context-brake-protocol.md`, inserts a short three-line pointer between `<!-- CONTEXTBRAKE:START -->` and `<!-- CONTEXTBRAKE:END -->` in existing `CLAUDE.md` and `AGENTS.md` without modifying any other content, and adds the plan and checkpoint paths to `.gitignore` between `# CONTEXTBRAKE:START` and `# CONTEXTBRAKE:END`, creating the file when needed and leaving the rest untouched. Plans and checkpoints stay on your machine and are never committed.
 
 ### Updating and Removal
 
 - **Updating:** Running `npx context-brake init --yes` is completely idempotent. Run it again after upgrading ContextBrake to refresh runtime assets and synchronize protocol references without touching your custom settings. If custom allowed commands are added or protocol rows change, `doctor` may report `PROTOCOL_FILE_MISMATCH` until `context-brake init --yes` is rerun to regenerate the protocol table to match the current configuration.
 - **Upgrading from turn-based limits:** earlier versions blocked tool calls after 12 turns and wrote `turnCeiling`, `criticalTurn`, `greenMaxTurn`, and `yellowMaxTurn` into the config. Those configs stay valid, but `doctor` reports `LEGACY_TURN_LIMITS`. Run `npx context-brake init --yes` once: it removes `turnCeiling` and `criticalTurn`, removes `greenMaxTurn` and `yellowMaxTurn` when they are the retired defaults 7 and 10, and keeps custom values as optional turn limits.
+- **Upgrading to the light default:** the first plain `init` on an older full installation switches it to light mode and reports `LIGHT_MODE_DEFAULT_APPLIED`; run `init --no-light` first to keep the full mode, which is recorded and then respected. `doctor` warns about the pending switch with `LIGHT_MODE_DEFAULT_PENDING` before it happens.
+- **Downgrading:** a version older than this one rejects the new optional fields, which are `"fullMode": true` in the configuration, `shell` on `statusline` lines in the session ledgers, and `phase` and `elapsedMs` on `DEADLINE_EXCEEDED` lines in `.context-brake/runtime/errors.jsonl`. Remove those three before reinstalling an older package.
 - **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
 - **Uninstallation:** Run `npx context-brake remove` to cleanly remove registered hooks, protocol docs, and instruction markers while preserving your plans, checkpoints, and harness configurations. Default removal keeps both state files and their `.gitignore` block, so the state stays ignored; add `--remove-state` to delete the plan, checkpoint, and that block together. `remove --remove-state` deletes `.gitignore` only when the ContextBrake block was its only content.
 
@@ -215,21 +218,24 @@ While the section exists and the plan file does not, ContextBrake runs in delega
 
 `context-brake doctor --json` reports the mode in effect under `checkpointMode`. `context-brake run` still needs a plan. To go back to plan-only behavior, run `context-brake init --no-delegated-snapshot`.
 
-### Light Mode (telemetry only)
+### Light Mode (telemetry only, the default)
 
-If your workflow already manages checkpoints and snapshots, as the SDD skills in this repository do, light mode makes ContextBrake a pure context sensor:
+If your workflow already manages checkpoints and snapshots, as the SDD skills in this repository do, light mode makes ContextBrake a pure context sensor. It is what `init` installs unless you ask for the full mode:
 
 ```bash
-npx context-brake init --light
+npx context-brake init            # light mode, the default
+npx context-brake init --no-light # full mode, recorded in the configuration
 ```
 
-This adds a `lightMode` section to the configuration:
+Light mode adds a `lightMode` section to the configuration:
 
 ```json
 {
   "lightMode": { "triggerZone": "RED" }
 }
 ```
+
+`init --no-light` writes `"fullMode": true` instead, and every later plain `init` keeps that choice. A configuration with neither key is a full installation that never chose, and the next plain `init` switches it to light mode: `doctor` says so with `LIGHT_MODE_DEFAULT_PENDING` before the switch, and `init` reports `LIGHT_MODE_DEFAULT_APPLIED` after it, both informational and neither changing the exit code. `init --light` goes back to light mode and drops `fullMode`. Writing both keys is an invalid configuration.
 
 What light mode does:
 
@@ -243,7 +249,7 @@ What light mode does not do:
 - **Brake:** it never blocks a tool call, in any zone.
 - **Session start:** it injects nothing at session start, after `/clear`, or after compaction.
 
-Switching an existing installation to light mode removes the managed protocol (unless you edited it), the reference blocks, and the `.gitignore` block. The `.gitignore` block stays while a plan or checkpoint file exists, and those files are never deleted. The options of the other modes (`--snapshot-command`, `--snapshot-path`, `--snapshot-skill`, `--resume-command`, `--create-instructions`, `--migrate-legacy`, `--instruction-file`) are rejected while light mode is on. `doctor` reports `checkpointMode.effective: "light"` and flags leftovers from a full installation. `context-brake run` does not support light mode. To go back to the full mode, run `context-brake init --no-light`. If you edited the protocol, light mode keeps it unmanaged: delete or move it first, or `--no-light` stops with `UNMANAGED_PROTOCOL_CONFLICT`.
+Switching an existing full installation to light mode removes the managed protocol (unless you edited it), the reference blocks, and the `.gitignore` block. The `.gitignore` block stays while a plan or checkpoint file exists, and those files are never deleted. The options of the other modes (`--snapshot-command`, `--snapshot-path`, `--snapshot-skill`, `--resume-command`, `--create-instructions`, `--migrate-legacy`, `--instruction-file`) are rejected while light mode is on, and the error names `--no-light`. `doctor` reports `checkpointMode.effective: "light"` and flags leftovers from a full installation. `context-brake run` does not support light mode. To go back to the full mode, run `context-brake init --no-light`. If you edited the protocol, light mode keeps it unmanaged: delete or move it first, or `--no-light` stops with `UNMANAGED_PROTOCOL_CONFLICT`.
 
 ### Debug Mode
 
@@ -253,17 +259,19 @@ To check ContextBrake's usage reading against the real value from the harness (`
 npx context-brake init --debug
 ```
 
-This writes `"debug": true` to the configuration and adds one line to the reference block in each instruction file. That line tells the agent to end each reply that received a telemetry block with the latest reading:
+This writes `"debug": true` to the configuration and adds one field to every telemetry block, in full and light mode alike:
 
 ```text
-📊 ContextBrake: 42% · 53760/128000 (harness) · measured · GREEN
+debug_line="📊 ContextBrake: 42% · 53760/128000 (harness) · measured · GREEN" (end your reply with this line)
 ```
 
-- **Injects on every call:** while debug mode is on, ContextBrake adds the telemetry block to every tool result, in every zone, as if `injectionMode` were `always`. This costs up to 60 tokens per tool call. The `injectionMode` saved in the configuration does not change.
-- **Relies on the agent:** the agent prints the line because the instructions ask it to. ContextBrake does not check that the line was printed.
-- **Not in light mode:** light mode writes no instruction files, so `--light --debug` and `--debug` with light mode configured are rejected. With debug mode on, `--light` alone is rejected too; `init --light --no-debug` turns debug mode off and switches to light mode in one command.
+The agent copies that line instead of composing it. Nothing is written to instruction files any more, so `--light --debug`, `--debug` with light mode configured, and `--light` with debug mode on are all accepted, and the next `init` removes a debug line left by an earlier version. In full mode the same instruction also appears in the protocol file, which is generated from the configuration; a light-mode installation has no protocol file.
 
-`context-brake doctor` shows `debug mode: on`, and `doctor --json` reports `debugMode: true`. Debug mode does not change the `doctor` status or exit code. To turn it off, run `context-brake init --no-debug`, which restores the reference block and the configuration to their state before debug mode.
+- **Injects on every call:** while debug mode is on, ContextBrake adds the telemetry block to every tool result, in every zone, as if `injectionMode` were `always`. This costs up to 60 tokens per tool call, plus at most 40 more for the debug line. The `injectionMode` saved in the configuration does not change.
+- **Relies on the agent:** the agent prints the line because the block asks it to. ContextBrake does not check that the line was printed.
+- **Both modes:** the reference block no longer carries the debug line in any mode, so debug mode costs nothing in instruction files.
+
+`context-brake doctor` shows `debug mode: on`, and `doctor --json` reports `debugMode: true`. Debug mode does not change the `doctor` status or exit code. To turn it off, run `context-brake init --no-debug`, which drops the field from the next block and the key from the configuration.
 
 ### Active Sessions in `doctor`
 
@@ -271,19 +279,24 @@ In every mode, `context-brake doctor` lists the repository's active sessions wit
 
 ### Claude Code Status Line Bridge
 
-Claude Code sends the active model's context window only to the status line command, never to hooks. The bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`, and it is what lets the brake block in Claude Code. `init` installs it by default in full mode (not in light mode, which never blocks). To turn it back on after an opt-out:
+Claude Code sends the active model's context window only to the status line command, never to hooks. The bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`, and it is what lets the brake block in Claude Code. `init` installs it by default in full **and** light mode. To turn it back on after an opt-out:
 
 ```bash
 npx context-brake init --statusline-bridge
 ```
 
-- **Local scope, per developer:** the option writes `statusLine` into `.claude/settings.local.json`, the local, unversioned settings file, with the absolute path of `.claude/hooks/context-brake-statusline.mjs`. The versioned `.claude/settings.json` does not change, and a later `init` without the option keeps the bridge. Keep `.claude/settings.local.json` ignored by Git; `doctor` warns when it is not.
-- **Your status line stays the same:** the bridge runs the status line that was in effect before (local, then project, then user settings) through a pipe, with the same input, output, and exit code, and keeps `padding` and `refreshInterval`. If you had no status line, it prints nothing. Note that Claude Code hides most footer keyboard hints (such as `esc to interrupt` and `? for shortcuts`) whenever a status line is configured, even an empty one. To keep the footer, opt out with `context-brake init --no-statusline-bridge`: later plain `init` runs remember the choice, and the brake then only warns in Claude Code.
+- **Local scope, per developer:** the option writes `statusLine` into `.claude/settings.local.json`, the local, unversioned settings file, with the absolute path of `.claude/hooks/context-brake-statusline.mjs`, as a single command: `node "<root>/.claude/hooks/context-brake-statusline.mjs"`, with no pipe, subshell, or separator. The versioned `.claude/settings.json` does not change, and a later `init` without the option keeps the bridge. Keep `.claude/settings.local.json` ignored by Git; `doctor` warns when it is not.
+- **Your status line stays the same:** the bridge runs the status line that was in effect before (local, then project, then user settings) itself, with the same input, and prints its output unchanged, keeping `padding` and `refreshInterval`. It uses the shell that launched it: `sh` on macOS and Linux, Git Bash on Windows when the bridge was started by Git Bash, otherwise PowerShell. If you had no status line, it prints nothing. Note that Claude Code hides most footer keyboard hints (such as `esc to interrupt` and `? for shortcuts`) whenever a status line is configured, even an empty one. To keep the footer, opt out with `context-brake init --no-statusline-bridge`: later plain `init` runs remember the choice, and the brake then only warns in Claude Code.
+- **When the previous line fails:** a previous command that cannot start, exits non-zero, prints nothing, or takes longer than 5 seconds makes the bridge print one line with ContextBrake's own reading and say that `context-brake doctor` explains why, still exiting 0. An installation written by an older version, with the pipeline form of the command, keeps working until the next `init` rewrites it; `doctor` reports it as `STATUSLINE_BRIDGE_OUTDATED`.
 - **Zones on 1M models:** after the status line first runs in a session, the telemetry block shows `tokens=<used>/<window>` with the model's `context_window_size`. With a 1,000,000-token model, `RED` starts above 650,000 tokens, and `contextWindowCeiling` no longer limits Claude Code sessions. After `/model`, the window changes with the next assistant response. When the transcript has no usage reading, the bridge's input tokens are used, following the same reset rule.
 - **Non-interactive sessions:** Claude Code runs the status line only in interactive sessions, so `claude -p`, including the sessions of `context-brake run`, keep using `contextWindowCeiling`. There the brake only warns, and the runner does not end a session at `CRITICAL`. The first tool calls of a new session, before the status line first runs, and Claude Code subagents also only warn.
-- **Windows:** Claude Code runs the status line through Git Bash, or through PowerShell when Git Bash is absent. The bridge command is a `sh` pipeline, verified with Git Bash; Windows without Git Bash (PowerShell only) is not verified.
+- **Windows without Git Bash:** Claude Code falls back to PowerShell when it does not find Git Bash. ContextBrake never changes your environment: set `CLAUDE_CODE_GIT_BASH_PATH` to the `bash.exe` of Git for Windows and restart the harness to get the Bash tool back. Until then, `doctor` warns with `STATUSLINE_POWERSHELL_FALLBACK` on Windows, after a bridge run that recorded PowerShell.
 
-The bridge records only the window, the input tokens, the used percentage, the model id, and the time, per session, in the session ledger. `context-brake doctor` shows where the window comes from under `contextWindow`, lists per harness whether the brake can block under `brakeWindow`, warns with `STATUSLINE_BRIDGE_ABSENT` when Claude Code has no bridge, and warns when the local status line no longer runs the bridge, when the script is missing, or when the project or user status line changed after installation. `context-brake init --no-statusline-bridge` or `context-brake remove` restores the previous local status line, or removes the key and the file when the bridge created them.
+The bridge records only the window, the input tokens, the used percentage, the model id, the shell that ran it, and the time, per session, in the session ledger. `context-brake doctor` shows where the window comes from under `contextWindow`, lists per harness whether the brake can block under `brakeWindow`, warns with `STATUSLINE_BRIDGE_ABSENT` when Claude Code has no bridge, and warns when the local status line no longer runs the bridge, when the script is missing, or when the project or user status line changed after installation. `context-brake init --no-statusline-bridge` or `context-brake remove` restores the previous local status line, or removes the key and the file when the bridge created them.
+
+### Hook Timeouts
+
+Each hook call has an internal deadline of 1.5 seconds; the session start event gets 5 seconds, because it reads the plan, the checkpoint, and the repository state to build the boot summary. When a deadline elapses, the hook stops waiting, the tool call proceeds, and the failure is recorded in `.context-brake/runtime/errors.jsonl` with the phase that was running (`boot_git`, for example) and the elapsed milliseconds. `doctor` lists recent entries. A session start that runs out of time falls back to the same guidance as before.
 
 ---
 

@@ -3,48 +3,58 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { configurationSchema } from '../../src/core/contracts/configuration.js';
 import { installReportSchema } from '../../src/core/contracts/diagnostics.js';
-import { DEBUG_MODE_LINE } from '../../src/core/services/instruction-markers.js';
 import { readConfig, readProjectFile, removeProject } from '../helpers/delegated-world.js';
 import { attemptLink, requireLink } from '../helpers/link-capability.js';
-import { changedPaths, createLightProject, FULL_INIT, LIGHT_INIT, runCli, snapshotTree, USER_AGENTS } from '../helpers/light-world.js';
+import { changedPaths, createLightProject, FULL_INIT, LEGACY_DEBUG_MODE_LINE, LIGHT_INIT, PLAIN_INIT, runCli, snapshotTree, USER_AGENTS } from '../helpers/light-world.js';
 
 const DEBUG_INIT = [...FULL_INIT, '--debug'] as const;
-const CRLF_CLAUDE = '# Project rules\r\n\r\nKeep this line.\r\n';
 const USAGE_EXIT = 64;
-type ConflictCase = { readonly name: string; readonly setup: readonly (readonly string[])[]; readonly argv: readonly string[]; readonly message: string };
 let root: string;
-beforeEach(async () => { root = await createLightProject('cb-init-debug-'); await writeFile(join(root, 'CLAUDE.md'), CRLF_CLAUDE, 'utf8'); });
+beforeEach(async () => { root = await createLightProject('cb-init-debug-'); });
 afterEach(async () => { await removeProject(root); });
 
-describe('init --debug lifecycle (TC-06, FR-01, FR-02, FR-04, NFR-02)', () => {
-  it('adds the debug line with each file line ending and keeps user content', async () => {
-    expect((await runCli(root, [...DEBUG_INIT])).code).toBe(0);
-    const claude = await readProjectFile(root, 'CLAUDE.md');
-    const agents = await readProjectFile(root, 'AGENTS.md');
-    expect(claude.startsWith(CRLF_CLAUDE)).toBe(true);
-    expect(claude).toContain(`\r\n${DEBUG_MODE_LINE}\r\n`);
-    expect(agents.startsWith(USER_AGENTS)).toBe(true);
-    expect(agents).toContain(`\n${DEBUG_MODE_LINE}\n`);
-    expect(configurationSchema.parse(await readConfig(root)).debug).toBe(true);
-  });
-  it('keeps the debug mode on a later init and changes nothing', async () => {
-    await runCli(root, [...DEBUG_INIT]);
+describe('init --debug in light mode (FR-06, DEC-07, TC-10)', () => {
+  it('succeeds, leaves every instruction file untouched, and records the debug mode', async () => {
     const before = await snapshotTree(root);
-    expect((await runCli(root, [...FULL_INIT])).code).toBe(0);
-    expect(changedPaths(before, await snapshotTree(root))).toEqual([]);
+    expect((await runCli(root, [...LIGHT_INIT, '--debug'])).code).toBe(0);
+    expect(await readProjectFile(root, 'AGENTS.md')).toBe(USER_AGENTS);
+    expect(configurationSchema.parse(await readConfig(root)).debug).toBe(true);
+    expect(changedPaths(before, await snapshotTree(root)).filter((path) => path.endsWith('.md'))).toEqual([]);
   });
-  it('restores the install without debug byte for byte with --no-debug', async () => {
-    await runCli(root, [...FULL_INIT]);
-    const plain = await snapshotTree(root);
+  it('keeps both choices with --light and the debug mode already on', async () => {
     await runCli(root, [...DEBUG_INIT]);
-    expect((await runCli(root, [...FULL_INIT, '--no-debug'])).code).toBe(0);
-    expect(changedPaths(plain, await snapshotTree(root))).toEqual([]);
+    expect((await runCli(root, [...LIGHT_INIT])).code).toBe(0);
+    const config = await readConfig(root);
+    expect(config['lightMode']).toEqual({ triggerZone: 'RED' });
+    expect(config['debug']).toBe(true);
+    expect(await readProjectFile(root, 'AGENTS.md')).toBe(USER_AGENTS);
+  });
+  it('turns the debug mode off with --no-debug in light mode', async () => {
+    await runCli(root, [...LIGHT_INIT, '--debug']);
+    expect((await runCli(root, [...PLAIN_INIT, '--no-debug'])).code).toBe(0);
     expect('debug' in (await readConfig(root))).toBe(false);
   });
 });
 
-describe('init --debug through a symlink (TC-06, FR-02, NFR-02)', () => {
-  it('writes the debug line through a symlinked instruction file and keeps the link', async (ctx) => {
+describe('init --debug in full mode (FR-06, TC-10)', () => {
+  it('records the debug mode without writing any debug line into an instruction file', async () => {
+    expect((await runCli(root, [...DEBUG_INIT])).code).toBe(0);
+    const agents = await readProjectFile(root, 'AGENTS.md');
+    expect(agents).toContain('<!-- CONTEXTBRAKE:START -->');
+    expect(agents).not.toContain('Debug mode');
+    expect(configurationSchema.parse(await readConfig(root)).debug).toBe(true);
+  });
+  it('drops the debug line an older version left behind and keeps the debug mode on', async () => {
+    await runCli(root, [...FULL_INIT]);
+    const drifted = (await readProjectFile(root, 'AGENTS.md')).replace('<!-- CONTEXTBRAKE:END -->', `${LEGACY_DEBUG_MODE_LINE}\n<!-- CONTEXTBRAKE:END -->`);
+    await writeFile(join(root, 'AGENTS.md'), drifted, 'utf8');
+    expect((await runCli(root, [...DEBUG_INIT])).code).toBe(0);
+    const agents = await readProjectFile(root, 'AGENTS.md');
+    expect(agents).not.toContain(LEGACY_DEBUG_MODE_LINE);
+    expect(agents).toContain('<!-- CONTEXTBRAKE:END -->');
+    expect(configurationSchema.parse(await readConfig(root)).debug).toBe(true);
+  });
+  it('writes the reference block through a symlinked instruction file and keeps the link', async (ctx) => {
     const target = join(root, 'shared-agents.md');
     const link = join(root, 'AGENTS.md');
     await writeFile(target, USER_AGENTS, 'utf8');
@@ -52,47 +62,28 @@ describe('init --debug through a symlink (TC-06, FR-02, NFR-02)', () => {
     await requireLink(ctx, await attemptLink(target, link, 'file'), link);
     await runCli(root, [...DEBUG_INIT]);
     expect((await lstat(link)).isSymbolicLink()).toBe(true);
-    expect(await readFile(target, 'utf8')).toContain(DEBUG_MODE_LINE);
+    expect(await readFile(target, 'utf8')).toContain('<!-- CONTEXTBRAKE:START -->');
   });
 });
 
-describe('init debug conflicts (TC-02, TC-07, FR-04, FR-05, DEC-05)', () => {
-  it.each<ConflictCase>([
-    { name: '--debug with --no-debug', setup: [], argv: [...FULL_INIT, '--debug', '--no-debug'], message: '--debug cannot be combined with --no-debug.' },
-    { name: '--light with --debug', setup: [], argv: [...LIGHT_INIT, '--debug'], message: '--debug is not available in the light mode.' },
-    { name: '--debug with light mode configured', setup: [[...LIGHT_INIT]], argv: [...FULL_INIT, '--debug'], message: '--debug is not available in the light mode.' },
-    { name: '--light with the debug mode on', setup: [[...DEBUG_INIT]], argv: [...LIGHT_INIT], message: 'Add --no-debug to turn it off.' },
-  ])('rejects $name with a usage error and writes nothing', async ({ setup, argv, message }) => {
-    for (const step of setup) await runCli(root, step);
+describe('init debug arguments and plan (FR-06, TC-10)', () => {
+  it('rejects --debug with --no-debug and writes nothing', async () => {
     const before = await snapshotTree(root);
-    const run = await runCli(root, argv);
+    const run = await runCli(root, [...FULL_INIT, '--debug', '--no-debug']);
     expect(run.code).toBe(USAGE_EXIT);
-    expect(run.stdout + run.stderr).toContain(message);
+    expect(run.stdout + run.stderr).toContain('--debug cannot be combined with --no-debug.');
     expect(changedPaths(before, await snapshotTree(root))).toEqual([]);
   });
-  it('switches from the debug mode to light mode with --light --no-debug', async () => {
-    await runCli(root, [...DEBUG_INIT]);
-    expect((await runCli(root, [...LIGHT_INIT, '--no-debug'])).code).toBe(0);
-    const config = await readConfig(root);
-    expect(config['lightMode']).toEqual({ triggerZone: 'RED' });
-    expect('debug' in config).toBe(false);
-    expect(await readProjectFile(root, 'AGENTS.md')).toBe(USER_AGENTS);
-  });
-});
-
-describe('init debug plan and drift (TC-08, TC-09, FR-06, DEC-06)', () => {
-  it('previews the config and instruction changes with --dry-run --json', async () => {
+  it('previews the configuration change and no instruction change in light mode', async () => {
     const run = await runCli(root, ['init', '--dry-run', '--json', '--debug']);
     const report = installReportSchema.parse(JSON.parse(run.stdout));
     const config = report.plan.changes.find((change) => change.path === 'context-brake.config.json');
     expect(config?.preview.summary).toContain('set the debug mode (agent prints context usage)');
-    expect(report.plan.changes.map((change) => change.path)).toEqual(expect.arrayContaining(['AGENTS.md', 'CLAUDE.md']));
+    expect(report.plan.changes.map((change) => change.path).filter((path) => path.endsWith('.md'))).toEqual([]);
   });
-  it('rewrites a block that lost the debug line on the next init', async () => {
-    await runCli(root, [...DEBUG_INIT]);
-    const drifted = (await readProjectFile(root, 'AGENTS.md')).replace(`${DEBUG_MODE_LINE}\n`, '');
-    await writeFile(join(root, 'AGENTS.md'), drifted, 'utf8');
-    await runCli(root, [...FULL_INIT]);
-    expect(await readProjectFile(root, 'AGENTS.md')).toContain(`\n${DEBUG_MODE_LINE}\n`);
+  it('previews the instruction change in full mode', async () => {
+    const run = await runCli(root, ['init', '--dry-run', '--json', '--debug', '--no-light']);
+    const report = installReportSchema.parse(JSON.parse(run.stdout));
+    expect(report.plan.changes.map((change) => change.path)).toEqual(expect.arrayContaining(['AGENTS.md', 'CLAUDE.md']));
   });
 });

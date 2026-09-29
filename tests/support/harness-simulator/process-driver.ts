@@ -67,7 +67,7 @@ function eventRequest(harness: ProcessHarnessId, sessionId: string, kind: 'reset
   return { event: 'SessionStart', payload: { session_id: sessionId, hook_event_name: 'SessionStart', source: kind } };
 }
 export async function installHarness(root: string, harness: ProcessHarnessId): Promise<void> {
-  const result = await runBuiltCli(['init', '--yes', '--harness', harness], root);
+  const result = await runBuiltCli(['init', '--yes', '--no-light', '--harness', harness], root);
   if (result.code !== 0) throw new Error(`context-brake init failed for ${harness}: ${result.stderr}`);
 }
 export type ProcessSession = SessionChannel & { readonly harness: ProcessHarnessId; readonly sessionId: string };

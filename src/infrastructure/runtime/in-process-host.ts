@@ -3,7 +3,8 @@ import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } fro
 import type { Clock, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLineInput } from '../../core/contracts/session-ledger.js';
 import type { StatuslineLineInput } from '../../core/contracts/statusline-line.js';
 import type { RuntimeInput } from '../../core/services/brake-engine.js';
-import { failureDetail, failureErrorCode, resolveFailure, runWithinDeadline } from '../../core/services/failure-policy.js';
+import { failureDetail, failureErrorCode, resolveFailure } from '../../core/services/failure-policy.js';
+import { deadlineFor, deadlineTiming, DEFAULT_DEADLINE_LIMITS, HookDeadline, type DeadlineLimits } from './hook-deadline.js';
 import { NodeSessionLedger } from './node-session-ledger.js';
 import { composeRuntime, systemClock, type RuntimeServices } from './runtime-composition.js';
 import { sessionLedgerHash } from './runtime-paths.js';
@@ -13,6 +14,7 @@ export type InProcessRuntimeInput = {
   readonly descriptor: RuntimeDescriptor;
   readonly config: ContextBrakeConfig;
   readonly clock?: Clock | undefined;
+  readonly deadlines?: DeadlineLimits | undefined;
 };
 export type InProcessRuntime = {
   readonly handle: (event: RuntimeEvent, input?: RuntimeInput) => Promise<RuntimeDecision>;
@@ -26,7 +28,8 @@ export function createInProcessRuntime(input: InProcessRuntimeInput): InProcessR
     async handle(event, engineInput) {
       try {
         if (event.kind === 'session_reset') ledger.invalidate(event.session);
-        return await runWithinDeadline(services.engine.handle(event, engineInput ?? {}));
+        const deadline = new HookDeadline(deadlineFor(event, input.deadlines ?? DEFAULT_DEADLINE_LIMITS), 'engine');
+        return await deadline.run(services.engine.handle(event, { ...engineInput, onPhase: deadline.mark }));
       } catch (error) {
         return handleFailure({ event, error, config: input.config, descriptor: input.descriptor, services, ledger });
       }
@@ -35,7 +38,7 @@ export function createInProcessRuntime(input: InProcessRuntimeInput): InProcessR
 }
 async function handleFailure(input: { event: RuntimeEvent; error: unknown; config: ContextBrakeConfig; descriptor: RuntimeDescriptor; services: RuntimeServices; ledger: SessionLedger }): Promise<RuntimeDecision> {
   try {
-    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand, planPresence: input.services.planPresence });
+    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), timing: deadlineTiming(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand, planPresence: input.services.planPresence });
   } catch {
     return { kind: 'neutral' };
   }

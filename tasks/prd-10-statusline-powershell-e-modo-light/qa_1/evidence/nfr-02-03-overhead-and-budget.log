@@ -1,0 +1,22 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'GREEN' block with planPresent=true within the token and character budget[32m 12[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'GREEN' block with planPresent=false within the token and character budget[32m 1[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'YELLOW' block with planPresent=true within the token and character budget[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'YELLOW' block with planPresent=false within the token and character budget[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'RED' block with planPresent=true within the token and character budget[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'RED' block with planPresent=false within the token and character budget[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'CRITICAL' block with planPresent=true within the token and character budget[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22mkeeps the worst-case 'CRITICAL' block with planPresent=false within the token and character budget[32m 0[2mms[22m[39m
+ [32mÔ£ô[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts[2m > [22mtelemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)[2m > [22madds at most 40 tokens for the debug line (NFR-03, TC-09)[32m 6[2mms[22m[39m
+[90mstdout[2m | tests/integration/statusline-previous-overhead.test.ts[2m > [22m[2mbridge overhead when it runs the previous command (NFR-02, DEC-03, TC-08)[2m > [22m[2madds at most 200 ms p95 to running the previous command in the same shell
+[22m[39m[overhead] powershell direct p95=679.4ms bridged p95=751.4ms delta p95=72.0ms median=65.2ms
+
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/integration/statusline-previous-overhead.test.ts[2m > [22mbridge overhead when it runs the previous command (NFR-02, DEC-03, TC-08)[2m > [22madds at most 200 ms p95 to running the previous command in the same shell[33m 27869[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m10 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m 15:18:31
+[2m   Duration [22m 29.77s[2m (transform 138ms, setup 0ms, collect 1.16s, tests 27.89s, environment 1ms, prepare 270ms)[22m
+

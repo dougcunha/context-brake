@@ -1,5 +1,6 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
+import { isDebugModeInEffect } from './debug-mode-merge.js';
 import { renderDelegatedProtocol } from './delegated-protocol.js';
 import { zoneActionClause } from './zone-actions.js';
 import { turnLimits, type TurnLimits } from './zone-classifier.js';
@@ -39,6 +40,7 @@ export function renderProtocol(config: ContextBrakeConfig): string {
     '## Telemetry', '',
     'A telemetry block reports the session turn, context usage and window size with a percentage, whether usage is measured by the harness or estimated, the current zone, and a recommended action. A turn is one completed tool call. When turn limits are configured, the turn also shows where `RED` starts. Turns never block tool calls; only context usage reaches `CRITICAL`. The `window=` field says where the window size came from: `harness` (reported by the harness), `declared` (`telemetry.declaredContextWindow`), or `config` (the `contextWindowCeiling` fallback). With `window=config`, nothing is blocked in any zone, and the action says so.', '',
     `In \`YELLOW\` and \`RED\`, the action depends on whether \`${planFile}\` exists. Without it, keep doing the requested work; never stop only because no plan exists.`, '',
+    ...debugProtocolSection(config),
     '## Zones', '', 'When several conditions match, the highest zone applies.', '',
     '| Zone | Default condition | What to do |', '| --- | --- | --- |', ...rows, '',
     '## Checkpoint', '',
@@ -54,6 +56,10 @@ export function renderProtocol(config: ContextBrakeConfig): string {
   ].join('\n');
 }
 
+function debugProtocolSection(config: ContextBrakeConfig): string[] {
+  if (!isDebugModeInEffect(config)) return [];
+  return ['With debug mode on, every block also carries a `debug_line` field with the line to print. Copy it as it is and end the reply with it.', ''];
+}
 export function planProtocolChange(config: ContextBrakeConfig, snapshot: FileSnapshot, isManaged: boolean): { change?: PlannedChange; conflict?: PlanConflict } {
   const rendered = renderProtocol(config);
   if (!snapshot.exists) {

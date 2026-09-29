@@ -58,3 +58,18 @@ describe('boot reader Git comparison (RF14, RF16, TC-09, TC-10, TC-12)', () => {
     expect(reportInspectionFailure).toHaveBeenCalledOnce();
   });
 });
+
+describe('boot reader phases (FR-11, DEC-12, TC-16)', () => {
+  it('marks the file step and then the git step of a boot', async () => {
+    await seedValidBoot(root);
+    const phases: string[] = [];
+    const inspect = vi.fn().mockResolvedValue({ status: 'available', branch: 'main', headCommit: '1234', cleanWorkingTree: true, recordedCommit: 'matches' });
+    await reader({ inspect }).readBoot((phase) => { phases.push(phase); });
+    expect(phases).toEqual(['boot_files', 'boot_git']);
+  });
+  it('stops at the file step when no git check is needed', async () => {
+    const phases: string[] = [];
+    await reader({ inspect: vi.fn() }).readBoot((phase) => { phases.push(phase); });
+    expect(phases).toEqual(['boot_files']);
+  });
+});

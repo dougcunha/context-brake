@@ -1,0 +1,16 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/e2e/e2e-09.test.ts[2m > [22mE2E-09: Quick-start workflow meets user-time target (CA-19)[2m > [22mcompletes quick-start workflow under two minutes with error-free diagnosis[33m 8567[2mms[22m[39m
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/e2e/e2e-09.test.ts[2m > [22mE2E-09: Quick-start workflow meets user-time target (CA-19)[2m > [22mexecutes core dry-run inspection under five seconds[33m 503[2mms[22m[39m
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/integration/boot-git-delivery.test.ts[2m > [22mbuilt hook repository divergence (RF14, CA-09, CA-10)[2m > [22mreports dirty tree and missing recorded commit[33m 1634[2mms[22m[39m
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/integration/boot-git-delivery.test.ts[2m > [22mbuilt hook repository divergence (RF14, CA-09, CA-10)[2m > [22mnames both commits when the recorded commit is outside history[33m 2587[2mms[22m[39m
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/integration/boot-git-delivery.test.ts[2m > [22mbuilt hook repository availability (RF14, RF16, CA-12)[2m > [22mreports no false divergence in a clean repository[33m 1822[2mms[22m[39m
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/integration/boot-git-delivery.test.ts[2m > [22mbuilt hook repository availability (RF14, RF16, CA-12)[2m > [22mreports omitted checks outside a repository[33m 412[2mms[22m[39m
+ [32mÔ£ô[39m [30m[45m serial [49m[39m tests/integration/boot-git-delivery.test.ts[2m > [22mbuilt hook without Git (RF16, CA-12)[2m > [22mreports omitted checks when Git is absent from the hook environment[32m 161[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m2 passed[39m[22m[90m (2)[39m
+[2m      Tests [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m   Start at [22m 15:18:07
+[2m   Duration [22m 16.64s[2m (transform 184ms, setup 0ms, collect 452ms, tests 15.78s, environment 0ms, prepare 122ms)[22m
+

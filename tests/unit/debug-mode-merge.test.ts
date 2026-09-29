@@ -27,7 +27,7 @@ describe('debug mode merge (TC-01, FR-01, FR-04, DEC-02)', () => {
   });
 });
 
-describe('debug mode apply and effect (TC-01, FR-01, FR-04, FR-05, DEC-02)', () => {
+describe('debug mode apply and effect (TC-01, FR-01, FR-04, FR-06, DEC-02, DEC-07)', () => {
   it('writes debug true on set and drops the key on remove', () => {
     const on = applyDebugMode(DEFAULT_CONFIG, { kind: 'set' });
     expect(on.debug).toBe(true);
@@ -40,7 +40,8 @@ describe('debug mode apply and effect (TC-01, FR-01, FR-04, FR-05, DEC-02)', () 
     ['debug true', { ...DEFAULT_CONFIG, debug: true }, true],
     ['debug false', { ...DEFAULT_CONFIG, debug: false }, false],
     ['no key', DEFAULT_CONFIG, false],
-    ['debug true in light mode', { ...DEFAULT_CONFIG, debug: true, lightMode: { triggerZone: 'RED' as const } }, false],
+    ['debug true in light mode', { ...DEFAULT_CONFIG, debug: true, lightMode: { triggerZone: 'RED' as const } }, true],
+    ['no key in light mode', { ...DEFAULT_CONFIG, lightMode: { triggerZone: 'RED' as const } }, false],
     ['no config', null, false],
   ])('is in effect for %s: %s', (_, config, expected) => {
     expect(isDebugModeInEffect(config)).toBe(expected);

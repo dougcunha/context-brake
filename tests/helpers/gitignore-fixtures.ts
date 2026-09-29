@@ -9,7 +9,7 @@ export function gitignoreBlock(eol = '\n'): string {
 }
 
 export function initArgs(): ParsedInitArgs {
-  return { command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [], instructionFile: [], createInstructions: false, migrateLegacy: false };
+  return { command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [], instructionFile: [], createInstructions: false, migrateLegacy: false, noLight: true };
 }
 
 export function removeArgs(removeState: boolean): ParsedRemoveArgs {

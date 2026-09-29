@@ -19,6 +19,20 @@ describe('protocol service rendering and planning (RF10, CA-08)', () => {
     expect(text).toContain('| `CRITICAL` | Usage at 75% or more |');
   });
 
+  it('documents the debug line only when the debug mode is on (FR-06, DEC-07, TC-18)', () => {
+    const withDebug = renderProtocol({ ...DEFAULT_CONFIG, debug: true });
+    expect(withDebug).toContain('every block also carries a `debug_line` field');
+    expect(renderProtocol(DEFAULT_CONFIG)).not.toContain('debug_line');
+  });
+
+  it('leaves the rest of the rendering byte-identical when debug is on', () => {
+    const plain = renderProtocol(DEFAULT_CONFIG);
+    const withDebug = renderProtocol({ ...DEFAULT_CONFIG, debug: true });
+    expect(withDebug.replace(/With debug mode on[^\n]*\n\n/, '')).toBe(plain);
+  });
+});
+
+describe('protocol planning (RF10, CA-08)', () => {
   it('plans creation when protocol file is absent', () => {
     const snap: FileSnapshot = { path: 'docs/context-brake-protocol.md', realPath: '/repo/docs/context-brake-protocol.md', exists: false, content: null, sha256: null, isSymlink: false, fileIdentity: 'proto' };
     const { change } = planProtocolChange(DEFAULT_CONFIG, snap, false);

@@ -1,0 +1,57 @@
+=== FR-07a: a legacy FULL install with no recorded choice, plain init (--yes) ===
+  protocol before: True
+  gitignore ContextBrake block before: True
+  init exit=0
+  lightMode now: {"triggerZone":"RED"}
+  fullMode key present: False
+  protocol after: False
+  gitignore block after: False
+  CLAUDE.md still has the user text: True
+  CLAUDE.md has the reference block: False
+  plan/checkpoint files untouched: task_plan.json exists=False
+  finding: LIGHT_MODE_DEFAULT_APPLIED / ok / Run context-brake init --no-light to keep the full mode, or context-brake init --light to return to the light mode.
+  plain init without --yes exit=0
+  plain init output names --no-light: False
+=== FR-07b: doctor on a full install with no recorded choice (informational finding) ===
+  doctor exit=1
+  LIGHT_MODE_DEFAULT_PENDING present: True
+
+[WARN] ContextBrake doctor: warnings
+  - claude-code: installed (support: full, overhead: 166.2ms/100ms (fail))
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the brake only warns.
+    * timeout_fail_closed: A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.
+    * pre_tool_block: The minimum harness version is unverified, so version compatibility cannot be claimed.
+  - context window: contextWindowCeiling (bridge: installed, last window: unknown)
+  - brake: claude-code can block (status line bridge)
+  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.
+    Impact: ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.
+    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.
+  [OK] BRAKE_BLOCKS_RECORDED: ContextBrake recorded 0 blocked tool calls in .context-brake/runtime/blocks.jsonl.
+  [OK] LIGHT_MODE_DEFAULT_PENDING: The next plain context-brake init switches this installation to the light mode, which is now the default.
+    Impact: The plan, checkpoint, protocol, and instruction blocks are removed on that run.
+    Remediation: Run context-brake init --no-light to keep the full mode, or context-brake init --light to return to the light mode.
+
+=== FR-07c: plan asks for confirmation and writes nothing when declined ===
+  exit=2
+  CONFIRMATION_REQUIRED: True
+  plan names the light mode: False
+=== FR-08: --no-light records fullMode, plain init keeps it, --light replaces it ===
+  init --no-light exit=0
+  fullMode: True; lightMode: False; schemaVersion: 1
+  plain init exit=0
+  files changed by the plain init after --no-light: 0
+  still full: fullMode=True lightMode=False
+  init --light exit=0
+  after --light: fullMode=False lightMode=True
+=== FR-09: bridge default in light mode, opt-out ===
+  statusLine in light mode: node "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-07/proj/.claude/hooks/context-brake-statusline.mjs"
+  opt-out exit=0
+Get-Content: C:\Users\Admin\AppData\Local\Temp\opencode\cb-qa1\fr-07-run.ps1:79
+Line |
+  79 |  $after = Get-Content "$proj\.claude\settings.local.json" -Raw | Conve …
+     |           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     | Não é possível localizar o caminho
+     | 'C:\Users\Admin\AppData\Local\Temp\opencode\cb-qa1\fr-07\proj\.claude\settings.local.json' porque ele não existe.
+
+  statusLine after opt-out: 
+

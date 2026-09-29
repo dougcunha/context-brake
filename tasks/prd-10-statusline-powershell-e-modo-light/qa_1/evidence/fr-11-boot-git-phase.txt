@@ -1,0 +1,6 @@
+event kind: session_reset
+deadline fired; failure decision kind: context
+git inspection was reached: true
+--- .context-brake/runtime/errors.jsonl ---
+{"v":1,"at":"2026-09-29T18:21:53.428Z","harness":"claude-code","event":"session_reset","code":"DEADLINE_EXCEEDED","detail":"DeadlineExceededError","phase":"boot_git","elapsedMs":5054}
+  schema: VALID

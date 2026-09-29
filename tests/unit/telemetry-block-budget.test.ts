@@ -6,6 +6,7 @@ import { compactZoneAction } from '../../src/core/services/zone-actions.js';
 import { renderTelemetryBlock } from '../../src/core/services/telemetry-block.js';
 
 const TOKEN_BUDGET = 60;
+const DEBUG_TOKEN_BUDGET = 40;
 const CHARACTER_BUDGET = 220;
 const WORST_CASE_TURN = 99999;
 const WORST_CASE_RED_START = 100000;
@@ -18,8 +19,13 @@ const variants = ZONES.flatMap((zone) => [true, false].map((planPresent) => ({ z
 
 describe('telemetry block v3 budget (CA-13, NFR-04, TC-06, prd-09 NFR-02)', () => {
   it.each(variants)('keeps the worst-case $zone block with planPresent=$planPresent within the token and character budget', ({ zone, planPresent }) => {
-    const block = renderTelemetryBlock({ turn: WORST_CASE_TURN, turnCeiling: WORST_CASE_RED_START, usagePercentage: 999, usage: worstCase, zone, action: compactZoneAction(zone, planPresent) });
+    const block = renderTelemetryBlock({ turn: WORST_CASE_TURN, turnCeiling: WORST_CASE_RED_START, usagePercentage: 999, usage: worstCase, zone, action: compactZoneAction(zone, planPresent), debug: false });
     expect(block.length).toBeLessThanOrEqual(CHARACTER_BUDGET);
     expect(encoding.encode(block).length).toBeLessThanOrEqual(TOKEN_BUDGET);
+  });
+  it('adds at most 40 tokens for the debug line (NFR-03, TC-09)', () => {
+    const input = { turn: WORST_CASE_TURN, turnCeiling: WORST_CASE_RED_START, usagePercentage: 999, usage: worstCase, zone: 'CRITICAL' as const, action: compactZoneAction('CRITICAL', true) };
+    const added = encoding.encode(renderTelemetryBlock({ ...input, debug: true })).length - encoding.encode(renderTelemetryBlock({ ...input, debug: false })).length;
+    expect(added).toBeLessThanOrEqual(DEBUG_TOKEN_BUDGET);
   });
 });

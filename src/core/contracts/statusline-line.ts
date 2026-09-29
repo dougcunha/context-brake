@@ -1,6 +1,9 @@
 import { z } from 'zod/mini';
 
 export const STATUSLINE_MODEL_MAX_LENGTH = 200;
+export const STATUSLINE_SHELLS = ['sh', 'git-bash', 'powershell'] as const;
+
+export type StatuslineShell = (typeof STATUSLINE_SHELLS)[number];
 
 export const statuslineLineSchema = z.strictObject({
   v: z.literal(1),
@@ -10,6 +13,7 @@ export const statuslineLineSchema = z.strictObject({
   inputTokens: z.nullable(z.int().check(z.nonnegative())),
   usedPercentage: z.nullable(z.number().check(z.gte(0), z.lte(100))),
   model: z.nullable(z.string().check(z.maxLength(STATUSLINE_MODEL_MAX_LENGTH))),
+  shell: z.optional(z.enum(STATUSLINE_SHELLS)),
 });
 
 export type StatuslineLine = z.infer<typeof statuslineLineSchema>;

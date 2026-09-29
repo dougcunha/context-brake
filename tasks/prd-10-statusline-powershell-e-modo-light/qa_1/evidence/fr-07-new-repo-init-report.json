@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\opencode\\cb-qa1\\fr-01\\proj",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "9cb4e1dc318868d1185ed748de71a3f7fcfbe6fdd46ded823ddee9786172411b",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "e63a4b8114f3bafed5f2326c8e6cdd9fb47a5668b245a4fa2b28729ea494b6bf",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "6a3ed1771f1591f966491cac86a3c4ec99d1efe2f43aec5fbf824210559727a5",
+        "afterSha256": "c9a73e2a73e26f4b518e2ae8726cb0a7af0cc20993547c57bf9c07bbeb18642f",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "227e1273dbdcfe65f078c78a6ec6123aab584c7ed86653ed08099c8f45758b38",
+        "preview": {
+          "summary": "Install the status line bridge, preserving the user status line"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "3589a322e86ab2c14d7059e43f451a460c61d97fb5bb57ee7b182678722af83d",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/.context-brake/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "43c3ffbacbd2eb76c1198f2d4181f57458f1bd1284799dfa3c6308cead472a17",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/opencode/cb-qa1/fr-01/proj/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "eba176dd38870f03682baca5bd821d73f7e00d8dece4b29325eac1f61eedf943",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; set the light mode section (telemetry only: no brake, plan, checkpoint, protocol, or instruction blocks)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the brake only warns."
+          },
+          {
+            "capability": "timeout_fail_closed",
+            "impact": "A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/claude-statusline.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "LIGHT_MODE_DEFAULT_APPLIED",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": "context-brake.config.json",
+      "message": "The installation switched to the light mode, which is the default: telemetry only, with no brake, plan, checkpoint, protocol, or instruction blocks.",
+      "impact": null,
+      "remediation": "Run context-brake init --no-light to keep the full mode, or context-brake init --light to return to the light mode."
+    }
+  ]
+}

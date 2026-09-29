@@ -42,6 +42,10 @@ function locatedPath(result: ProcessResult): string | null {
   return firstLine?.trim() ?? null;
 }
 
+export function spawnPipedProcess(executable: string, args: readonly string[]): ChildProcess {
+  return spawn(executable, [...args], { shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'ignore'] });
+}
+
 export class NodeProcessRunner implements ProcessRunner {
   async discover(request: ExecutableSearch): Promise<readonly ExecutableResult[]> {
     const names = [...new Set(request.names)];

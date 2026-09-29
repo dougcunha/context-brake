@@ -33,7 +33,7 @@ const failingMeasurer: OverheadMeasurer = {
 async function initHarness(root: string, harnesses: readonly HarnessId[]): Promise<void> {
   await mkdir(join(root, '.claude'), { recursive: true });
   await mkdir(join(root, '.opencode'), { recursive: true });
-  await runInit({ command: 'init', dryRun: false, yes: true, json: true, harness: [...harnesses], excludeHarness: [], instructionFile: [], createInstructions: true, migrateLegacy: false }, { projectRoot: root });
+  await runInit({ command: 'init', dryRun: false, yes: true, json: true, harness: [...harnesses], excludeHarness: [], instructionFile: [], createInstructions: true, migrateLegacy: false, noLight: true }, { projectRoot: root });
 }
 
 async function buildReport(root: string, measurer: OverheadMeasurer): Promise<DoctorReport> {

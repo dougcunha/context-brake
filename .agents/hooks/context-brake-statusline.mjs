@@ -3984,7 +3984,7 @@ function handleIntersectionResults(result, left, right) {
   const unrecKeys = /* @__PURE__ */ new Map();
   let unrecIssue;
   const keyIssues = /* @__PURE__ */ new Map();
-  const collect2 = (iss, side) => {
+  const collect = (iss, side) => {
     let keys;
     if (iss.code === "unrecognized_keys" && !iss.path?.length) {
       unrecIssue ?? (unrecIssue = iss);
@@ -4005,11 +4005,11 @@ function handleIntersectionResults(result, left, right) {
     return true;
   };
   for (const iss of left.issues) {
-    if (!collect2(iss, "l"))
+    if (!collect(iss, "l"))
       result.issues.push(iss);
   }
   for (const iss of right.issues) {
-    if (!collect2(iss, "r"))
+    if (!collect(iss, "r"))
       result.issues.push(iss);
   }
   const bothKeys = [...unrecKeys].filter(([, f]) => f.l && f.r).map(([k]) => k);
@@ -5029,7 +5029,7 @@ var recursive = /* @__PURE__ */ new WeakMap();
 var NONE = 0;
 var ASSUMED = 1;
 var PROVEN = 2;
-function isRecursive(inst, stack, resolve10) {
+function isRecursive(inst, stack, resolve5) {
   const cached2 = recursive.get(inst);
   if (cached2 !== void 0)
     return cached2 ? PROVEN : NONE;
@@ -5039,7 +5039,7 @@ function isRecursive(inst, stack, resolve10) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve10);
+      const answer = isRecursive(child, stack, resolve5);
       if (answer > result)
         result = answer;
     }
@@ -5050,7 +5050,7 @@ function isRecursive(inst, stack, resolve10) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve10) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve5) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -5114,7 +5114,7 @@ function isRecursive(inst, stack, resolve10) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve10 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve5 ? inst._zod.innerType : void 0);
       merge3(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -18272,21 +18272,6 @@ var InvalidConfigurationError = class extends Error {
     this.filePath = filePath;
   }
 };
-function parseConfiguration(input2, filePath) {
-  const result = configurationSchema.safeParse(input2);
-  if (result.success) return result.data;
-  throw new InvalidConfigurationError(result.error.issues.map((issue2) => toIssue(issue2, input2)), filePath);
-}
-function invalidSyntaxError(filePath, received, cause) {
-  return new InvalidConfigurationError([{ path: "(syntax)", received, rule: "must be valid JSON" }], filePath, { cause });
-}
-function toIssue(issue2, source) {
-  const path = issue2.path.join(".") || "(root)";
-  return { path, received: "input" in issue2 ? issue2.input : valueAtPath(source, issue2.path), rule: issue2.message };
-}
-function valueAtPath(source, path) {
-  return path.reduce((value, key) => value !== null && typeof value === "object" ? value[key] : void 0, source);
-}
 
 // src/core/contracts/task-plan.ts
 var PLAN_SCHEMA_VERSION = 1;
@@ -18331,447 +18316,24 @@ var taskPlanSchema = external_exports.strictObject({
     addIssue3(ctx, { code: "custom", path: ["currentStepId"], input: plan.currentStepId, message: CURRENT_STEP_RULE });
   }
 });
-function isPlanComplete(plan) {
-  return plan.steps.length > 0 && plan.steps.every((step) => step.status === "COMPLETED");
-}
-function findActiveStep(plan) {
-  if (plan.currentStepId !== null) {
-    const current = plan.steps.find((step) => step.id === plan.currentStepId);
-    if (current) return current;
-  }
-  return plan.steps.find((step) => step.status === "IN_PROGRESS") ?? null;
-}
-function findLastCompletedStep(plan) {
-  return [...plan.steps].reverse().find((step) => step.status === "COMPLETED") ?? null;
-}
-function findNextStep(plan) {
-  const active = findActiveStep(plan);
-  if (active === null) return plan.steps.find((step) => step.status === "PENDING") ?? null;
-  const index = plan.steps.indexOf(active);
-  return plan.steps.slice(index + 1).find((step) => step.status !== "COMPLETED") ?? null;
-}
-
-// src/core/services/boot-summary.ts
-var BOOT_SUMMARY_VERSION = 1;
-function stepLabel(step) {
-  return step === null ? "None" : `${String(step.id)}: ${step.title} (${step.status})`;
-}
-function listSection(title, items) {
-  return [`## ${title}`, ...items.length === 0 ? ["- None"] : items.map((item) => `- ${item}`)];
-}
-function divergenceLine(divergence) {
-  switch (divergence.kind) {
-    case "checks_omitted":
-      return `Repository checks omitted: ${divergence.reason}.`;
-    case "missing_commit":
-      return `Checkpoint commit ${divergence.recordedCommit} is missing.`;
-    case "outside_history":
-      return `Checkpoint commit ${divergence.recordedCommit} is outside current history at ${divergence.currentCommit ?? "no commit"}.`;
-    case "pending_changes":
-      return "Working tree has uncommitted changes.";
-    case "branch_changed":
-      return `Branch changed from ${divergence.recordedBranch} to ${divergence.currentBranch ?? "no branch"}.`;
-  }
-}
-function validationLine(plan) {
-  const step = findActiveStep(plan) ?? findLastCompletedStep(plan) ?? findNextStep(plan);
-  if (step?.validationCommand) return `Before any edit, run \`${step.validationCommand}\` to validate step ${String(step.id)}. If it fails, correct the inherited state first.`;
-  return "Before any edit, record and run a validation command for the active or last completed step; correct inherited state if it fails.";
-}
-function nextStep(plan, current) {
-  if (current === null) return null;
-  return plan.steps.slice(plan.steps.indexOf(current) + 1).find((step) => step.status !== "COMPLETED") ?? null;
-}
-function compose(input2, lists) {
-  const active = findActiveStep(input2.plan) ?? findNextStep(input2.plan);
-  const next = nextStep(input2.plan, active);
-  const lines = [
-    `[ContextBrake boot v${BOOT_SUMMARY_VERSION}]`,
-    `Task: ${input2.plan.title} (${input2.plan.taskId})`,
-    `Current step: ${stepLabel(active)}`,
-    `Next step: ${stepLabel(next)}`,
-    "",
-    ...listSection("Constraints", input2.checkpoint.workingMemory.discoveredConstraints),
-    "",
-    ...listSection("Decisions", lists.decisions),
-    "",
-    ...listSection("Blocked items", input2.checkpoint.workingMemory.blockedItems),
-    "",
-    ...listSection("Breaking changes", input2.checkpoint.workingMemory.breakingChanges),
-    "",
-    ...listSection("Modified files", lists.modifiedFiles),
-    "",
-    ...listSection("Repository state", input2.git.divergences.map(divergenceLine)),
-    "",
-    `## Validate first`,
-    validationLine(input2.plan)
-  ];
-  if (lists.reduced) lines.push("", `Full checkpoint: ${input2.checkpointFile}`);
-  return lines.join("\n");
-}
-function fitsBudget(text, maxTokens) {
-  return new TextEncoder().encode(text).length <= maxTokens;
-}
-function renderBootSummary(input2) {
-  let modifiedFiles = [...input2.checkpoint.modifiedFiles];
-  let decisions = [...input2.checkpoint.workingMemory.decisionsMade];
-  let reduced = false;
-  let summary = compose(input2, { modifiedFiles, decisions, reduced });
-  while (!fitsBudget(summary, input2.maxTokens) && modifiedFiles.length > 0) {
-    modifiedFiles = modifiedFiles.slice(0, -1);
-    reduced = true;
-    summary = compose(input2, { modifiedFiles, decisions, reduced });
-  }
-  while (!fitsBudget(summary, input2.maxTokens) && decisions.length > 0) {
-    decisions = decisions.slice(1);
-    reduced = true;
-    summary = compose(input2, { modifiedFiles, decisions, reduced });
-  }
-  return summary;
-}
-function renderBootOmission() {
-  return `[ContextBrake boot v${BOOT_SUMMARY_VERSION}] Boot omitted: the internal deadline elapsed. Validate the plan and checkpoint state before continuing.`;
-}
-
-// src/core/services/statusline-summary.ts
-function summarizeStatusline(lines, resetIndex) {
-  let windowTokens = null;
-  let usage = null;
-  for (const [position, line] of lines.entries()) {
-    if (line.type !== "statusline") continue;
-    if (line.windowTokens !== null) windowTokens = line.windowTokens;
-    if (position > resetIndex && line.inputTokens !== null) usage = { tokens: line.inputTokens, at: line.at };
-  }
-  return { windowTokens, usage };
-}
-
-// src/core/services/session-counters.ts
-function nextTurn(summary) {
-  return summary.turns + 1;
-}
-function summarizeLedger(lines) {
-  const sessionLine = lines.find((line) => line.type === "session") ?? null;
-  const toolUseIds = /* @__PURE__ */ new Set();
-  let turns = 0;
-  let observedCharacters = 0;
-  let lastReading = null;
-  const resetIndex = lastResetIndex(lines);
-  for (const line of lines.slice(resetIndex + 1)) {
-    if (line.type !== "tool") continue;
-    if (line.toolUseId !== null) {
-      if (toolUseIds.has(line.toolUseId)) continue;
-      toolUseIds.add(line.toolUseId);
-    }
-    turns += 1;
-    observedCharacters += line.observedCharacters;
-    lastReading = line;
-  }
-  const lastResetAt = lines[resetIndex]?.at ?? null;
-  return { turns, observedCharacters, lastReading, lastZone: lastReading?.zone ?? null, sessionLine, toolUseIds, lastResetAt, statusline: summarizeStatusline(lines, resetIndex) };
-}
-function lastResetIndex(lines) {
-  let index = -1;
-  for (const [position, line] of lines.entries()) if (line.type === "reset") index = position;
-  return index;
-}
 
 // src/core/services/zone-actions.ts
 var PLANS_AND_CHECKPOINT = "Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, `git status`, `git add`, and `git commit`";
 var CRITICAL_PROTOCOL = `${PLANS_AND_CHECKPOINT} are allowed. Complete the \`RED\` actions.`;
-var ZONE_ACTIONS = {
-  GREEN: { compact: "work normally", protocol: "Work normally." },
-  YELLOW: {
-    withPlan: { compact: "finish the current edit, start no new step, run the step validation", protocol: "Finish the current edit, do not start a new plan step, and run the step's validation command." },
-    withoutPlan: { compact: "keep working; finish the current unit before large new explorations", protocol: "Keep working, and prefer finishing the current unit of work before starting large new explorations." }
-  },
-  RED: {
-    withPlan: { compact: "save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET]", protocol: "Stop editing. Update the plan and checkpoint. If validation passes, commit with `checkpoint: <step title>`. End the response with `[REQUEST_SESSION_RESET]`." },
-    withoutPlan: { compact: "finish or pause the current unit, record progress, end reply with [REQUEST_SESSION_RESET]", protocol: "Finish or pause the current unit of work. Record progress where the project already keeps state, or tell the user what remains. End the response with `[REQUEST_SESSION_RESET]`." }
-  },
-  CRITICAL: { compact: "other tools are blocked; finish the RED actions", protocol: CRITICAL_PROTOCOL }
-};
-function isPlanAwareZone(zone) {
-  return zone === "YELLOW" || zone === "RED";
-}
-function compactZoneAction(zone, planPresent) {
-  if (!isPlanAwareZone(zone)) return ZONE_ACTIONS[zone].compact;
-  return planPresent ? ZONE_ACTIONS[zone].withPlan.compact : ZONE_ACTIONS[zone].withoutPlan.compact;
-}
-
-// src/core/services/window-trust.ts
-var UNTRUSTED_CRITICAL_ACTION = "not blocked (no harness window, see context-brake doctor); finish the RED actions";
-function acceptsDeclaredWindow(capabilities) {
-  return capabilities.find((entry) => entry.id === "context_usage")?.state === "unsupported";
-}
-function isTrustedWindow(origin) {
-  return origin === "harness" || origin === "declared";
-}
-function telemetryAction(zone, origin, action) {
-  if (zone !== "CRITICAL" || isTrustedWindow(origin) || action !== ZONE_ACTIONS.CRITICAL.compact) return action;
-  return UNTRUSTED_CRITICAL_ACTION;
-}
 
 // src/core/services/telemetry-block.ts
 var TELEMETRY_BLOCK_VERSION = 3;
 var TELEMETRY_BLOCK_PREFIX = `[ContextBrake v${TELEMETRY_BLOCK_VERSION}]`;
-function renderTelemetryBlock(input2) {
-  const { usage } = input2;
-  const tokens = `${usage.usedTokens ?? 0}/${usage.windowTokens}`;
-  return `${TELEMETRY_BLOCK_PREFIX} turn=${renderTurn(input2.turn, input2.turnCeiling)} usage=${input2.usagePercentage}% tokens=${tokens} source=${usage.source} window=${usage.windowOrigin} zone=${input2.zone} action=${input2.action}`;
-}
-function renderTurn(turn, turnCeiling) {
-  return turnCeiling === null ? String(turn) : `${turn}/${turnCeiling}`;
-}
-
-// src/core/services/zone-classifier.ts
-function usagePercentage(usedTokens, windowTokens) {
-  if (windowTokens <= 0) return 100;
-  return Math.floor(usedTokens * 100 / windowTokens);
-}
-function turnLimits(zones) {
-  if (zones.greenMaxTurn === void 0 || zones.yellowMaxTurn === void 0) return null;
-  return { greenMaxTurn: zones.greenMaxTurn, yellowMaxTurn: zones.yellowMaxTurn };
-}
-function redStartTurn(zones) {
-  const limits = turnLimits(zones);
-  return limits === null ? null : limits.yellowMaxTurn + 1;
-}
-function classifyZone(input2, zones) {
-  if (input2.usagePercentage >= zones.criticalPercentage) return "CRITICAL";
-  const limits = turnLimits(zones);
-  if (input2.usagePercentage > zones.yellowMaxPercentage || limits !== null && input2.turns > limits.yellowMaxTurn) return "RED";
-  if (input2.usagePercentage > zones.greenMaxPercentage || limits !== null && input2.turns > limits.greenMaxTurn) return "YELLOW";
-  return "GREEN";
-}
 
 // src/core/services/block-message.ts
 var BLOCKED_PREFIX = `${TELEMETRY_BLOCK_PREFIX} BLOCKED`;
-var FAILURE_REASON = "reason=integration_failure";
-var FAILURE_ZONE = "last recorded zone=CRITICAL";
-var RED_ACTIONS = " Save plan and checkpoint, commit if validation passes, end reply with [REQUEST_SESSION_RESET].";
-function renderBlockHeader(input2) {
-  const values = `turn=${renderTurn(input2.turn, redStartTurn(input2.config.telemetry.zones))} usage=${input2.usagePercentage}% tokens=${input2.usage.usedTokens ?? 0}/${input2.usage.windowTokens} source=${input2.usage.source}`;
-  return `${BLOCKED_PREFIX} tool=${input2.tool} zone=CRITICAL ${values} reason=critical_ceiling.`;
-}
-function renderFailureBlockHeader(tool) {
-  return `${BLOCKED_PREFIX} tool=${tool} zone=CRITICAL ${FAILURE_ZONE} ${FAILURE_REASON}.`;
-}
-function renderBlockMessage(input2) {
-  return `${renderBlockHeader(input2)} ${allowedActions(input2.config)}${RED_ACTIONS}`;
-}
-function renderFailureBlockMessage(input2) {
-  return `${renderFailureBlockHeader(input2.tool)} ${allowedActions(input2.config)}${RED_ACTIONS}`;
-}
-function allowedActions(config2) {
-  const extras = config2.brake.additionalAllowedCommands;
-  const extraList = extras.length === 0 ? "" : `, ${extras.join(", ")}`;
-  return `Allowed: read or write ${config2.stateStorage.planFile} and ${config2.stateStorage.checkpointFile}, the step validation command, git status, git add, git commit${extraList}.`;
-}
-
-// src/core/services/shell-command-matcher.ts
-var SHELL_OPERATOR_PATTERN = /[;&|`<>\r\n]|\$\(/;
-var GIT_VERBS = ["status", "add", "commit"];
-function commandTokens(command) {
-  return command.trim().split(/\s+/).filter((token) => token.length > 0);
-}
-function hasShellOperators(command) {
-  return SHELL_OPERATOR_PATTERN.test(command);
-}
-function isGitStatusAddOrCommit(command) {
-  const tokens = commandTokens(command);
-  return tokens[0] === "git" && GIT_VERBS.includes(tokens[1] ?? "");
-}
-function matchesValidationCommand(command, validationCommand) {
-  const trimmed = command.trim();
-  return trimmed !== "" && validationCommand !== null && trimmed === validationCommand.trim();
-}
-function matchesLeadingTokens(command, entry) {
-  const commandParts = commandTokens(command);
-  const entryParts = commandTokens(entry);
-  if (entryParts.length === 0 || commandParts.length < entryParts.length) return false;
-  return entryParts.every((token, index) => commandParts[index] === token);
-}
-function isAllowedShellCommand(command, allowlist) {
-  if (hasShellOperators(command)) return false;
-  if (isGitStatusAddOrCommit(command)) return true;
-  if (matchesValidationCommand(command, allowlist.validationCommand)) return true;
-  return allowlist.additionalCommands.some((entry) => matchesLeadingTokens(command, entry));
-}
-
-// src/core/services/brake-allowlist.ts
-function shellAllowlist(input2) {
-  return { validationCommand: input2.validationCommand, additionalCommands: input2.config.brake.additionalAllowedCommands };
-}
-function isToolCallAllowed(call, input2) {
-  if (call.category === "file_read" || call.category === "file_write") return touchesOnlyStateFiles(call, input2.config);
-  if (call.category !== "shell" || call.command === null) return false;
-  return isAllowedShellCommand(call.command, shellAllowlist(input2));
-}
-function touchesOnlyStateFiles(call, config2) {
-  const allowed = /* @__PURE__ */ new Set([config2.stateStorage.planFile, config2.stateStorage.checkpointFile]);
-  return call.paths.length > 0 && call.paths.every((path) => allowed.has(path));
-}
-
-// src/core/services/path-pattern.ts
-var SEGMENT_SEPARATOR = "/";
-var GLOBSTAR = "**";
-var TRAVERSAL_SEGMENTS = /* @__PURE__ */ new Set([".", ".."]);
-function matchesPathPattern(path, pattern) {
-  const pathSegments = path.split(SEGMENT_SEPARATOR);
-  if (pathSegments.some((segment) => TRAVERSAL_SEGMENTS.has(segment) || segment === "")) return false;
-  return matchSegments(pathSegments, pattern.split(SEGMENT_SEPARATOR));
-}
-function matchesAnyPathPattern(path, patterns) {
-  return patterns.some((pattern) => matchesPathPattern(path, pattern));
-}
-function matchSegments(path, pattern) {
-  const [head, ...rest] = pattern;
-  if (head === void 0) return path.length === 0;
-  if (head === GLOBSTAR) return path.some((_, index) => matchSegments(path.slice(index), rest)) || matchSegments([], rest);
-  const [segment, ...remaining] = path;
-  if (segment === void 0 || !segmentPattern(head).test(segment)) return false;
-  return matchSegments(remaining, rest);
-}
-function segmentPattern(pattern) {
-  const source = [...pattern].map(segmentToken).join("");
-  return new RegExp(`^${source}$`);
-}
-function segmentToken(character) {
-  if (character === "*") return "[^/]*";
-  if (character === "?") return "[^/]";
-  return character.replace(/[.+^${}()|[\]\\]/g, "\\$&");
-}
 
 // src/core/services/reset-notice.ts
 var SESSION_RESET_SIGNAL = "[REQUEST_SESSION_RESET]";
-function hasResetSignal(text) {
-  return text.trim() === SESSION_RESET_SIGNAL;
-}
-function renderResetNotice(command) {
-  return `ContextBrake: the agent requested a session reset. Run ${command} to start a new session.`;
-}
-
-// src/core/services/delegated-guidance.ts
-var COMMAND_PREFIX = "/";
-var BOOT_PREFIX = "[ContextBrake boot v1]";
-var GIT_ACTIONS = "git status, git add, git commit";
-function delegatedAction(command) {
-  return `run "${command}", then end reply with ${SESSION_RESET_SIGNAL}`;
-}
-function delegatedGuidance(config2, section) {
-  const skills = allowedSkillNames(section);
-  const tail = `${allowedSummary(config2, section, skills)} Run "${section.snapshotCommand}", then end reply with ${SESSION_RESET_SIGNAL}.`;
-  return {
-    mode: "delegated",
-    actionFor: (zone) => isAtOrAbove(zone, section.triggerZone) ? delegatedAction(section.snapshotCommand) : compactZoneAction(zone, false),
-    allows: (call) => Promise.resolve(isDelegatedCallAllowed(call, { config: config2, section, skills })),
-    denyMessage: (input2) => `${renderBlockHeader({ ...input2, config: config2 })} ${tail}`,
-    failureMessage: (tool) => `${renderFailureBlockHeader(tool)} ${tail}`,
-    resumeText: section.resumeCommand === void 0 ? null : `${BOOT_PREFIX} Run "${section.resumeCommand}" before continuing.`
-  };
-}
-function isDelegatedCallAllowed(call, allowlist) {
-  switch (call.category) {
-    case "file_read":
-    case "file_write":
-      return call.paths.length > 0 && call.paths.every((path) => matchesAnyPathPattern(path, allowlist.section.allowedPaths));
-    case "skill":
-      return call.skill !== void 0 && allowlist.skills.has(call.skill);
-    case "shell":
-      return call.command !== null && isAllowedShellCommand(call.command, { validationCommand: null, additionalCommands: allowlist.config.brake.additionalAllowedCommands });
-    case "other":
-      return false;
-  }
-}
-function allowedSkillNames(section) {
-  const derived2 = [section.snapshotCommand, section.resumeCommand].flatMap((command) => leadingSkill(command));
-  return /* @__PURE__ */ new Set([...section.allowedSkills, ...derived2]);
-}
-function leadingSkill(command) {
-  const token = command?.split(/\s+/)[0] ?? "";
-  return token.startsWith(COMMAND_PREFIX) && token.length > COMMAND_PREFIX.length ? [token.slice(COMMAND_PREFIX.length)] : [];
-}
-function allowedSummary(config2, section, skills) {
-  const parts = [
-    ...section.allowedPaths.length > 0 ? [`read or write ${section.allowedPaths.join(", ")}`] : [],
-    ...skills.size > 0 ? [`skill ${[...skills].join(", ")}`] : [],
-    GIT_ACTIONS,
-    ...config2.brake.additionalAllowedCommands
-  ];
-  return `Allowed: ${parts.join(", ")}.`;
-}
-function isAtOrAbove(zone, trigger) {
-  return ZONES.indexOf(zone) >= ZONES.indexOf(trigger);
-}
 
 // src/core/services/light-guidance.ts
 var SAVE_NOW = `save your snapshot or checkpoint now, then end reply with ${SESSION_RESET_SIGNAL}`;
 var SAVE_IMMEDIATELY = `save your snapshot or checkpoint immediately, then end reply with ${SESSION_RESET_SIGNAL}`;
-function lightAction(zone, section) {
-  switch (zone) {
-    case "GREEN":
-      return ZONE_ACTIONS.GREEN.compact;
-    case "YELLOW":
-      return section.triggerZone === "YELLOW" ? SAVE_NOW : ZONE_ACTIONS.YELLOW.withoutPlan.compact;
-    case "RED":
-      return SAVE_NOW;
-    case "CRITICAL":
-      return SAVE_IMMEDIATELY;
-  }
-}
-function lightGuidance(config2, section) {
-  return {
-    mode: "light",
-    actionFor: (zone) => lightAction(zone, section),
-    allows: () => Promise.resolve(true),
-    denyMessage: (input2) => renderBlockHeader({ ...input2, config: config2 }),
-    failureMessage: (tool) => renderFailureBlockHeader(tool),
-    resumeText: null
-  };
-}
-
-// src/core/services/zone-guidance.ts
-async function resolveGuidance(sources) {
-  if (sources.config.lightMode !== void 0) return lightGuidance(sources.config, sources.config.lightMode);
-  const section = sources.config.delegatedSnapshot;
-  if (section === void 0) return planGuidance(sources, await isPlanPresentForActions(sources));
-  const planPresent = sources.planPresence === void 0 ? true : await sources.planPresence.exists();
-  return planPresent ? planGuidance(sources, true) : delegatedGuidance(sources.config, section);
-}
-async function isPlanPresentForActions(sources) {
-  if (sources.planPresence === void 0 || sources.zone === void 0 || !isPlanAwareZone(sources.zone)) return true;
-  return sources.planPresence.exists();
-}
-async function resolveFailureGuidance(sources) {
-  try {
-    return await resolveGuidance(sources);
-  } catch {
-    return unionGuidance(sources);
-  }
-}
-function planGuidance(sources, planPresent = true) {
-  const { config: config2 } = sources;
-  return {
-    mode: "plan",
-    actionFor: (zone) => compactZoneAction(zone, planPresent),
-    allows: (call) => isPlanCallAllowed(call, sources),
-    denyMessage: (input2) => renderBlockMessage({ ...input2, config: config2 }),
-    failureMessage: (tool) => renderFailureBlockMessage({ tool, config: config2 }),
-    resumeText: null
-  };
-}
-async function isPlanCallAllowed(call, sources) {
-  const validationCommand = call.category === "shell" ? await sources.readValidationCommand() : null;
-  return isToolCallAllowed(call, { config: sources.config, validationCommand });
-}
-function unionGuidance(sources) {
-  if (sources.config.lightMode !== void 0) return lightGuidance(sources.config, sources.config.lightMode);
-  const plan = planGuidance(sources);
-  const section = sources.config.delegatedSnapshot;
-  if (section === void 0) return plan;
-  const delegated = delegatedGuidance(sources.config, section);
-  return { ...delegated, allows: async (call) => await delegated.allows(call) || plan.allows(call) };
-}
 
 // src/core/services/failure-policy.ts
 var INTERNAL_DEADLINE_MILLISECONDS = 1500;
@@ -18805,33 +18367,16 @@ function failureDetail(error62) {
   return error62 instanceof Error ? error62.constructor.name : "UnexpectedError";
 }
 function runWithinDeadline(work, deadlineMilliseconds = INTERNAL_DEADLINE_MILLISECONDS) {
-  return new Promise((resolve10, reject) => {
+  return new Promise((resolve5, reject) => {
     const timer = setTimeout(() => reject(new DeadlineExceededError()), deadlineMilliseconds);
     work.then((value) => {
       clearTimeout(timer);
-      resolve10(value);
+      resolve5(value);
     }, (error62) => {
       clearTimeout(timer);
       reject(error62);
     });
   });
-}
-async function resolveFailure(input2) {
-  await recordRuntimeFailure(input2.errors, { harness: input2.event.session.harness, event: input2.event.kind, code: input2.code, detail: input2.detail });
-  if (input2.event.kind === "session_reset" && input2.code === "DEADLINE_EXCEEDED" && sessionBootSupported(input2.descriptor)) return deadlineBootDecision(input2);
-  if (input2.event.kind !== "pre_tool" || input2.config?.lightMode !== void 0) return { kind: "neutral" };
-  if (!await wasTrustedCritical(input2.ledger, input2.event.session)) return { kind: "neutral" };
-  const guidance = await resolveFailureGuidance(guidanceSources(input2));
-  if (await guidance.allows(input2.event.tool)) return { kind: "neutral" };
-  return { kind: "deny", tool: input2.event.tool.name, reason: "integration_failure", message: guidance.failureMessage(input2.event.tool.name) };
-}
-async function deadlineBootDecision(input2) {
-  const guidance = await resolveFailureGuidance(guidanceSources(input2));
-  if (guidance.mode === "plan") return { kind: "context", block: renderBootOmission() };
-  return guidance.resumeText === null ? { kind: "neutral" } : { kind: "context", block: guidance.resumeText };
-}
-function guidanceSources(input2) {
-  return { config: input2.config ?? DEFAULT_CONFIG, planPresence: input2.planPresence, readValidationCommand: () => readTolerantly(input2.readValidationCommand) };
 }
 async function recordRuntimeFailure(errors, record2) {
   try {
@@ -18840,660 +18385,6 @@ async function recordRuntimeFailure(errors, record2) {
     return;
   }
 }
-function sessionBootSupported(descriptor) {
-  return descriptor?.capabilities.some((entry) => entry.id === "session_boot" && entry.state === "supported") ?? false;
-}
-async function wasTrustedCritical(ledger, session) {
-  try {
-    const last = summarizeLedger(await ledger.readLines(session)).lastReading;
-    return last?.zone === "CRITICAL" && isTrustedWindow(last.windowOrigin);
-  } catch {
-    return false;
-  }
-}
-async function readTolerantly(reader) {
-  try {
-    return await reader();
-  } catch {
-    return null;
-  }
-}
-
-// src/infrastructure/harnesses/common/runtime-support.ts
-import { realpath } from "node:fs/promises";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-function parsePayload(schema, payload) {
-  const result = schema.safeParse(payload);
-  if (!result.success) throw new PayloadInvalidError({ cause: result.error });
-  return result.data;
-}
-function requireIdentifier(value) {
-  if (value === void 0 || value === "") throw new PayloadInvalidError();
-  return value;
-}
-function projectRootFromEnvironment(names) {
-  for (const name of names) {
-    const value = process.env[name];
-    if (typeof value === "string" && value !== "") return value;
-  }
-  return null;
-}
-async function assetProjectRoot() {
-  const assetDirectory = dirname(fileURLToPath(import.meta.url));
-  const root = resolve(assetDirectory, "../..");
-  return realpath(root).catch(() => root);
-}
-function asRecord(value) {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) return null;
-  return value;
-}
-function textValue(value) {
-  return typeof value === "string" && value.length > 0 ? value : null;
-}
-function characterLength(value) {
-  if (typeof value === "string") return value.length;
-  if (value === void 0 || value === null) return 0;
-  return JSON.stringify(value)?.length ?? 0;
-}
-
-// src/infrastructure/runtime/runtime-composition.ts
-import { readFile as readFile4 } from "node:fs/promises";
-import { resolve as resolve8 } from "node:path";
-
-// src/core/services/brake-mode.ts
-var REQUIRED_CAPABILITY_IDS = ["pre_tool_block", "tool_coverage"];
-function deriveBrakeMode(capabilities) {
-  for (const id of REQUIRED_CAPABILITY_IDS) {
-    const capability = capabilities.find((entry) => entry.id === id);
-    if (capability?.state === "supported") continue;
-    return { mode: "cooperative", reason: capability?.impact ?? `The ${id} capability is not guaranteed by this integration.` };
-  }
-  return { mode: "enforced", reason: null };
-}
-
-// src/core/services/debug-mode-merge.ts
-function isDebugModeInEffect(config2) {
-  return config2?.debug === true && config2.lightMode === void 0;
-}
-
-// src/core/services/injection-policy.ts
-function decideInjection(input2) {
-  if (input2.debug || input2.telemetry.injectionMode === "always") return true;
-  return input2.zone !== "GREEN" || input2.usagePercentage >= input2.telemetry.activationThresholdPercentage;
-}
-
-// src/core/services/usage-resolver.ts
-var CHARACTERS_PER_TOKEN = 4;
-function estimatedTokens(input2, constants) {
-  return constants.baselineTokens + Math.ceil(input2.observedCharacters / CHARACTERS_PER_TOKEN) + input2.turns * constants.tokensPerTurn;
-}
-function resolveUsage(input2) {
-  const estimate = estimatedTokens(input2.estimated, input2.constants);
-  const measured = input2.measured;
-  if (measured && measured.tokens !== null) {
-    return { source: "measured", usedTokens: measured.tokens, measuredTokens: measured.tokens, ...resolveWindow(input2) };
-  }
-  return { source: "estimated", usedTokens: estimate, measuredTokens: estimate, ...resolveWindow(input2) };
-}
-function resolveWindow(input2) {
-  const reported = input2.measured?.contextWindow ?? null;
-  if (reported !== null) return { windowTokens: reported, windowOrigin: "harness" };
-  if (input2.declaredContextWindow !== void 0) return { windowTokens: input2.declaredContextWindow, windowOrigin: "declared" };
-  return { windowTokens: input2.contextWindowCeiling, windowOrigin: "config" };
-}
-
-// src/core/services/session-zone.ts
-function readZone(settings, inputs) {
-  const estimated = { observedCharacters: inputs.summary.observedCharacters + inputs.observedCharacters, turns: inputs.turns };
-  const measured = mergeMeasurements(inputs);
-  const { contextWindowCeiling, declaredContextWindow } = settings.config.telemetry;
-  const declared = acceptsDeclaredWindow(settings.descriptor.capabilities) ? declaredContextWindow : void 0;
-  const reading = resolveUsage({ estimated, measured, constants: settings.descriptor.estimation, contextWindowCeiling, declaredContextWindow: declared });
-  const percentage2 = usagePercentage(reading.usedTokens ?? 0, reading.windowTokens);
-  return { reading, estimate: estimatedTokens(estimated, settings.descriptor.estimation), percentage: percentage2, zone: classifyZone({ usagePercentage: percentage2, turns: inputs.turns }, settings.config.telemetry.zones) };
-}
-function mergeMeasurements(inputs) {
-  const { lastResetAt, statusline } = inputs.summary;
-  const transcript = isStale(inputs.measured, lastResetAt) ? void 0 : inputs.measured;
-  const bridge = isStale(statusline.usage ?? void 0, lastResetAt) ? void 0 : statusline.usage;
-  const tokens = transcript?.tokens ?? bridge?.tokens ?? null;
-  const contextWindow = inputs.measured?.contextWindow ?? statusline.windowTokens;
-  return { tokens, contextWindow };
-}
-function isStale(measured, lastResetAt) {
-  if (measured?.at === void 0 || lastResetAt === null) return false;
-  return Date.parse(measured.at) <= Date.parse(lastResetAt);
-}
-
-// src/core/services/brake-engine.ts
-var NEUTRAL = { kind: "neutral" };
-var COMPACTION_BOOT_HARNESSES = ["claude-code", "codex-cli", "pi", "oh-my-pi"];
-function createBrakeEngine(options) {
-  return { handle: (event, input2) => handleEvent(options, event, input2 ?? {}) };
-}
-async function handleEvent(options, event, input2) {
-  switch (event.kind) {
-    case "pre_tool":
-      return handlePreTool(options, event, input2);
-    case "post_tool":
-      return handlePostTool(options, event, input2);
-    case "pre_invocation":
-      return handlePreInvocation(options, event, input2);
-    case "session_reset":
-      return handleSessionReset(options, event);
-    case "response_end":
-      return handleResponseEnd(options, event);
-  }
-}
-async function handlePreTool(options, event, input2) {
-  if (options.config.lightMode !== void 0) return NEUTRAL;
-  const summary = await readSummary(options.ledger, event.session);
-  const { reading, percentage: percentage2, zone } = readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input2.measured });
-  if (zone !== "CRITICAL" || !isTrustedWindow(reading.windowOrigin)) return NEUTRAL;
-  const guidance = await readGuidance(options);
-  if (await guidance.allows(event.tool)) return NEUTRAL;
-  await options.blocks.append(event.session, { tool: event.tool.name, zone: "CRITICAL", turn: summary.turns, percentage: percentage2, source: reading.source, reason: "critical_ceiling" });
-  return { kind: "deny", tool: event.tool.name, reason: "critical_ceiling", message: guidance.denyMessage({ tool: event.tool.name, turn: summary.turns, usagePercentage: percentage2, usage: reading }) };
-}
-async function handlePostTool(options, event, input2) {
-  const summary = await readSummary(options.ledger, event.session);
-  if (event.toolUseId !== null && summary.toolUseIds.has(event.toolUseId)) return NEUTRAL;
-  const observedCharacters = input2.observedCharacters ?? 0;
-  const turn = nextTurn(summary);
-  const view = readZone(options, { summary, turns: turn, observedCharacters, measured: input2.measured });
-  const { reading, zone } = view;
-  await ensureSessionLine(options, event.session, summary);
-  await options.ledger.appendToolLine(event.session, { toolUseId: event.toolUseId, observedCharacters, turn, usedTokens: reading.usedTokens ?? 0, windowTokens: reading.windowTokens, estimatedTokens: view.estimate, source: reading.source, zone, windowOrigin: reading.windowOrigin });
-  return telemetryDecision(options, turn, view);
-}
-async function handlePreInvocation(options, event, input2) {
-  const summary = await readSummary(options.ledger, event.session);
-  return telemetryDecision(options, summary.turns, readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input2.measured }));
-}
-async function telemetryDecision(options, turn, view) {
-  if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config) })) return NEUTRAL;
-  const action = telemetryAction(view.zone, view.reading.windowOrigin, (await readGuidance(options, view.zone)).actionFor(view.zone));
-  return { kind: "context", block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action }) };
-}
-async function handleSessionReset(options, event) {
-  await options.ledger.appendResetLine(event.session, event.reason);
-  if (event.reason === "new") await options.ledger.pruneStaleSessions();
-  if (!options.descriptor.capabilities.some((entry) => entry.id === "session_boot" && entry.state === "supported")) return NEUTRAL;
-  if (event.reason === "compact" && !COMPACTION_BOOT_HARNESSES.includes(options.descriptor.harness)) return NEUTRAL;
-  const guidance = await readGuidance(options);
-  if (guidance.mode !== "plan") return guidance.resumeText === null ? NEUTRAL : { kind: "context", block: guidance.resumeText };
-  if (!options.readBoot) return NEUTRAL;
-  try {
-    const decision = await options.readBoot();
-    return decision.kind === "boot" || decision.kind === "invalid_state" ? { kind: "context", block: decision.text } : NEUTRAL;
-  } catch (error62) {
-    if (options.errors) await options.errors.append(options.descriptor.harness, { event: "session_reset", code: "UNEXPECTED", detail: error62 instanceof Error ? error62.message : String(error62) }).catch(() => void 0);
-    return NEUTRAL;
-  }
-}
-async function handleResponseEnd(options, event) {
-  if (options.descriptor.newSessionCommand === null || !hasResetSignal(event.text)) return NEUTRAL;
-  return { kind: "notify_user", text: renderResetNotice(options.descriptor.newSessionCommand) };
-}
-async function ensureSessionLine(options, session, summary) {
-  if (summary.sessionLine !== null) return;
-  const brake = deriveBrakeMode(options.descriptor.capabilities);
-  await options.ledger.appendSessionLine(session, { brakeMode: brake.mode, brakeReason: brake.reason });
-}
-function readGuidance(options, zone) {
-  return resolveGuidance({ config: options.config, planPresence: options.planPresence, readValidationCommand: options.readValidationCommand, zone });
-}
-async function readSummary(ledger, session) {
-  try {
-    return summarizeLedger(await ledger.readLines(session));
-  } catch (error62) {
-    throw new LedgerUnreadableError({ cause: error62 });
-  }
-}
-
-// src/infrastructure/git/git-inspector.ts
-var GIT_TIMEOUT_MS = 3e3;
-var GIT_COMMIT_PATTERN = /^[0-9a-fA-F]{4,64}$/;
-var INSPECTION_FAILED = { status: "unavailable", reason: "inspection_failed" };
-var BUDGET_TIMED_OUT = { status: "timed_out", exitCode: null, stdout: "", stderr: "" };
-function succeeded(result) {
-  return result.status === "completed" && result.exitCode === 0;
-}
-var NodeGitInspector = class {
-  constructor(runner, repositoryRoot, options = {}) {
-    this.runner = runner;
-    this.repositoryRoot = repositoryRoot;
-    this.options = options;
-  }
-  async inspect(recordedCommit) {
-    const budget = this.options.budgetMilliseconds;
-    if (budget === void 0) return await this.inspectChain(recordedCommit, null);
-    try {
-      return await runWithinDeadline(this.inspectChain(recordedCommit, Date.now() + budget), budget);
-    } catch (error62) {
-      if (error62 instanceof DeadlineExceededError) return INSPECTION_FAILED;
-      throw error62;
-    }
-  }
-  async inspectChain(recordedCommit, deadline) {
-    const window = await this.discoverGit(deadline);
-    if ("status" in window) return window;
-    const repository = await this.run(window, ["rev-parse", "--is-inside-work-tree"]);
-    if (repository.status !== "completed") return INSPECTION_FAILED;
-    if (!succeeded(repository) || repository.stdout.trim() !== "true") return { status: "unavailable", reason: "not_repository" };
-    const branch = await this.run(window, ["symbolic-ref", "--quiet", "--short", "HEAD"]);
-    const head = await this.run(window, ["rev-parse", "--verify", "HEAD"]);
-    const tree = await this.run(window, ["status", "--porcelain", "--untracked-files=all"]);
-    if (tree.status !== "completed" || tree.exitCode !== 0 || head.status !== "completed" || branch.status !== "completed") {
-      return INSPECTION_FAILED;
-    }
-    const headCommit = succeeded(head) ? head.stdout.trim() : null;
-    const commitStatus = await this.recordedCommitStatus(window, recordedCommit, headCommit);
-    if (commitStatus === "inspection_failed") return INSPECTION_FAILED;
-    return {
-      status: "available",
-      branch: succeeded(branch) ? branch.stdout.trim() : null,
-      headCommit,
-      cleanWorkingTree: tree.stdout.trim().length === 0,
-      recordedCommit: commitStatus
-    };
-  }
-  async discoverGit(deadline) {
-    const timeout = this.remainingTimeout(deadline);
-    if (timeout === null) return INSPECTION_FAILED;
-    const [git] = await this.runner.discover({ names: ["git"], timeoutMilliseconds: timeout });
-    if (this.remainingTimeout(deadline) === null) return INSPECTION_FAILED;
-    if (git === void 0 || git.path === null || git.timedOut) return { status: "unavailable", reason: "git_missing" };
-    return { git: git.path, deadline };
-  }
-  async recordedCommitStatus(window, recorded, head) {
-    if (recorded === null) return "not_checked";
-    if (!GIT_COMMIT_PATTERN.test(recorded)) return "missing";
-    const exists = await this.run(window, ["cat-file", "-e", `${recorded}^{commit}`]);
-    if (exists.status !== "completed") return "inspection_failed";
-    if (exists.exitCode !== 0) return "missing";
-    if (head === null) return "outside_history";
-    const ancestor = await this.run(window, ["merge-base", "--is-ancestor", recorded, "HEAD"]);
-    if (ancestor.status !== "completed") return "inspection_failed";
-    if (ancestor.exitCode === 0) return "ancestor";
-    return ancestor.exitCode === 1 ? "outside_history" : "inspection_failed";
-  }
-  run(window, args) {
-    const timeout = this.remainingTimeout(window.deadline);
-    if (timeout === null) return Promise.resolve(BUDGET_TIMED_OUT);
-    return this.runner.run({ executable: window.git, args: ["-C", this.repositoryRoot, ...args], timeoutMilliseconds: timeout });
-  }
-  remainingTimeout(deadline) {
-    const perCommand = this.options.timeoutMilliseconds ?? GIT_TIMEOUT_MS;
-    if (deadline === null) return perCommand;
-    const remaining = deadline - Date.now();
-    if (remaining <= 0) return null;
-    return Math.min(perCommand, remaining);
-  }
-};
-
-// src/infrastructure/process/node-process-runner.ts
-import { spawn } from "node:child_process";
-import { basename, dirname as dirname2 } from "node:path";
-import process3 from "node:process";
-
-// src/infrastructure/process/process-tree.ts
-import { execFile } from "node:child_process";
-import process2 from "node:process";
-function killWindowsTree(child) {
-  return new Promise((resolve10) => {
-    if (!child.pid) {
-      resolve10();
-      return;
-    }
-    execFile("taskkill", ["/pid", String(child.pid), "/t", "/f"], { windowsHide: true }, () => resolve10());
-  });
-}
-function killPosixTree(child) {
-  if (!child.pid) {
-    child.kill("SIGKILL");
-    return Promise.resolve();
-  }
-  try {
-    process2.kill(-child.pid, "SIGKILL");
-  } catch (cause) {
-    if (!child.kill("SIGKILL")) return Promise.reject(new Error("Unable to stop timed-out process tree.", { cause }));
-  }
-  return Promise.resolve();
-}
-function killProcessTree(child) {
-  return process2.platform === "win32" ? killWindowsTree(child) : killPosixTree(child);
-}
-
-// src/infrastructure/process/node-process-runner.ts
-var locatorCommand = process3.platform === "win32" ? "where.exe" : "which";
-function locatorArgs(name) {
-  if (process3.platform === "win32" && (name.includes("/") || name.includes("\\"))) {
-    return [`${dirname2(name)}:${basename(name)}`];
-  }
-  return [name];
-}
-function collect(child, timeoutMilliseconds) {
-  return new Promise((resolve10) => {
-    let stdout = "";
-    let stderr = "";
-    let settled = false;
-    let timedOut = false;
-    function finish(status, exitCode) {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      resolve10({ status, exitCode, stdout, stderr });
-    }
-    const timer = setTimeout(() => {
-      timedOut = true;
-      void killProcessTree(child).then(() => finish("timed_out", null), () => finish("timed_out", null));
-    }, timeoutMilliseconds);
-    child.stdout?.on("data", (chunk) => {
-      stdout += chunk.toString();
-    });
-    child.stderr?.on("data", (chunk) => {
-      stderr += chunk.toString();
-    });
-    child.on("error", () => {
-      if (!timedOut) finish("failed", null);
-    });
-    child.on("close", (exitCode) => {
-      if (!timedOut) finish("completed", exitCode);
-    });
-  });
-}
-function locatedPath(result) {
-  if (result.status !== "completed" || result.exitCode !== 0) return null;
-  const firstLine = result.stdout.split(/\r?\n/).find((line) => line.trim().length > 0);
-  return firstLine?.trim() ?? null;
-}
-var NodeProcessRunner = class {
-  async discover(request) {
-    const names = [...new Set(request.names)];
-    return Promise.all(names.map((name) => this.find(name, request.timeoutMilliseconds)));
-  }
-  async run(request) {
-    if (!Number.isFinite(request.timeoutMilliseconds) || request.timeoutMilliseconds <= 0) {
-      throw new RangeError("Process timeout must be a positive finite number.");
-    }
-    const child = spawn(request.executable, [...request.args], {
-      detached: process3.platform !== "win32",
-      shell: false,
-      windowsHide: true
-    });
-    return collect(child, request.timeoutMilliseconds);
-  }
-  async find(name, timeoutMilliseconds) {
-    const result = await this.run({ executable: locatorCommand, args: locatorArgs(name), timeoutMilliseconds });
-    return { name, path: locatedPath(result), timedOut: result.status === "timed_out" };
-  }
-};
-
-// src/infrastructure/runtime/boot-reader.ts
-import { readFile } from "node:fs/promises";
-import { resolve as resolve4 } from "node:path";
-
-// src/core/contracts/state-checkpoint.ts
-var CHECKPOINT_SCHEMA_VERSION = 1;
-var TIMESTAMP_RULE = "must be an ISO 8601 date-time";
-function addIssue4(ctx, issue2) {
-  ctx.issues.push(issue2);
-}
-var nonEmptyText2 = external_exports.string().check(external_exports.minLength(1));
-var timestampSchema = external_exports.string().check(external_exports.minLength(1), (ctx) => {
-  if (Number.isNaN(Date.parse(ctx.value))) addIssue4(ctx, { code: "custom", path: [], input: ctx.value, message: TIMESTAMP_RULE });
-});
-var gitStateSchema = external_exports.strictObject({
-  branch: external_exports.nullable(external_exports.string()),
-  lastCommitHash: external_exports.nullable(external_exports.string()),
-  cleanWorkingTree: external_exports.nullable(external_exports.boolean())
-});
-var workingMemorySchema = external_exports.strictObject({
-  discoveredConstraints: external_exports._default(external_exports.array(external_exports.string()), []),
-  decisionsMade: external_exports._default(external_exports.array(external_exports.string()), []),
-  blockedItems: external_exports._default(external_exports.array(external_exports.string()), []),
-  breakingChanges: external_exports._default(external_exports.array(external_exports.string()), [])
-});
-var stateCheckpointSchema = external_exports.strictObject({
-  $schema: external_exports.optional(external_exports.string()),
-  schemaVersion: external_exports.literal(CHECKPOINT_SCHEMA_VERSION),
-  taskId: nonEmptyText2,
-  activeStepId: external_exports._default(external_exports.nullable(stepIdSchema), null),
-  gitState: gitStateSchema,
-  workingMemory: workingMemorySchema,
-  modifiedFiles: external_exports._default(external_exports.array(external_exports.string()), []),
-  timestamp: timestampSchema
-});
-
-// src/core/validation/issues.ts
-var SYNTAX_RULE = "must be valid JSON";
-function valueAtPath2(source, path) {
-  return path.reduce((value, key) => value !== null && typeof value === "object" ? value[key] : void 0, source);
-}
-function toIssue2(issue2, source) {
-  const path = issue2.path.join(".") || "(root)";
-  return { path, received: "input" in issue2 ? issue2.input : valueAtPath2(source, issue2.path), rule: issue2.message };
-}
-function toIssues(issues, source) {
-  return issues.map((issue2) => toIssue2(issue2, source));
-}
-function syntaxIssue(received) {
-  return { path: "(syntax)", received, rule: SYNTAX_RULE };
-}
-function versionMismatchIssue(input2, expected) {
-  if (input2 === null || typeof input2 !== "object") return null;
-  const received = input2["schemaVersion"];
-  if (received === void 0 || received === expected) return null;
-  return { path: "schemaVersion", received, rule: `must be ${expected}; migrate the file to schema version ${expected}` };
-}
-
-// src/core/validation/checkpoint-validator.ts
-var ACTIVE_STEP_RULE = "must reference a step present in the plan";
-var InvalidCheckpointError = class extends Error {
-  constructor(issues, filePath, options) {
-    super("State checkpoint validation failed.", options);
-    this.issues = issues;
-    this.filePath = filePath;
-    this.name = "InvalidCheckpointError";
-  }
-};
-function parseStateCheckpoint(input2, filePath) {
-  const mismatch = versionMismatchIssue(input2, CHECKPOINT_SCHEMA_VERSION);
-  if (mismatch !== null) throw new InvalidCheckpointError([mismatch], filePath);
-  const result = stateCheckpointSchema.safeParse(input2);
-  if (result.success) return result.data;
-  throw new InvalidCheckpointError(toIssues(result.error.issues, input2), filePath);
-}
-function invalidCheckpointSyntaxError(filePath, received, cause) {
-  return new InvalidCheckpointError([syntaxIssue(received)], filePath, { cause });
-}
-function checkpointAgainstPlanIssues(checkpoint, plan) {
-  if (checkpoint.activeStepId === null) return [];
-  if (plan.steps.some((step) => step.id === checkpoint.activeStepId)) return [];
-  return [{ path: "activeStepId", received: checkpoint.activeStepId, rule: ACTIVE_STEP_RULE }];
-}
-function assertCheckpointMatchesPlan(checkpoint, plan, filePath) {
-  const issues = checkpointAgainstPlanIssues(checkpoint, plan);
-  if (issues.length > 0) throw new InvalidCheckpointError(issues, filePath);
-}
-
-// src/core/validation/plan-validator.ts
-var InvalidPlanError = class extends Error {
-  constructor(issues, filePath, options) {
-    super("Task plan validation failed.", options);
-    this.issues = issues;
-    this.filePath = filePath;
-    this.name = "InvalidPlanError";
-  }
-};
-function parseTaskPlan(input2, filePath) {
-  const mismatch = versionMismatchIssue(input2, PLAN_SCHEMA_VERSION);
-  if (mismatch !== null) throw new InvalidPlanError([mismatch], filePath);
-  const result = taskPlanSchema.safeParse(input2);
-  if (result.success) return result.data;
-  throw new InvalidPlanError(toIssues(result.error.issues, input2), filePath);
-}
-function invalidPlanSyntaxError(filePath, received, cause) {
-  return new InvalidPlanError([syntaxIssue(received)], filePath, { cause });
-}
-
-// src/core/services/boot-policy.ts
-function issueInstruction(file2, issues) {
-  const issue2 = issues[0];
-  const detail = issue2 === void 0 ? "validation failed" : `${issue2.path}: ${issue2.rule}`;
-  return { kind: "invalid_state", text: `[ContextBrake boot v1] Repair ${file2}: ${detail}. Validate the file before continuing.` };
-}
-function decideBoot(input2) {
-  if (input2.plan.kind === "missing") return { kind: "none" };
-  if (input2.plan.kind === "invalid") return issueInstruction(input2.planFile, input2.plan.error.issues);
-  let plan;
-  try {
-    plan = parseTaskPlan(input2.plan.value, input2.planFile);
-  } catch (error62) {
-    if (error62 instanceof InvalidPlanError) return issueInstruction(input2.planFile, error62.issues);
-    throw error62;
-  }
-  if (isPlanComplete(plan)) return { kind: "none" };
-  if (input2.checkpoint.kind === "missing") return { kind: "invalid_state", text: `[ContextBrake boot v1] Repair ${input2.checkpointFile}: file is missing. Validate the file before continuing.` };
-  if (input2.checkpoint.kind === "invalid") return issueInstruction(input2.checkpointFile, input2.checkpoint.error.issues);
-  try {
-    const checkpoint = parseStateCheckpoint(input2.checkpoint.value, input2.checkpointFile);
-    assertCheckpointMatchesPlan(checkpoint, plan, input2.checkpointFile);
-    if (checkpoint.taskId !== plan.taskId) return { kind: "invalid_state", text: `[ContextBrake boot v1] Repair ${input2.checkpointFile}: taskId must match ${input2.planFile}. Validate the file before continuing.` };
-    return { kind: "boot", text: renderBootSummary({ plan, checkpoint, git: input2.git, checkpointFile: input2.checkpointFile, maxTokens: input2.maxTokens }) };
-  } catch (error62) {
-    if (error62 instanceof InvalidCheckpointError) return issueInstruction(input2.checkpointFile, error62.issues);
-    throw error62;
-  }
-}
-
-// src/core/services/git-divergence.ts
-function compareGitState(input2) {
-  const { recorded, current } = input2;
-  if (current.status === "unavailable") {
-    return { checkedAt: input2.now.toISOString(), divergences: [{ kind: "checks_omitted", reason: current.reason }] };
-  }
-  const divergences = [];
-  if (recorded.lastCommitHash !== null && current.recordedCommit === "missing") {
-    divergences.push({ kind: "missing_commit", recordedCommit: recorded.lastCommitHash });
-  }
-  if (recorded.lastCommitHash !== null && current.recordedCommit === "outside_history") {
-    divergences.push({ kind: "outside_history", recordedCommit: recorded.lastCommitHash, currentCommit: current.headCommit });
-  }
-  if (!current.cleanWorkingTree) divergences.push({ kind: "pending_changes" });
-  if (recorded.branch !== null && recorded.branch !== current.branch) {
-    divergences.push({ kind: "branch_changed", recordedBranch: recorded.branch, currentBranch: current.branch });
-  }
-  return { checkedAt: input2.now.toISOString(), divergences };
-}
-
-// src/infrastructure/runtime/runtime-paths.ts
-import { createHash } from "node:crypto";
-import { mkdir, writeFile } from "node:fs/promises";
-import { join as join2, resolve as resolve3 } from "node:path";
-
-// src/infrastructure/storage/runtime-state-files.ts
-import { readdir } from "node:fs/promises";
-import { join, relative, resolve as resolve2 } from "node:path";
-var RUNTIME_STATE_RELATIVE_DIR = ".context-brake/runtime";
-async function listRuntimeStateFiles(root, readdirFn = readdir) {
-  const runtimeDir = resolve2(root, RUNTIME_STATE_RELATIVE_DIR);
-  try {
-    const entries = await readdirFn(runtimeDir, { recursive: true, withFileTypes: true });
-    return entries.filter((entry) => entry.isFile()).map((entry) => {
-      const parentDir = entry.parentPath ?? entry.path ?? runtimeDir;
-      return join(RUNTIME_STATE_RELATIVE_DIR, relative(runtimeDir, parentDir), entry.name);
-    }).map((p) => p.replace(/\\/g, "/")).sort();
-  } catch (err) {
-    if (err.code === "ENOENT") return [];
-    throw err;
-  }
-}
-
-// src/infrastructure/runtime/runtime-paths.ts
-var RUNTIME_GITIGNORE_CONTENT = "*\n";
-var SESSIONS_DIR_NAME = "sessions";
-var LEDGER_FILE_EXTENSION = ".jsonl";
-var SESSIONS_RELATIVE_PREFIX = `${RUNTIME_STATE_RELATIVE_DIR}/${SESSIONS_DIR_NAME}/`;
-var HASH_LENGTH = 32;
-function runtimeDirectory(projectRoot) {
-  return resolve3(projectRoot, RUNTIME_STATE_RELATIVE_DIR);
-}
-function sessionsDirectory(projectRoot, harness) {
-  return join2(runtimeDirectory(projectRoot), SESSIONS_DIR_NAME, harness);
-}
-function sessionLedgerHash(key) {
-  return createHash("sha256").update(`${key.sessionId}\0${key.agentId ?? ""}`).digest("hex").slice(0, HASH_LENGTH);
-}
-function sessionLedgerPath(projectRoot, key) {
-  return join2(sessionsDirectory(projectRoot, key.harness), `${sessionLedgerHash(key)}${LEDGER_FILE_EXTENSION}`);
-}
-async function ensureRuntimeDirectory(projectRoot) {
-  const directory = runtimeDirectory(projectRoot);
-  await mkdir(join2(directory, SESSIONS_DIR_NAME), { recursive: true });
-  await writeGitignoreIfMissing(join2(directory, ".gitignore"));
-}
-async function ensureSessionDirectory(projectRoot, key) {
-  await ensureRuntimeDirectory(projectRoot);
-  await mkdir(sessionsDirectory(projectRoot, key.harness), { recursive: true });
-}
-function isMissingFileError(error62) {
-  return error62.code === "ENOENT";
-}
-async function writeGitignoreIfMissing(filePath) {
-  try {
-    await writeFile(filePath, RUNTIME_GITIGNORE_CONTENT, { flag: "wx" });
-  } catch (error62) {
-    if (!isAlreadyCreated(error62)) throw error62;
-  }
-}
-function isAlreadyCreated(error62) {
-  return error62.code === "EEXIST";
-}
-
-// src/infrastructure/runtime/boot-reader.ts
-var NodeBootReader = class {
-  constructor(input2) {
-    this.input = input2;
-  }
-  async readBoot() {
-    const planFile = this.input.config.stateStorage.planFile;
-    const checkpointFile = this.input.config.stateStorage.checkpointFile;
-    const plan = await this.readFileState(planFile, invalidPlanSyntaxError);
-    const checkpoint = await this.readFileState(checkpointFile, invalidCheckpointSyntaxError);
-    const maxTokens = this.input.config.stateStorage.bootMaxTokens;
-    const emptyGit = { checkedAt: this.input.clock.now().toISOString(), divergences: [] };
-    const initial = decideBoot({ plan, checkpoint, planFile, checkpointFile, git: emptyGit, maxTokens });
-    if (initial.kind !== "boot" || checkpoint.kind !== "value") return initial;
-    const recorded = parseStateCheckpoint(checkpoint.value, checkpointFile).gitState;
-    const current = await this.inspectGit(recorded.lastCommitHash);
-    const git = compareGitState({ recorded, current, now: this.input.clock.now() });
-    return decideBoot({ plan, checkpoint, planFile, checkpointFile, git, maxTokens });
-  }
-  async inspectGit(recordedCommit) {
-    try {
-      return await this.input.gitInspector.inspect(recordedCommit);
-    } catch {
-      await this.input.reportInspectionFailure?.().catch(() => void 0);
-      return { status: "unavailable", reason: "inspection_failed" };
-    }
-  }
-  async readFileState(fileName, toSyntaxError) {
-    const filePath = resolve4(this.input.projectRoot, fileName);
-    const content = await readFile(filePath, "utf8").catch((error62) => {
-      if (isMissingFileError(error62)) return null;
-      throw error62;
-    });
-    if (content === null) return { kind: "missing" };
-    try {
-      return { kind: "value", value: JSON.parse(content) };
-    } catch (error62) {
-      return { kind: "invalid", error: toSyntaxError(fileName, content, error62) };
-    }
-  }
-};
 
 // src/infrastructure/runtime/node-runtime-logs.ts
 import { appendFile } from "node:fs/promises";
@@ -19546,19 +18437,72 @@ function parseLedgerLine(text) {
   return result.success ? result.data : null;
 }
 
+// src/infrastructure/runtime/runtime-paths.ts
+import { createHash } from "node:crypto";
+import { mkdir, writeFile } from "node:fs/promises";
+import { join as join2, resolve as resolve2 } from "node:path";
+
+// src/infrastructure/storage/runtime-state-files.ts
+import { readdir } from "node:fs/promises";
+import { join, relative, resolve } from "node:path";
+var RUNTIME_STATE_RELATIVE_DIR = ".context-brake/runtime";
+async function listRuntimeStateFiles(root, readdirFn = readdir) {
+  const runtimeDir = resolve(root, RUNTIME_STATE_RELATIVE_DIR);
+  try {
+    const entries = await readdirFn(runtimeDir, { recursive: true, withFileTypes: true });
+    return entries.filter((entry) => entry.isFile()).map((entry) => {
+      const parentDir = entry.parentPath ?? entry.path ?? runtimeDir;
+      return join(RUNTIME_STATE_RELATIVE_DIR, relative(runtimeDir, parentDir), entry.name);
+    }).map((p) => p.replace(/\\/g, "/")).sort();
+  } catch (err) {
+    if (err.code === "ENOENT") return [];
+    throw err;
+  }
+}
+
+// src/infrastructure/runtime/runtime-paths.ts
+var RUNTIME_GITIGNORE_CONTENT = "*\n";
+var SESSIONS_DIR_NAME = "sessions";
+var LEDGER_FILE_EXTENSION = ".jsonl";
+var SESSIONS_RELATIVE_PREFIX = `${RUNTIME_STATE_RELATIVE_DIR}/${SESSIONS_DIR_NAME}/`;
+var HASH_LENGTH = 32;
+function runtimeDirectory(projectRoot) {
+  return resolve2(projectRoot, RUNTIME_STATE_RELATIVE_DIR);
+}
+function sessionsDirectory(projectRoot, harness) {
+  return join2(runtimeDirectory(projectRoot), SESSIONS_DIR_NAME, harness);
+}
+function sessionLedgerHash(key) {
+  return createHash("sha256").update(`${key.sessionId}\0${key.agentId ?? ""}`).digest("hex").slice(0, HASH_LENGTH);
+}
+function sessionLedgerPath(projectRoot, key) {
+  return join2(sessionsDirectory(projectRoot, key.harness), `${sessionLedgerHash(key)}${LEDGER_FILE_EXTENSION}`);
+}
+async function ensureRuntimeDirectory(projectRoot) {
+  const directory = runtimeDirectory(projectRoot);
+  await mkdir(join2(directory, SESSIONS_DIR_NAME), { recursive: true });
+  await writeGitignoreIfMissing(join2(directory, ".gitignore"));
+}
+async function ensureSessionDirectory(projectRoot, key) {
+  await ensureRuntimeDirectory(projectRoot);
+  await mkdir(sessionsDirectory(projectRoot, key.harness), { recursive: true });
+}
+function isMissingFileError(error62) {
+  return error62.code === "ENOENT";
+}
+async function writeGitignoreIfMissing(filePath) {
+  try {
+    await writeFile(filePath, RUNTIME_GITIGNORE_CONTENT, { flag: "wx" });
+  } catch (error62) {
+    if (!isAlreadyCreated(error62)) throw error62;
+  }
+}
+function isAlreadyCreated(error62) {
+  return error62.code === "EEXIST";
+}
+
 // src/infrastructure/runtime/node-runtime-logs.ts
-var BLOCKS_FILE_NAME = "blocks.jsonl";
 var ERRORS_FILE_NAME = "errors.jsonl";
-var NodeBlockLog = class {
-  constructor(projectRoot, clock) {
-    this.projectRoot = projectRoot;
-    this.clock = clock;
-  }
-  async append(key, input2) {
-    const line = blockLineSchema.parse({ v: 1, at: this.clock.now().toISOString(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input2 });
-    await appendRuntimeLine(this.projectRoot, BLOCKS_FILE_NAME, line);
-  }
-};
 var NodeRuntimeErrorLog = class {
   constructor(projectRoot, clock) {
     this.projectRoot = projectRoot;
@@ -19576,8 +18520,8 @@ async function appendRuntimeLine(projectRoot, fileName, line) {
 }
 
 // src/infrastructure/runtime/node-session-ledger.ts
-import { appendFile as appendFile2, readFile as readFile2, stat, unlink } from "node:fs/promises";
-import { resolve as resolve5 } from "node:path";
+import { appendFile as appendFile2, readFile, stat, unlink } from "node:fs/promises";
+import { resolve as resolve3 } from "node:path";
 var MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1e3;
 var NodeSessionLedger = class {
   constructor(projectRoot, clock) {
@@ -19585,7 +18529,7 @@ var NodeSessionLedger = class {
     this.clock = clock;
   }
   async readLines(key) {
-    const content = await readFile2(sessionLedgerPath(this.projectRoot, key), "utf8").catch((error62) => {
+    const content = await readFile(sessionLedgerPath(this.projectRoot, key), "utf8").catch((error62) => {
       if (isMissingFileError(error62)) return "";
       throw error62;
     });
@@ -19609,7 +18553,7 @@ var NodeSessionLedger = class {
     let pruned = 0;
     for (const file2 of files) {
       if (!file2.startsWith(SESSIONS_RELATIVE_PREFIX) || !file2.endsWith(LEDGER_FILE_EXTENSION)) continue;
-      if (await this.prune(resolve5(this.projectRoot, file2), cutoff)) pruned += 1;
+      if (await this.prune(resolve3(this.projectRoot, file2), cutoff)) pruned += 1;
     }
     return pruned;
   }
@@ -19634,427 +18578,104 @@ var NodeSessionLedger = class {
   }
 };
 
-// src/infrastructure/runtime/plan-presence.ts
-import { stat as stat2 } from "node:fs/promises";
-import { resolve as resolve6 } from "node:path";
-var NodePlanPresence = class {
-  constructor(projectRoot, planFile, statFile = stat2) {
-    this.projectRoot = projectRoot;
-    this.planFile = planFile;
-    this.statFile = statFile;
-  }
-  async exists() {
-    try {
-      await this.statFile(resolve6(this.projectRoot, this.planFile));
-      return true;
-    } catch (error62) {
-      return !isMissingFileError(error62);
-    }
-  }
-};
-
-// src/infrastructure/runtime/plan-validation-reader.ts
-import { readFile as readFile3 } from "node:fs/promises";
-import { resolve as resolve7 } from "node:path";
-var planStepSchema2 = external_exports.looseObject({ id: external_exports.union([external_exports.string(), external_exports.number()]), status: external_exports.string(), validationCommand: external_exports.optional(external_exports.string()) });
-var planSchema = external_exports.looseObject({ currentStepId: external_exports.optional(external_exports.union([external_exports.string(), external_exports.number()])), steps: external_exports.array(planStepSchema2) });
-var NodePlanValidationReader = class {
-  constructor(projectRoot, planFile) {
-    this.projectRoot = projectRoot;
-    this.planFile = planFile;
-  }
-  async readValidationCommand() {
-    const plan = await this.readPlan();
-    if (plan === null) return null;
-    return activeStep(plan.steps, plan.currentStepId)?.validationCommand ?? null;
-  }
-  async readPlan() {
-    const content = await readFile3(resolve7(this.projectRoot, this.planFile), "utf8").catch(() => null);
-    if (content === null) return null;
-    let value;
-    try {
-      value = JSON.parse(content);
-    } catch {
-      return null;
-    }
-    const result = planSchema.safeParse(value);
-    return result.success ? result.data : null;
-  }
-};
-function activeStep(steps, currentStepId) {
-  if (currentStepId !== void 0) {
-    const current = steps.find((step) => step.id === currentStepId);
-    if (current) return current;
-  }
-  const inProgress = steps.find((step) => step.status === "IN_PROGRESS");
-  if (inProgress) return inProgress;
-  return [...steps].reverse().find((step) => step.status === "COMPLETED") ?? null;
+// src/infrastructure/harnesses/common/runtime-support.ts
+import { realpath } from "node:fs/promises";
+import { dirname, resolve as resolve4 } from "node:path";
+import { fileURLToPath } from "node:url";
+async function assetProjectRoot() {
+  const assetDirectory = dirname(fileURLToPath(import.meta.url));
+  const root = resolve4(assetDirectory, "../..");
+  return realpath(root).catch(() => root);
 }
 
-// src/infrastructure/runtime/runtime-composition.ts
-var CONFIG_RELATIVE_PATH = "context-brake.config.json";
-var BOOT_GIT_BUDGET_MS = 1e3;
+// src/infrastructure/harnesses/claude-code/statusline-payload.ts
+var MAXIMUM_PERCENTAGE = 100;
+var statuslinePayloadSchema = external_exports.object({
+  session_id: external_exports.optional(external_exports.string()),
+  model: external_exports.optional(external_exports.nullable(external_exports.object({ id: external_exports.optional(external_exports.unknown()) }))),
+  context_window: external_exports.optional(external_exports.nullable(external_exports.object({
+    context_window_size: external_exports.optional(external_exports.unknown()),
+    total_input_tokens: external_exports.optional(external_exports.unknown()),
+    used_percentage: external_exports.optional(external_exports.unknown()),
+    current_usage: external_exports.optional(external_exports.unknown())
+  })))
+});
+function mapStatuslinePayload(payload) {
+  const result = statuslinePayloadSchema.safeParse(payload);
+  if (!result.success) return null;
+  const sessionId = result.data.session_id;
+  if (sessionId === void 0 || sessionId === "") return null;
+  const window = result.data.context_window ?? {};
+  const line = { windowTokens: positiveInteger2(window.context_window_size), inputTokens: inputTokens(window), usedPercentage: percentage2(window.used_percentage), model: modelId(result.data.model?.id) };
+  return { session: { harness: "claude-code", sessionId, agentId: null }, line };
+}
+function inputTokens(window) {
+  return window.current_usage === null ? null : positiveInteger2(window.total_input_tokens);
+}
+function positiveInteger2(value) {
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : null;
+}
+function percentage2(value) {
+  return typeof value === "number" && value >= 0 && value <= MAXIMUM_PERCENTAGE ? value : null;
+}
+function modelId(value) {
+  return typeof value === "string" && value !== "" && value.length <= STATUSLINE_MODEL_MAX_LENGTH ? value : null;
+}
+
+// src/infrastructure/harnesses/claude-code/statusline-bridge.ts
+var STATUSLINE_PIPE_FLAG = "--pipe";
+var STATUSLINE_PARSE_LIMIT_BYTES = 1024 * 1024;
+var RECORD_DEADLINE_MILLISECONDS = 1500;
+var STATUSLINE_EVENT = "StatusLine";
 var systemClock = { now: () => /* @__PURE__ */ new Date() };
-async function loadRuntimeConfiguration(projectRoot) {
-  const filePath = resolve8(projectRoot, CONFIG_RELATIVE_PATH);
-  const content = await readFile4(filePath, "utf8").catch((error62) => {
-    if (isMissingFileError(error62)) return null;
-    throw error62;
-  });
-  if (content === null) return DEFAULT_CONFIG;
-  let value;
-  try {
-    value = JSON.parse(content);
-  } catch (error62) {
-    throw invalidSyntaxError(filePath, content, error62);
-  }
-  return parseConfiguration(value, filePath);
+function processContext() {
+  return { argv: process.argv, stdin: process.stdin, stdout: process.stdout, resolveProjectRoot: assetProjectRoot };
 }
-function createRuntimePorts(input2) {
-  const config2 = input2.config ?? DEFAULT_CONFIG;
-  const planReader = new NodePlanValidationReader(input2.projectRoot, config2.stateStorage.planFile);
-  const errors = new NodeRuntimeErrorLog(input2.projectRoot, input2.clock);
-  const harness = input2.harness;
-  const bootReader = new NodeBootReader({
-    projectRoot: input2.projectRoot,
-    config: config2,
-    clock: input2.clock,
-    gitInspector: new NodeGitInspector(new NodeProcessRunner(), input2.projectRoot, { budgetMilliseconds: BOOT_GIT_BUDGET_MS }),
-    reportInspectionFailure: harness === void 0 ? void 0 : () => errors.append(harness, {
-      event: "session_reset",
-      code: "UNEXPECTED",
-      detail: "Git inspection failed."
-    })
-  });
-  return {
-    ledger: input2.ledger ?? new NodeSessionLedger(input2.projectRoot, input2.clock),
-    blocks: new NodeBlockLog(input2.projectRoot, input2.clock),
-    errors,
-    readValidationCommand: () => planReader.readValidationCommand(),
-    readBoot: () => bootReader.readBoot(),
-    planPresence: new NodePlanPresence(input2.projectRoot, config2.stateStorage.planFile)
-  };
-}
-function composeRuntime(input2) {
-  const ports = createRuntimePorts({ ...input2, harness: input2.descriptor.harness });
-  const engine = createBrakeEngine({
-    descriptor: input2.descriptor,
-    config: input2.config,
-    ledger: ports.ledger,
-    blocks: ports.blocks,
-    readValidationCommand: ports.readValidationCommand,
-    readBoot: ports.readBoot,
-    errors: ports.errors,
-    planPresence: ports.planPresence
-  });
-  return { ...ports, engine, config: input2.config };
-}
-
-// src/infrastructure/runtime/tool-path-normalizer.ts
-import { realpath as realpath2 } from "node:fs/promises";
-import { basename as basename2, dirname as dirname3, isAbsolute, join as join4, relative as relative2, resolve as resolve9 } from "node:path";
-async function normalizeEventToolPaths(event, projectRoot) {
-  if (event === null || !("tool" in event) || event.tool.paths.length === 0) return event;
-  const paths = await Promise.all(event.tool.paths.map((path) => normalizeToolPath(projectRoot, path)));
-  return { ...event, tool: { ...event.tool, paths } };
-}
-async function normalizeToolPath(projectRoot, toolPath) {
-  const absolute = isAbsolute(toolPath) ? toolPath : resolve9(projectRoot, toolPath);
-  const canonicalRoot = await canonicalPath(projectRoot);
-  const canonicalParent = await canonicalPath(dirname3(absolute));
-  return relative2(canonicalRoot, join4(canonicalParent, basename2(absolute))).replace(/\\/g, "/");
-}
-async function canonicalPath(path) {
-  return realpath2(path).catch(() => resolve9(path));
-}
-
-// src/infrastructure/runtime/process-hook-host.ts
-var MAXIMUM_STDIN_BYTES = 16 * 1024 * 1024;
-var NEUTRAL2 = { kind: "neutral" };
-var defaultProcessHookContext = {
-  argv: process.argv,
-  readStdin: () => readStdinUpTo(process.stdin, MAXIMUM_STDIN_BYTES),
-  writeStdout: (text) => {
-    process.stdout.write(text);
-  },
-  writeStderr: (text) => {
-    process.stderr.write(text);
-  },
-  deadlineMilliseconds: 1500
-};
-function readStdinUpTo(stream, maximumBytes) {
-  return new Promise((resolve10, reject) => {
-    const chunks = [];
-    let size = 0;
-    stream.on("data", (chunk) => {
-      const remaining = maximumBytes - size;
-      if (remaining <= 0) return;
-      chunks.push(remaining >= chunk.length ? chunk : chunk.subarray(0, remaining));
-      size += chunk.length;
-    });
-    stream.on("end", () => resolve10(Buffer.concat(chunks).toString("utf8")));
-    stream.on("error", (error62) => reject(error62));
-  });
-}
-async function runProcessHook(adapter, context = defaultProcessHookContext) {
-  const eventName = context.argv[2] ?? "";
-  const state = { event: null, projectRoot: null, config: null };
-  try {
-    const decision = await runWithinDeadline(dispatchHook({ adapter, context, eventName, state }), context.deadlineMilliseconds);
-    writeDecision({ adapter, context, decision, eventName });
-  } catch (error62) {
-    const decision = await failureDecision({ adapter, state, error: error62, eventName });
-    writeDecision({ adapter, context, decision, eventName });
-    context.writeStderr(`ContextBrake: ${failureErrorCode(error62)}
-`);
-  }
+async function runClaudeStatuslineBridge(context = processContext()) {
+  const writer = context.argv.includes(STATUSLINE_PIPE_FLAG) ? tolerantWriter(context.stdout) : null;
+  const buffered = await passThrough(context.stdin, writer);
+  const record2 = buffered === null ? null : mapStatuslinePayload(parseJson(buffered));
+  if (record2 !== null) await recordStatusline(record2, await context.resolveProjectRoot());
   return 0;
 }
-async function dispatchHook(input2) {
-  const projectRoot = await input2.adapter.resolveProjectRoot({ eventName: input2.eventName, payload: null });
-  input2.state.projectRoot = projectRoot;
-  const payload = parsePayload2(await input2.context.readStdin());
-  const event = await normalizeEventToolPaths(input2.adapter.mapEvent(input2.eventName, payload), projectRoot);
-  input2.state.event = event;
-  const config2 = await loadRuntimeConfiguration(projectRoot);
-  input2.state.config = config2;
-  if (event === null) return NEUTRAL2;
-  const services = composeRuntime({ projectRoot, descriptor: input2.adapter.descriptor, config: config2, clock: systemClock });
-  return services.engine.handle(event, await input2.adapter.mapInput(input2.eventName, payload, services.errors));
+function tolerantWriter(stream) {
+  let isBroken = false;
+  stream.on("error", () => {
+    isBroken = true;
+  });
+  return (chunk) => {
+    if (!isBroken) stream.write(chunk);
+  };
 }
-async function failureDecision(input2) {
-  if (input2.state.projectRoot === null) return NEUTRAL2;
-  const ports = createRuntimePorts({ projectRoot: input2.state.projectRoot, config: input2.state.config, clock: systemClock });
-  if (input2.state.event === null) {
-    await recordRuntimeFailure(ports.errors, { harness: input2.adapter.descriptor.harness, event: input2.eventName, code: failureErrorCode(input2.error), detail: failureDetail(input2.error) });
-    return NEUTRAL2;
-  }
+async function passThrough(stdin, writer) {
+  const chunks = [];
+  let size = 0;
   try {
-    return await resolveFailure({ event: input2.state.event, code: failureErrorCode(input2.error), detail: failureDetail(input2.error), config: input2.state.config, descriptor: input2.adapter.descriptor, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand, planPresence: ports.planPresence });
-  } catch {
-    return NEUTRAL2;
-  }
-}
-function writeDecision(input2) {
-  const text = input2.adapter.renderDecision(input2.decision, input2.eventName);
-  if (text !== null && text !== "") input2.context.writeStdout(text);
-}
-function parsePayload2(raw) {
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
-// src/infrastructure/harnesses/claude-code/capabilities.ts
-var CLAUDE_CAPABILITIES = [
-  { id: "pre_tool_block", state: "supported" },
-  { id: "tool_coverage", state: "supported" },
-  { id: "post_tool_telemetry", state: "supported" },
-  { id: "session_boot", state: "supported" },
-  { id: "context_usage", state: "unknown", impact: "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the optional status line bridge." },
-  { id: "timeout_fail_closed", state: "unsupported", impact: "A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed." }
-];
-
-// src/infrastructure/harnesses/claude-code/schemas.ts
-var claudeHookItemSchema = external_exports.looseObject({
-  type: external_exports.optional(external_exports.string()),
-  command: external_exports.optional(external_exports.string()),
-  args: external_exports.optional(external_exports.array(external_exports.string()))
-});
-var claudeHookGroupSchema = external_exports.looseObject({
-  matcher: external_exports.optional(external_exports.string()),
-  hooks: external_exports.optional(external_exports.array(claudeHookItemSchema))
-});
-var claudeSettingsSchema = external_exports.looseObject({
-  hooks: external_exports.optional(external_exports.record(external_exports.string(), external_exports.array(claudeHookGroupSchema)))
-});
-var claudePayloadSchema = external_exports.looseObject({
-  session_id: external_exports.optional(external_exports.string()),
-  transcript_path: external_exports.optional(external_exports.string()),
-  agent_id: external_exports.optional(external_exports.string()),
-  source: external_exports.optional(external_exports.string()),
-  tool_name: external_exports.optional(external_exports.string()),
-  tool_input: external_exports.optional(external_exports.unknown()),
-  tool_response: external_exports.optional(external_exports.unknown()),
-  tool_use_id: external_exports.optional(external_exports.string()),
-  last_assistant_message: external_exports.optional(external_exports.string())
-});
-var claudePreToolUseResponseSchema = external_exports.looseObject({
-  hookSpecificOutput: external_exports.optional(external_exports.looseObject({
-    hookEventName: external_exports.literal("PreToolUse"),
-    permissionDecision: external_exports.optional(external_exports.enum(["allow", "deny", "ask", "defer"])),
-    permissionDecisionReason: external_exports.optional(external_exports.string())
-  }))
-});
-var claudePostToolUseResponseSchema = external_exports.looseObject({
-  hookSpecificOutput: external_exports.optional(external_exports.looseObject({
-    hookEventName: external_exports.literal("PostToolUse"),
-    additionalContext: external_exports.optional(external_exports.string())
-  }))
-});
-
-// src/infrastructure/harnesses/claude-code/transcript-usage.ts
-import { open as open2 } from "node:fs/promises";
-var CHUNK_BYTES = 64 * 1024;
-var MAXIMUM_BYTES = 4 * 1024 * 1024;
-var NEWLINE = 10;
-var tokenCount = external_exports.number().check(external_exports.nonnegative());
-var assistantLineSchema = external_exports.looseObject({
-  type: external_exports.literal("assistant"),
-  isSidechain: external_exports.optional(external_exports.unknown()),
-  timestamp: external_exports.string(),
-  message: external_exports.looseObject({
-    usage: external_exports.looseObject({ input_tokens: tokenCount, cache_creation_input_tokens: tokenCount, cache_read_input_tokens: tokenCount })
-  })
-});
-var TranscriptUnreadableError = class extends Error {
-  constructor(options) {
-    super("The session transcript could not be read.", options);
-    this.name = "TranscriptUnreadableError";
-  }
-};
-async function readTranscriptUsage(path) {
-  if (path === void 0 || path === "") return null;
-  let handle;
-  try {
-    handle = await open2(path, "r");
-  } catch (error62) {
-    if (isMissingFileError(error62)) return null;
-    throw new TranscriptUnreadableError({ cause: error62 });
-  }
-  try {
-    return await scanBackwards(handle);
-  } catch (error62) {
-    throw new TranscriptUnreadableError({ cause: error62 });
-  } finally {
-    await handle.close().catch(() => void 0);
-  }
-}
-async function scanBackwards(handle) {
-  const stats = await handle.stat();
-  if (!stats.isFile()) throw new Error("The transcript path is not a regular file.");
-  const size = stats.size;
-  const floor = Math.max(0, size - MAXIMUM_BYTES);
-  let end = size;
-  let pending = [];
-  while (end > floor) {
-    const start = Math.max(floor, end - CHUNK_BYTES);
-    const chunk = await readRange(handle, start, end);
-    end = start;
-    const cut = start === 0 ? 0 : chunk.indexOf(NEWLINE);
-    if (cut === -1) {
-      pending = [chunk, ...pending];
-      continue;
+    for await (const chunk of stdin) {
+      const data = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+      writer?.(data);
+      size += data.length;
+      if (size <= STATUSLINE_PARSE_LIMIT_BYTES) chunks.push(data);
     }
-    const usage = latestUsage(Buffer.concat([chunk.subarray(cut), ...pending]));
-    if (usage !== null) return usage;
-    pending = [chunk.subarray(0, cut)];
+  } catch {
+    return null;
   }
-  return null;
+  return size > STATUSLINE_PARSE_LIMIT_BYTES ? null : Buffer.concat(chunks);
 }
-async function readRange(handle, start, end) {
-  const buffer = Buffer.alloc(end - start);
-  const { bytesRead } = await handle.read(buffer, 0, buffer.length, start);
-  return buffer.subarray(0, bytesRead);
-}
-function latestUsage(block) {
-  const lines = block.toString("utf8").split("\n");
-  for (let index = lines.length - 1; index >= 0; index -= 1) {
-    const usage = usageOf(lines[index] ?? "");
-    if (usage !== null) return usage;
-  }
-  return null;
-}
-function usageOf(line) {
-  if (!line.includes('"usage"')) return null;
-  const result = assistantLineSchema.safeParse(parseLine(line));
-  if (!result.success || result.data.isSidechain === true) return null;
-  const usage = result.data.message.usage;
-  return { tokens: usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens, at: result.data.timestamp };
-}
-function parseLine(line) {
+function parseJson(buffered) {
   try {
-    return JSON.parse(line);
+    return JSON.parse(buffered.toString("utf8"));
   } catch {
     return null;
   }
 }
-
-// src/infrastructure/harnesses/claude-code/runtime.ts
-var HARNESS = "claude-code";
-var ESTIMATION = { baselineTokens: 15e3, tokensPerTurn: 150 };
-var WRITE_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit"];
-var SKILL_TOOL = "Skill";
-var claudeDescriptor = { harness: HARNESS, capabilities: CLAUDE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: "/clear" };
-function sessionOf(payload) {
-  return { harness: HARNESS, sessionId: requireIdentifier(payload.session_id), agentId: payload.agent_id ?? null };
-}
-function toolOf(payload) {
-  const name = payload.tool_name ?? "unknown";
-  const input2 = asRecord(payload.tool_input);
-  if (name === "Bash") return { name, category: "shell", paths: [], command: textValue(input2?.["command"]) };
-  if (name === SKILL_TOOL) return { name, category: "skill", paths: [], command: null, skill: textValue(input2?.["skill"]) ?? void 0 };
-  const path = textValue(input2?.["file_path"]);
-  if (path === null) return { name, category: "other", paths: [], command: null };
-  if (name === "Read") return { name, category: "file_read", paths: [path], command: null };
-  if (WRITE_TOOLS.includes(name)) return { name, category: "file_write", paths: [path], command: null };
-  return { name, category: "other", paths: [], command: null };
-}
-function resetEvent(session, source) {
-  if (source === "clear" || source === "compact") return { kind: "session_reset", session, reason: source };
-  if (source === "startup" || source === "fork") return { kind: "session_reset", session, reason: "new" };
-  return null;
-}
-function mapClaudeEvent(eventName, payload) {
-  const data = parsePayload(claudePayloadSchema, payload);
-  const session = sessionOf(data);
-  switch (eventName) {
-    case "PreToolUse":
-      return { kind: "pre_tool", session, tool: toolOf(data) };
-    case "PostToolUse":
-      return { kind: "post_tool", session, tool: toolOf(data), toolUseId: data.tool_use_id ?? null };
-    case "SessionStart":
-      return resetEvent(session, data.source ?? null);
-    case "Stop":
-      return { kind: "response_end", session, text: data.last_assistant_message ?? "" };
-    default:
-      return null;
-  }
-}
-async function mapClaudeInput(eventName, payload, errors) {
-  if (eventName !== "PreToolUse" && eventName !== "PostToolUse") return {};
-  const data = parsePayload(claudePayloadSchema, payload);
-  const measured = data.agent_id === void 0 ? await measuredUsage({ path: data.transcript_path, eventName, errors }) : void 0;
-  const usage = measured === void 0 ? {} : { measured };
-  return eventName === "PreToolUse" ? usage : { ...usage, observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
-}
-async function measuredUsage(input2) {
+async function recordStatusline(record2, projectRoot) {
   try {
-    const usage = await readTranscriptUsage(input2.path);
-    return usage === null ? void 0 : { tokens: usage.tokens, contextWindow: null, at: usage.at };
+    await runWithinDeadline(new NodeSessionLedger(projectRoot, systemClock).appendStatuslineLine(record2.session, record2.line), RECORD_DEADLINE_MILLISECONDS);
   } catch (error62) {
-    await recordRuntimeFailure(input2.errors, { harness: HARNESS, event: input2.eventName, code: "UNEXPECTED", detail: failureDetail(error62) });
-    return void 0;
+    await recordRuntimeFailure(new NodeRuntimeErrorLog(projectRoot, systemClock), { harness: record2.session.harness, event: STATUSLINE_EVENT, code: failureErrorCode(error62), detail: failureDetail(error62) });
   }
 }
-function renderClaudeDecision(decision, eventName) {
-  if (decision.kind === "deny") return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, permissionDecision: "deny", permissionDecisionReason: decision.message } });
-  if (decision.kind === "context" && (eventName === "PostToolUse" || eventName === "SessionStart")) return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: decision.block } });
-  if (decision.kind === "notify_user") return JSON.stringify({ systemMessage: decision.text });
-  return null;
-}
-var claudeAdapter = {
-  descriptor: claudeDescriptor,
-  mapEvent: mapClaudeEvent,
-  mapInput: mapClaudeInput,
-  renderDecision: renderClaudeDecision,
-  resolveProjectRoot: async () => projectRootFromEnvironment(["CLAUDE_PROJECT_DIR"]) ?? await assetProjectRoot()
-};
-function runClaudeCodeHook() {
-  return runProcessHook(claudeAdapter);
-}
 
-// assets/runtime/claude-code-hook.ts
-void runClaudeCodeHook();
+// assets/runtime/claude-code-statusline.ts
+void runClaudeStatuslineBridge();

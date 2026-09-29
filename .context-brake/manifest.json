@@ -5,17 +5,22 @@
     {
       "path": "context-brake.config.json",
       "kind": "config",
-      "sha256": "1043d2dc62f89550838d02ec77267836cda2b8a92cbcb39b70f14fe8e27a17a5"
+      "sha256": "91b4a8d04f3bd8a5fa194db6dced09e303f34932df366e61ae1ef30769f9678c"
     },
     {
       "path": "docs/context-brake-protocol.md",
       "kind": "protocol",
-      "sha256": "c3538b70c162ca22c42630066a43fbcbb3bca85a11a3834ed4ac1b004b27d2cc"
+      "sha256": "3bdcdd3ecd3793d1123375e443e4140bc313d35c65505b2e6142b3836526479d"
     },
     {
       "path": ".claude/hooks/context-brake.mjs",
       "kind": "runtime_asset",
-      "sha256": "cc9062cecba5110a3c80815eb55f666edd3b82ff8c80807506e89866adadeadd"
+      "sha256": "ff3eba004139ceb30d4b925f3e855ee9d67aa8ae678cd62dcd3493fd68031be3"
+    },
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "kind": "runtime_asset",
+      "sha256": "b0a6ea37f88d1f89c397bd6f5202e80271e3bd94ba854fc291b2ea4a9d0aa508"
     }
   ],
   "entries": [
@@ -33,6 +38,11 @@
       "harness": "claude-code",
       "path": ".claude/settings.json",
       "identity": "SessionStart|startup|resume|clear|compact|.claude/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "Stop|*|.claude/hooks/context-brake.mjs"
     }
   ]
 }

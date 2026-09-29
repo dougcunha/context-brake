@@ -26,5 +26,17 @@
       "AGENTS.md"
     ],
     "protocolFile": "docs/context-brake-protocol.md"
+  },
+  "brake": {
+    "additionalAllowedCommands": []
+  },
+  "runner": {
+    "maxSessions": 20,
+    "maxTotalMinutes": 240,
+    "maxSessionMinutes": 30,
+    "maxTotalTokens": 5000000,
+    "validationTimeoutSeconds": 600,
+    "maxConsecutiveFailures": 2,
+    "criticalGraceSeconds": 120
   }
 }

@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "generation": 2,
+  "feature": "prd-10-statusline-powershell-e-modo-light",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "product",
+  "status": "paused",
+  "safe_to_stop": true,
+  "owner_session": "session_012UFSLu4nVNJ5SBBZyBqZJP",
+  "objective": "Status line bridge that works when Claude Code runs the status line through PowerShell (and warns otherwise); debug mode available in light mode; light mode as the default; no repeated SessionStart DEADLINE_EXCEEDED.",
+  "constraints": [
+    "sdd-lean with four outcomes: short PRD covering each, HIL 1 and HIL 2 merged, independent review kept (DEC-STOPS-01)",
+    "Open product decisions go to the human before the PRD (DEC-STOPS-01); light default conflicts with PRD-09's bridge direction"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": null,
+    "techspec": null,
+    "tasks": null,
+    "review": null,
+    "qa": null,
+    "snapshot": null
+  },
+  "review_status": null,
+  "jev": "active",
+  "qa_status": null,
+  "approved_sources": [],
+  "decisions_to_read": [
+    "DEC-PD-00",
+    "DEC-HIL-00",
+    "DEC-STOPS-01"
+  ],
+  "git_base": "b6a130998003f96e6d423a08704ac1369a39c704",
+  "worktree_evidence": "workflow.md#Feature Summary (pre-existing changes)",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "run",
+    "instruction": "In a new session: read sdd-jev (active), ask the user the open product decisions from workflow.md#diagnosis (light default scope and migration, debug channel in light mode, status line command across shells, SessionStart deadline expectations), then sdd-create-prd.",
+    "read": [
+      {
+        "path": "tasks/prd-10-statusline-powershell-e-modo-light/workflow.md",
+        "section": "all"
+      }
+    ]
+  }
+}

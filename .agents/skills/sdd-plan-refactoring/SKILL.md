@@ -2,7 +2,6 @@
 name: sdd-plan-refactoring
 description: SDD refactoring when a structural change must preserve behavior; does not implement or add functionality.
 argument-hint: --slug [NN]-refactoring-name [--update]
-disable-model-invocation: true
 ---
 
 # Plan SDD refactoring

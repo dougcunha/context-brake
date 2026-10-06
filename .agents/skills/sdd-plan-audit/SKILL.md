@@ -2,7 +2,6 @@
 name: sdd-plan-audit
 description: SDD audit when an architectural-analysis report must become workstreams with TechSpec and tasks; does not audit or implement.
 argument-hint: --report .audits/architectural-analysis-[timestamp].md [--update]
-disable-model-invocation: true
 ---
 
 # Plan SDD audit

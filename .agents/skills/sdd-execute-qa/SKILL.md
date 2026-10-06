@@ -2,7 +2,6 @@
 name: sdd-execute-qa
 description: SDD QA when an implemented and reviewed feature must be validated end to end by running the built CLI against fixture repositories, in a session or fresh-context subagent that did not write that code; does not fix defects.
 argument-hint: --prd feature-name
-disable-model-invocation: true
 ---
 
 # Execute SDD QA

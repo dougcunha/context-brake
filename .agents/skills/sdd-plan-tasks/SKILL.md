@@ -2,7 +2,6 @@
 name: sdd-plan-tasks
 description: SDD tasks when a PRD and TechSpec must be decomposed into an executable DAG; does not implement the feature.
 argument-hint: --prd feature-name [--update]
-disable-model-invocation: true
 ---
 
 # Plan SDD tasks

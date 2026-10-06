@@ -2,7 +2,6 @@
 name: sdd-orchestrate-tasks
 description: SDD DAG when PRD, TechSpec, and tasks are already approved and must be executed; implements each task in this session with read-only explorers, moves on between tasks until the context threshold, and delegates the final review to a fresh-context subagent. For the cycle from PRD, use sdd-orchestrate-flow.
 argument-hint: --prd feature-name [--budget economical|medium|high]
-disable-model-invocation: true
 ---
 
 # Orchestrate SDD tasks

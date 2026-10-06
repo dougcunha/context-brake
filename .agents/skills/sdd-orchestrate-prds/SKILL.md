@@ -2,7 +2,6 @@
 name: sdd-orchestrate-prds
 description: Slice SDD when a broad request must become several cohesive PRDs under a shared prefix; for a single PRD, use sdd-create-prd.
 argument-hint: --prompt "broad description" [--prefix common-slug]
-disable-model-invocation: true
 ---
 
 # Orchestrate SDD PRDs

@@ -2,7 +2,6 @@
 name: sdd-plan-corrections
 description: SDD corrections when a code review or QA report must become traceable tasks; does not implement or alter the report.
 argument-hint: --prd feature-name --report codereview_[num]|qa_[num]
-disable-model-invocation: true
 ---
 
 # Plan SDD corrections

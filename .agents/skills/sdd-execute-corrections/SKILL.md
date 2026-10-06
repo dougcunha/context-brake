@@ -2,7 +2,6 @@
 name: sdd-execute-corrections
 description: SDD execution when tasks from a code review or QA report need correction; implements each correction task in this session with read-only explorers and moves on between tasks until the context threshold, and delegates the re-review to a fresh-context subagent; does not create or reclassify findings.
 argument-hint: --prd feature-name --report codereview_[num]|qa_[num]
-disable-model-invocation: true
 ---
 
 # Execute SDD corrections

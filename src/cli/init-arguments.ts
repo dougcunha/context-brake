@@ -11,6 +11,7 @@ export type ParsedInitArgs = {
   delegatedSnapshot?: DelegatedSnapshotFlags | undefined;
   light?: boolean | undefined; noLight?: boolean | undefined; debug?: boolean | undefined; noDebug?: boolean | undefined;
   statuslineBridge?: StatuslineBridgeRequest | undefined;
+  autoRestart?: boolean | undefined; noAutoRestart?: boolean | undefined;
 };
 
 const INIT_OPTIONS = {
@@ -25,6 +26,7 @@ const INIT_OPTIONS = {
   'no-delegated-snapshot': { type: 'boolean', default: false },
   light: { type: 'boolean', default: false }, 'no-light': { type: 'boolean', default: false }, debug: { type: 'boolean', default: false }, 'no-debug': { type: 'boolean', default: false },
   'statusline-bridge': { type: 'boolean', default: false }, 'no-statusline-bridge': { type: 'boolean', default: false },
+  'auto-restart': { type: 'boolean', default: false }, 'no-auto-restart': { type: 'boolean', default: false },
 } as const;
 type InitValues = ReturnType<typeof parseArgs<{ args: string[]; options: typeof INIT_OPTIONS; strict: true }>>['values'];
 
@@ -33,11 +35,19 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
   const harness = validateHarnessIds(values.harness);
   const excludeHarness = validateHarnessIds(values['exclude-harness']);
   validateInclusionExclusion(harness, excludeHarness);
+  assertAutoRestartHarnesses(values, { harness, excludeHarness });
   return {
     command: 'init', dryRun: values['dry-run'], yes: values.yes, json: values.json,
     harness, excludeHarness, instructionFile: validateInstructionPaths(values['instruction-file']),
     createInstructions: values['create-instructions'], migrateLegacy: values['migrate-legacy'],
     delegatedSnapshot: delegatedFlags(values), light: values.light, noLight: values['no-light'], debug: values.debug, noDebug: values['no-debug'], statuslineBridge: statuslineBridgeRequest(values, { harness, excludeHarness }),
+    autoRestart: values['auto-restart'], noAutoRestart: values['no-auto-restart'],
+  };
+}
+export function harnessSelection(args: ParsedInitArgs) {
+  return {
+    ...(args.harness.length > 0 ? { include: args.harness } : {}),
+    ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
   };
 }
 function delegatedFlags(values: InitValues): DelegatedSnapshotFlags {
@@ -56,6 +66,17 @@ function statuslineBridgeRequest(values: InitValues, targets: HarnessTargets): S
   const isClaudeExcluded = targets.excludeHarness.includes('claude-code') || (targets.harness.length > 0 && !targets.harness.includes('claude-code'));
   if (isClaudeExcluded) throw new CliArgumentError(STATUSLINE_TARGET_ERROR);
   return install ? 'install' : 'remove';
+}
+const AUTO_RESTART_TARGET_ERROR = '--auto-restart and --no-auto-restart require claude-code among the target harnesses.';
+function assertAutoRestartHarnesses(values: InitValues, targets: HarnessTargets): void {
+  if (!values['auto-restart'] && !values['no-auto-restart']) return;
+  const isClaudeExcluded = targets.excludeHarness.includes('claude-code') || (targets.harness.length > 0 && !targets.harness.includes('claude-code'));
+  if (isClaudeExcluded) throw new CliArgumentError(AUTO_RESTART_TARGET_ERROR);
+}
+export function assertAutoRestartTarget(args: ParsedInitArgs, detections: readonly HarnessDetection[]): void {
+  if (!args.autoRestart && !args.noAutoRestart) return;
+  if (detections.some((detection) => detection.harness === 'claude-code' && detection.state === 'project')) return;
+  throw new CliArgumentError(AUTO_RESTART_TARGET_ERROR);
 }
 export function assertStatuslineBridgeTarget(request: StatuslineBridgeRequest | undefined, detections: readonly HarnessDetection[]): void {
   if (request === undefined) return;

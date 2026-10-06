@@ -245,6 +245,18 @@
     "debug": {
       "type": "boolean"
     },
+    "autoRestart": {
+      "type": "object",
+      "properties": {
+        "maxConsecutiveRestarts": {
+          "default": 2,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        }
+      },
+      "additionalProperties": false
+    },
     "runner": {
       "default": {
         "maxSessions": 20,

@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import { configurationSchema, DEFAULT_CONFIG, type ContextBrakeConfig, type HarnessId } from '../contracts/configuration.js';
 import type { FileSnapshot, PlannedChange } from '../contracts/changes.js';
 import { applyDelegatedSnapshot, type DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
+import { applyAutoRestart, type AutoRestartUpdate } from './auto-restart-merge.js';
 import { applyDebugMode, type DebugModeUpdate } from './debug-mode-merge.js';
 import { applyLightMode, type LightModeUpdate } from './light-mode-merge.js';
 import { normalizeTurnLimits } from './config-legacy-checks.js';
@@ -11,6 +12,7 @@ const KEEP = { kind: 'keep' } as const;
 const CONFIG_KEY_ORDER = Object.keys(configurationSchema.shape);
 const DEBUG_SUMMARY = { set: 'set the debug mode (agent prints context usage)', remove: 'remove the debug mode' } as const;
 const LIGHT_SUMMARY = { set: 'set the light mode section (telemetry only: no brake, plan, checkpoint, protocol, or instruction blocks)', full: 'record the full mode choice and remove the light mode section' } as const;
+const AUTO_RESTART_SUMMARY = { set: 'turn on the automatic restart for interactive Claude Code', remove: 'turn off the automatic restart' } as const;
 const CONFIG_SUMMARY = 'Configure ContextBrake active harnesses and zones';
 
 export type ConfigChangeInput = {
@@ -21,6 +23,7 @@ export type ConfigChangeInput = {
   delegatedSnapshot?: DelegatedSnapshotUpdate | undefined;
   lightMode?: LightModeUpdate | undefined;
   debug?: DebugModeUpdate | undefined;
+  autoRestart?: AutoRestartUpdate | undefined;
 };
 
 export function planConfigChange(
@@ -36,7 +39,9 @@ export function planConfigChange(
   const update = typeof rootOrInput === 'string' ? KEEP : rootOrInput.delegatedSnapshot ?? KEEP;
   const light = typeof rootOrInput === 'string' ? KEEP : rootOrInput.lightMode ?? KEEP;
   const debug = typeof rootOrInput === 'string' ? KEEP : rootOrInput.debug ?? KEEP;
-  const config: ContextBrakeConfig = inSchemaOrder(applyDebugMode(applyLightMode(applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update), light), debug));
+  const autoRestart = typeof rootOrInput === 'string' ? KEEP : rootOrInput.autoRestart ?? KEEP;
+  const base = applyDebugMode(applyLightMode(applyDelegatedSnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update), light), debug);
+  const config: ContextBrakeConfig = inSchemaOrder(applyAutoRestart(base, autoRestart));
   const content = `${JSON.stringify(config, null, 2)}\n`;
   const defaultPath = resolve(root, 'context-brake.config.json').replace(/\\/g, '/');
   const realPath = (snap?.realPath ?? defaultPath).replace(/\\/g, '/');
@@ -46,7 +51,7 @@ export function planConfigChange(
     kind: curr ? 'update' : 'create',
     owner: 'config',
     content,
-    preview: { summary: configSummary(update, light, debug) },
+    preview: { summary: configSummary({ delegated: update, light, debug, autoRestart }) },
   };
   return { config, change };
 }
@@ -54,11 +59,15 @@ export function planConfigChange(
 function inSchemaOrder(config: ContextBrakeConfig): ContextBrakeConfig {
   return Object.fromEntries(CONFIG_KEY_ORDER.filter((key) => key in config).map((key) => [key, config[key as keyof ContextBrakeConfig]])) as ContextBrakeConfig;
 }
-function configSummary(delegated: DelegatedSnapshotUpdate, light: LightModeUpdate, debug: DebugModeUpdate): string {
+type SummaryUpdates = { delegated: DelegatedSnapshotUpdate; light: LightModeUpdate; debug: DebugModeUpdate; autoRestart: AutoRestartUpdate };
+
+function configSummary(updates: SummaryUpdates): string {
+  const { delegated, light, debug, autoRestart } = updates;
   const delegatedPart = delegated.kind === 'keep' ? [] : [`${delegated.kind} the delegated snapshot section`];
   const lightPart = light.kind === 'keep' ? [] : [LIGHT_SUMMARY[light.kind]];
   const debugPart = debug.kind === 'keep' ? [] : [DEBUG_SUMMARY[debug.kind]];
-  return [CONFIG_SUMMARY, ...delegatedPart, ...lightPart, ...debugPart].join('; ');
+  const autoRestartPart = autoRestart.kind === 'keep' ? [] : [AUTO_RESTART_SUMMARY[autoRestart.kind]];
+  return [CONFIG_SUMMARY, ...delegatedPart, ...lightPart, ...debugPart, ...autoRestartPart].join('; ');
 }
 
 export type ManifestChangeInput = {

@@ -7,4 +7,5 @@ export const ANTIGRAVITY_CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'session_boot', state: 'unsupported', impact: 'Session boot is indirect via PreInvocation.' },
   { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to Antigravity CLI hooks.' },
   { id: 'timeout_fail_closed', state: 'unknown', impact: 'Failure and timeout behavior of Antigravity hooks is not documented.' },
+  { id: 'auto_restart', state: 'unsupported', impact: 'Automatic restart in an interactive session exists only for Claude Code; after the restart signal, start the new session yourself.' },
 ];

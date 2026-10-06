@@ -24,12 +24,15 @@ export async function collectHarnessSources(adapters: readonly HarnessAdapter[],
   return sources as Partial<DetectionSources>;
 }
 
-export function buildHarnessContext(env: { projectRoot: string; runner?: ProcessRunner; userHome?: string }, manifest?: InstallationManifest | null, statuslineBridge?: StatuslineBridgeRequest): HarnessContext {
+export type HarnessOptions = { readonly statuslineBridge?: StatuslineBridgeRequest; readonly autoRestart?: boolean };
+
+export function buildHarnessContext(env: { projectRoot: string; runner?: ProcessRunner; userHome?: string }, manifest?: InstallationManifest | null, options: HarnessOptions = {}): HarnessContext {
   return {
     projectRoot: env.projectRoot,
     ...(env.runner ? { runner: env.runner } : {}),
     ...(env.userHome ? { userHome: env.userHome } : {}),
     ...(manifest !== undefined ? { manifest } : {}),
-    ...(statuslineBridge !== undefined ? { statuslineBridge } : {}),
+    ...(options.statuslineBridge !== undefined ? { statuslineBridge: options.statuslineBridge } : {}),
+    ...(options.autoRestart !== undefined ? { autoRestart: options.autoRestart } : {}),
   };
 }

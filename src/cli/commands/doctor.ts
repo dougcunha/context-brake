@@ -38,7 +38,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const planSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.planFile ?? 'task_plan.json'));
   const checkpointSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.checkpointFile ?? 'state_checkpoint.json'));
   const adapters = getAllAdapters();
-  const ctx = buildHarnessContext(env, manifest);
+  const ctx = buildHarnessContext(env, manifest, { autoRestart: config?.autoRestart !== undefined });
   const sources = await collectHarnessSources(adapters, ctx);
   const measurer = new NodeOverheadMeasurer(env.projectRoot);
   const packageVersion = await readPackageVersion();

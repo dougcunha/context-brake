@@ -1,0 +1,95 @@
+{
+  "capturedWith": {
+    "claudeCode": "2.1.289",
+    "os": "Windows 11",
+    "date": "2026-10-04",
+    "mode": "interactive terminal loaded with --plugin-dir; classic events also observed under claude -p",
+    "note": "Field names and orderings were captured from a probe mod; free-text values were redacted to the signal tail."
+  },
+  "turn.complete": {
+    "keys": [
+      "answer",
+      "durationMs",
+      "isAborted",
+      "turnId",
+      "reason",
+      "usage"
+    ],
+    "example": {
+      "reason": "answer",
+      "isAborted": false,
+      "answerTail": "[REQUEST_SESSION_RESET]"
+    },
+    "mainTurnHasAgentId": false,
+    "longAnswerTailPreserved": {
+      "characters": 15496,
+      "endsWith": "[PROBE_CLEAR]"
+    }
+  },
+  "turn.start": {
+    "keys": [
+      "text",
+      "turnId"
+    ]
+  },
+  "prompt.submit": {
+    "keys": [
+      "text",
+      "wait",
+      "origin"
+    ],
+    "origins": {
+      "typed": {
+        "kind": "composer"
+      },
+      "modSeed": {
+        "kind": "plugin",
+        "name": "<plugin name>"
+      }
+    },
+    "callingPluginHookSeesItsOwnSubmit": false
+  },
+  "session.start": {
+    "claudeVersion": {
+      "version": "2.1.289",
+      "base": "2.1.289",
+      "builtAt": "2026-10-03T19:21:39Z"
+    },
+    "surfaces": [
+      "terminal"
+    ],
+    "firesAfterClear": false
+  },
+  "session.end": {
+    "reasons": [
+      "clear",
+      "prompt_input_exit"
+    ],
+    "typedClearAlsoReportsClear": true
+  },
+  "command.run clear": {
+    "resolvesWith": {
+      "text": ""
+    },
+    "newSessionIdAfterClear": true,
+    "contextWindowFromUsage": 1000000,
+    "contextTokensFromUsageRightAfterClear": null
+  },
+  "restartTimelineMs": {
+    "turn.complete": 0,
+    "session.end(clear)": 103,
+    "clear promise resolved": 172,
+    "seed queued": 332,
+    "seed turn.start": 1801
+  },
+  "classicEvents": {
+    "interactive": "not delivered",
+    "printMode": [
+      "SessionStart(source=startup)",
+      "UserPromptSubmit",
+      "MessageDisplay",
+      "Stop",
+      "SessionEnd"
+    ]
+  }
+}

@@ -11,6 +11,7 @@ import { buildManagedAssets, conflictFindings } from './installation-findings.js
 import { detectLegacyFindings, legacyFinding } from './legacy-preview.js';
 import { planConfigChange, planManifestChange } from './installation-builder.js';
 import type { DelegatedSnapshotUpdate } from './delegated-snapshot-merge.js';
+import type { AutoRestartUpdate } from './auto-restart-merge.js';
 import type { DebugModeUpdate } from './debug-mode-merge.js';
 import type { LightModeUpdate } from './light-mode-merge.js';
 import { planSupportFiles } from './support-files.js';
@@ -33,6 +34,7 @@ export type InstallationInput = {
   delegatedSnapshot?: DelegatedSnapshotUpdate | undefined;
   lightMode?: LightModeUpdate | undefined;
   debug?: DebugModeUpdate | undefined;
+  autoRestart?: AutoRestartUpdate | undefined;
 };
 
 export type InstallationResult = {
@@ -78,7 +80,7 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const active = detections.filter((d) => d.state === 'project');
   if (active.length === 0) return emptyResult(input.projectRoot, detections, detectLegacyFindings(input.instructionSnapshots, input.config ?? DEFAULT_CONFIG));
   const activeIds: HarnessId[] = active.map((d) => d.harness);
-  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), delegatedSnapshot: input.delegatedSnapshot, lightMode: input.lightMode, debug: input.debug });
+  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), delegatedSnapshot: input.delegatedSnapshot, lightMode: input.lightMode, debug: input.debug, autoRestart: input.autoRestart });
   const support = planSupportFiles(input, cfg.config);
   const ap = await planAdapters(input.adapters, active, input.context);
   const protection = protectModifiedAssets(ap.changes, input.previousManifest ?? null, input.allSnapshots);

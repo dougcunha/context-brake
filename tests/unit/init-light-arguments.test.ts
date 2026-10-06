@@ -27,7 +27,7 @@ describe('init light flags (TC-07, TC-11, TC-12, FR-07, FR-08, DEC-08)', () => {
 
 describe('init mode defaults (TC-11, TC-12, FR-07, FR-08, DEC-08)', () => {
   it('sets the section with the default trigger on --light', () => {
-    expect(updates(null, ['--light'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'set', section: { triggerZone: 'RED' } }, debug: { kind: 'keep' } });
+    expect(updates(null, ['--light'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'set', section: { triggerZone: 'RED' } }, debug: { kind: 'keep' }, autoRestart: { kind: 'keep' } });
   });
   it('sets the section on a plain run, with or without an existing configuration (FR-07)', () => {
     expect(updates(null, []).lightMode).toEqual({ kind: 'set', section: { triggerZone: 'RED' } });
@@ -42,12 +42,13 @@ describe('init mode defaults (TC-11, TC-12, FR-07, FR-08, DEC-08)', () => {
       delegatedSnapshot: { kind: 'set', section: { ...SNAPSHOT_SECTION, triggerZone: 'YELLOW' } },
       lightMode: { kind: 'full' },
       debug: { kind: 'keep' },
+      autoRestart: { kind: 'keep' },
     });
     expect(updates(DEFAULT_CONFIG, ['--no-light']).lightMode).toEqual({ kind: 'full' });
   });
   it('accepts --debug in light mode and keeps the debug key out of the light rejections (FR-06)', () => {
-    expect(updates(LIGHT, ['--debug'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'set' } });
-    expect(updates({ ...LIGHT, debug: true }, [])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'keep' } });
+    expect(updates(LIGHT, ['--debug'])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'set' }, autoRestart: { kind: 'keep' } });
+    expect(updates({ ...LIGHT, debug: true }, [])).toEqual({ delegatedSnapshot: { kind: 'keep' }, lightMode: { kind: 'keep' }, debug: { kind: 'keep' }, autoRestart: { kind: 'keep' } });
   });
 });
 

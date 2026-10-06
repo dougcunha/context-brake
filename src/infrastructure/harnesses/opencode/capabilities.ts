@@ -7,4 +7,5 @@ export const OPENCODE_CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'session_boot', state: 'unsupported', impact: 'Stable boot injection is experimental in OpenCode.' },
   { id: 'context_usage', state: 'unsupported', impact: 'No documented API exposes context usage to OpenCode plugins.' },
   { id: 'timeout_fail_closed', state: 'unknown', impact: 'Failure and timeout behavior of OpenCode plugins is not documented.' },
+  { id: 'auto_restart', state: 'unsupported', impact: 'Automatic restart in an interactive session exists only for Claude Code; after the restart signal, start the new session yourself.' },
 ];

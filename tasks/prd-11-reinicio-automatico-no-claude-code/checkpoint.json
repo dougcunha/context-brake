@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "generation": 41,
+  "feature": "prd-11-reinicio-automatico-no-claude-code",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "completed",
+  "status": "completed",
+  "safe_to_stop": true,
+  "owner_session": "session_01ADgVn9Qh2hQShYuQubCZQz",
+  "objective": "Opt-in mod for interactive Claude Code that runs /clear on [REQUEST_SESSION_RESET] and seeds the fresh session from the PRD-03 boot, with loop guards and kill switches.",
+  "constraints": [
+    "Claude Code only; mods API stays inside the claude-code adapter",
+    "Opt-in, off by default; no shell, setsid or local server (Windows)",
+    "No clear without a valid checkpoint; no conversation text in logs"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_04/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "926099af56f79230d32e55b608900a74fa9b4ef197f6747181dc3ccdaabd2d03",
+      "decision_id": "DEC-PD-03"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "60f053e9ee45f752acccdbb46d7d3ed2034c5a5db386d4c65862ab035dedc5eb",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "0677629cc0dbcf7412e1c87b646f7545aa58e7f578f18d2d4999e5d98e6631a2",
+      "decision_id": "REC-T10"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-03",
+    "DEC-RES-04"
+  ],
+  "git_base": "c7529c56dd243e08f48b7692cd6b8f566767e5b4",
+  "worktree_evidence": "workflow.md#Feature Summary; T02-T06 diff (handoffs in done/task_0*.md)",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 3,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "close",
+    "instruction": "Feature completed at HIL 3; commit only on request.",
+    "read": [
+      {
+        "path": "tasks/prd-11-reinicio-automatico-no-claude-code/workflow.md",
+        "section": "Human Decisions Log"
+      }
+    ]
+  }
+}

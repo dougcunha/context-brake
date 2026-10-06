@@ -17,6 +17,7 @@ export type HarnessContext = {
   readonly userHome?: string;
   readonly manifest?: InstallationManifest | null;
   readonly statuslineBridge?: StatuslineBridgeRequest;
+  readonly autoRestart?: boolean;
 };
 
 export type AdapterPlan = {

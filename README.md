@@ -294,6 +294,23 @@ npx context-brake init --statusline-bridge
 
 The bridge records only the window, the input tokens, the used percentage, the model id, the shell that ran it, and the time, per session, in the session ledger. `context-brake doctor` shows where the window comes from under `contextWindow`, lists per harness whether the brake can block under `brakeWindow`, warns with `STATUSLINE_BRIDGE_ABSENT` when Claude Code has no bridge, and warns when the local status line no longer runs the bridge, when the script is missing, or when the project or user status line changed after installation. `context-brake init --no-statusline-bridge` or `context-brake remove` restores the previous local status line, or removes the key and the file when the bridge created them.
 
+### Automatic Restart in Claude Code
+
+When the agent ends a reply with `[REQUEST_SESSION_RESET]`, interactive Claude Code can clear the session and resume by itself, with no keystroke. The feature is off by default and only exists for Claude Code:
+
+```bash
+npx context-brake init --auto-restart      # turn it on
+npx context-brake init --no-auto-restart   # turn it off and remove its files
+```
+
+- **How it works:** `init --auto-restart` writes a Claude Code mod (a plugin of function hooks) under `.context-brake/claude-mod/`, registers it for you in `.claude/settings.local.json` (`extraKnownMarketplaces` and `enabledPlugins`), and adds an `autoRestart` block to `context-brake.config.json`. When a turn ends with the signal, the mod shows a one-line notice, queues `/clear`, and sends the new session one short prompt to resume. Only the signal triggers it, never a zone alone.
+- **Gate per mode:** in full mode the mod restarts only after a valid checkpoint written during the signalling turn and, when `task_plan.json` exists, a named active step; the seed points to the boot summary. In light mode it trusts the signal, reads no plan, checkpoint, or snapshot file, and sends a generic seed.
+- **Loop guards and kill switches:** at most `autoRestart.maxConsecutiveRestarts` restarts (default 2) without a prompt you typed, and none when no tool call happened since the last seed. `CONTEXT_BRAKE_AUTO_RESTART=0` stands it down for one session; sessions of `context-brake run`, `claude -p`, and sessions with `DISABLE_AUTO_COMPACT` set are skipped.
+- **Requirements:** Claude Code 2.1.287 or later, where mods are on by default (verified on 2.1.289, 4 October 2026). Mods stay off under `disableAllHooks`, `--safe-mode`, `--bare`, an organization managed policy, and in Desktop WSL sessions. The first interactive launch asks you to trust the folder.
+- **`doctor`:** reports `AUTO_RESTART_OFF` or `AUTO_RESTART_READY` without a warning, and warns with `AUTO_RESTART_NOT_LOADED` (no session loaded the mod yet, with the causes above), `AUTO_RESTART_OUTDATED_MOD`, or `AUTO_RESTART_CLAUDE_TOO_OLD`. `AUTO_RESTART_LAST_SKIP` names the reason code of the last request that did not restart. The mod records only reason codes and versions, per session, in `.context-brake/runtime/claude-mod/`; never prompt, reply, or tool text.
+
+`context-brake remove` deletes the mod files, the two settings keys, and the config block; a file you edited inside the mod folder is reported, not deleted.
+
 ### Hook Timeouts
 
 Each hook call has an internal deadline of 1.5 seconds; the session start event gets 5 seconds, because it reads the plan, the checkpoint, and the repository state to build the boot summary. When a deadline elapses, the hook stops waiting, the tool call proceeds, and the failure is recorded in `.context-brake/runtime/errors.jsonl` with the phase that was running (`boot_git`, for example) and the elapsed milliseconds. `doctor` lists recent entries. A session start that runs out of time falls back to the same guidance as before.

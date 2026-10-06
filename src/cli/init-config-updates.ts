@@ -1,11 +1,12 @@
 import type { ContextBrakeConfig } from '../core/contracts/configuration.js';
+import { mergeAutoRestart, type AutoRestartUpdate } from '../core/services/auto-restart-merge.js';
 import { mergeDebugMode, type DebugModeUpdate } from '../core/services/debug-mode-merge.js';
 import { mergeDelegatedSnapshot, type DelegatedSnapshotFlags, type DelegatedSnapshotUpdate } from '../core/services/delegated-snapshot-merge.js';
 import { isLightModeInEffect, mergeLightMode, type LightModeFlags, type LightModeUpdate } from '../core/services/light-mode-merge.js';
 import { CliArgumentError } from './argument-validator.js';
 import type { ParsedInitArgs } from './init-arguments.js';
 
-export type ConfigUpdates = { readonly delegatedSnapshot: DelegatedSnapshotUpdate; readonly lightMode: LightModeUpdate; readonly debug: DebugModeUpdate };
+export type ConfigUpdates = { readonly delegatedSnapshot: DelegatedSnapshotUpdate; readonly lightMode: LightModeUpdate; readonly debug: DebugModeUpdate; readonly autoRestart: AutoRestartUpdate };
 type LightOptionCheck = { readonly option: string; readonly used: (args: ParsedInitArgs) => boolean };
 
 const KEEP = { kind: 'keep' } as const;
@@ -22,12 +23,18 @@ const LIGHT_MODE_OPTIONS: readonly LightOptionCheck[] = [
 export function planConfigUpdates(config: ContextBrakeConfig | null, args: ParsedInitArgs): ConfigUpdates {
   const flags: LightModeFlags = { light: args.light ?? false, noLight: args.noLight ?? false, triggerZone: args.delegatedSnapshot?.triggerZone };
   const debug = debugUpdate(config, args);
+  const autoRestart = autoRestartUpdate(config, args);
   if (!isLightModeInEffect(config, flags)) {
-    return { delegatedSnapshot: delegatedUpdate(config, args.delegatedSnapshot), lightMode: lightUpdate(config, { ...flags, triggerZone: undefined }), debug };
+    return { delegatedSnapshot: delegatedUpdate(config, args.delegatedSnapshot), lightMode: lightUpdate(config, { ...flags, triggerZone: undefined }), debug, autoRestart };
   }
   const lightMode = lightUpdate(config, flags);
   assertLightModeOptions(args);
-  return { delegatedSnapshot: args.delegatedSnapshot?.remove === true ? { kind: 'remove' } : KEEP, lightMode, debug };
+  return { delegatedSnapshot: args.delegatedSnapshot?.remove === true ? { kind: 'remove' } : KEEP, lightMode, debug, autoRestart };
+}
+function autoRestartUpdate(config: ContextBrakeConfig | null, args: ParsedInitArgs): AutoRestartUpdate {
+  const merge = mergeAutoRestart(config?.autoRestart, { autoRestart: args.autoRestart ?? false, noAutoRestart: args.noAutoRestart ?? false });
+  if ('error' in merge) throw new CliArgumentError(merge.error);
+  return merge.update;
 }
 function debugUpdate(config: ContextBrakeConfig | null, args: ParsedInitArgs): DebugModeUpdate {
   const merge = mergeDebugMode(config?.debug, { debug: args.debug ?? false, noDebug: args.noDebug ?? false });

@@ -8,6 +8,7 @@ import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
+import { diagnoseAutoRestart } from './auto-restart-diagnostics.js';
 import { CLAUDE_CAPABILITIES } from './capabilities.js';
 import { isTargetGroup } from './claude-merger.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
@@ -64,6 +65,8 @@ export class ClaudeAdapter implements HarnessAdapter {
     }
     if (!(await pathExists(hookPath))) findings.push(createAssetMissingFinding(this.id, CLAUDE_HOOK_FILE));
     findings.push(...await diagnoseStatusline(context));
+    const wanted = context.autoRestart === true;
+    findings.push(...await diagnoseAutoRestart({ projectRoot: context.projectRoot, wanted, version: wanted ? await this.probeVersion(context) : null }));
     return findings;
   }
 

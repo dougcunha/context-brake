@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
-import { assertStatuslineBridgeTarget, type ParsedInitArgs } from '../init-arguments.js';
+import { isAutoRestartWanted } from '../../core/services/auto-restart-merge.js';
+import { assertAutoRestartTarget, assertStatuslineBridgeTarget, harnessSelection, type ParsedInitArgs } from '../init-arguments.js';
 import type { ProcessRunner } from '../../core/contracts/processes.js';
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { DiagnosticFinding, InstallReport } from '../../core/contracts/diagnostics.js';
@@ -67,15 +68,16 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
   const adapters = getAllAdapters();
   const lightMode = isLightModeInEffect(config, { light: args.light ?? false, noLight: args.noLight ?? false });
-  const ctx = buildHarnessContext(env, manifest, args.statuslineBridge ?? 'default');
+  const ctx = buildHarnessContext(env, manifest, { statuslineBridge: args.statuslineBridge ?? 'default', autoRestart: isAutoRestartWanted(config?.autoRestart, updates.autoRestart) });
   const sources = await collectHarnessSources(adapters, ctx);
   const result = await planInstallation({
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
     instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
     createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
-    packageVersion: await readPackageVersion(), delegatedSnapshot: updates.delegatedSnapshot, lightMode: updates.lightMode, debug: updates.debug,
+    packageVersion: await readPackageVersion(), delegatedSnapshot: updates.delegatedSnapshot, lightMode: updates.lightMode, debug: updates.debug, autoRestart: updates.autoRestart,
   });
   assertStatuslineBridgeTarget(args.statuslineBridge, result.detections);
+  assertAutoRestartTarget(args, result.detections);
   if (args.dryRun) {
     const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: result.findings });
     return outputReport(report, args.json);
@@ -88,10 +90,4 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const findings = [...result.findings, ...lightDefaultAppliedFindings(config, updates.lightMode)];
   const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings });
   return outputReport(report, args.json, { printed, planHint: !lightMode });
-}
-function harnessSelection(args: ParsedInitArgs) {
-  return {
-    ...(args.harness.length > 0 ? { include: args.harness } : {}),
-    ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
-  };
 }

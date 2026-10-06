@@ -1,0 +1,33 @@
+{
+  "localSettings": {
+    "extraKnownMarketplaces": {
+      "context-brake-local": {
+        "source": {
+          "source": "directory",
+          "path": "<absolute marketplace directory>"
+        }
+      }
+    },
+    "enabledPlugins": {
+      "context-brake-restart@context-brake-local": true
+    }
+  },
+  "marketplaceManifest": {
+    "name": "context-brake-local",
+    "owner": {
+      "name": "ContextBrake"
+    },
+    "plugins": [
+      {
+        "name": "context-brake-restart",
+        "description": "Automatic session restart",
+        "source": "./context-brake-restart"
+      }
+    ]
+  },
+  "observed": {
+    "loadedOnFirstRunWithoutInstall": true,
+    "debugLine": "hooks module <plugin>@<marketplace> loaded",
+    "projectScopedPluginDirsEnv": "ignored with a warning; accepted only in user or managed settings or as a process environment variable"
+  }
+}

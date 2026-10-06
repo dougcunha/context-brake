@@ -197,7 +197,8 @@
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",
-                        "timeout_fail_closed"
+                        "timeout_fail_closed",
+                        "auto_restart"
                       ]
                     },
                     "state": {
@@ -229,7 +230,8 @@
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",
-                        "timeout_fail_closed"
+                        "timeout_fail_closed",
+                        "auto_restart"
                       ]
                     },
                     "impact": {

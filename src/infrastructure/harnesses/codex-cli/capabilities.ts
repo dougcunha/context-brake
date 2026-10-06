@@ -7,4 +7,5 @@ export const CODEX_CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'session_boot', state: 'supported' },
   { id: 'context_usage', state: 'unsupported', impact: 'Context usage is not exposed to Codex CLI hooks.' },
   { id: 'timeout_fail_closed', state: 'unsupported', impact: 'A hook error, invalid output, or timeout lets the tool call proceed.' },
+  { id: 'auto_restart', state: 'unsupported', impact: 'Automatic restart in an interactive session exists only for Claude Code; after the restart signal, start the new session yourself.' },
 ];

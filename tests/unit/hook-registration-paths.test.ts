@@ -35,7 +35,7 @@ describe('Claude Code hook commands do not depend on the session directory (RF5)
     expect(JSON.stringify(config.hooks.PreToolUse)).toContain('${CLAUDE_PROJECT_DIR}');
     await writeFile(join(root, CLAUDE_SETTINGS), JSON.stringify(config), 'utf8');
     await writeFile(join(root, '.claude/hooks/context-brake.mjs'), '', 'utf8');
-    expect(await getAdapter('claude-code').diagnose({ projectRoot: root })).toEqual([]);
+    expect((await getAdapter('claude-code').diagnose({ projectRoot: root })).filter((finding) => finding.severity !== 'ok')).toEqual([]);
   });
 });
 

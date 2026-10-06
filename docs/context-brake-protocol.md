@@ -33,3 +33,5 @@ After `/clear` or `/new`:
 4. Check that the recorded commit exists in the current branch history and that the working tree is clean; report any divergence before editing.
 5. Run the validation command of the active step, or of the last completed step, before editing code. If it fails, fix the inherited state before continuing.
 6. Continue the active step.
+
+In Claude Code with automatic restart on (`context-brake init --auto-restart`), ending a reply with `[REQUEST_SESSION_RESET]` makes Claude Code run `/clear` itself and send the new session one short prompt to resume; in full mode only after a checkpoint written during that turn. Do not ask the person to type `/clear` then.

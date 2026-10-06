@@ -19,6 +19,7 @@ export const CAPABILITY_IDS = [
   'session_boot',
   'context_usage',
   'timeout_fail_closed',
+  'auto_restart',
 ] as const;
 export const VERSION_STATUSES = ['resolved', 'old', 'unknown', 'malformed', 'timed_out'] as const;
 export const VERSION_SOURCES = ['executable', 'config'] as const;

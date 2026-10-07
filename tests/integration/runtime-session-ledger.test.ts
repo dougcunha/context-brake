@@ -28,7 +28,7 @@ describe('T03 session ledger append (RF2, DEC-04)', () => {
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
   it('appends one LF-terminated valid JSON line per event with the injected timestamp', async () => {
-    await ledger.appendSessionLine(KEY, { brakeMode: 'enforced', brakeReason: null });
+    await ledger.appendSessionLine(KEY);
     await ledger.appendToolLine(KEY, toolInput(1));
     await ledger.appendResetLine(KEY, 'compact');
     const content = await readFile(sessionLedgerPath(tempDir, KEY), 'utf8');

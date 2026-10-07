@@ -2,10 +2,10 @@ import type { RuntimeDescriptor, RuntimeEvent, SessionKey } from '../../../core/
 import { createRuntimeResolver, runInProcessEvent, type InProcessRuntimeResolver } from '../common/in-process-support.js';
 import { asRecord, parsePayload, textValue } from '../common/runtime-support.js';
 import { OPENCODE_CAPABILITIES } from './capabilities.js';
-import { mapOpenCodeSessionEvent, mapOpenCodeToolCall, mapOpenCodeToolResult, openCodeObservedCharacters, type OpenCodeSessionEvent } from './events.js';
+import { mapOpenCodeSessionEvent, mapOpenCodeToolResult, openCodeObservedCharacters, type OpenCodeSessionEvent } from './events.js';
 import { opencodeToolExecuteInputSchema } from './schemas.js';
 
-export { mapOpenCodeSessionEvent, mapOpenCodeToolCall, mapOpenCodeToolResult, openCodeObservedCharacters } from './events.js';
+export { mapOpenCodeSessionEvent, mapOpenCodeToolResult, openCodeObservedCharacters } from './events.js';
 
 const HARNESS = 'opencode';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
@@ -13,15 +13,7 @@ const FALLBACK_SESSION_ID = 'project';
 
 export const openCodeDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: OPENCODE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null };
 
-export class OpenCodeBlockedError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'OpenCodeBlockedError';
-  }
-}
-
 export type OpenCodePluginHooks = {
-  readonly 'tool.execute.before'?: (input: unknown, output: unknown) => Promise<void>;
   readonly 'tool.execute.after'?: (input: unknown, output: unknown) => Promise<void>;
   readonly event?: (payload: unknown) => Promise<void>;
 };
@@ -37,17 +29,6 @@ function resolveProjectRoot(context: unknown): string {
 function sessionKeyOf(input: unknown, fallbackSessionId: string | null): SessionKey {
   const data = parsePayload(opencodeToolExecuteInputSchema, input);
   return { harness: HARNESS, sessionId: textValue(data.sessionID) ?? textValue(data.sessionId) ?? fallbackSessionId ?? FALLBACK_SESSION_ID, agentId: null };
-}
-
-async function handleBefore(args: OpenCodeHandlerInput): Promise<void> {
-  let event: RuntimeEvent;
-  try {
-    event = mapOpenCodeToolCall(args.input, args.output, sessionKeyOf(args.input, null));
-  } catch {
-    return;
-  }
-  const decision = await runInProcessEvent({ resolver: args.resolver, projectRoot: args.projectRoot, event });
-  if (decision.kind === 'deny') throw new OpenCodeBlockedError(decision.message);
 }
 
 async function handleAfter(args: OpenCodeHandlerInput): Promise<void> {
@@ -78,7 +59,6 @@ export function createOpenCodePlugin(context?: unknown): OpenCodePluginHooks {
   const resolver = createRuntimeResolver(openCodeDescriptor);
   const projectRoot = resolveProjectRoot(context);
   return {
-    'tool.execute.before': (input, output) => handleBefore({ input, output, projectRoot, resolver }),
     'tool.execute.after': (input, output) => handleAfter({ input, output, projectRoot, resolver }),
     event: (payload) => handleEvent({ payload, projectRoot, resolver }),
   };

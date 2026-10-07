@@ -5,8 +5,9 @@ import { mapAntigravityEvent, mapAntigravityInput, renderAntigravityDecision } f
 const SESSION = { harness: 'antigravity-cli', sessionId: 'agy-conv-1', agentId: null };
 
 describe('Antigravity CLI runtime event mapping (RF1, RF12, DEC-13, TC-33)', () => {
-  it('maps the documented PreToolUse fixture and classifies run_command as a shell call', async () => {
-    expect(mapAntigravityEvent('PreToolUse', await loadHarnessPayload('antigravity-cli', 'pre-tool-use.json'))).toEqual({ kind: 'pre_tool', session: SESSION, tool: { name: 'run_command', category: 'shell', paths: [], command: 'ls' } });
+  it('maps the documented PostToolUse fixture and classifies run_command as a shell call', async () => {
+    expect(mapAntigravityEvent('PostToolUse', await loadHarnessPayload('antigravity-cli', 'post-tool-use.json'))).toEqual({ kind: 'post_tool', session: SESSION, tool: { name: 'run_command', category: 'shell', paths: [], command: 'git status' }, toolUseId: null });
+    expect(mapAntigravityEvent('PreToolUse', { conversationId: 'agy-conv-1' })).toBeNull();
   });
 
   it('maps PostToolUse to a turn without a call identifier and PreInvocation to a context event', async () => {
@@ -27,10 +28,6 @@ describe('Antigravity CLI runtime event mapping (RF1, RF12, DEC-13, TC-33)', () 
 });
 
 describe('Antigravity CLI response rendering (RF14, RF17, DEC-14, TC-14)', () => {
-  it('requires an explicit allow or deny on PreToolUse', () => {
-    expect(JSON.parse(renderAntigravityDecision({ kind: 'neutral' }, 'PreToolUse') ?? '')).toEqual({ decision: 'allow' });
-    expect(JSON.parse(renderAntigravityDecision({ kind: 'deny', tool: 'run_command', reason: 'critical_ceiling', message: 'BLOCKED' }, 'PreToolUse') ?? '')).toEqual({ decision: 'deny', reason: 'BLOCKED' });
-  });
 
   it('answers PostToolUse with an empty object and PreInvocation with injectSteps', () => {
     expect(renderAntigravityDecision({ kind: 'neutral' }, 'PostToolUse')).toBe('{}');

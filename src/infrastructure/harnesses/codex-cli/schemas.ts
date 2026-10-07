@@ -26,6 +26,5 @@ export const codexPayloadSchema = z.looseObject({
   last_assistant_message: z.optional(z.string()),
 });
 
-export const codexPreToolUsePayloadSchema = codexPayloadSchema;
 export const codexPostToolUsePayloadSchema = codexPayloadSchema;
 export type CodexPayload = z.infer<typeof codexPayloadSchema>;

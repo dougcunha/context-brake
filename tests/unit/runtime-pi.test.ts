@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { RuntimeEvent } from '../../src/core/contracts/runtime.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
-import { mapPiEvent, mapPiInput, renderPiToolCall, renderPiToolResult } from '../../src/infrastructure/harnesses/pi/runtime.js';
+import { mapPiEvent, mapPiInput, renderPiToolResult } from '../../src/infrastructure/harnesses/pi/runtime.js';
 
 const SESSION = { harness: 'pi', sessionId: 'pi-session-1', agentId: null } as const;
 
@@ -10,12 +10,12 @@ function toolOf(event: RuntimeEvent | null): unknown {
 }
 
 describe('Pi runtime event mapping (RF1, RF3, RF12, TC-33)', () => {
-  it('maps tool_call fixtures and classifies the documented Pi tool names', async () => {
-    const fixture = mapPiEvent('tool_call', await loadHarnessPayload('pi', 'tool-call.json'), SESSION);
-    expect(toolOf(fixture)).toEqual({ name: 'edit_file', category: 'other', paths: [], command: null });
-    expect(toolOf(mapPiEvent('tool_call', { toolName: 'bash', input: { command: 'ls' } }, SESSION))).toEqual({ name: 'bash', category: 'shell', paths: [], command: 'ls' });
-    expect(toolOf(mapPiEvent('tool_call', { toolName: 'write', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_write', paths: ['src/a.ts'] });
-    expect(toolOf(mapPiEvent('tool_call', { toolName: 'read', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_read' });
+  it('maps tool_result fixtures and classifies the documented Pi tool names', async () => {
+    const fixture = mapPiEvent('tool_result', await loadHarnessPayload('pi', 'tool-result.json'), SESSION);
+    expect(toolOf(fixture)).toEqual({ name: 'bash', category: 'shell', paths: [], command: 'npm test' });
+    expect(toolOf(mapPiEvent('tool_result', { toolName: 'bash', input: { command: 'ls' } }, SESSION))).toEqual({ name: 'bash', category: 'shell', paths: [], command: 'ls' });
+    expect(toolOf(mapPiEvent('tool_result', { toolName: 'write', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_write', paths: ['src/a.ts'] });
+    expect(toolOf(mapPiEvent('tool_result', { toolName: 'read', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_read' });
   });
 
   it('maps the documented tool_result fixture and counts input plus content characters', async () => {
@@ -38,17 +38,12 @@ describe('Pi runtime event mapping (RF1, RF3, RF12, TC-33)', () => {
   });
 
   it('rejects an invalid payload and ignores unknown events', () => {
-    expect(() => mapPiEvent('tool_call', 'not-an-object', SESSION)).toThrow('The harness payload is invalid.');
+    expect(() => mapPiEvent('tool_result', 'not-an-object', SESSION)).toThrow('The harness payload is invalid.');
     expect(mapPiEvent('before_agent_start', {}, SESSION)).toBeNull();
   });
 });
 
 describe('Pi runtime response rendering (RF14, RF17, TC-14)', () => {
-  it('renders the documented block and returns undefined below the ceiling', () => {
-    expect(renderPiToolCall({ kind: 'deny', tool: 'read', reason: 'critical_ceiling', message: 'BLOCKED' })).toEqual({ block: true, reason: 'BLOCKED' });
-    expect(renderPiToolCall({ kind: 'neutral' })).toBeUndefined();
-  });
-
   it('appends exactly one text part after the original content parts', async () => {
     const rendered = renderPiToolResult(await loadHarnessPayload('pi', 'tool-result.json'), 'telemetry');
     expect(rendered.content).toEqual([

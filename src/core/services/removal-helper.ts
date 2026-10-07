@@ -2,45 +2,11 @@ import type { FileSnapshot, PlannedChange, PlanConflict } from '../contracts/cha
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { HarnessId } from '../contracts/harness.js';
 import type { InstallationManifest } from '../contracts/manifest.js';
-import { CURRENT_END_MARKER, CURRENT_START_MARKER } from './instruction-markers.js';
 
-export function removeReferenceFromBody(content: string): string {
-  const s = content.indexOf(CURRENT_START_MARKER);
-  const e = content.indexOf(CURRENT_END_MARKER);
-  if (s === -1 || e === -1 || s >= e) return content;
-  const endIdx = e + CURRENT_END_MARKER.length;
-  const before = stripTrailingEol(content.slice(0, s));
-  let after = content.slice(endIdx);
-  const endsFile = after === '';
-  if (after.startsWith('\r\n')) after = after.slice(2);
-  else if (after.startsWith('\n')) after = after.slice(1);
-  if (!before && !after) return '';
-  if (!before) return after;
-  if (endsFile && before.endsWith('\n')) return stripTrailingEol(before);
-  if (!after) return before.endsWith('\n') ? before : `${before}\n`;
-  const sep = content.includes('\r\n') ? '\r\n' : '\n';
-  return `${before}${sep}${after}`;
-}
-function stripTrailingEol(text: string): string {
-  if (text.endsWith('\r\n')) return text.slice(0, -2);
-  return text.endsWith('\n') ? text.slice(0, -1) : text;
-}
-
-export function planInstructionRemoval(snapshots: readonly FileSnapshot[]): PlannedChange[] {
-  const changes: PlannedChange[] = [];
-  for (const snap of snapshots) {
-    if (!snap.exists || !snap.content?.includes(CURRENT_START_MARKER)) continue;
-    const updated = removeReferenceFromBody(snap.content);
-    changes.push({
-      path: snap.path,
-      realPath: snap.realPath,
-      kind: 'update',
-      owner: 'instruction_block',
-      content: updated,
-      preview: { summary: 'Remove ContextBrake reference block' },
-    });
-  }
-  return changes;
+export function planRuntimeStateDeletions(snapshots: readonly FileSnapshot[]): PlannedChange[] {
+  return snapshots
+    .filter((snap) => snap.exists)
+    .map((snap) => ({ path: snap.path, realPath: snap.realPath, kind: 'delete' as const, owner: 'runtime_state' as const, content: null, preview: { summary: `Delete ${snap.path}` } }));
 }
 
 export function planAssetDeletions(

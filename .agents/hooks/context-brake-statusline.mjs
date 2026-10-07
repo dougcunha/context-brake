@@ -3984,7 +3984,7 @@ function handleIntersectionResults(result, left, right) {
   const unrecKeys = /* @__PURE__ */ new Map();
   let unrecIssue;
   const keyIssues = /* @__PURE__ */ new Map();
-  const collect = (iss, side) => {
+  const collect2 = (iss, side) => {
     let keys;
     if (iss.code === "unrecognized_keys" && !iss.path?.length) {
       unrecIssue ?? (unrecIssue = iss);
@@ -4005,11 +4005,11 @@ function handleIntersectionResults(result, left, right) {
     return true;
   };
   for (const iss of left.issues) {
-    if (!collect(iss, "l"))
+    if (!collect2(iss, "l"))
       result.issues.push(iss);
   }
   for (const iss of right.issues) {
-    if (!collect(iss, "r"))
+    if (!collect2(iss, "r"))
       result.issues.push(iss);
   }
   const bothKeys = [...unrecKeys].filter(([, f]) => f.l && f.r).map(([k]) => k);
@@ -5029,7 +5029,7 @@ var recursive = /* @__PURE__ */ new WeakMap();
 var NONE = 0;
 var ASSUMED = 1;
 var PROVEN = 2;
-function isRecursive(inst, stack, resolve5) {
+function isRecursive(inst, stack, resolve6) {
   const cached2 = recursive.get(inst);
   if (cached2 !== void 0)
     return cached2 ? PROVEN : NONE;
@@ -5039,7 +5039,7 @@ function isRecursive(inst, stack, resolve5) {
   let result = NONE;
   const check2 = (child) => {
     if (result !== PROVEN && child?._zod) {
-      const answer = isRecursive(child, stack, resolve5);
+      const answer = isRecursive(child, stack, resolve6);
       if (answer > result)
         result = answer;
     }
@@ -5050,7 +5050,7 @@ function isRecursive(inst, stack, resolve5) {
       const desc = Object.getOwnPropertyDescriptor(sh, key);
       if (spread && !desc.enumerable)
         continue;
-      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve5) : NONE;
+      const child = desc.get ? ASSUMED : desc.value?._zod ? isRecursive(desc.value, stack, resolve6) : NONE;
       if (child > answer)
         answer = child;
     }
@@ -5114,7 +5114,7 @@ function isRecursive(inst, stack, resolve5) {
       break;
     // `$ZodLazy` caches its inner on the def, so a resolved edge is followed exactly
     case "lazy": {
-      const inner = def._cachedInner ?? (resolve5 ? inst._zod.innerType : void 0);
+      const inner = def._cachedInner ?? (resolve6 ? inst._zod.innerType : void 0);
       merge3(inner ? isRecursive(inner, stack, false) : ASSUMED);
       break;
     }
@@ -18136,6 +18136,32 @@ function date4(params) {
   return _coercedDate(ZodMiniDate, params);
 }
 
+// src/core/contracts/auto-restart.ts
+var DEFAULT_MAX_CONSECUTIVE_RESTARTS = 2;
+var MIN_CONSECUTIVE_RESTARTS = 1;
+var MAX_CONSECUTIVE_RESTARTS = 10;
+var MOD_LOG_MAX_RECORDS = 50;
+var MOD_LOG_VERSION = 1;
+var RESTART_REASON_CODES = [
+  "RESTARTED",
+  "SKIP_NO_SIGNAL",
+  "SKIP_DISABLED_ENV",
+  "SKIP_NON_INTERACTIVE",
+  "PAUSED_LOOP_GUARD",
+  "SKIP_NO_PROGRESS",
+  "ERROR_CLEAR_REJECTED",
+  "ERROR_INTERNAL"
+];
+var consecutiveRestarts = external_exports.int().check(external_exports.minimum(MIN_CONSECUTIVE_RESTARTS), external_exports.maximum(MAX_CONSECUTIVE_RESTARTS));
+var autoRestartSchema = external_exports.strictObject({ maxConsecutiveRestarts: external_exports._default(consecutiveRestarts, DEFAULT_MAX_CONSECUTIVE_RESTARTS) });
+var restartLogRecordSchema = external_exports.strictObject({ at: external_exports.string().check(external_exports.minLength(1)), code: external_exports.enum(RESTART_REASON_CODES) });
+var modLogSchema = external_exports.strictObject({
+  v: external_exports.literal(MOD_LOG_VERSION),
+  modVersion: external_exports.string(),
+  claudeVersion: external_exports.string(),
+  records: external_exports.array(restartLogRecordSchema).check(external_exports.maxLength(MOD_LOG_MAX_RECORDS))
+});
+
 // src/core/contracts/harness.ts
 var HARNESS_IDS = [
   "claude-code",
@@ -18154,192 +18180,70 @@ var USAGE_SOURCES = ["measured", "estimated"];
 var SNAPSHOT_TRIGGER_ZONES = ["YELLOW", "RED"];
 var WINDOW_ORIGINS = ["harness", "declared", "config"];
 
-// src/core/contracts/light-mode.ts
-var lightModeSchema = external_exports.strictObject({ triggerZone: external_exports._default(external_exports.enum(SNAPSHOT_TRIGGER_ZONES), "RED") });
-
-// src/core/contracts/runner-configuration.ts
-var INTEGER_RULE = "must be an integer";
-var POSITIVE_RULE = "must be greater than 0";
-var SESSION_WITHIN_TOTAL_RULE = "must be less than or equal to maxTotalMinutes";
-var RUNNER_DEFAULTS = {
-  maxSessions: 20,
-  maxTotalMinutes: 240,
-  maxSessionMinutes: 30,
-  maxTotalTokens: 5e6,
-  validationTimeoutSeconds: 600,
-  maxConsecutiveFailures: 2,
-  criticalGraceSeconds: 120
-};
-function positiveInteger(fallback) {
-  return external_exports._default(external_exports.int({ error: INTEGER_RULE }).check(external_exports.positive(POSITIVE_RULE)), fallback);
+// src/core/contracts/configuration.ts
+var INJECTION_MODES = ["threshold_only", "always"];
+var DUPLICATE_ENTRIES_RULE = "must not contain duplicates";
+var TURN_PAIR_RULE = { green: "must be set together with yellowMaxTurn", yellow: "must be set together with greenMaxTurn" };
+var percentage = external_exports.int().check(external_exports.minimum(0), external_exports.maximum(100));
+var positiveInt = external_exports.int().check(external_exports.positive());
+function isUnique(values) {
+  return new Set(values).size === values.length;
 }
 function addIssue(ctx, issue2) {
   ctx.issues.push(issue2);
 }
-var runnerConfigurationSchema = external_exports.strictObject({
-  maxSessions: positiveInteger(RUNNER_DEFAULTS.maxSessions),
-  maxTotalMinutes: positiveInteger(RUNNER_DEFAULTS.maxTotalMinutes),
-  maxSessionMinutes: positiveInteger(RUNNER_DEFAULTS.maxSessionMinutes),
-  maxTotalTokens: positiveInteger(RUNNER_DEFAULTS.maxTotalTokens),
-  validationTimeoutSeconds: positiveInteger(RUNNER_DEFAULTS.validationTimeoutSeconds),
-  maxConsecutiveFailures: positiveInteger(RUNNER_DEFAULTS.maxConsecutiveFailures),
-  criticalGraceSeconds: positiveInteger(RUNNER_DEFAULTS.criticalGraceSeconds)
-}).check((ctx) => {
-  const runner = ctx.value;
-  if (runner.maxSessionMinutes > runner.maxTotalMinutes) addIssue(ctx, { code: "custom", path: ["maxSessionMinutes"], input: runner.maxSessionMinutes, message: SESSION_WITHIN_TOTAL_RULE });
-});
-
-// src/core/contracts/configuration.ts
-var INJECTION_MODES = ["threshold_only", "always"];
-var CANONICAL_PATH_RULE = "must be a canonical repository-relative POSIX file path";
-var DUPLICATE_ENTRIES_RULE = "must not contain duplicates";
-var DUPLICATE_PATHS_RULE = "must not contain duplicate canonical paths";
-var TURN_PAIR_RULE = { green: "must be set together with yellowMaxTurn", yellow: "must be set together with greenMaxTurn" };
-var TRIMMED_RULE = "must not have leading or trailing whitespace";
-var SHELL_OPERATOR_RULE = "must not contain shell operators or line breaks";
-var ADDITIONAL_ALLOWED_COMMANDS_RULE = "must have at most 20 entries";
-var MAX_ADDITIONAL_ALLOWED_COMMANDS = 20;
-var canonicalPathPattern = /^(?!\/)(?!\\)(?![A-Za-z]:)(?!.*\\)(?!.*(?:^|\/)\.\.?(?:\/|$))(?!.*\/\/)(?!.*\/$).+$/;
-var shellOperatorPattern = /[;&|`<>\r\n]|\$\(/;
-var percentage = external_exports.int().check(external_exports.minimum(0), external_exports.maximum(100));
-var positiveInt = external_exports.int().check(external_exports.positive());
-function isCanonicalRelativeFilePath(value) {
-  if (value === "." || value.endsWith("/")) return false;
-  const segments = value.split("/");
-  for (const segment of segments) if (segment === "" || segment === "." || segment === "..") return false;
-  return segments.length > 0;
-}
-function isUnique(values) {
-  return new Set(values).size === values.length;
-}
-function isUniqueCanonicalPath(values) {
-  return new Set(values.map((value) => value.split("/").join("/"))).size === values.length;
-}
-function addIssue2(ctx, issue2) {
-  ctx.issues.push(issue2);
-}
 function uniqueCheck(message) {
   return (ctx) => {
-    if (!isUnique(ctx.value)) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message });
+    if (!isUnique(ctx.value)) addIssue(ctx, { code: "custom", path: [], input: ctx.value, message });
   };
 }
-function canonicalPathUniqueCheck(ctx) {
-  if (!isUniqueCanonicalPath(ctx.value)) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message: DUPLICATE_PATHS_RULE });
-}
-var relativePath = external_exports.string().check(external_exports.minLength(1), external_exports.regex(canonicalPathPattern, CANONICAL_PATH_RULE), (ctx) => {
-  if (!isCanonicalRelativeFilePath(ctx.value)) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message: CANONICAL_PATH_RULE });
-});
-var additionalAllowedCommand = external_exports.string().check(external_exports.minLength(1), (ctx) => {
-  if (ctx.value.trim() !== ctx.value) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message: TRIMMED_RULE });
-  if (shellOperatorPattern.test(ctx.value)) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message: SHELL_OPERATOR_RULE });
-});
-var additionalAllowedCommandsSchema = external_exports.array(additionalAllowedCommand).check(external_exports.maxLength(MAX_ADDITIONAL_ALLOWED_COMMANDS, ADDITIONAL_ALLOWED_COMMANDS_RULE), uniqueCheck(DUPLICATE_ENTRIES_RULE));
-var brakeSchema = external_exports.strictObject({ additionalAllowedCommands: external_exports._default(additionalAllowedCommandsSchema, []) });
 var MAX_AGENT_COMMAND_LENGTH = 200;
-var MAX_DELEGATED_ENTRIES = 20;
-var DELEGATED_ENTRIES_RULE = `must have at most ${MAX_DELEGATED_ENTRIES} entries`;
-var SKILL_NAME_RULE = "must be a skill name made of letters, digits, colons, dots, underscores, or hyphens";
+var TRIMMED_RULE = "must not have leading or trailing whitespace";
+var RESUME_REQUIRES_COMMAND_RULE = "requires snapshot.command";
 var SINGLE_LINE_RULE = "must be a single line";
-var skillNamePattern = /^[A-Za-z0-9][A-Za-z0-9:._-]*$/;
 var agentCommand = external_exports.string().check(external_exports.minLength(1), external_exports.maxLength(MAX_AGENT_COMMAND_LENGTH), (ctx) => {
-  if (ctx.value.trim() !== ctx.value) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message: TRIMMED_RULE });
-  if (/[\r\n]/.test(ctx.value)) addIssue2(ctx, { code: "custom", path: [], input: ctx.value, message: SINGLE_LINE_RULE });
+  if (ctx.value.trim() !== ctx.value) addIssue(ctx, { code: "custom", path: [], input: ctx.value, message: TRIMMED_RULE });
+  if (/[\r\n]/.test(ctx.value)) addIssue(ctx, { code: "custom", path: [], input: ctx.value, message: SINGLE_LINE_RULE });
 });
-var allowedPathsSchema = external_exports.array(relativePath).check(external_exports.maxLength(MAX_DELEGATED_ENTRIES, DELEGATED_ENTRIES_RULE), canonicalPathUniqueCheck);
-var allowedSkillsSchema = external_exports.array(external_exports.string().check(external_exports.regex(skillNamePattern, SKILL_NAME_RULE))).check(external_exports.maxLength(MAX_DELEGATED_ENTRIES, DELEGATED_ENTRIES_RULE), uniqueCheck(DUPLICATE_ENTRIES_RULE));
-var delegatedSnapshotSchema = external_exports.strictObject({ snapshotCommand: agentCommand, triggerZone: external_exports._default(external_exports.enum(SNAPSHOT_TRIGGER_ZONES), "RED"), resumeCommand: external_exports.optional(agentCommand), allowedPaths: external_exports._default(allowedPathsSchema, []), allowedSkills: external_exports._default(allowedSkillsSchema, []) });
+var snapshotSchema = external_exports.strictObject({ triggerZone: external_exports._default(external_exports.enum(SNAPSHOT_TRIGGER_ZONES), "RED"), command: external_exports.optional(agentCommand), resumeCommand: external_exports.optional(agentCommand) }).check((ctx) => {
+  if (ctx.value.resumeCommand !== void 0 && ctx.value.command === void 0) addIssue(ctx, { code: "custom", path: ["resumeCommand"], input: ctx.value.resumeCommand, message: RESUME_REQUIRES_COMMAND_RULE });
+});
+var DEFAULT_SNAPSHOT = { triggerZone: "RED" };
 var optionalPositiveInt = external_exports.optional(positiveInt);
 var zonesSchema = external_exports.strictObject({ greenMaxPercentage: percentage, yellowMaxPercentage: percentage, criticalPercentage: external_exports.int().check(external_exports.minimum(1), external_exports.maximum(100)), greenMaxTurn: optionalPositiveInt, yellowMaxTurn: optionalPositiveInt, criticalTurn: optionalPositiveInt }).check((ctx) => {
   const zones = ctx.value;
-  if (zones.greenMaxPercentage >= zones.yellowMaxPercentage) addIssue2(ctx, { code: "custom", path: ["yellowMaxPercentage"], input: zones.yellowMaxPercentage, message: "must be greater than greenMaxPercentage" });
-  if (zones.yellowMaxPercentage >= zones.criticalPercentage) addIssue2(ctx, { code: "custom", path: ["yellowMaxPercentage"], input: zones.yellowMaxPercentage, message: "must be less than criticalPercentage" });
+  if (zones.greenMaxPercentage >= zones.yellowMaxPercentage) addIssue(ctx, { code: "custom", path: ["yellowMaxPercentage"], input: zones.yellowMaxPercentage, message: "must be greater than greenMaxPercentage" });
+  if (zones.yellowMaxPercentage >= zones.criticalPercentage) addIssue(ctx, { code: "custom", path: ["yellowMaxPercentage"], input: zones.yellowMaxPercentage, message: "must be less than criticalPercentage" });
   checkTurnPair(ctx, zones);
 });
 function checkTurnPair(ctx, zones) {
-  if (zones.greenMaxTurn !== void 0 && zones.yellowMaxTurn === void 0) addIssue2(ctx, { code: "custom", path: ["yellowMaxTurn"], input: void 0, message: TURN_PAIR_RULE.yellow });
-  if (zones.yellowMaxTurn !== void 0 && zones.greenMaxTurn === void 0) addIssue2(ctx, { code: "custom", path: ["greenMaxTurn"], input: void 0, message: TURN_PAIR_RULE.green });
-  if (zones.greenMaxTurn !== void 0 && zones.yellowMaxTurn !== void 0 && zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue2(ctx, { code: "custom", path: ["greenMaxTurn"], input: zones.greenMaxTurn, message: "must be less than yellowMaxTurn" });
+  if (zones.greenMaxTurn !== void 0 && zones.yellowMaxTurn === void 0) addIssue(ctx, { code: "custom", path: ["yellowMaxTurn"], input: void 0, message: TURN_PAIR_RULE.yellow });
+  if (zones.yellowMaxTurn !== void 0 && zones.greenMaxTurn === void 0) addIssue(ctx, { code: "custom", path: ["greenMaxTurn"], input: void 0, message: TURN_PAIR_RULE.green });
+  if (zones.greenMaxTurn !== void 0 && zones.yellowMaxTurn !== void 0 && zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue(ctx, { code: "custom", path: ["greenMaxTurn"], input: zones.greenMaxTurn, message: "must be less than yellowMaxTurn" });
 }
 var telemetrySchema = external_exports.strictObject({ injectionMode: external_exports.enum(INJECTION_MODES), activationThresholdPercentage: percentage, contextWindowCeiling: positiveInt, declaredContextWindow: optionalPositiveInt, turnCeiling: optionalPositiveInt, zones: zonesSchema });
-var configurationSchema = external_exports.strictObject({ $schema: external_exports.optional(external_exports.url()), schemaVersion: external_exports.literal(1), activeHarnesses: external_exports.array(external_exports.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: external_exports.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: external_exports.boolean(), bootMaxTokens: positiveInt }), instructionFiles: external_exports.strictObject({ targets: external_exports.array(relativePath).check(external_exports.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: external_exports._default(brakeSchema, { additionalAllowedCommands: [] }), delegatedSnapshot: external_exports.optional(delegatedSnapshotSchema), lightMode: external_exports.optional(lightModeSchema), debug: external_exports.optional(external_exports.boolean()), runner: external_exports._default(runnerConfigurationSchema, { ...RUNNER_DEFAULTS }) });
-var DEFAULT_CONFIG = { $schema: "https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json", schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: "threshold_only", activationThresholdPercentage: 50, contextWindowCeiling: 128e3, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 } }, stateStorage: { planFile: "task_plan.json", checkpointFile: "state_checkpoint.json", instructCheckpointCommit: true, bootMaxTokens: 1e3 }, instructionFiles: { targets: ["CLAUDE.md", "AGENTS.md"], protocolFile: "docs/context-brake-protocol.md" }, brake: { additionalAllowedCommands: [] }, runner: { ...RUNNER_DEFAULTS } };
+var configurationSchema = external_exports.strictObject({ $schema: external_exports.optional(external_exports.url()), schemaVersion: external_exports.literal(1), activeHarnesses: external_exports.array(external_exports.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, snapshot: external_exports._default(snapshotSchema, DEFAULT_SNAPSHOT), debug: external_exports.optional(external_exports.boolean()), autoRestart: external_exports.optional(autoRestartSchema) });
+var DEFAULT_CONFIG = { $schema: "https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json", schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: "threshold_only", activationThresholdPercentage: 50, contextWindowCeiling: 128e3, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 } }, snapshot: { ...DEFAULT_SNAPSHOT } };
 
 // src/core/validation/configuration-validator.ts
 var InvalidConfigurationError = class extends Error {
   constructor(issues, filePath, options) {
-    super("Configuration validation failed.", options);
+    super(validationMessage(issues), options);
     this.issues = issues;
     this.filePath = filePath;
   }
 };
-
-// src/core/contracts/task-plan.ts
-var PLAN_SCHEMA_VERSION = 1;
-var PLAN_STEP_STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED", "FAILED"];
-var DUPLICATE_STEP_IDS_RULE = "must not contain duplicate step identifiers";
-var SINGLE_IN_PROGRESS_RULE = "must not contain more than one IN_PROGRESS step";
-var CURRENT_STEP_RULE = "must reference a step present in steps";
-var stepIdSchema = external_exports.union([external_exports.string().check(external_exports.minLength(1)), external_exports.int()]);
-var nonEmptyText = external_exports.string().check(external_exports.minLength(1));
-var planStepSchema = external_exports.strictObject({
-  id: stepIdSchema,
-  title: nonEmptyText,
-  description: external_exports._default(external_exports.string(), ""),
-  status: external_exports.enum(PLAN_STEP_STATUSES),
-  validationCommand: external_exports._default(external_exports.nullable(external_exports.string()), null),
-  artifactsProduced: external_exports._default(external_exports.array(external_exports.string()), [])
-});
-function addIssue3(ctx, issue2) {
-  ctx.issues.push(issue2);
+function validationMessage(issues) {
+  return `Configuration validation failed: ${issues.map((issue2) => `${issue2.path} ${issue2.rule}`).join("; ")}.`;
 }
-function hasDuplicateIds(steps) {
-  return new Set(steps.map((step) => String(step.id))).size !== steps.length;
-}
-function inProgressCount(steps) {
-  return steps.filter((step) => step.status === "IN_PROGRESS").length;
-}
-function hasStep(steps, id) {
-  return steps.some((step) => step.id === id);
-}
-var taskPlanSchema = external_exports.strictObject({
-  $schema: external_exports.optional(external_exports.string()),
-  schemaVersion: external_exports.literal(PLAN_SCHEMA_VERSION),
-  taskId: nonEmptyText,
-  title: nonEmptyText,
-  currentStepId: external_exports._default(external_exports.nullable(stepIdSchema), null),
-  steps: external_exports.array(planStepSchema)
-}).check((ctx) => {
-  const plan = ctx.value;
-  if (hasDuplicateIds(plan.steps)) addIssue3(ctx, { code: "custom", path: ["steps"], input: plan.steps, message: DUPLICATE_STEP_IDS_RULE });
-  if (inProgressCount(plan.steps) > 1) addIssue3(ctx, { code: "custom", path: ["steps"], input: plan.steps, message: SINGLE_IN_PROGRESS_RULE });
-  if (plan.currentStepId !== null && !hasStep(plan.steps, plan.currentStepId)) {
-    addIssue3(ctx, { code: "custom", path: ["currentStepId"], input: plan.currentStepId, message: CURRENT_STEP_RULE });
-  }
-});
-
-// src/core/services/zone-actions.ts
-var PLANS_AND_CHECKPOINT = "Other tool calls are blocked. Only reading or writing the plan and checkpoint, running the validation command, `git status`, `git add`, and `git commit`";
-var CRITICAL_PROTOCOL = `${PLANS_AND_CHECKPOINT} are allowed. Complete the \`RED\` actions.`;
-
-// src/core/services/telemetry-block.ts
-var TELEMETRY_BLOCK_VERSION = 3;
-var TELEMETRY_BLOCK_PREFIX = `[ContextBrake v${TELEMETRY_BLOCK_VERSION}]`;
-
-// src/core/services/block-message.ts
-var BLOCKED_PREFIX = `${TELEMETRY_BLOCK_PREFIX} BLOCKED`;
-
-// src/core/services/reset-notice.ts
-var SESSION_RESET_SIGNAL = "[REQUEST_SESSION_RESET]";
-
-// src/core/services/light-guidance.ts
-var SAVE_NOW = `save your snapshot or checkpoint now, then end reply with ${SESSION_RESET_SIGNAL}`;
-var SAVE_IMMEDIATELY = `save your snapshot or checkpoint immediately, then end reply with ${SESSION_RESET_SIGNAL}`;
 
 // src/core/services/failure-policy.ts
 var INTERNAL_DEADLINE_MILLISECONDS = 1500;
 var DeadlineExceededError = class extends Error {
-  constructor() {
+  constructor(phase, elapsedMs) {
     super("The internal deadline elapsed.");
+    this.phase = phase;
+    this.elapsedMs = elapsedMs;
     this.name = "DeadlineExceededError";
   }
 };
@@ -18367,11 +18271,11 @@ function failureDetail(error62) {
   return error62 instanceof Error ? error62.constructor.name : "UnexpectedError";
 }
 function runWithinDeadline(work, deadlineMilliseconds = INTERNAL_DEADLINE_MILLISECONDS) {
-  return new Promise((resolve5, reject) => {
+  return new Promise((resolve6, reject) => {
     const timer = setTimeout(() => reject(new DeadlineExceededError()), deadlineMilliseconds);
     work.then((value) => {
       clearTimeout(timer);
-      resolve5(value);
+      resolve6(value);
     }, (error62) => {
       clearTimeout(timer);
       reject(error62);
@@ -18380,7 +18284,7 @@ function runWithinDeadline(work, deadlineMilliseconds = INTERNAL_DEADLINE_MILLIS
 }
 async function recordRuntimeFailure(errors, record2) {
   try {
-    await errors.append(record2.harness, { event: record2.event, code: record2.code, detail: record2.detail });
+    await errors.append(record2.harness, { event: record2.event, code: record2.code, detail: record2.detail, phase: record2.phase, elapsedMs: record2.elapsedMs });
   } catch {
     return;
   }
@@ -18390,8 +18294,12 @@ async function recordRuntimeFailure(errors, record2) {
 import { appendFile } from "node:fs/promises";
 import { join as join3 } from "node:path";
 
+// src/core/contracts/hook-phase.ts
+var HOOK_PHASES = ["project_root", "stdin", "event", "config", "input", "engine", "ledger", "prune", "guidance"];
+
 // src/core/contracts/statusline-line.ts
 var STATUSLINE_MODEL_MAX_LENGTH = 200;
+var STATUSLINE_SHELLS = ["sh", "git-bash", "powershell"];
 var statuslineLineSchema = external_exports.strictObject({
   v: external_exports.literal(1),
   type: external_exports.literal("statusline"),
@@ -18399,23 +18307,21 @@ var statuslineLineSchema = external_exports.strictObject({
   windowTokens: external_exports.nullable(external_exports.int().check(external_exports.positive())),
   inputTokens: external_exports.nullable(external_exports.int().check(external_exports.nonnegative())),
   usedPercentage: external_exports.nullable(external_exports.number().check(external_exports.gte(0), external_exports.lte(100))),
-  model: external_exports.nullable(external_exports.string().check(external_exports.maxLength(STATUSLINE_MODEL_MAX_LENGTH)))
+  model: external_exports.nullable(external_exports.string().check(external_exports.maxLength(STATUSLINE_MODEL_MAX_LENGTH))),
+  shell: external_exports.optional(external_exports.enum(STATUSLINE_SHELLS))
 });
 
 // src/core/contracts/session-ledger.ts
 var SESSION_RETENTION_DAYS = 14;
 var RESET_REASONS = ["new", "clear", "compact"];
-var BLOCK_REASONS = ["critical_ceiling", "integration_failure"];
 var RUNTIME_ERROR_CODES = ["INVALID_CONFIG", "PAYLOAD_INVALID", "DEADLINE_EXCEEDED", "LEDGER_UNREADABLE", "UNEXPECTED"];
-var SESSION_BRAKE_MODES = ["enforced", "cooperative"];
 var version2 = external_exports.literal(1);
 var timestamp = external_exports.string().check(external_exports.minLength(1));
 var sessionIdFields = { harness: external_exports.enum(HARNESS_IDS), sessionId: external_exports.string(), agentId: external_exports.nullable(external_exports.string()) };
-var sessionLineSchema = external_exports.strictObject({ v: version2, type: external_exports.literal("session"), at: timestamp, ...sessionIdFields, brakeMode: external_exports.enum(SESSION_BRAKE_MODES), brakeReason: external_exports.nullable(external_exports.string()) });
+var sessionLineSchema = external_exports.strictObject({ v: version2, type: external_exports.literal("session"), at: timestamp, ...sessionIdFields });
 var toolLineSchema = external_exports.strictObject({ v: version2, type: external_exports.literal("tool"), at: timestamp, toolUseId: external_exports.nullable(external_exports.string()), observedCharacters: external_exports.int().check(external_exports.nonnegative()), turn: external_exports.int().check(external_exports.positive()), usedTokens: external_exports.int().check(external_exports.nonnegative()), windowTokens: external_exports.int().check(external_exports.positive()), estimatedTokens: external_exports.int().check(external_exports.nonnegative()), source: external_exports.enum(USAGE_SOURCES), zone: external_exports.enum(ZONES), windowOrigin: external_exports.optional(external_exports.enum(WINDOW_ORIGINS)) });
 var resetLineSchema = external_exports.strictObject({ v: version2, type: external_exports.literal("reset"), at: timestamp, reason: external_exports.enum(RESET_REASONS) });
-var blockLineSchema = external_exports.strictObject({ v: version2, at: timestamp, ...sessionIdFields, tool: external_exports.string(), zone: external_exports.enum(ZONES), turn: external_exports.int().check(external_exports.nonnegative()), percentage: external_exports.nullable(external_exports.int()), source: external_exports.nullable(external_exports.enum(USAGE_SOURCES)), reason: external_exports.enum(BLOCK_REASONS) });
-var errorLineSchema = external_exports.strictObject({ v: version2, at: timestamp, harness: external_exports.enum(HARNESS_IDS), event: external_exports.string(), code: external_exports.enum(RUNTIME_ERROR_CODES), detail: external_exports.string() });
+var errorLineSchema = external_exports.strictObject({ v: version2, at: timestamp, harness: external_exports.enum(HARNESS_IDS), event: external_exports.string(), code: external_exports.enum(RUNTIME_ERROR_CODES), detail: external_exports.string(), phase: external_exports.optional(external_exports.enum(HOOK_PHASES)), elapsedMs: external_exports.optional(external_exports.int().check(external_exports.nonnegative())) });
 var ledgerLineSchema = external_exports.union([sessionLineSchema, toolLineSchema, resetLineSchema, statuslineLineSchema]);
 function parseLedgerLines(content) {
   const lines = [];
@@ -18535,8 +18441,8 @@ var NodeSessionLedger = class {
     });
     return parseLedgerLines(content);
   }
-  async appendSessionLine(key, input2) {
-    await this.append(key, sessionLineSchema.parse({ v: 1, type: "session", at: this.timestamp(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input2 }));
+  async appendSessionLine(key) {
+    await this.append(key, sessionLineSchema.parse({ v: 1, type: "session", at: this.timestamp(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId }));
   }
   async appendToolLine(key, input2) {
     await this.append(key, toolLineSchema.parse({ v: 1, type: "tool", at: this.timestamp(), ...input2 }));
@@ -18588,6 +18494,28 @@ async function assetProjectRoot() {
   return realpath(root).catch(() => root);
 }
 
+// src/core/services/zone-classifier.ts
+function usagePercentage(usedTokens, windowTokens) {
+  if (windowTokens <= 0) return 100;
+  return Math.floor(usedTokens * 100 / windowTokens);
+}
+
+// src/infrastructure/harnesses/claude-code/statusline-output.ts
+var PRODUCT = "ContextBrake";
+var DOCTOR_HINT = "run context-brake doctor";
+function renderFallbackLine(input2) {
+  return `${[PRODUCT, ...reading(input2)].join(" ")} \xB7 previous status line failed (${input2.reason}) \xB7 ${DOCTOR_HINT}
+`;
+}
+function reading(input2) {
+  const newestFirst = [...input2.ledger].reverse();
+  const resetIndex = newestFirst.findIndex((line) => line.type === "reset");
+  const tool = (resetIndex === -1 ? newestFirst : newestFirst.slice(0, resetIndex)).find((line) => line.type === "tool");
+  if (tool?.type === "tool") return [`${usagePercentage(tool.usedTokens, tool.windowTokens)}%`, tool.zone];
+  const percentage3 = input2.payload?.usedPercentage;
+  return percentage3 === null || percentage3 === void 0 ? [] : [`${Math.floor(percentage3)}%`];
+}
+
 // src/infrastructure/harnesses/claude-code/statusline-payload.ts
 var MAXIMUM_PERCENTAGE = 100;
 var statuslinePayloadSchema = external_exports.object({
@@ -18606,13 +18534,13 @@ function mapStatuslinePayload(payload) {
   const sessionId = result.data.session_id;
   if (sessionId === void 0 || sessionId === "") return null;
   const window = result.data.context_window ?? {};
-  const line = { windowTokens: positiveInteger2(window.context_window_size), inputTokens: inputTokens(window), usedPercentage: percentage2(window.used_percentage), model: modelId(result.data.model?.id) };
+  const line = { windowTokens: positiveInteger(window.context_window_size), inputTokens: inputTokens(window), usedPercentage: percentage2(window.used_percentage), model: modelId(result.data.model?.id) };
   return { session: { harness: "claude-code", sessionId, agentId: null }, line };
 }
 function inputTokens(window) {
-  return window.current_usage === null ? null : positiveInteger2(window.total_input_tokens);
+  return window.current_usage === null ? null : positiveInteger(window.total_input_tokens);
 }
-function positiveInteger2(value) {
+function positiveInteger(value) {
   return typeof value === "number" && Number.isSafeInteger(value) && value > 0 ? value : null;
 }
 function percentage2(value) {
@@ -18620,6 +18548,143 @@ function percentage2(value) {
 }
 function modelId(value) {
   return typeof value === "string" && value !== "" && value.length <= STATUSLINE_MODEL_MAX_LENGTH ? value : null;
+}
+
+// src/infrastructure/process/node-process-runner.ts
+import { spawn } from "node:child_process";
+import process3 from "node:process";
+
+// src/infrastructure/process/process-tree.ts
+import { execFile } from "node:child_process";
+import process2 from "node:process";
+function killWindowsTree(child) {
+  return new Promise((resolve6) => {
+    if (!child.pid) {
+      resolve6();
+      return;
+    }
+    execFile("taskkill", ["/pid", String(child.pid), "/t", "/f"], { windowsHide: true }, () => resolve6());
+  });
+}
+function killPosixTree(child) {
+  if (!child.pid) {
+    child.kill("SIGKILL");
+    return Promise.resolve();
+  }
+  try {
+    process2.kill(-child.pid, "SIGKILL");
+  } catch (cause) {
+    if (!child.kill("SIGKILL")) return Promise.reject(new Error("Unable to stop timed-out process tree.", { cause }));
+  }
+  return Promise.resolve();
+}
+function killProcessTree(child) {
+  return process2.platform === "win32" ? killWindowsTree(child) : killPosixTree(child);
+}
+
+// src/infrastructure/process/node-process-runner.ts
+var locatorCommand = process3.platform === "win32" ? "where.exe" : "which";
+function spawnPipedProcess(executable, args) {
+  return spawn(executable, [...args], { shell: false, windowsHide: true, stdio: ["pipe", "pipe", "ignore"] });
+}
+
+// src/infrastructure/harnesses/claude-code/statusline-previous.ts
+var PREVIOUS_STATUSLINE_TIMEOUT_MILLISECONDS = 5e3;
+var PREVIOUS_STATUSLINE_OUTPUT_LIMIT_BYTES = 1024 * 1024;
+async function runPreviousStatusline(run) {
+  for (const executable of run.shell.executables) {
+    const result = await runWith(executable, run);
+    if (result !== null) return result;
+  }
+  return { kind: "failed", reason: "not started" };
+}
+function runWith(executable, run) {
+  const child = spawnPipedProcess(executable, run.shell.args);
+  child.stdin?.on("error", () => void 0);
+  child.stdin?.end(run.stdin);
+  return collect(child, run.timeoutMilliseconds ?? PREVIOUS_STATUSLINE_TIMEOUT_MILLISECONDS);
+}
+function collect(child, timeoutMilliseconds) {
+  return new Promise((resolve6) => {
+    const chunks = [];
+    let size = 0;
+    let isTimedOut = false;
+    const timer = setTimeout(() => {
+      isTimedOut = true;
+      resolve6({ kind: "failed", reason: "timed out" });
+      void killProcessTree(child).catch(() => void 0);
+    }, timeoutMilliseconds);
+    child.stdout?.on("data", (chunk) => {
+      if (size < PREVIOUS_STATUSLINE_OUTPUT_LIMIT_BYTES) chunks.push(chunk.subarray(0, PREVIOUS_STATUSLINE_OUTPUT_LIMIT_BYTES - size));
+      size += chunk.length;
+    });
+    child.on("error", () => {
+      clearTimeout(timer);
+      resolve6(null);
+    });
+    child.on("close", (code) => {
+      clearTimeout(timer);
+      if (!isTimedOut) resolve6(classify(code, Buffer.concat(chunks)));
+    });
+  });
+}
+function classify(code, stdout) {
+  if (code !== 0) return { kind: "failed", reason: `exit ${code ?? -1}` };
+  if (stdout.toString("utf8").trim() === "") return { kind: "failed", reason: "no output" };
+  return { kind: "output", stdout };
+}
+
+// src/infrastructure/harnesses/claude-code/statusline-shell.ts
+import { stat as stat2 } from "node:fs/promises";
+import { win32 } from "node:path";
+import process4 from "node:process";
+var POSIX_SHELL = "/bin/sh";
+var BASH_EXECUTABLE = "bash.exe";
+var POWERSHELL_EXECUTABLES = ["pwsh.exe", "powershell.exe"];
+var POWERSHELL_ENCODING = "utf16le";
+var processShellHost = { platform: process4.platform, environment: process4.env, isFile: isExistingFile };
+async function resolveStatuslineShell(command, host = processShellHost) {
+  if (host.platform !== "win32") return { label: "sh", executables: [POSIX_SHELL], args: ["-c", command] };
+  const bash = host.environment["MSYSTEM"] === void 0 ? null : await findGitBash(host);
+  if (bash !== null) return { label: "git-bash", executables: [bash], args: ["-c", command] };
+  return { label: "powershell", executables: POWERSHELL_EXECUTABLES, args: ["-NoProfile", "-NonInteractive", "-EncodedCommand", Buffer.from(command, POWERSHELL_ENCODING).toString("base64")] };
+}
+async function findGitBash(host) {
+  const { EXEPATH: exePath, SHELL: shell, CLAUDE_CODE_GIT_BASH_PATH: configured } = host.environment;
+  const candidates = [exePath === void 0 ? void 0 : win32.join(exePath, BASH_EXECUTABLE), shell, configured];
+  for (const candidate of candidates) {
+    if (candidate !== void 0 && win32.basename(candidate).toLowerCase() === BASH_EXECUTABLE && await host.isFile(candidate)) return candidate;
+  }
+  return null;
+}
+async function isExistingFile(path) {
+  return stat2(path).then((entry) => entry.isFile(), () => false);
+}
+
+// src/infrastructure/harnesses/claude-code/statusline-state.ts
+import { readFile as readFile2 } from "node:fs/promises";
+import { resolve as resolve5 } from "node:path";
+var STATUSLINE_STATE_FILE = ".context-brake/runtime/claude-statusline.json";
+var STATUSLINE_SCOPES = ["local", "project", "user"];
+var statuslineStateSchema = external_exports.strictObject({
+  v: external_exports.literal(1),
+  installedCommand: external_exports.string(),
+  previousLocal: external_exports.nullable(external_exports.record(external_exports.string(), external_exports.unknown())),
+  previousSource: external_exports.nullable(external_exports.enum(STATUSLINE_SCOPES)),
+  previousCommand: external_exports.nullable(external_exports.string()),
+  createdLocalFile: external_exports.boolean()
+});
+async function readStatuslineState(projectRoot) {
+  const content = await readFile2(resolve5(projectRoot, STATUSLINE_STATE_FILE), "utf8").catch(() => null);
+  return content === null ? null : parseStatuslineState(content);
+}
+function parseStatuslineState(content) {
+  try {
+    const result = statuslineStateSchema.safeParse(JSON.parse(content));
+    return result.success ? result.data : null;
+  } catch {
+    return null;
+  }
 }
 
 // src/infrastructure/harnesses/claude-code/statusline-bridge.ts
@@ -18632,10 +18697,22 @@ function processContext() {
   return { argv: process.argv, stdin: process.stdin, stdout: process.stdout, resolveProjectRoot: assetProjectRoot };
 }
 async function runClaudeStatuslineBridge(context = processContext()) {
-  const writer = context.argv.includes(STATUSLINE_PIPE_FLAG) ? tolerantWriter(context.stdout) : null;
-  const buffered = await passThrough(context.stdin, writer);
-  const record2 = buffered === null ? null : mapStatuslinePayload(parseJson(buffered));
-  if (record2 !== null) await recordStatusline(record2, await context.resolveProjectRoot());
+  const isPipe = context.argv.includes(STATUSLINE_PIPE_FLAG);
+  const input2 = await readInput(context.stdin, isPipe ? tolerantWriter(context.stdout) : null);
+  const record2 = input2 === null || input2.length > STATUSLINE_PARSE_LIMIT_BYTES ? null : mapStatuslinePayload(parseJson(input2));
+  const projectRoot = await context.resolveProjectRoot();
+  const previousCommand = isPipe ? null : (await readStatuslineState(projectRoot))?.previousCommand ?? null;
+  if (previousCommand === null || input2 === null) {
+    if (record2 !== null) await recordStatusline(record2, projectRoot);
+    return 0;
+  }
+  const shell = await resolveStatuslineShell(previousCommand, context.shellHost ?? processShellHost);
+  const [result] = await Promise.all([
+    runPreviousStatusline({ shell, stdin: input2, timeoutMilliseconds: context.previousTimeoutMilliseconds }),
+    record2 === null ? void 0 : recordStatusline({ ...record2, line: { ...record2.line, shell: shell.label } }, projectRoot)
+  ]);
+  const output2 = result.kind === "output" ? result.stdout : Buffer.from(renderFallbackLine({ reason: result.reason, ledger: await readLedger(record2, projectRoot), payload: record2?.line ?? null }));
+  tolerantWriter(context.stdout)(output2);
   return 0;
 }
 function tolerantWriter(stream) {
@@ -18647,20 +18724,18 @@ function tolerantWriter(stream) {
     if (!isBroken) stream.write(chunk);
   };
 }
-async function passThrough(stdin, writer) {
+async function readInput(stdin, writer) {
   const chunks = [];
-  let size = 0;
   try {
     for await (const chunk of stdin) {
       const data = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
       writer?.(data);
-      size += data.length;
-      if (size <= STATUSLINE_PARSE_LIMIT_BYTES) chunks.push(data);
+      chunks.push(data);
     }
   } catch {
     return null;
   }
-  return size > STATUSLINE_PARSE_LIMIT_BYTES ? null : Buffer.concat(chunks);
+  return Buffer.concat(chunks);
 }
 function parseJson(buffered) {
   try {
@@ -18668,6 +18743,10 @@ function parseJson(buffered) {
   } catch {
     return null;
   }
+}
+async function readLedger(record2, projectRoot) {
+  if (record2 === null) return [];
+  return new NodeSessionLedger(projectRoot, systemClock).readLines(record2.session).catch(() => []);
 }
 async function recordStatusline(record2, projectRoot) {
   try {

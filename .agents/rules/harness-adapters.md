@@ -12,7 +12,7 @@ A harness adapter translates between one harness and the ports in `src/core/cont
 
 - Implement only behavior that the harness documentation confirms and that `docs/research/harness-integrations.md` records.
 - When implementation or a new harness version shows different behavior, update the harness section, the adapter, and its fixtures in the same change.
-- Treat undocumented behavior as unsupported. Never report a capability, such as a guaranteed block, that the documentation does not confirm.
+- Treat undocumented behavior as unsupported. Never report a capability, such as session-start injection, that the documentation does not confirm.
 - Gate each capability on the minimum harness version that documents it.
 
 ## Harness Input
@@ -24,11 +24,11 @@ A harness adapter translates between one harness and the ports in `src/core/cont
 
 - Emit only the fields documented for the event, following the stdout rule in `node.md`.
 - When a harness can both add context and replace a tool result, add context and leave the original result intact.
-- The telemetry block, block message, and boot summary are a versioned contract built in `core` and shared by all adapters. Adapters only transport that text.
+- The telemetry block and the resume text are a versioned contract built in `core` and shared by all adapters. Adapters only transport that text.
+- Never deny or block a tool call. Adapters register no pre-tool hook, and every hook response lets the tool call proceed.
 
 ## Failure Policy
 
 - A hook never ends with an uncaught exception.
-- Below the critical ceiling, an internal failure lets the tool call proceed.
-- At or above the critical ceiling, an internal failure denies the call only when the last recorded reading has a trusted context window (reported by the harness or declared in the configuration) and the harness supports failing closed; with the `contextWindowCeiling` fallback the call proceeds. When it denies, reading and writing the plan and checkpoint, the validation command, `git status`, `git add`, `git commit`, and the configured additional commands stay allowed.
+- An internal failure, in any zone, returns a neutral response, records the error in `.context-brake/runtime/errors.jsonl`, and lets the session continue.
 - Keep each hook invocation within the overhead target of the telemetry PRD.

@@ -12,8 +12,5 @@ coverage/
 # Agent transient runtime lock files
 .agents/*.lock
 
-
-# CONTEXTBRAKE:START
-/task_plan.json
-/state_checkpoint.json
-# CONTEXTBRAKE:END
+# Claude Code local settings, reached through the /.claude link (status line bridge, automatic restart)
+.agents/settings.local.json

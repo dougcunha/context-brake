@@ -40,18 +40,16 @@ function capabilityLimitations(input: SupportInput, capabilities: readonly Capab
 
 function floorLimitation(version: VersionProbe | undefined): CapabilityLimitation | null {
   if (!version || version.minimumVersion !== null) return null;
-  return { capability: 'pre_tool_block', impact: unverifiedFloorImpact };
+  return { capability: 'post_tool_telemetry', impact: unverifiedFloorImpact };
 }
 
-const FULL_SUPPORT_CAPABILITIES: readonly CapabilityId[] = ['pre_tool_block', 'tool_coverage', 'post_tool_telemetry', 'session_boot'];
+const FULL_SUPPORT_CAPABILITIES: readonly CapabilityId[] = ['post_tool_telemetry', 'session_boot'];
 
 function hasFullSupport(capabilities: readonly CapabilityStatus[]): boolean {
   return FULL_SUPPORT_CAPABILITIES.every((id) => capabilities.some((capability) => capability.id === id && capability.state === 'supported'));
 }
 
 function deriveLevel(capabilities: readonly CapabilityStatus[]): SupportLevel {
-  const block = capabilities.find((capability) => capability.id === 'pre_tool_block');
-  if (block?.state !== 'supported') return 'cooperative';
   return hasFullSupport(capabilities) ? 'full' : 'partial';
 }
 

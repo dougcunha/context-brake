@@ -33,7 +33,7 @@ In hooks, stdout is the response channel to the harness: write only the JSON or 
 ## Child Processes
 
 - Start processes with `execFile` or `spawn` and an argument array. Never build a shell command string from paths, harness payloads, or configuration values.
-- The validation commands in `task_plan.json` are the only shell strings ContextBrake executes, and only the runner runs them, after the confirmation required by the runner PRD.
+- ContextBrake executes no shell string from configuration or agent input; the previous status line command that the bridge runs is the only exception, and it runs as the user configured it.
 - Give every child process a timeout, and stop it and its children when the timeout expires.
 
 ## Paths and Platforms
@@ -48,7 +48,7 @@ ContextBrake does not use `.env` files. Configuration comes from `context-brake.
 
 ## Shutdown
 
-Long-running commands, such as `run` and the `doctor` overhead measurement, handle `SIGINT` and `SIGTERM`: they stop child processes, leave the plan and checkpoint valid, and exit with the matching exit code. Repeated signals never start a second shutdown.
+Long-running commands, such as the `doctor` overhead measurement, handle `SIGINT` and `SIGTERM`: they stop child processes, leave no partial file behind, and exit with the matching exit code. Repeated signals never start a second shutdown.
 
 ## Logging
 

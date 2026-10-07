@@ -15,8 +15,6 @@ async function writeConfigAndManifest(root: string, hookSha: string): Promise<vo
   await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({
     schemaVersion: 1, activeHarnesses: ['claude-code'],
     telemetry: { injectionMode: 'threshold_only', activationThresholdPercentage: 50, contextWindowCeiling: 128000, turnCeiling: 12, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75, greenMaxTurn: 7, yellowMaxTurn: 10, criticalTurn: 12 } },
-    stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 },
-    instructionFiles: { targets: ['CLAUDE.md'], protocolFile: 'docs/context-brake-protocol.md' },
   }), 'utf8');
 }
 
@@ -34,26 +32,7 @@ async function setupInstalledRepo(root: string): Promise<void> {
   await writeConfigAndManifest(root, hookSha);
 }
 
-describe('T04: runtime-state removal without --remove-state (FR-09, TC-05)', () => {
-  let tempDir: string;
-  beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-t04-a-')); });
-  afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
-  it('never deletes runtime-state files and preserves the ContextBrake directory', async () => {
-    await setupInstalledRepo(tempDir);
-    await mkdir(join(tempDir, '.context-brake/runtime/sessions'), { recursive: true });
-    await writeFile(join(tempDir, '.context-brake/runtime/lock.json'), '{}', 'utf8');
-    await writeFile(join(tempDir, '.context-brake/runtime/sessions/s1.json'), '{}', 'utf8');
-    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true, removeState: false }, { projectRoot: tempDir });
-    expect(code).toBe(0);
-    const lockExists = await stat(join(tempDir, '.context-brake/runtime/lock.json')).then(() => true).catch(() => false);
-    const contextBrakeDirExists = await stat(join(tempDir, '.context-brake')).then(() => true).catch(() => false);
-    expect(lockExists).toBe(true);
-    expect(contextBrakeDirExists).toBe(true);
-  });
-});
-
-describe('T04: runtime-state removal with --remove-state (FR-09, TC-05)', () => {
+describe('runtime-state removal on every remove (prd-12 FR-08, DEC-04, TC-12)', () => {
   let tempDir: string;
   beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-t04-b-')); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
@@ -63,7 +42,7 @@ describe('T04: runtime-state removal with --remove-state (FR-09, TC-05)', () => 
     await mkdir(join(tempDir, '.context-brake/runtime/sessions'), { recursive: true });
     await writeFile(join(tempDir, '.context-brake/runtime/lock.json'), '{}', 'utf8');
     await writeFile(join(tempDir, '.context-brake/runtime/sessions/s1.json'), '{}', 'utf8');
-    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true, removeState: true }, { projectRoot: tempDir });
+    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
     expect(code).toBe(0);
     const runtimeDirExists = await stat(join(tempDir, '.context-brake/runtime')).then(() => true).catch(() => false);
     const contextBrakeDirExists = await stat(join(tempDir, '.context-brake')).then(() => true).catch(() => false);
@@ -71,26 +50,26 @@ describe('T04: runtime-state removal with --remove-state (FR-09, TC-05)', () => 
     expect(contextBrakeDirExists).toBe(false);
   });
 
-  it('plans and changes nothing when repeating remove --remove-state after everything is already gone', async () => {
+  it('plans and changes nothing when repeating remove after everything is already gone', async () => {
     await setupInstalledRepo(tempDir);
-    await runRemove({ command: 'remove', dryRun: false, yes: true, json: true, removeState: true }, { projectRoot: tempDir });
-    const secondCode = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true, removeState: true }, { projectRoot: tempDir });
+    await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    const secondCode = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
     expect(secondCode).toBe(0);
   });
 });
 
-describe('T04: runtime-state removal leaves stray content alone (FR-09, TC-05)', () => {
+describe('runtime-state removal leaves stray content alone (prd-12 DEC-04, TC-12)', () => {
   let tempDir: string;
   beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-t04-c-')); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('leaves a stray file in place and reports it as skipped, never removing or failing hard', async () => {
+  it('keeps a file it does not own next to the runtime directory without a warning', async () => {
     await setupInstalledRepo(tempDir);
     await mkdir(join(tempDir, '.context-brake/runtime'), { recursive: true });
     await writeFile(join(tempDir, '.context-brake/runtime/lock.json'), '{}', 'utf8');
     await writeFile(join(tempDir, '.context-brake/stray.txt'), 'not ours', 'utf8');
-    const result = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true, removeState: true }, { projectRoot: tempDir });
-    expect(result).toBe(1);
+    const result = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    expect(result).toBe(0);
     const runtimeDirExists = await stat(join(tempDir, '.context-brake/runtime')).then(() => true).catch(() => false);
     const strayExists = await stat(join(tempDir, '.context-brake/stray.txt')).then(() => true).catch(() => false);
     expect(runtimeDirExists).toBe(false);

@@ -1,12 +1,12 @@
 {
   "hooks": {
-    "PreToolUse": [
+    "PostToolUse": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "node .codex/hooks/context-brake.mjs PreToolUse"
+            "command": "node .codex/hooks/context-brake.mjs PostToolUse"
           }
         ]
       }

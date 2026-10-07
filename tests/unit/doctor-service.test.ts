@@ -1,14 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { FileSnapshot } from '../../src/core/contracts/changes.js';
 import type { HarnessAdapter } from '../../src/core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../src/core/contracts/diagnostics.js';
 import type { DetectionSources } from '../../src/core/contracts/harness.js';
-import type { SessionLine } from '../../src/core/contracts/session-ledger.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
-import type { RuntimeStateReading } from '../../src/core/services/brake-session-checks.js';
+import type { RuntimeStateReading } from '../../src/core/services/runtime-error-checks.js';
 import { diagnoseProject } from '../../src/core/services/doctor-service.js';
-import { renderIgnoreBlock } from '../../src/core/services/gitignore-markers.js';
-import { renderProtocol } from '../../src/core/services/protocol-service.js';
 
 const missingFinding: DiagnosticFinding = { code: 'INTEGRATION_MISSING', severity: 'error', scope: 'harness', harness: 'claude-code', path: '.claude/settings.json', message: 'The claude-code integration is missing from .claude/settings.json.', impact: 'ContextBrake cannot stop or annotate tool calls in this harness.', remediation: 'Run context-brake init --harness claude-code --yes.' };
 function makeAdapter(id: HarnessAdapter['id'], minimumVersion: string | null, findings: readonly DiagnosticFinding[] = []): HarnessAdapter {
@@ -24,14 +20,11 @@ function makeAdapter(id: HarnessAdapter['id'], minimumVersion: string | null, fi
     benchmarkFixture: () => ({ harness: id, executionModel, event: 'PreToolUse', targetMilliseconds: 100, samplePayload: {} }),
   };
 }
-const protocolSnapshot: FileSnapshot = { path: 'docs/context-brake-protocol.md', realPath: '/test-repo/docs/context-brake-protocol.md', exists: true, content: renderProtocol(DEFAULT_CONFIG), sha256: 'proto', isSymlink: false, fileIdentity: 'proto' };
-const gitignoreSnapshot: FileSnapshot = { path: '.gitignore', realPath: '/test-repo/.gitignore', exists: true, content: `${renderIgnoreBlock('task_plan.json', 'state_checkpoint.json')}\n`, sha256: 'gitignore', isSymlink: false, fileIdentity: 'gitignore' };
 const projectEvidence = [{ origin: 'project' as const, kind: 'config', value: '.claude/settings.json' }];
 function diagnose(adapters: readonly HarnessAdapter[], sources: Partial<DetectionSources> = { 'claude-code': { project: projectEvidence } }, runtimeState?: RuntimeStateReading) {
   return diagnoseProject({
     projectRoot: '/test-repo', config: { ...DEFAULT_CONFIG, activeHarnesses: adapters.map((a) => a.id) },
-    adapters, context: { projectRoot: '/test-repo' }, sources, instructionSnapshots: [], protocolSnapshot, gitignoreSnapshot,
-    manifest: null, allSnapshots: [], packageVersion: '1.0.0',
+    adapters, context: { projectRoot: '/test-repo' }, sources, manifest: null, allSnapshots: [], packageVersion: '1.0.0',
     ...(runtimeState ? { runtimeState } : {}),
   });
 }
@@ -88,12 +81,10 @@ describe('T12/CR-02: Unknown floor across multiple integrations and error preced
 });
 
 describe('T05: runtime brake state reaches doctor findings (CA-17, CA-18)', () => {
-  it('adds the cooperative warning and the block finding from the runtime reading', async () => {
-    const session: SessionLine = { v: 1, type: 'session', at: '2026-09-15T12:00:00.000Z', harness: 'codex-cli', sessionId: 'codex-1', agentId: null, brakeMode: 'cooperative', brakeReason: 'Hosted tools bypass hooks.' };
-    const runtimeState: RuntimeStateReading = { sessions: [session], blocks: [], errors: [] };
+  it('adds the runtime error finding and no brake finding from the runtime reading (prd-12 FR-09)', async () => {
+    const runtimeState: RuntimeStateReading = { errors: [{ v: 1, at: '2026-09-15T12:00:00.000Z', harness: 'codex-cli', event: 'PostToolUse', code: 'UNEXPECTED', detail: 'RuntimeFailure' }] };
     const report = await diagnose([makeAdapter('codex-cli', '1.2.0')], { 'codex-cli': { project: projectEvidence } }, runtimeState);
-    expect(report.findings.find((f) => f.code === 'BRAKE_COOPERATIVE')).toMatchObject({ harness: 'codex-cli', severity: 'warning', impact: 'Hosted tools bypass hooks.' });
-    expect(report.findings.some((f) => f.code === 'BRAKE_BLOCKS_RECORDED')).toBe(true);
-    expect(report.exitCode).toBe(1);
+    expect(report.findings.some((f) => f.code === 'RUNTIME_ERRORS_RECORDED')).toBe(true);
+    expect(report.findings.filter((f) => f.code.startsWith('BRAKE_'))).toEqual([]);
   });
 });

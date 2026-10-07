@@ -18,36 +18,31 @@ beforeEach(async () => {
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('T06 failure policy below the ceiling (TC-18, CA-16)', () => {
-  it('lets the Claude call proceed and answers Cursor with an explicit allow', async () => {
-    const claude = await runInstalledHook(claudeHook, 'PreToolUse', { session_id: 'green', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } });
-    expect(claude.code).toBe(0);
-    expect(claude.stdout).toBe('');
-    const cursor = await runInstalledHook(cursorHook, 'preToolUse', { conversation_id: 'green', tool_name: 'Shell', tool_input: { command: 'rm -rf x' } });
-    expect(cursor.code).toBe(0);
-    expect(JSON.parse(cursor.stdout)).toEqual({ permission: 'allow' });
+  it('stays silent on Claude and Cursor post-tool calls with an invalid configuration', async () => {
+    const claude = await runInstalledHook(claudeHook, 'PostToolUse', { session_id: 'green', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_response: 'x', tool_use_id: 'toolu_1' });
+    expect([claude.code, claude.stdout]).toEqual([0, '']);
+    const cursor = await runInstalledHook(cursorHook, 'postToolUse', { conversation_id: 'green', tool_name: 'Shell', tool_input: { command: 'ls' }, tool_output: 'x' });
+    expect([cursor.code, cursor.stdout]).toEqual([0, '']);
   });
 
   it('treats an unreadable ledger as a recorded failure rather than a crash', async () => {
     await writeRuntimeConfig(root);
     await mkdir(sessionLedgerPath(root, { harness: 'claude-code', sessionId: 'unreadable', agentId: null }), { recursive: true });
-    const result = await runInstalledHook(claudeHook, 'PreToolUse', { session_id: 'unreadable', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } });
+    const result = await runInstalledHook(claudeHook, 'PostToolUse', { session_id: 'unreadable', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_response: 'x', tool_use_id: 'toolu_1' });
     expect(result.code).toBe(0);
     expect(result.stdout).toBe('');
     expect(await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8')).toContain('LEDGER_UNREADABLE');
   });
 });
 
-describe('T06 failure policy above the ceiling (TC-18, CA-16)', () => {
-  it('denies non-allowlisted calls in each harness deny shape but keeps the allowlist', async () => {
+describe('failure policy above the ceiling (prd-12 FR-07, TC-10)', () => {
+  it('returns the neutral response in CRITICAL and records the error', async () => {
     await seedCriticalSession(root, { harness: 'claude-code', sessionId: 'critical', agentId: null });
     await seedCriticalSession(root, { harness: 'cursor', sessionId: 'critical', agentId: null });
-    const claude = await runInstalledHook(claudeHook, 'PreToolUse', { session_id: 'critical', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' } });
-    expect((JSON.parse(claude.stdout) as { hookSpecificOutput: { permissionDecision: string } }).hookSpecificOutput.permissionDecision).toBe('deny');
-    const claudeGit = await runInstalledHook(claudeHook, 'PreToolUse', { session_id: 'critical', tool_name: 'Bash', tool_input: { command: 'git add src/a.ts' } });
-    expect(claudeGit.stdout).toBe('');
-    const cursor = await runInstalledHook(cursorHook, 'preToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'rm -rf x' } });
-    expect((JSON.parse(cursor.stdout) as { permission: string }).permission).toBe('deny');
-    const cursorGit = await runInstalledHook(cursorHook, 'preToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'git commit -m "checkpoint"' } });
-    expect(JSON.parse(cursorGit.stdout)).toEqual({ permission: 'allow' });
+    const claude = await runInstalledHook(claudeHook, 'PostToolUse', { session_id: 'critical', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_response: 'x', tool_use_id: 'toolu_13' });
+    expect([claude.code, claude.stdout]).toEqual([0, '']);
+    const cursor = await runInstalledHook(cursorHook, 'postToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'rm -rf x' }, tool_output: 'x' });
+    expect([cursor.code, cursor.stdout]).toEqual([0, '']);
+    expect(await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8')).toContain('INVALID_CONFIG');
   });
 });

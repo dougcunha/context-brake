@@ -7,20 +7,20 @@ afterEach(cleanupScenes);
 
 describe('clear on the restart signal (FR-01, DEC-01, DEC-02, TC-09)', () => {
   it('queues exactly one clear for a signal at the end of a turn', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     await signalTurn(scene);
     expect(scene.state.clears).toEqual(['clear']);
     expect(await readCodes(scene)).toEqual(['RESTARTED']);
   });
 
   it('does not clear without the signal, whatever the answer says', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     await finishTurn(scene, `Finished. ${SESSION_RESET_SIGNAL} was not requested here.\nAll done.`);
     expect(scene.state.clears).toEqual([]);
   });
 
   it('ignores subagent turns and turns that did not end with an answer', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     await finishTurn(scene, `x\n${SESSION_RESET_SIGNAL}`, { extra: { agentId: 'agent-1' } });
     await finishTurn(scene, `x\n${SESSION_RESET_SIGNAL}`, { extra: { reason: 'aborted', isAborted: true } });
     expect(scene.state.clears).toEqual([]);
@@ -28,17 +28,17 @@ describe('clear on the restart signal (FR-01, DEC-01, DEC-02, TC-09)', () => {
 });
 
 describe('seed after the clear (FR-02, DEC-03, TC-10, TC-11)', () => {
-  it('submits the full-mode seed once, after the queued clear resolves', async () => {
-    const scene = await startScene({ mode: 'full' });
+  it('submits the seed once, after the queued clear resolves', async () => {
+    const scene = await startScene({});
     await signalTurn(scene);
     expect(scene.state.seeds).toEqual([]);
     await settleClear(scene);
     await settleClear(scene);
-    expect(scene.state.seeds).toEqual([seedText('checkpoint')]);
+    expect(scene.state.seeds).toEqual([seedText()]);
   });
 
   it('submits nothing when the person types /clear themselves', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     await scene.fire('session.end', { reason: 'clear' });
     await finishTurn(scene, 'Plain answer.');
     expect(scene.state.clears).toEqual([]);
@@ -48,7 +48,7 @@ describe('seed after the clear (FR-02, DEC-03, TC-10, TC-11)', () => {
 
 describe('failures never break the session (NFR-04, TC-13)', () => {
   it('logs an internal error and lets the turn go on when a read fails', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     scene.state.readFailure = true;
     await expect(signalTurn(scene)).resolves.toBeUndefined();
     expect(scene.state.clears).toEqual([]);
@@ -56,7 +56,7 @@ describe('failures never break the session (NFR-04, TC-13)', () => {
   });
 
   it('rolls the counter back and sends no seed when the clear is rejected', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     await signalTurn(scene);
     await settleClear(scene, 'reject');
     expect(scene.state.seeds).toEqual([]);
@@ -65,7 +65,7 @@ describe('failures never break the session (NFR-04, TC-13)', () => {
   });
 
   it('reports a rejected seed without throwing', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     scene.state.seedFailure = true;
     await signalTurn(scene);
     await settleClear(scene);
@@ -75,7 +75,7 @@ describe('failures never break the session (NFR-04, TC-13)', () => {
 
 describe('a store failure after the clear still seeds the session (NFR-04, TC-13, CR-03)', () => {
   it('sends the seed and logs an internal error when the store write fails after the clear', async () => {
-    const scene = await startScene({ mode: 'full' });
+    const scene = await startScene({});
     await signalTurn(scene);
     scene.state.storeWriteFailure = true;
     await settleClear(scene);

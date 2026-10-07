@@ -32,8 +32,10 @@ describe('IT-01: Claude project installation preserves settings (CA-01, CA-05)',
     await writeFile(settingsPath, configChange?.content ?? '', 'utf8');
     const secondPlan = await adapter.planInstall({ projectRoot: tempDir });
     const secondChange = secondPlan.changes.find((c) => c.path === SETTINGS_FILE);
-    const parsed = JSON.parse(secondChange?.content ?? '{}') as { hooks?: { PreToolUse?: unknown[] } };
-    expect(parsed.hooks?.PreToolUse).toHaveLength(2);
+    const parsed = JSON.parse(secondChange?.content ?? '{}') as { hooks?: { PreToolUse?: unknown[]; PostToolUse?: unknown[] } };
+    expect(parsed.hooks?.PreToolUse).toHaveLength(1);
+    expect(JSON.stringify(parsed.hooks?.PreToolUse)).not.toContain('context-brake');
+    expect(JSON.stringify(parsed.hooks?.PostToolUse)).toContain('context-brake.mjs');
   });
 });
 

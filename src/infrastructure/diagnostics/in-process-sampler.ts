@@ -19,6 +19,7 @@ export type InProcessBenchmark = {
   readonly assetPath: string;
   readonly event: string;
   readonly payload: unknown;
+  readonly projectRoot?: string | undefined;
 };
 
 type SelectedHandler = { readonly handler: HookHandler; readonly returnedHooks: boolean };
@@ -27,9 +28,9 @@ function isHookRecord(value: unknown): value is HookRecord {
   return typeof value === 'object' && value !== null;
 }
 
-export function createBenchmarkContext(): BenchmarkContext {
+export function createBenchmarkContext(cwd: string = process.cwd()): BenchmarkContext {
   return {
-    cwd: process.cwd(),
+    cwd,
     getContextUsage: () => ({ tokens: 42000, contextWindow: 128000, percent: 33 }),
     sessionManager: { getSessionId: () => SESSION_ID },
     ui: { notify: () => {} },
@@ -73,12 +74,13 @@ async function loadAsset(assetPath: string): Promise<AssetModule> {
 export async function sampleInProcess(benchmark: InProcessBenchmark): Promise<number[] | null> {
   const module = await loadAsset(benchmark.assetPath);
   const handlers = new Map<string, HookHandler>();
-  const api = { on: (event: string, handler: HookHandler): void => { handlers.set(event, handler); } };
+  const directory = benchmark.projectRoot ?? process.cwd();
+  const api = { directory, on: (event: string, handler: HookHandler): void => { handlers.set(event, handler); } };
   try {
     const returned = typeof module.default === 'function' ? module.default(api) : undefined;
     const selected = selectHandler(returned, handlers, benchmark.event);
     if (selected === null) return null;
-    return await runSamples(selected.handler, invocationArgs(selected, benchmark.payload, createBenchmarkContext()));
+    return await runSamples(selected.handler, invocationArgs(selected, benchmark.payload, createBenchmarkContext(directory)));
   } catch (error) {
     throw new SampleError(describeFailure(error, 'handler_error'));
   }

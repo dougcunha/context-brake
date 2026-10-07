@@ -25,7 +25,6 @@ export function mapAntigravityEvent(eventName: string, payload: unknown): Runtim
   const data = parsePayload(antigravityPayloadSchema, payload);
   const session = sessionOf(data);
   switch (eventName) {
-    case 'PreToolUse': return { kind: 'pre_tool', session, tool: toolOf(data) };
     case 'PostToolUse': return { kind: 'post_tool', session, tool: toolOf(data), toolUseId: null };
     case 'PreInvocation': return { kind: 'pre_invocation', session };
     default: return null;
@@ -39,10 +38,6 @@ export function mapAntigravityInput(eventName: string, payload: unknown): Runtim
 }
 
 export function renderAntigravityDecision(decision: RuntimeDecision, eventName: string): string | null {
-  if (eventName === 'PreToolUse') {
-    if (decision.kind === 'deny') return JSON.stringify({ decision: 'deny', reason: decision.message });
-    return JSON.stringify({ decision: 'allow' });
-  }
   if (eventName === 'PostToolUse') return JSON.stringify({});
   if (eventName === 'PreInvocation') {
     const injectSteps = decision.kind === 'context' ? [{ ephemeralMessage: decision.block }] : [];

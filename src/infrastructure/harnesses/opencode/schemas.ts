@@ -11,10 +11,6 @@ export const opencodeToolExecuteInputSchema = z.looseObject({
   callID: z.optional(z.string()),
 });
 
-export const opencodeToolBeforeOutputSchema = z.looseObject({
-  args: z.optional(z.unknown()),
-});
-
 export const opencodeToolAfterOutputSchema = z.looseObject({
   args: z.optional(z.unknown()),
   output: z.optional(z.unknown()),
@@ -34,11 +30,6 @@ export const opencodeEventPayloadSchema = z.looseObject({
     type: z.optional(z.string()),
     properties: z.optional(opencodeSessionPropertiesSchema),
   })),
-});
-
-export const opencodeToolExecuteBeforePayloadSchema = z.looseObject({
-  input: z.optional(opencodeToolExecuteInputSchema),
-  output: z.optional(opencodeToolBeforeOutputSchema),
 });
 
 export const opencodeToolExecuteAfterPayloadSchema = z.looseObject({

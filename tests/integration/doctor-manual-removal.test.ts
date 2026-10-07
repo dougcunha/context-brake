@@ -14,8 +14,6 @@ const sampleConfig = {
     turnCeiling: 12,
     zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75, greenMaxTurn: 7, yellowMaxTurn: 10, criticalTurn: 12 },
   },
-  stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 },
-  instructionFiles: { targets: ['CLAUDE.md'], protocolFile: 'docs/context-brake-protocol.md' },
 };
 
 describe('IT-11: Doctor detects manual integration removal (CA-14)', () => {

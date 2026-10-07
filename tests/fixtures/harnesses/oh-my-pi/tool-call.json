@@ -1,8 +1,0 @@
-{
-  "toolName": "run_command",
-  "toolCallId": "call_2",
-  "input": {
-    "command": "vitest"
-  },
-  "extraField": "ignored"
-}

@@ -1,4 +1,4 @@
-import type { RuntimeDecision, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
+import type { RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
 import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { asRecord, characterLength, parsePayload, textValue } from '../common/runtime-support.js';
 import { piPayloadSchema } from './schemas.js';
@@ -38,7 +38,6 @@ function resetOf(session: SessionKey, reason: string | undefined): RuntimeEvent 
 export function mapPiEvent(eventName: string, payload: unknown, session: SessionKey): RuntimeEvent | null {
   const data = parsePayload(piPayloadSchema, payload);
   switch (eventName) {
-    case 'tool_call': return { kind: 'pre_tool', session, tool: toolOf(data.toolName, data.input) };
     case 'tool_result': return { kind: 'post_tool', session, tool: toolOf(data.toolName, data.input), toolUseId: data.toolCallId ?? null };
     case 'session_start': return resetOf(session, data.reason);
     case 'session_compact': return { kind: 'session_reset', session, reason: 'compact' };
@@ -51,10 +50,6 @@ export function mapPiInput(eventName: string, payload: unknown): RuntimeInput {
   if (eventName !== 'tool_result') return {};
   const data = parsePayload(piPayloadSchema, payload);
   return { observedCharacters: characterLength(data.input) + characterLength(data.content) };
-}
-
-export function renderPiToolCall(decision: RuntimeDecision): { block: true; reason: string } | undefined {
-  return decision.kind === 'deny' ? { block: true, reason: decision.message } : undefined;
 }
 
 export function renderPiToolResult(payload: unknown, block: string): { content: unknown[] } {

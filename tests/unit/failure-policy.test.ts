@@ -7,8 +7,6 @@ import { DeadlineExceededError, failureDetail, failureErrorCode, LedgerUnreadabl
 const AT = '2026-09-15T12:00:00.000Z';
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
-const CHECKPOINT_WRITE: ToolCall = { name: 'Write', category: 'file_write', paths: ['state_checkpoint.json'], command: null };
-const GIT_ADD: ToolCall = { name: 'Bash', category: 'shell', paths: [], command: 'git add src/a.ts' };
 
 class TestLedger implements SessionLedger {
   failReads = false;
@@ -29,44 +27,28 @@ function toolLine(zone: ToolLine['zone']): ToolLine {
 }
 type FailureCall = { readonly event: RuntimeEvent; readonly ledger: SessionLedger; readonly errors: RuntimeErrorLog; readonly config?: ContextBrakeConfig | null };
 function failure(input: FailureCall) {
-  return resolveFailure({ event: input.event, code: 'UNEXPECTED', detail: 'UnexpectedError', config: input.config ?? null, descriptor: null, ledger: input.ledger, errors: input.errors, readValidationCommand: async () => null });
+  return resolveFailure({ event: input.event, code: 'UNEXPECTED', detail: 'UnexpectedError', config: input.config ?? null, descriptor: null, ledger: input.ledger, errors: input.errors });
 }
 
 describe('failure policy decisions (RF19, CA-16, DEC-09, TC-17)', () => {
   it('stays neutral below the ceiling and records the error', async () => {
     const errors = new TestErrorLog();
-    expect(await failure({ event: { kind: 'pre_tool', session: KEY, tool: READ }, ledger: new TestLedger([toolLine('GREEN')]), errors })).toEqual({ kind: 'neutral' });
-    expect(errors.records[0]).toMatchObject({ event: 'pre_tool', code: 'UNEXPECTED', detail: 'UnexpectedError' });
+    expect(await failure({ event: { kind: 'post_tool', session: KEY, tool: READ, toolUseId: null }, ledger: new TestLedger([toolLine('GREEN')]), errors })).toEqual({ kind: 'neutral' });
+    expect(errors.records[0]).toMatchObject({ event: 'post_tool', code: 'UNEXPECTED', detail: 'UnexpectedError' });
   });
-  it('denies a code read with the failure variant at the last recorded critical zone', async () => {
+  it('stays neutral and records the error at the last recorded critical zone (prd-12 FR-07, TC-10)', async () => {
     const errors = new TestErrorLog();
-    const decision = await failure({ event: { kind: 'pre_tool', session: KEY, tool: READ }, ledger: new TestLedger([toolLine('CRITICAL')]), errors });
-    expect(decision).toMatchObject({ kind: 'deny', tool: 'Read', reason: 'integration_failure' });
-    if (decision.kind !== 'deny') throw new Error('expected deny');
-    expect(decision.message).toContain('last recorded zone=CRITICAL');
-    expect(decision.message).toContain('reason=integration_failure');
-    expect(decision.message).toContain('Allowed: read or write task_plan.json and state_checkpoint.json');
+    expect(await failure({ event: { kind: 'post_tool', session: KEY, tool: READ, toolUseId: null }, ledger: new TestLedger([toolLine('CRITICAL')]), errors })).toEqual({ kind: 'neutral' });
     expect(errors.records).toHaveLength(1);
-  });
-  it('keeps the allowlist usable above the ceiling', async () => {
-    const ledger = new TestLedger([toolLine('CRITICAL')]);
-    const errors = new TestErrorLog();
-    expect(await failure({ event: { kind: 'pre_tool', session: KEY, tool: CHECKPOINT_WRITE }, ledger, errors })).toEqual({ kind: 'neutral' });
-    expect(await failure({ event: { kind: 'pre_tool', session: KEY, tool: GIT_ADD }, ledger, errors })).toEqual({ kind: 'neutral' });
   });
 });
 
 describe('failure policy edges (DEC-09, TC-17)', () => {
-  it('uses default paths and no extra commands with an invalid configuration', async () => {
-    const errors = new TestErrorLog();
-    const event: RuntimeEvent = { kind: 'pre_tool', session: KEY, tool: GIT_ADD };
-    expect(await failure({ event, ledger: new TestLedger([toolLine('CRITICAL')]), errors, config: null })).toEqual({ kind: 'neutral' });
-  });
   it('stays neutral when the ledger cannot be read', async () => {
     const ledger = new TestLedger();
     ledger.failReads = true;
     const errors = new TestErrorLog();
-    expect(await failure({ event: { kind: 'pre_tool', session: KEY, tool: READ }, ledger, errors })).toEqual({ kind: 'neutral' });
+    expect(await failure({ event: { kind: 'post_tool', session: KEY, tool: READ, toolUseId: null }, ledger, errors })).toEqual({ kind: 'neutral' });
     expect(errors.records).toHaveLength(1);
   });
 });
@@ -89,8 +71,8 @@ describe('failure classification and deadline (DEC-09, TC-17)', () => {
     await settled;
     vi.useRealTimers();
     const errors = new TestErrorLog();
-    const decision = await resolveFailure({ event: { kind: 'pre_tool', session: KEY, tool: READ }, code: 'DEADLINE_EXCEEDED', detail: 'DeadlineExceededError', config: null, descriptor: null, ledger: new TestLedger([toolLine('CRITICAL')]), errors, readValidationCommand: async () => null });
-    expect(decision).toMatchObject({ kind: 'deny', reason: 'integration_failure' });
+    const decision = await resolveFailure({ event: { kind: 'post_tool', session: KEY, tool: READ, toolUseId: null }, code: 'DEADLINE_EXCEEDED', detail: 'DeadlineExceededError', config: null, descriptor: null, ledger: new TestLedger([toolLine('CRITICAL')]), errors });
+    expect(decision).toEqual({ kind: 'neutral' });
     expect(errors.records[0]?.code).toBe('DEADLINE_EXCEEDED');
   });
 });

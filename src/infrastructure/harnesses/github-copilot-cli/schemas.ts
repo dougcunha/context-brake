@@ -22,6 +22,5 @@ export const copilotPayloadSchema = z.looseObject({
   hookName: z.optional(z.string()),
 });
 
-export const copilotPreToolUsePayloadSchema = copilotPayloadSchema;
 export const copilotPostToolUsePayloadSchema = copilotPayloadSchema;
 export type CopilotPayload = z.infer<typeof copilotPayloadSchema>;

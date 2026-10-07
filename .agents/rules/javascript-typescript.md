@@ -20,7 +20,7 @@ These rules apply to all ContextBrake JavaScript and TypeScript code. When rules
 - `tsconfig.json` uses `"strict": true`. Never use `any`: accept `unknown` and narrow it before use.
 - Exported functions and methods declare their return type; asynchronous functions return `Promise<T>`.
 - Name object shapes with `type` or `interface` declarations instead of repeating anonymous object types.
-- Model closed sets, such as zones, step statuses, and support levels, as literal unions derived from one constant, and handle them with exhaustive `switch` statements, so adding a value fails to compile until every case handles it.
+- Model closed sets, such as zones, change owners, and support levels, as literal unions derived from one constant, and handle them with exhaustive `switch` statements, so adding a value fails to compile until every case handles it.
 
 ```ts
 export const ZONES = ['GREEN', 'YELLOW', 'RED', 'CRITICAL'] as const;
@@ -33,20 +33,20 @@ export function assertNever(value: never): never {
 
 ## Validate External Data With Zod
 
-Everything that enters the process arrives as `unknown` and is parsed with a Zod schema before use: `context-brake.config.json`, `task_plan.json`, `state_checkpoint.json`, harness payloads, harness configuration files, and parsed command output.
+Everything that enters the process arrives as `unknown` and is parsed with a Zod schema before use: `context-brake.config.json`, the manifest, session ledgers, harness payloads, harness configuration files, and parsed command output.
 
 ```ts
-const checkpointFileSchema = z.object({
+const manifestSchema = z.object({
   schemaVersion: z.literal(1),
-  activeStepId: z.number().int().positive(),
+  packageVersion: z.string(),
 });
 
-export function parseCheckpointFile(value: unknown): CheckpointFile {
-  return checkpointFileSchema.parse(value);
+export function parseManifest(value: unknown): Manifest {
+  return manifestSchema.parse(value);
 }
 ```
 
-Files that ContextBrake owns (configuration, plan, and checkpoint) carry a schema version. An incompatible change bumps the version and ships a migration or an error that explains how to migrate. Harness payload schemas follow `harness-adapters.md`.
+Files that ContextBrake owns (configuration and manifest) carry a schema version. An incompatible change bumps the version and ships a migration or an error that explains how to migrate. Harness payload schemas follow `harness-adapters.md`.
 
 ## Functions
 

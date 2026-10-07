@@ -21,7 +21,6 @@ function buildHookEntry(event: string) {
 
 export function buildCopilotEntries(): ManagedEntry[] {
   return [
-    { harness: 'github-copilot-cli', path: COPILOT_CONFIG_FILE, identity: `preToolUse|${COPILOT_HOOK_FILE}` },
     { harness: 'github-copilot-cli', path: COPILOT_CONFIG_FILE, identity: `postToolUse|${COPILOT_HOOK_FILE}` },
     { harness: 'github-copilot-cli', path: COPILOT_CONFIG_FILE, identity: `sessionStart|${COPILOT_HOOK_FILE}` },
     { harness: 'github-copilot-cli', path: COPILOT_CONFIG_FILE, identity: `preCompact|${COPILOT_HOOK_FILE}` },
@@ -32,7 +31,6 @@ function buildConfigFile(): string {
   const content = {
     version: 1,
     hooks: {
-      preToolUse: [buildHookEntry('preToolUse')],
       postToolUse: [buildHookEntry('postToolUse')],
       sessionStart: [buildHookEntry('sessionStart')],
       preCompact: [buildHookEntry('preCompact')],

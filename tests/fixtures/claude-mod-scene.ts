@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { modLogSchema, type RestartReasonCode } from '../../src/core/contracts/auto-restart.js';
@@ -8,26 +8,16 @@ import type { HookHandler, HookRegistrar, ModHost } from '../../src/infrastructu
 import { register } from '../../src/infrastructure/harnesses/claude-code/mod/register.js';
 import { createHost, createHostState, flush, type HostState } from './claude-mod-host.js';
 
-export type CheckpointKind = 'valid' | 'missing' | 'invalid' | 'stale' | 'no-step';
-export type SceneOptions = { readonly mode: 'full' | 'light'; readonly autoRestart?: boolean; readonly max?: number; readonly checkpoint?: CheckpointKind; readonly plan?: boolean };
+export type SceneOptions = { readonly autoRestart?: boolean; readonly max?: number };
 export type Scene = { readonly root: string; readonly state: HostState; readonly host: ModHost; fire(event: string, input: unknown): Promise<unknown> };
 
 const TURN_AGE_MS = 60_000;
 const WAIT_FOR_CODES_MILLISECONDS = 2_000;
 const roots: string[] = [];
 
-async function writeCheckpoint(root: string, kind: CheckpointKind, startedAt: number): Promise<void> {
-  if (kind === 'missing') return;
-  const path = join(root, 'state_checkpoint.json');
-  const body = kind === 'invalid' ? '{ not json' : JSON.stringify({ schemaVersion: 1, taskId: 't', activeStepId: kind === 'no-step' ? null : 1, gitState: { branch: null, lastCommitHash: null, cleanWorkingTree: null }, workingMemory: {}, modifiedFiles: [], timestamp: '2026-10-04T21:00:00.000Z' });
-  await writeFile(path, body, 'utf8');
-  if (kind === 'stale') await utimes(path, (startedAt - 120_000) / 1000, (startedAt - 120_000) / 1000);
-}
-
 async function writeConfig(root: string, options: SceneOptions): Promise<void> {
-  const modeBlock = options.mode === 'full' ? { fullMode: true as const } : { lightMode: { triggerZone: 'RED' as const } };
   const autoRestart = options.autoRestart === false ? {} : { autoRestart: { maxConsecutiveRestarts: options.max ?? 2 } };
-  await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({ ...DEFAULT_CONFIG, ...modeBlock, ...autoRestart }), 'utf8');
+  await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({ ...DEFAULT_CONFIG, ...autoRestart }), 'utf8');
 }
 
 function driver(host: ModHost): Pick<Scene, 'fire'> {
@@ -44,8 +34,6 @@ export async function startScene(options: SceneOptions): Promise<Scene> {
   roots.push(root);
   const startedAt = Date.now() - TURN_AGE_MS;
   await writeConfig(root, options);
-  await writeCheckpoint(root, options.checkpoint ?? 'valid', startedAt);
-  if (options.plan === true) await writeFile(join(root, 'task_plan.json'), '{}', 'utf8');
   await mkdir(join(root, '.context-brake'), { recursive: true });
   const state = createHostState(startedAt);
   const host = createHost(root, state);

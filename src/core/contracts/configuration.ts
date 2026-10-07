@@ -1,67 +1,35 @@
 import { z } from 'zod/mini';
 import { autoRestartSchema } from './auto-restart.js';
 import { HARNESS_IDS } from './harness.js';
-import { lightModeSchema } from './light-mode.js';
-import { RUNNER_DEFAULTS, runnerConfigurationSchema } from './runner-configuration.js';
 import { SNAPSHOT_TRIGGER_ZONES } from './zones.js';
 
 export const INJECTION_MODES = ['threshold_only', 'always'] as const;
-const CANONICAL_PATH_RULE = 'must be a canonical repository-relative POSIX file path';
 const DUPLICATE_ENTRIES_RULE = 'must not contain duplicates';
-const DUPLICATE_PATHS_RULE = 'must not contain duplicate canonical paths';
 const TURN_PAIR_RULE = { green: 'must be set together with yellowMaxTurn', yellow: 'must be set together with greenMaxTurn' };
-const TRIMMED_RULE = 'must not have leading or trailing whitespace';
-const SHELL_OPERATOR_RULE = 'must not contain shell operators or line breaks';
-const ADDITIONAL_ALLOWED_COMMANDS_RULE = 'must have at most 20 entries';
-const MAX_ADDITIONAL_ALLOWED_COMMANDS = 20;
-const canonicalPathPattern = /^(?!\/)(?!\\)(?![A-Za-z]:)(?!.*\\)(?!.*(?:^|\/)\.\.?(?:\/|$))(?!.*\/\/)(?!.*\/$).+$/;
-const shellOperatorPattern = /[;&|`<>\r\n]|\$\(/;
 const percentage = z.int().check(z.minimum(0), z.maximum(100));
 const positiveInt = z.int().check(z.positive());
 
 type CustomIssue = { code: 'custom'; path: PropertyKey[]; input: unknown; message: string };
 
-function isCanonicalRelativeFilePath(value: string): boolean {
-  if (value === '.' || value.endsWith('/')) return false;
-  const segments = value.split('/');
-  for (const segment of segments) if (segment === '' || segment === '.' || segment === '..') return false;
-  return segments.length > 0;
-}
 function isUnique<T>(values: T[]): boolean { return new Set(values).size === values.length; }
-function isUniqueCanonicalPath(values: string[]): boolean { return new Set(values.map((value) => value.split('/').join('/'))).size === values.length; }
 function addIssue(ctx: z.core.ParsePayload, issue: CustomIssue): void { ctx.issues.push(issue); }
 function uniqueCheck<T>(message: string): (ctx: z.core.ParsePayload<T[]>) => void {
   return (ctx) => { if (!isUnique(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message }); };
 }
-function canonicalPathUniqueCheck(ctx: z.core.ParsePayload<string[]>): void {
-  if (!isUniqueCanonicalPath(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: DUPLICATE_PATHS_RULE });
-}
 
-const relativePath = z.string().check(z.minLength(1), z.regex(canonicalPathPattern, CANONICAL_PATH_RULE), (ctx) => {
-  if (!isCanonicalRelativeFilePath(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: CANONICAL_PATH_RULE });
-});
-const additionalAllowedCommand = z.string().check(z.minLength(1), (ctx) => {
-  if (ctx.value.trim() !== ctx.value) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: TRIMMED_RULE });
-  if (shellOperatorPattern.test(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: SHELL_OPERATOR_RULE });
-});
-const additionalAllowedCommandsSchema = z.array(additionalAllowedCommand).check(z.maxLength(MAX_ADDITIONAL_ALLOWED_COMMANDS, ADDITIONAL_ALLOWED_COMMANDS_RULE), uniqueCheck(DUPLICATE_ENTRIES_RULE));
-
-const brakeSchema = z.strictObject({ additionalAllowedCommands: z._default(additionalAllowedCommandsSchema, []) });
 export const MAX_AGENT_COMMAND_LENGTH = 200;
-const FULL_MODE_RULE = 'must not be set together with lightMode';
-const MAX_DELEGATED_ENTRIES = 20;
-const DELEGATED_ENTRIES_RULE = `must have at most ${MAX_DELEGATED_ENTRIES} entries`;
-const SKILL_NAME_RULE = 'must be a skill name made of letters, digits, colons, dots, underscores, or hyphens';
+const TRIMMED_RULE = 'must not have leading or trailing whitespace';
+const RESUME_REQUIRES_COMMAND_RULE = 'requires snapshot.command';
 const SINGLE_LINE_RULE = 'must be a single line';
-const skillNamePattern = /^[A-Za-z0-9][A-Za-z0-9:._-]*$/;
 const agentCommand = z.string().check(z.minLength(1), z.maxLength(MAX_AGENT_COMMAND_LENGTH), (ctx) => {
   if (ctx.value.trim() !== ctx.value) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: TRIMMED_RULE });
   if (/[\r\n]/.test(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: SINGLE_LINE_RULE });
 });
-const allowedPathsSchema = z.array(relativePath).check(z.maxLength(MAX_DELEGATED_ENTRIES, DELEGATED_ENTRIES_RULE), canonicalPathUniqueCheck);
-const allowedSkillsSchema = z.array(z.string().check(z.regex(skillNamePattern, SKILL_NAME_RULE))).check(z.maxLength(MAX_DELEGATED_ENTRIES, DELEGATED_ENTRIES_RULE), uniqueCheck(DUPLICATE_ENTRIES_RULE));
-export const delegatedSnapshotSchema = z.strictObject({ snapshotCommand: agentCommand, triggerZone: z._default(z.enum(SNAPSHOT_TRIGGER_ZONES), 'RED'), resumeCommand: z.optional(agentCommand), allowedPaths: z._default(allowedPathsSchema, []), allowedSkills: z._default(allowedSkillsSchema, []) });
-export type DelegatedSnapshotConfig = z.infer<typeof delegatedSnapshotSchema>;
+export const snapshotSchema = z.strictObject({ triggerZone: z._default(z.enum(SNAPSHOT_TRIGGER_ZONES), 'RED'), command: z.optional(agentCommand), resumeCommand: z.optional(agentCommand) }).check((ctx) => {
+  if (ctx.value.resumeCommand !== undefined && ctx.value.command === undefined) addIssue(ctx, { code: 'custom', path: ['resumeCommand'], input: ctx.value.resumeCommand, message: RESUME_REQUIRES_COMMAND_RULE });
+});
+export type SnapshotConfig = z.infer<typeof snapshotSchema>;
+export const DEFAULT_SNAPSHOT: SnapshotConfig = { triggerZone: 'RED' };
 const optionalPositiveInt = z.optional(positiveInt);
 export const zonesSchema = z.strictObject({ greenMaxPercentage: percentage, yellowMaxPercentage: percentage, criticalPercentage: z.int().check(z.minimum(1), z.maximum(100)), greenMaxTurn: optionalPositiveInt, yellowMaxTurn: optionalPositiveInt, criticalTurn: optionalPositiveInt }).check((ctx) => {
   const zones = ctx.value;
@@ -75,12 +43,9 @@ function checkTurnPair(ctx: z.core.ParsePayload, zones: { greenMaxTurn?: number 
   if (zones.greenMaxTurn !== undefined && zones.yellowMaxTurn !== undefined && zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue(ctx, { code: 'custom', path: ['greenMaxTurn'], input: zones.greenMaxTurn, message: 'must be less than yellowMaxTurn' });
 }
 const telemetrySchema = z.strictObject({ injectionMode: z.enum(INJECTION_MODES), activationThresholdPercentage: percentage, contextWindowCeiling: positiveInt, declaredContextWindow: optionalPositiveInt, turnCeiling: optionalPositiveInt, zones: zonesSchema });
-export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, stateStorage: z.strictObject({ planFile: relativePath, checkpointFile: relativePath, instructCheckpointCommit: z.boolean(), bootMaxTokens: positiveInt }), instructionFiles: z.strictObject({ targets: z.array(relativePath).check(z.minLength(1), canonicalPathUniqueCheck), protocolFile: relativePath }), brake: z._default(brakeSchema, { additionalAllowedCommands: [] }), delegatedSnapshot: z.optional(delegatedSnapshotSchema), lightMode: z.optional(lightModeSchema), fullMode: z.optional(z.literal(true)), debug: z.optional(z.boolean()), autoRestart: z.optional(autoRestartSchema), runner: z._default(runnerConfigurationSchema, { ...RUNNER_DEFAULTS }) }).check(checkModeChoice);
-function checkModeChoice(ctx: z.core.ParsePayload<z.core.output<typeof configurationSchema>>): void {
-  if (ctx.value.lightMode !== undefined && ctx.value.fullMode !== undefined) addIssue(ctx, { code: 'custom', path: ['fullMode'], input: true, message: FULL_MODE_RULE });
-}
+export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, snapshot: z._default(snapshotSchema, DEFAULT_SNAPSHOT), debug: z.optional(z.boolean()), autoRestart: z.optional(autoRestartSchema) });
 export type ContextBrakeConfig = z.infer<typeof configurationSchema>;
 export { HARNESS_IDS } from './harness.js';
 export { SNAPSHOT_TRIGGER_ZONES } from './zones.js';
 export type { HarnessId } from './harness.js';
-export const DEFAULT_CONFIG: ContextBrakeConfig = { $schema: 'https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json', schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: 'threshold_only', activationThresholdPercentage: 50, contextWindowCeiling: 128000, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 } }, stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 }, instructionFiles: { targets: ['CLAUDE.md', 'AGENTS.md'], protocolFile: 'docs/context-brake-protocol.md' }, brake: { additionalAllowedCommands: [] }, runner: { ...RUNNER_DEFAULTS } };
+export const DEFAULT_CONFIG: ContextBrakeConfig = { $schema: 'https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json', schemaVersion: 1, activeHarnesses: [], telemetry: { injectionMode: 'threshold_only', activationThresholdPercentage: 50, contextWindowCeiling: 128000, zones: { greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 } }, snapshot: { ...DEFAULT_SNAPSHOT } };

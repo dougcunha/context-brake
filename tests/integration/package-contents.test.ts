@@ -13,9 +13,6 @@ const REQUIRED_FILES: readonly string[] = [
   'schemas/context-brake.config.schema.json',
   'schemas/doctor-report.schema.json',
   'schemas/install-report.schema.json',
-  'schemas/state-checkpoint.schema.json',
-  'schemas/task-plan.schema.json',
-  'docs/context-brake-protocol.md',
   'docs/telemetry-block.md',
   'dist/assets/runtime/context-brake-runtime.mjs',
   'dist/assets/runtime/claude-code-hook.mjs',
@@ -30,12 +27,15 @@ const REQUIRED_FILES: readonly string[] = [
   'dist/assets/runtime/omp-extension.js',
 ];
 
+const REMOVED_FILES: readonly string[] = ['docs/context-brake-protocol.md', 'schemas/task-plan.schema.json', 'schemas/state-checkpoint.schema.json', 'schemas/run-summary.schema.json'];
+
 describe('package contents assets and schemas (RF17, CA-19)', () => {
-  it('includes all required runtime assets, schemas, protocol, and binary', async () => {
+  it('includes all required runtime assets, schemas, and binary, without the protocol doc or removed schemas (prd-12 DEC-15)', async () => {
     const { stdout } = await execAsync('npm pack --dry-run --json');
     const packInfo = JSON.parse(stdout) as PackResult;
     const packedPaths = new Set(packInfo[0]?.files.map((f) => f.path) ?? []);
     for (const required of REQUIRED_FILES) expect(packedPaths.has(required)).toBe(true);
+    for (const removed of REMOVED_FILES) expect(packedPaths.has(removed)).toBe(false);
     for (const path of packedPaths) {
       expect(path.startsWith('tests/')).toBe(false);
       expect(path.startsWith('.github/')).toBe(false);
@@ -68,13 +68,3 @@ describe('package manifest inputs and shebang (RF23)', () => {
   });
 });
 
-describe('published plan and checkpoint schemas (RF6)', () => {
-  it('validates that published plan and checkpoint schemas are usable JSON', async () => {
-    for (const file of ['schemas/task-plan.schema.json', 'schemas/state-checkpoint.schema.json']) {
-      const content = await readFile(file, 'utf8');
-      const schema = JSON.parse(content) as { type: string; properties: Record<string, unknown> };
-      expect(schema.type).toBe('object');
-      expect(schema.properties.schemaVersion).toBeDefined();
-    }
-  });
-});

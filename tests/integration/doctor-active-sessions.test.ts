@@ -4,13 +4,13 @@ import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import type { ToolLineInput } from '../../src/core/contracts/session-ledger.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 import { removeProject, runCli } from '../helpers/delegated-world.js';
-import { createLightProject, FULL_INIT } from '../helpers/light-world.js';
+import { createLightProject, LIGHT_INIT } from '../helpers/light-world.js';
 
 const RED_READING: ToolLineInput = { toolUseId: 'toolu_1', observedCharacters: 10, turn: 1, usedTokens: 86000, windowTokens: 128000, estimatedTokens: 86000, source: 'estimated', zone: 'RED' };
 let root: string;
 beforeEach(async () => {
   root = await createLightProject('cb-doctor-sessions-');
-  await runCli(root, [...FULL_INIT]);
+  await runCli(root, [...LIGHT_INIT]);
 });
 afterEach(async () => { await removeProject(root); });
 
@@ -18,7 +18,7 @@ async function seedReading(sessionId: string, minutesAgo: number): Promise<void>
   const clock = { now: () => new Date(Date.now() - minutesAgo * 60_000) };
   const ledger = new NodeSessionLedger(root, clock);
   const key: SessionKey = { harness: 'claude-code', sessionId, agentId: null };
-  await ledger.appendSessionLine(key, { brakeMode: 'enforced', brakeReason: null });
+  await ledger.appendSessionLine(key);
   await ledger.appendToolLine(key, RED_READING);
 }
 async function seedReset(sessionId: string): Promise<void> {

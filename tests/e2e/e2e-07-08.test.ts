@@ -1,33 +1,56 @@
-import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runBuiltCli } from './cli-runner.js';
 import { doctorReportSchema } from '../../src/core/contracts/diagnostics.js';
 
-describe('E2E-07: Remove uninstalls owned integration only (CA-12)', () => {
+const CLAUDE_MD = '# Project rules\n\nKeep this line.\n';
+const INVALID_ARGUMENTS_EXIT_CODE = 64;
+
+async function exists(path: string): Promise<boolean> {
+  return stat(path).then(() => true).catch(() => false);
+}
+async function createClaudeFixture(): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), 'cb-e2e-07-'));
+  await mkdir(join(root, '.claude'), { recursive: true });
+  await writeFile(join(root, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
+  await writeFile(join(root, 'CLAUDE.md'), CLAUDE_MD, 'utf8');
+  return root;
+}
+async function seedRuntimeAndPlan(root: string): Promise<void> {
+  await mkdir(join(root, '.context-brake/runtime/sessions'), { recursive: true });
+  await writeFile(join(root, '.context-brake/runtime/sessions/s1.json'), '{}', 'utf8');
+  await writeFile(join(root, 'task_plan.json'), JSON.stringify({ task: 'keep me' }), 'utf8');
+}
+
+describe('E2E-07: init and remove without support files (FR-08, DEC-04, DEC-11, TC-12)', () => {
   let tempDir: string;
-  beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-07-')); });
+  beforeEach(async () => { tempDir = await createClaudeFixture(); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('uninstalls owned integration while preserving state without --remove-state', async () => {
-    await mkdir(join(tempDir, '.claude'), { recursive: true });
-    await writeFile(join(tempDir, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
+  it('installs no protocol file, instruction block, or gitignore change', async () => {
+    expect((await runBuiltCli(['init', '--yes'], tempDir)).code).toBe(0);
+    expect(await exists(join(tempDir, 'docs/context-brake-protocol.md'))).toBe(false);
+    expect(await exists(join(tempDir, '.gitignore'))).toBe(false);
+    expect(await readFile(join(tempDir, 'CLAUDE.md'), 'utf8')).toBe(CLAUDE_MD);
+  });
+
+  it('deletes the manifest assets, the config, and the owned runtime files', async () => {
     await runBuiltCli(['init', '--yes'], tempDir);
-    await writeFile(join(tempDir, 'task_plan.json'), JSON.stringify({ task: 'keep me' }), 'utf8');
+    await seedRuntimeAndPlan(tempDir);
+    expect((await runBuiltCli(['remove', '--yes'], tempDir)).code).toBe(0);
+    expect(await exists(join(tempDir, '.claude/hooks/context-brake.mjs'))).toBe(false);
+    expect(await exists(join(tempDir, 'context-brake.config.json'))).toBe(false);
+    expect(await exists(join(tempDir, '.context-brake'))).toBe(false);
+    expect(await exists(join(tempDir, 'task_plan.json'))).toBe(true);
+    expect(await readFile(join(tempDir, 'CLAUDE.md'), 'utf8')).toBe(CLAUDE_MD);
+  });
 
-    const removeRes = await runBuiltCli(['remove', '--yes'], tempDir);
-    expect(removeRes.code).toBe(0);
-    const planExists = await stat(join(tempDir, 'task_plan.json')).then(() => true).catch(() => false);
-    expect(planExists).toBe(true);
-
-    const hookExists = await stat(join(tempDir, '.claude/hooks/context-brake.mjs')).then(() => true).catch(() => false);
-    expect(hookExists).toBe(false);
-
-    const removeStateRes = await runBuiltCli(['remove', '--yes', '--remove-state'], tempDir);
-    expect(removeStateRes.code).toBe(0);
-    const planExistsAfter = await stat(join(tempDir, 'task_plan.json')).then(() => true).catch(() => false);
-    expect(planExistsAfter).toBe(false);
+  it('rejects the removed --remove-state flag', async () => {
+    const result = await runBuiltCli(['remove', '--yes', '--remove-state', '--json'], tempDir);
+    expect(result.code).toBe(INVALID_ARGUMENTS_EXIT_CODE);
+    expect(`${result.stdout}${result.stderr}`).toContain('INVALID_ARGUMENTS');
   });
 });
 

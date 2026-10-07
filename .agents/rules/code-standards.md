@@ -37,11 +37,11 @@ Do not nest more than three levels of `if`/`else`. Handle invalid or exceptional
 Avoid:
 
 ```ts
-function findActiveStep(plan?: TaskPlan): PlanStep | undefined {
-  if (plan) {
-    if (!isPlanComplete(plan)) {
-      if (plan.steps.length > 0) {
-        return plan.steps.find((step: PlanStep) => step.status === 'IN_PROGRESS');
+function latestReading(ledger?: SessionLedger): UsageReading | undefined {
+  if (ledger) {
+    if (!isReset(ledger)) {
+      if (ledger.readings.length > 0) {
+        return ledger.readings.at(-1);
       }
     }
   }
@@ -52,11 +52,11 @@ function findActiveStep(plan?: TaskPlan): PlanStep | undefined {
 Prefer:
 
 ```ts
-function findActiveStep(plan?: TaskPlan): PlanStep | undefined {
-  if (!plan || isPlanComplete(plan)) {
+function latestReading(ledger?: SessionLedger): UsageReading | undefined {
+  if (!ledger || isReset(ledger)) {
     return undefined;
   }
-  return plan.steps.find((step: PlanStep) => step.status === 'IN_PROGRESS');
+  return ledger.readings.at(-1);
 }
 ```
 

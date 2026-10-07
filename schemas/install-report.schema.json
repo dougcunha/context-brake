@@ -165,9 +165,6 @@
                 "type": "string",
                 "enum": [
                   "config",
-                  "protocol",
-                  "instruction_block",
-                  "ignore_block",
                   "harness_entry",
                   "runtime_asset",
                   "manifest",
@@ -278,8 +275,7 @@
                 "type": "string",
                 "enum": [
                   "full",
-                  "partial",
-                  "cooperative"
+                  "partial"
                 ]
               },
               "limitations": {
@@ -290,12 +286,9 @@
                     "capability": {
                       "type": "string",
                       "enum": [
-                        "pre_tool_block",
-                        "tool_coverage",
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",
-                        "timeout_fail_closed",
                         "auto_restart"
                       ]
                     },

@@ -42,7 +42,7 @@ describe('optimistic concurrency rejection (IT-15, CA-05, CA-11)', () => {
       const snaps = await snapshotFiles(dir, ['CLAUDE.md']);
       const plan = createChangePlan({
         projectRoot: dir,
-        plannedChanges: [{ path: 'CLAUDE.md', realPath: targetPath, kind: 'update', owner: 'instruction_block', content: '# Planned Update\n', preview: { summary: 'Update' } }],
+        plannedChanges: [{ path: 'CLAUDE.md', realPath: targetPath, kind: 'update', owner: 'harness_entry', content: '# Planned Update\n', preview: { summary: 'Update' } }],
         snapshots: snaps,
       });
       await writeFile(targetPath, '# Concurrent Edit By User\n', 'utf8');

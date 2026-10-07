@@ -1,0 +1,14 @@
+{
+  "name": "context-brake-local",
+  "owner": {
+    "name": "ContextBrake"
+  },
+  "description": "Restarts the Claude Code session when ContextBrake asks for a reset.",
+  "plugins": [
+    {
+      "name": "context-brake-restart",
+      "description": "Restarts the Claude Code session when ContextBrake asks for a reset.",
+      "source": "./context-brake-restart"
+    }
+  ]
+}

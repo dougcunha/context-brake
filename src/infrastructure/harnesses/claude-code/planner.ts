@@ -17,7 +17,6 @@ export const CLAUDE_HOOK_FILE = '.claude/hooks/context-brake.mjs';
 
 export function buildClaudeEntries(): ManagedEntry[] {
   return [
-    { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `PreToolUse|*|${CLAUDE_HOOK_FILE}` },
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `PostToolUse|*|${CLAUDE_HOOK_FILE}` },
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `SessionStart|startup|resume|clear|compact|${CLAUDE_HOOK_FILE}` },
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `Stop|*|${CLAUDE_HOOK_FILE}` },

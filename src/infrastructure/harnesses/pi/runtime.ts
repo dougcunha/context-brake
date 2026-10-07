@@ -3,9 +3,9 @@ import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { createRuntimeResolver, measuredUsageFrom, runInProcessEvent, type InProcessRuntimeResolver, type MeasuredUsageInput } from '../common/in-process-support.js';
 import { requireIdentifier, textValue } from '../common/runtime-support.js';
 import { PI_CAPABILITIES } from './capabilities.js';
-import { mapPiEvent, mapPiInput, renderPiToolCall, renderPiToolResult } from './events.js';
+import { mapPiEvent, mapPiInput, renderPiToolResult } from './events.js';
 
-export { mapPiEvent, mapPiInput, renderPiToolCall, renderPiToolResult } from './events.js';
+export { mapPiEvent, mapPiInput, renderPiToolResult } from './events.js';
 
 const HARNESS = 'pi';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
@@ -38,13 +38,6 @@ function eventOf(eventName: string, payload: unknown, context: PiContext): Runti
   } catch {
     return null;
   }
-}
-
-async function handleToolCall(payload: unknown, context: PiContext, resolver: InProcessRuntimeResolver): Promise<unknown> {
-  const event = eventOf('tool_call', payload, context);
-  if (event === null) return undefined;
-  const decision = await runInProcessEvent({ resolver, projectRoot: rootOf(context), event, engineInput: { measured: measuredOf(context) } });
-  return renderPiToolCall(decision);
 }
 
 async function handleToolResult(payload: unknown, context: PiContext, resolver: InProcessRuntimeResolver): Promise<unknown> {
@@ -80,7 +73,6 @@ async function handleMessageEnd(payload: unknown, context: PiContext, resolver: 
 export function createPiExtension(api: PiApi): void {
   const resolver = createRuntimeResolver(piDescriptor);
   const pendingBoots = new Map<string, string>();
-  api.on?.('tool_call', (payload, context) => handleToolCall(payload, context, resolver));
   api.on?.('tool_result', (payload, context) => handleToolResult(payload, context, resolver));
   api.on?.('session_start', (payload, context) => recordBoot(eventOf('session_start', payload, context), context, { resolver, pendingBoots }));
   api.on?.('session_compact', (payload, context) => recordBoot(eventOf('session_compact', payload, context), context, { resolver, pendingBoots }));

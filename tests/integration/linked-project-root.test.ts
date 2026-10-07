@@ -11,9 +11,7 @@ import { attemptLink, linkExists, requireLink } from '../helpers/link-capability
 
 const initArgs: ParsedInitArgs = {
   command: 'init', dryRun: false, yes: true, json: true,
-  harness: [], excludeHarness: [], instructionFile: [],
-  createInstructions: false, migrateLegacy: false,
-};
+  harness: [], excludeHarness: [], };
 
 async function runWithLinkedRepo(fn: (realRoot: string, linkRoot: string) => Promise<void>): Promise<void> {
   const temp = await mkdtemp(join(tmpdir(), 'cb-int-link-'));

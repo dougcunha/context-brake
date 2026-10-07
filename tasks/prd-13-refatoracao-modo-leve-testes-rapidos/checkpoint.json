@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "generation": 1,
+  "feature": "prd-13-refatoracao-modo-leve-testes-rapidos",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "plan-project",
+  "status": "paused",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "objective": "npm test and npm run coverage within 120 s (target 60 s): benchmarks and acceptance scale in a separate script, e2e reduced to a smoke set, in-process tests, budget check.",
+  "constraints": [
+    "Starts after prd-12 is accepted (budget measured after its deletions)",
+    "No migration or backward compatibility (prd-12 DEC-PD-03)"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": null,
+    "tasks": null,
+    "review": null,
+    "qa": null,
+    "snapshot": null
+  },
+  "review_status": null,
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "e3d411c798719936cb5700138eacab18c784da38954d07488528d9e61e450386",
+      "decision_id": "DEC-HIL-01"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-01"
+  ],
+  "git_base": null,
+  "worktree_evidence": null,
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "run",
+    "instruction": "After the predecessor slice completes, write techspec.md with sdd-create-techspec.",
+    "read": [
+      {
+        "path": "tasks/prd-13-refatoracao-modo-leve-testes-rapidos/prd.md",
+        "section": "all"
+      },
+      {
+        "path": "tasks/prd-12-refatoracao-modo-leve-modo-unico/workflow.md",
+        "section": "Human Decisions Log"
+      }
+    ]
+  }
+}

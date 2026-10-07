@@ -86,9 +86,6 @@ export async function initializeRepository(root: string): Promise<void> {
   await runGit(['add', '-A'], root);
   await runGit(['commit', '-m', 'initial'], root);
 }
-export async function lastCommitSubject(root: string): Promise<string> {
-  return (await runGit(['log', '-1', '--format=%s'], root)).trim();
-}
 export async function readLedgerLines(root: string, key: SessionKey): Promise<readonly LedgerLine[]> {
   return await new NodeSessionLedger(root, fixedClock).readLines(key);
 }

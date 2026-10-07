@@ -44,7 +44,8 @@ describe('symlinked Claude Code configuration (T10.4, CR-01)', () => {
     expect((await lstat(join(tempDir, '.claude'))).isSymbolicLink()).toBe(true);
     const written = JSON.parse(await readFile(join(tempDir, '.agents/settings.json'), 'utf8')) as { hooks: Record<string, unknown> };
     expect(written.hooks.UserHook).toBe('node custom.js');
-    expect(written.hooks.PreToolUse).toBeDefined();
+    expect(written.hooks.PostToolUse).toBeDefined();
+    expect(written.hooks.PreToolUse).toBeUndefined();
     const secondSnaps = await snapshotFiles(tempDir, paths);
     const secondPlan = await adapter.planInstall({ projectRoot: tempDir });
     const secondChangePlan = createChangePlan({ projectRoot: tempDir, plannedChanges: secondPlan.changes, snapshots: secondSnaps });

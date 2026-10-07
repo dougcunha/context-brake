@@ -25,12 +25,3 @@ export function validateInclusionExclusion(included: readonly HarnessId[], exclu
     }
   }
 }
-
-export function validateInstructionPaths(paths: readonly string[]): string[] {
-  for (const p of paths) {
-    if (p.startsWith('/') || p.startsWith('\\') || /^[A-Za-z]:/.test(p) || p.includes('..')) {
-      throw new CliArgumentError(`Instruction file path must be repository-relative: ${p}`);
-    }
-  }
-  return [...paths];
-}

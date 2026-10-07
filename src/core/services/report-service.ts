@@ -1,6 +1,6 @@
 import {
   cliErrorSchema, doctorReportSchema, installReportSchema, type CLI_ERROR_CODES, type CLI_ERROR_COMMANDS,
-  type CheckpointModeReport, type CliErrorDocument, type DiagnosticFinding, type DoctorReport,
+  type CliErrorDocument, type SnapshotReport, type DiagnosticFinding, type DoctorReport,
   type HarnessDiagnostic, type InstallReport,
 } from '../contracts/diagnostics.js';
 import type { ApplyOutcome, ChangePlan } from '../contracts/changes.js';
@@ -65,10 +65,10 @@ export function buildInstallReport(input: BuildInstallReportInput): InstallRepor
 
 export type BuildDoctorReportInput = {
   detections: readonly HarnessDetection[]; integrations: readonly HarnessDiagnostic[]; findings: readonly DiagnosticFinding[];
-  checkpointMode?: CheckpointModeReport | undefined;
+  snapshot?: SnapshotReport | undefined;
   contextWindow?: ContextWindowReport | undefined;
   activeSessions?: DoctorReport['activeSessions'];
-  debugMode?: boolean; brakeWindow?: DoctorReport['brakeWindow'];
+  debugMode?: boolean;
 };
 
 export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
@@ -76,10 +76,10 @@ export function buildDoctorReport(input: BuildDoctorReportInput): DoctorReport {
   const doc = {
     schemaVersion: 1 as const, command: 'doctor' as const, status, exitCode,
     detections: [...input.detections], integrations: [...input.integrations], findings: sortFindings(input.findings),
-    ...(input.checkpointMode === undefined ? {} : { checkpointMode: input.checkpointMode }),
+    ...(input.snapshot === undefined ? {} : { snapshot: input.snapshot }),
     ...(input.contextWindow === undefined ? {} : { contextWindow: input.contextWindow }),
     ...(input.activeSessions === undefined || input.activeSessions.length === 0 ? {} : { activeSessions: input.activeSessions }),
-    ...(input.debugMode === true ? { debugMode: true as const } : {}), ...(input.brakeWindow === undefined ? {} : { brakeWindow: input.brakeWindow }),
+    ...(input.debugMode === true ? { debugMode: true as const } : {}),
   };
   return doctorReportSchema.parse(doc);
 }

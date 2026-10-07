@@ -11,4 +11,10 @@ describe('CLI entrypoint', () => {
     expect(await main(['doctor', '--unknown', '--json'])).toBe(64);
     expect(await main(['remove', '--unknown'])).toBe(64);
   });
+
+  it('rejects the removed run, wrap, and plan commands as unknown (FR-01, FR-03, TC-01)', async () => {
+    expect(await main(['plan', 'init', '--task=x'])).toBe(64);
+    expect(await main(['run', '--harness', 'claude-code'])).toBe(64);
+    expect(await main(['wrap', '--', 'node', '-v'])).toBe(64);
+  });
 });

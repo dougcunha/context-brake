@@ -8,7 +8,7 @@ import { getAdapter } from '../../src/infrastructure/harnesses/registry.js';
 type HookConfig = { hooks: Record<string, unknown> };
 
 const CLAUDE_SETTINGS = '.claude/settings.json';
-const LEGACY_CLAUDE_SETTINGS = { hooks: { PreToolUse: [{ matcher: '*', hooks: [{ type: 'command', command: 'node .claude/hooks/context-brake.mjs PreToolUse' }] }] } };
+const LEGACY_CLAUDE_SETTINGS = { hooks: { PostToolUse: [{ matcher: '*', hooks: [{ type: 'command', command: 'node .claude/hooks/context-brake.mjs PostToolUse' }] }] } };
 
 async function planConfig(harness: HarnessId, root: string, configPath: string): Promise<HookConfig> {
   const plan = await getAdapter(harness).planInstall({ projectRoot: root });
@@ -23,16 +23,16 @@ afterEach(async () => { await rm(root, { recursive: true, force: true }); });
 describe('Claude Code hook commands do not depend on the session directory (RF5)', () => {
   it('registers the hook in exec form from the project directory placeholder', async () => {
     const config = await planConfig('claude-code', root, CLAUDE_SETTINGS);
-    const entry = { type: 'command', command: 'node', args: ['${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs', 'PreToolUse'] };
-    expect(config.hooks.PreToolUse).toEqual([{ matcher: '*', hooks: [entry] }]);
+    const entry = { type: 'command', command: 'node', args: ['${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs', 'PostToolUse'] };
+    expect(config.hooks.PostToolUse).toEqual([{ matcher: '*', hooks: [entry] }]);
   });
 
   it('replaces the relative command left by an earlier install and diagnoses the new one', async () => {
     await mkdir(join(root, '.claude/hooks'), { recursive: true });
     await writeFile(join(root, CLAUDE_SETTINGS), JSON.stringify(LEGACY_CLAUDE_SETTINGS), 'utf8');
     const config = await planConfig('claude-code', root, CLAUDE_SETTINGS);
-    expect(config.hooks.PreToolUse).toHaveLength(1);
-    expect(JSON.stringify(config.hooks.PreToolUse)).toContain('${CLAUDE_PROJECT_DIR}');
+    expect(config.hooks.PostToolUse).toHaveLength(1);
+    expect(JSON.stringify(config.hooks.PostToolUse)).toContain('${CLAUDE_PROJECT_DIR}');
     await writeFile(join(root, CLAUDE_SETTINGS), JSON.stringify(config), 'utf8');
     await writeFile(join(root, '.claude/hooks/context-brake.mjs'), '', 'utf8');
     expect((await getAdapter('claude-code').diagnose({ projectRoot: root })).filter((finding) => finding.severity !== 'ok')).toEqual([]);
@@ -44,21 +44,21 @@ describe('process hook commands locate the script from the project root (RF5)', 
     const config = await planConfig('codex-cli', root, '.codex/hooks.json');
     const entry = {
       type: 'command',
-      command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" PreToolUse',
-      commandWindows: 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i/.codex/hooks/context-brake.mjs" PreToolUse',
+      command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" PostToolUse',
+      commandWindows: 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i/.codex/hooks/context-brake.mjs" PostToolUse',
     };
-    expect(config.hooks.PreToolUse).toEqual([{ matcher: '*', hooks: [entry] }]);
+    expect(config.hooks.PostToolUse).toEqual([{ matcher: '*', hooks: [entry] }]);
   });
 
   it('runs the Copilot hook without a shell from the repository root', async () => {
     const config = await planConfig('github-copilot-cli', root, '.github/hooks/context-brake.json');
-    const entry = { type: 'command', exec: 'node', args: ['.github/hooks/context-brake.mjs', 'preToolUse'], cwd: '.' };
-    expect(config.hooks.preToolUse).toEqual([entry]);
+    const entry = { type: 'command', exec: 'node', args: ['.github/hooks/context-brake.mjs', 'postToolUse'], cwd: '.' };
+    expect(config.hooks.postToolUse).toEqual([entry]);
   });
 
   it('keeps the Cursor path relative because project hooks run from the project root', async () => {
     const config = await planConfig('cursor', root, '.cursor/hooks.json');
-    expect(config.hooks.preToolUse).toEqual([{ command: 'node .cursor/hooks/context-brake.mjs preToolUse', failClosed: true }]);
+    expect(config.hooks.postToolUse).toEqual([{ command: 'node .cursor/hooks/context-brake.mjs postToolUse' }]);
   });
 });
 
@@ -92,6 +92,6 @@ describe('new event registrations keep each harness command form (DEC-12, DEC-13
 
   it('registers the three Antigravity events under the context-brake key (DEC-14, TC-34)', async () => {
     const config = (await planConfig('antigravity-cli', root, '.agents/hooks.json')) as unknown as { 'context-brake': Record<string, unknown> };
-    expect(Object.keys(config['context-brake'])).toEqual(['PreInvocation', 'PreToolUse', 'PostToolUse']);
+    expect(Object.keys(config['context-brake'])).toEqual(['PreInvocation', 'PostToolUse']);
   });
 });

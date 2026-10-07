@@ -14,10 +14,7 @@ export const TOKENS_PER_TURN = 150;
 export const SEEDED_TURNS = 11;
 export const NEAR_CRITICAL_USAGE_TARGET = 0.749;
 export const IN_PROCESS_SEED_USAGE_TARGET = 0.745;
-export const PLAN_FILE = 'task_plan.json';
-export const CHECKPOINT_FILE = 'state_checkpoint.json';
 export const WORK_FILE = 'src/feature.ts';
-export const VALIDATION_COMMAND = 'node --version';
 export type SimulatedOutput = { readonly kind: OutputKind; readonly characters: number };
 export type SimulatedCall =
   | { readonly id: string; readonly tool: 'read' | 'write'; readonly path: string; readonly content: string; readonly output: SimulatedOutput }
@@ -57,9 +54,6 @@ export function writeCall(id: string, path: string, content: string): SimulatedC
 export function shellCall(id: string, command: string, argv: readonly string[]): SimulatedCall {
   return { id, tool: 'shell', command, argv, executable: 'git', output: { kind: 'log', characters: 320 } };
 }
-export function nodeCall(id: string, command: string): SimulatedCall {
-  return { id, tool: 'shell', command, argv: ['--version'], executable: process.execPath, output: { kind: 'log', characters: 120 } };
-}
 export function corpusText(output: SimulatedOutput, variant: number): string {
   const text = CORPUS_SOURCES[output.kind];
   const offset = (variant * 977) % text.length;
@@ -72,13 +66,6 @@ export function baselinePrompt(): string {
 export function assistantText(): string {
   return takeTokens(ASSISTANT_SOURCE.repeat(8), TOKENS_PER_TURN);
 }
-export function checkpointContent(): string {
-  return `${JSON.stringify({ schemaVersion: 1, taskId: 'task-1', activeStepId: 1, gitState: { branch: 'master', lastCommitHash: null, cleanWorkingTree: true }, workingMemory: { discoveredConstraints: [], decisionsMade: [], blockedItems: [], breakingChanges: [] }, modifiedFiles: [], timestamp: '2026-09-16T12:00:00.000Z' }, null, 2)}\n`;
-}
-export function planContent(): string {
-  const step = { id: 1, title: 'Step 1', status: 'IN_PROGRESS', validationCommand: VALIDATION_COMMAND, artifactsProduced: [], description: '' };
-  return `${JSON.stringify({ schemaVersion: 1, taskId: 'task-1', title: 'Task 1', currentStepId: 1, steps: [step] }, null, 2)}\n`;
-}
 export function seedCharactersFor(window: SimulatedWindow): number {
   const target = Math.floor(window * NEAR_CRITICAL_USAGE_TARGET);
   return Math.floor((4 * (target - BASELINE_TOKENS - SEEDED_TURNS * TOKENS_PER_TURN)) / SEEDED_TURNS) * SEEDED_TURNS;
@@ -86,7 +73,7 @@ export function seedCharactersFor(window: SimulatedWindow): number {
 export async function seedRedSession(input: { readonly root: string; readonly harness: HarnessId; readonly window: SimulatedWindow; readonly sessionId: string }): Promise<void> {
   const ledger = new NodeSessionLedger(input.root, fixedClock);
   const key: SessionKey = { harness: input.harness, sessionId: input.sessionId, agentId: null };
-  await ledger.appendSessionLine(key, { brakeMode: 'enforced', brakeReason: null });
+  await ledger.appendSessionLine(key);
   const perTurn = Math.floor(seedCharactersFor(input.window) / SEEDED_TURNS);
   for (let turn = 1; turn <= SEEDED_TURNS; turn += 1) await ledger.appendToolLine(key, seedLine(turn, perTurn, input.window));
 }

@@ -26,24 +26,6 @@ describe('CLI text install report', () => {
   });
 });
 
-describe('CLI text success hint', () => {
-  it('renders success install report and next step hint', () => {
-    const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const report: InstallReport = {
-      schemaVersion: 1, command: 'init', mode: 'applied', status: 'success', exitCode: 0,
-      detections: [], plan: {
-        schemaVersion: 1, projectRoot: '/test', requiresConfirmation: false,
-        changes: [{ path: 'file.txt', realPath: '/test/file.txt', kind: 'create', owner: 'config', beforeSha256: null, afterSha256: 'abc', preview: { summary: 'create file' } }],
-        conflicts: [], harnesses: [],
-      },
-      outcomes: [], findings: [],
-    };
-    renderInstallText(report);
-    expect(stdoutSpy).toHaveBeenCalled();
-    stdoutSpy.mockRestore();
-  });
-});
-
 describe('CLI text doctor report', () => {
   it('renders doctor report and CLI error document', () => {
     const stdoutSpy = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);

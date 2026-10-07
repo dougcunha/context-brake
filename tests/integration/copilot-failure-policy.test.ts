@@ -22,8 +22,9 @@ describe('IT-12: Copilot hook configuration (CA-15)', () => {
     expect(plan.conflicts).toHaveLength(0);
     const configChange = plan.changes.find((c) => c.path === '.github/hooks/context-brake.json');
     expect(configChange).toBeDefined();
-    const parsed = JSON.parse(configChange?.content ?? '{}') as { hooks?: { preToolUse?: { exec?: string }[] } };
-    expect(parsed.hooks?.preToolUse?.[0]?.exec).toBe('node');
+    const parsed = JSON.parse(configChange?.content ?? '{}') as { hooks?: { preToolUse?: unknown; postToolUse?: { exec?: string }[] } };
+    expect(parsed.hooks?.postToolUse?.[0]?.exec).toBe('node');
+    expect(parsed.hooks?.preToolUse).toBeUndefined();
   });
 });
 
@@ -42,11 +43,10 @@ describe('IT-12: Copilot failure policy and diagnosis (CA-15)', () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  it('reports full support with a timeout limitation and no warning finding (TC-03, CA-15)', async () => {
+  it('reports full support with a context usage limitation and no warning finding (prd-12 TC-11)', async () => {
     const profile = adapter.capabilityProfile();
     expect(profile.supportLevel).toBe('full');
-    const timeoutLimitation = profile.limitations.find((limitation) => limitation.capability === 'timeout_fail_closed');
-    expect(timeoutLimitation?.impact).toContain('a command failure without a timeout denies it');
+    expect(profile.limitations.map((limitation) => limitation.capability)).toEqual(['context_usage', 'auto_restart']);
     const findings = await adapter.diagnose({ projectRoot: tempDir });
     expect(findings.find((f) => f.code === 'COPILOT_TIMEOUT_LIMITATION')).toBeUndefined();
     expect(findings.find((f) => f.code === 'INVALID_HARNESS_CONFIG')).toBeUndefined();

@@ -1,15 +1,14 @@
 import { parseArgs } from 'node:util';
 import type { StatuslineBridgeRequest } from '../core/contracts/adapter.js';
 import type { HarnessDetection, HarnessId } from '../core/contracts/harness.js';
-import type { DelegatedSnapshotFlags } from '../core/services/delegated-snapshot-merge.js';
-import { CliArgumentError, validateHarnessIds, validateInclusionExclusion, validateInstructionPaths } from './argument-validator.js';
+import type { SnapshotFlags } from '../core/services/snapshot-merge.js';
+import { CliArgumentError, validateHarnessIds, validateInclusionExclusion } from './argument-validator.js';
 
 export type ParsedInitArgs = {
   command: 'init'; dryRun: boolean; yes: boolean; json: boolean;
   harness: readonly HarnessId[]; excludeHarness: readonly HarnessId[];
-  instructionFile: readonly string[]; createInstructions: boolean; migrateLegacy: boolean;
-  delegatedSnapshot?: DelegatedSnapshotFlags | undefined;
-  light?: boolean | undefined; noLight?: boolean | undefined; debug?: boolean | undefined; noDebug?: boolean | undefined;
+  snapshot?: SnapshotFlags | undefined;
+  debug?: boolean | undefined; noDebug?: boolean | undefined;
   statuslineBridge?: StatuslineBridgeRequest | undefined;
   autoRestart?: boolean | undefined; noAutoRestart?: boolean | undefined;
 };
@@ -18,13 +17,9 @@ const INIT_OPTIONS = {
   'dry-run': { type: 'boolean', default: false }, yes: { type: 'boolean', short: 'y', default: false },
   'json': { type: 'boolean', default: false }, harness: { type: 'string', multiple: true, default: [] as string[] },
   'exclude-harness': { type: 'string', multiple: true, default: [] as string[] },
-  'instruction-file': { type: 'string', multiple: true, default: [] as string[] },
-  'create-instructions': { type: 'boolean', default: false },
-  'migrate-legacy': { type: 'boolean', default: false },
   'snapshot-command': { type: 'string' }, 'snapshot-trigger': { type: 'string' }, 'resume-command': { type: 'string' },
-  'snapshot-path': { type: 'string', multiple: true, default: [] as string[] }, 'snapshot-skill': { type: 'string', multiple: true, default: [] as string[] },
-  'no-delegated-snapshot': { type: 'boolean', default: false },
-  light: { type: 'boolean', default: false }, 'no-light': { type: 'boolean', default: false }, debug: { type: 'boolean', default: false }, 'no-debug': { type: 'boolean', default: false },
+  'no-snapshot-command': { type: 'boolean', default: false },
+  debug: { type: 'boolean', default: false }, 'no-debug': { type: 'boolean', default: false },
   'statusline-bridge': { type: 'boolean', default: false }, 'no-statusline-bridge': { type: 'boolean', default: false },
   'auto-restart': { type: 'boolean', default: false }, 'no-auto-restart': { type: 'boolean', default: false },
 } as const;
@@ -38,9 +33,8 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
   assertAutoRestartHarnesses(values, { harness, excludeHarness });
   return {
     command: 'init', dryRun: values['dry-run'], yes: values.yes, json: values.json,
-    harness, excludeHarness, instructionFile: validateInstructionPaths(values['instruction-file']),
-    createInstructions: values['create-instructions'], migrateLegacy: values['migrate-legacy'],
-    delegatedSnapshot: delegatedFlags(values), light: values.light, noLight: values['no-light'], debug: values.debug, noDebug: values['no-debug'], statuslineBridge: statuslineBridgeRequest(values, { harness, excludeHarness }),
+    harness, excludeHarness,
+    snapshot: snapshotFlags(values), debug: values.debug, noDebug: values['no-debug'], statuslineBridge: statuslineBridgeRequest(values, { harness, excludeHarness }),
     autoRestart: values['auto-restart'], noAutoRestart: values['no-auto-restart'],
   };
 }
@@ -50,11 +44,8 @@ export function harnessSelection(args: ParsedInitArgs) {
     ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
   };
 }
-function delegatedFlags(values: InitValues): DelegatedSnapshotFlags {
-  return {
-    snapshotCommand: values['snapshot-command'], triggerZone: values['snapshot-trigger'], resumeCommand: values['resume-command'],
-    allowedPaths: values['snapshot-path'], allowedSkills: values['snapshot-skill'], remove: values['no-delegated-snapshot'],
-  };
+function snapshotFlags(values: InitValues): SnapshotFlags {
+  return { command: values['snapshot-command'], triggerZone: values['snapshot-trigger'], resumeCommand: values['resume-command'], clearCommand: values['no-snapshot-command'] };
 }
 const STATUSLINE_TARGET_ERROR = '--statusline-bridge and --no-statusline-bridge require claude-code among the target harnesses.';
 type HarnessTargets = { readonly harness: readonly HarnessId[]; readonly excludeHarness: readonly HarnessId[] };

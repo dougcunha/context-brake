@@ -16,13 +16,13 @@ describe('TC-08: only an old probe downgrades declared capabilities (FR-12, DEC-
     for (const version of cases) {
       const profile = deriveSupportProfile({ harness: 'claude-code', capabilities: ALL_SUPPORTED, version });
       expect(profile.supportLevel).toBe('full');
-      expect(profile.limitations.some((l) => l.capability === 'pre_tool_block' && l.impact.startsWith('Detected version'))).toBe(false);
+      expect(profile.limitations.some((l) => l.capability === 'post_tool_telemetry' && l.impact.startsWith('Detected version'))).toBe(false);
     }
   });
 
   it('downgrades declared capabilities only when the probe is old', () => {
     const oldVersion = normalizeVersion({ display: 'Harness 1.0.0', minimumVersion: '2.0.0' });
-    expect(deriveSupportProfile({ harness: 'claude-code', capabilities: ALL_SUPPORTED, version: oldVersion }).supportLevel).toBe('cooperative');
+    expect(deriveSupportProfile({ harness: 'claude-code', capabilities: ALL_SUPPORTED, version: oldVersion }).supportLevel).toBe('partial');
   });
 
   it('preserves declared capability states regardless of status when no floor is set', () => {

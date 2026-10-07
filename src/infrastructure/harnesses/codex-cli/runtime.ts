@@ -45,7 +45,6 @@ export function mapCodexEvent(eventName: string, payload: unknown): RuntimeEvent
   const data = parsePayload(codexPayloadSchema, payload);
   const session = sessionOf(data);
   switch (eventName) {
-    case 'PreToolUse': return { kind: 'pre_tool', session, tool: toolOf(data) };
     case 'PostToolUse': return { kind: 'post_tool', session, tool: toolOf(data), toolUseId: data.tool_use_id ?? null };
     case 'SessionStart': return resetEvent(session, data.source ?? null);
     case 'Stop': return { kind: 'response_end', session, text: data.last_assistant_message ?? '' };
@@ -60,7 +59,6 @@ export function mapCodexInput(eventName: string, payload: unknown): RuntimeInput
 }
 
 export function renderCodexDecision(decision: RuntimeDecision, eventName: string): string | null {
-  if (decision.kind === 'deny') return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, permissionDecision: 'deny', permissionDecisionReason: decision.message } });
   if (decision.kind === 'context' && (eventName === 'PostToolUse' || eventName === 'SessionStart')) return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: decision.block } });
   if (decision.kind === 'notify_user') return JSON.stringify({ systemMessage: decision.text });
   return null;

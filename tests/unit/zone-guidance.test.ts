@@ -1,66 +1,53 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
+import type { SnapshotConfig } from '../../src/core/contracts/configuration.js';
 import type { Zone } from '../../src/core/contracts/zones.js';
 import { renderTelemetryBlock } from '../../src/core/services/telemetry-block.js';
-import { ZONE_ACTIONS } from '../../src/core/services/zone-actions.js';
-import { resolveCheckpointMode, resolveGuidance } from '../../src/core/services/zone-guidance.js';
-import { CountingPresence, delegatedConfig } from '../helpers/delegated-fixtures.js';
+import { resumeText, zoneAction } from '../../src/core/services/zone-guidance.js';
 
-const ACTION = 'run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]';
+const WITH_COMMAND: SnapshotConfig = { triggerZone: 'RED', command: '/sdd-snapshot' };
+const WITHOUT_COMMAND: SnapshotConfig = { triggerZone: 'RED' };
+const RUN = 'run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]';
+const RUN_NOW = 'run "/sdd-snapshot" now, then end reply with [REQUEST_SESSION_RESET]';
+const KEEP_WORKING = 'keep working; finish the current unit before large new explorations';
 const USAGE = { source: 'estimated', usedTokens: 90000, windowTokens: 128000, measuredTokens: null, windowOrigin: 'config' } as const;
-async function guidanceFor(present: boolean, section = {}) {
-  return resolveGuidance({ config: delegatedConfig(section), planPresence: new CountingPresence(present), readValidationCommand: async () => null });
-}
 
-describe('checkpoint mode resolution (TC-03, FR-01)', () => {
-  it('stays in plan mode without the section and never checks the plan file', async () => {
-    const presence = new CountingPresence(false);
-    expect(await resolveCheckpointMode(DEFAULT_CONFIG, presence)).toBe('plan');
-    expect(presence.calls).toBe(0);
+describe('zone actions with a snapshot command (prd-12 FR-05, TC-07)', () => {
+  it.each<[Zone, string]>([['GREEN', 'work normally'], ['YELLOW', KEEP_WORKING], ['RED', RUN], ['CRITICAL', RUN_NOW]])('uses the RED trigger in %s', (zone, expected) => {
+    expect(zoneAction(zone, WITH_COMMAND)).toBe(expected);
   });
-  it('uses delegated mode only when the plan file is missing', async () => {
-    expect(await resolveCheckpointMode(delegatedConfig(), new CountingPresence(false))).toBe('delegated');
-    expect(await resolveCheckpointMode(delegatedConfig(), new CountingPresence(true))).toBe('plan');
+  it('starts at YELLOW when the trigger is YELLOW', () => {
+    expect(zoneAction('YELLOW', { ...WITH_COMMAND, triggerZone: 'YELLOW' })).toBe(RUN);
+    expect(zoneAction('GREEN', { ...WITH_COMMAND, triggerZone: 'YELLOW' })).toBe('work normally');
   });
-});
-
-describe('delegated zone actions (TC-03, FR-03, FR-04, FR-05, NFR-05)', () => {
-  it.each<[Zone, string]>([['GREEN', ZONE_ACTIONS.GREEN.compact], ['YELLOW', ZONE_ACTIONS.YELLOW.withoutPlan.compact], ['RED', ACTION], ['CRITICAL', ACTION]])('uses the default RED trigger in %s', async (zone, expected) => {
-    expect((await guidanceFor(false)).actionFor(zone)).toBe(expected);
-  });
-  it('starts at YELLOW when configured', async () => {
-    expect((await guidanceFor(false, { triggerZone: 'YELLOW' })).actionFor('YELLOW')).toBe(ACTION);
-  });
-  it('keeps the plan actions while the plan file exists', async () => {
-    expect((await guidanceFor(true)).actionFor('RED')).toBe(ZONE_ACTIONS.RED.withPlan.compact);
-  });
-  it('renders a v3 block without plan, checkpoint, validation, or commit words', async () => {
-    const action = (await guidanceFor(false)).actionFor('RED');
-    const block = renderTelemetryBlock({ turn: 11, turnCeiling: 12, usagePercentage: 70, usage: USAGE, zone: 'RED', action, debug: false });
-    expect(block).toBe(`[ContextBrake v3] turn=11/12 usage=70% tokens=90000/128000 source=estimated window=config zone=RED action=${ACTION}`);
-    expect(block).not.toMatch(/task_plan|state_checkpoint|validation|commit/);
-  });
-  it('stays under 400 characters with a 200-character command', async () => {
-    const action = (await guidanceFor(false, { snapshotCommand: 'x'.repeat(200) })).actionFor('CRITICAL');
+  it('keeps a 200-character command block under 400 characters', () => {
+    const action = zoneAction('CRITICAL', { triggerZone: 'RED', command: `/${'x'.repeat(199)}` });
     const block = renderTelemetryBlock({ turn: 12, turnCeiling: 12, usagePercentage: 100, usage: USAGE, zone: 'CRITICAL', action, debug: false });
     expect(block.length).toBeLessThan(400);
   });
 });
 
-describe('plan mode actions by plan presence (FR-08, DEC-06, DEC-HIL-04)', () => {
-  it.each([[true, ZONE_ACTIONS.YELLOW.withPlan.compact, ZONE_ACTIONS.RED.withPlan.compact], [false, ZONE_ACTIONS.YELLOW.withoutPlan.compact, ZONE_ACTIONS.RED.withoutPlan.compact]])('uses the matching actions without a delegated section when the plan exists is %s', async (present, yellow, red) => {
-    const sources = { config: DEFAULT_CONFIG, planPresence: new CountingPresence(present), readValidationCommand: async () => null };
-    const [atYellow, atRed] = await Promise.all([resolveGuidance({ ...sources, zone: 'YELLOW' }), resolveGuidance({ ...sources, zone: 'RED' })]);
-    expect(atYellow.mode).toBe('plan');
-    expect([atYellow.actionFor('YELLOW'), atRed.actionFor('RED')]).toEqual([yellow, red]);
+describe('zone actions without a snapshot command (prd-12 FR-06, TC-07)', () => {
+  it.each<[Zone, string]>([
+    ['GREEN', 'work normally'],
+    ['YELLOW', KEEP_WORKING],
+    ['RED', 'finish or pause the current unit and tell the user what remains'],
+    ['CRITICAL', 'stop starting new work; tell the user what remains'],
+  ])('uses the generic action in %s without the reset marker', (zone, expected) => {
+    expect(zoneAction(zone, WITHOUT_COMMAND)).toBe(expected);
+    expect(zoneAction(zone, { ...WITHOUT_COMMAND, triggerZone: 'YELLOW' })).not.toContain('[REQUEST_SESSION_RESET]');
   });
-  it('checks the plan file without a delegated section only for YELLOW and RED actions (prd-06 NFR-03 scope)', async () => {
-    const presence = new CountingPresence(false);
-    await Promise.all((['GREEN', 'CRITICAL'] as const).map((zone) => resolveGuidance({ config: DEFAULT_CONFIG, planPresence: presence, readValidationCommand: async () => null, zone })));
-    await resolveGuidance({ config: DEFAULT_CONFIG, planPresence: presence, readValidationCommand: async () => null });
-    expect(presence.calls).toBe(0);
+  it('never mentions a plan, checkpoint, or blocked tools', () => {
+    const texts = (['GREEN', 'YELLOW', 'RED', 'CRITICAL'] as const).flatMap((zone) => [zoneAction(zone, WITHOUT_COMMAND), zoneAction(zone, WITH_COMMAND)]);
+    expect(texts.join('\n')).not.toMatch(/plan|checkpoint|blocked|allowed/i);
   });
-  it('keeps the plan actions when no plan presence port is wired', async () => {
-    expect((await resolveGuidance({ config: DEFAULT_CONFIG, readValidationCommand: async () => null })).actionFor('RED')).toBe(ZONE_ACTIONS.RED.withPlan.compact);
+});
+
+describe('resume text (prd-12 FR-05, TC-07)', () => {
+  it('names the resume command when configured', () => {
+    expect(resumeText({ ...WITH_COMMAND, resumeCommand: '/sdd-orchestrate-flow' })).toBe('[ContextBrake resume v1] Run "/sdd-orchestrate-flow" before continuing.');
+  });
+  it('is absent without a resume command', () => {
+    expect(resumeText(WITH_COMMAND)).toBeNull();
+    expect(resumeText(WITHOUT_COMMAND)).toBeNull();
   });
 });

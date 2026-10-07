@@ -62,7 +62,7 @@ export class CopilotAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
-      event: 'preToolUse',
+      event: 'postToolUse',
       targetMilliseconds: 100,
       samplePayload: {
         sessionId: 'bench-copilot',
@@ -70,6 +70,7 @@ export class CopilotAdapter implements HarnessAdapter {
         cwd: '/repo',
         toolName: 'bash',
         toolArgs: { command: 'ls' },
+        toolResult: { resultType: 'success', textResultForLlm: 'file.txt' },
       },
     };
   }

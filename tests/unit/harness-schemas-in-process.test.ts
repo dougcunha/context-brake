@@ -1,21 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
-import { ompSettingsFileSchema, ompToolCallPayloadSchema, ompToolResultPayloadSchema } from '../../src/infrastructure/harnesses/oh-my-pi/schemas.js';
-import { opencodeConfigFileSchema, opencodeEventPayloadSchema, opencodeToolExecuteBeforePayloadSchema } from '../../src/infrastructure/harnesses/opencode/schemas.js';
-import { piMessageEndPayloadSchema, piSettingsFileSchema, piToolCallPayloadSchema, piToolResultPayloadSchema } from '../../src/infrastructure/harnesses/pi/schemas.js';
+import { ompSettingsFileSchema, ompToolResultPayloadSchema } from '../../src/infrastructure/harnesses/oh-my-pi/schemas.js';
+import { opencodeConfigFileSchema, opencodeEventPayloadSchema, opencodeToolExecuteAfterPayloadSchema } from '../../src/infrastructure/harnesses/opencode/schemas.js';
+import { piMessageEndPayloadSchema, piSettingsFileSchema, piToolResultPayloadSchema } from '../../src/infrastructure/harnesses/pi/schemas.js';
 
 describe('in-process plugin and extension schemas (RF5, RF6)', () => {
   it('parses OpenCode config and tool hook payloads non-strictly', () => {
     expect(opencodeConfigFileSchema.parse({ plugin: ['pkg'] }).plugin).toEqual(['pkg']);
-    const before = opencodeToolExecuteBeforePayloadSchema.parse({ input: { tool: 'bash', sessionID: 's' }, output: { args: { command: 'pwd' } } });
-    expect(before.input?.tool).toBe('bash');
-    expect(before.output?.args).toEqual({ command: 'pwd' });
+    const after = opencodeToolExecuteAfterPayloadSchema.parse({ input: { tool: 'bash', sessionID: 's' }, output: { args: { command: 'pwd' }, output: '/repo' } });
+    expect(after.input?.tool).toBe('bash');
+    expect(after.output?.args).toEqual({ command: 'pwd' });
   });
 
   it('parses Pi settings and event payloads non-strictly', () => {
     expect(piSettingsFileSchema.parse({ extensions: ['ext.js'] }).extensions).toEqual(['ext.js']);
-    const call = piToolCallPayloadSchema.parse({ toolName: 'edit', toolCallId: 'c1', input: { path: 'a.txt' } });
-    expect(call.toolName).toBe('edit');
     const result = piToolResultPayloadSchema.parse({ toolName: 'edit', toolCallId: 'c1', content: 'done' });
     expect(result.content).toBe('done');
     const end = piMessageEndPayloadSchema.parse({ message: { role: 'assistant', content: [] }, extra: true });
@@ -24,16 +22,12 @@ describe('in-process plugin and extension schemas (RF5, RF6)', () => {
 
   it('parses Oh-My-Pi settings and event payloads non-strictly', () => {
     expect(ompSettingsFileSchema.parse({ extensions: ['omp-ext.js'] }).extensions).toEqual(['omp-ext.js']);
-    expect(ompToolCallPayloadSchema.parse({ toolName: 'run_command', input: { command: 'test' } }).toolName).toBe('run_command');
     expect(ompToolResultPayloadSchema.parse({ toolName: 'run_command', content: 'ok' }).content).toBe('ok');
   });
 });
 
 describe('Pi and Oh-My-Pi documented fixtures (RF5, RF6, TC-33)', () => {
-  it('parses the Pi tool-call and tool-result fixtures with their documented fields', async () => {
-    const call = piToolCallPayloadSchema.parse(await loadHarnessPayload('pi', 'tool-call.json'));
-    expect(call.toolName).toBe('edit_file');
-    expect(call.input).toEqual({ path: 'src/main.ts' });
+  it('parses the Pi tool-result fixture with its documented fields', async () => {
     const result = piToolResultPayloadSchema.parse(await loadHarnessPayload('pi', 'tool-result.json'));
     expect(result.toolCallId).toBe('call_pi_result');
     expect(result.content).toEqual([{ type: 'text', text: 'tests passed' }]);

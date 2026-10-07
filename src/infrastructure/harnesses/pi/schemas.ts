@@ -14,7 +14,6 @@ export const piPayloadSchema = z.looseObject({
   last_assistant_message: z.optional(z.string()),
 });
 
-export const piToolCallPayloadSchema = piPayloadSchema;
 export const piToolResultPayloadSchema = piPayloadSchema;
 export const piSessionStartPayloadSchema = piPayloadSchema;
 export const piSessionCompactPayloadSchema = piPayloadSchema;

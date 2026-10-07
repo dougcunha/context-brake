@@ -9,7 +9,7 @@ export type PruneInput = {
   root: string;
   changes: readonly FileChange[];
   appliedPaths: ReadonlySet<string>;
-  removeState: boolean;
+  pruneRuntime: boolean;
 };
 
 type CandidateDirectory = { path: string; reportNonEmpty: boolean };
@@ -36,15 +36,15 @@ async function collectCandidateDirectories(input: PruneInput): Promise<Candidate
     if (change.kind !== 'delete' || !PRUNABLE_OWNERS.has(change.owner) || !input.appliedPaths.has(change.path)) continue;
     let current = posix.dirname(normalize(change.realPath));
     while (current.startsWith(contextBrakeDir)) {
-      dirs.set(current, current === contextBrakeDir ? input.removeState : true);
+      dirs.set(current, current !== contextBrakeDir);
       if (current === contextBrakeDir) break;
       current = posix.dirname(current);
     }
   }
-  if (input.removeState) {
+  if (input.pruneRuntime) {
     const runtimeDir = normalize(resolve(input.root, '.context-brake/runtime'));
     dirs.set(runtimeDir, true);
-    dirs.set(contextBrakeDir, true);
+    dirs.set(contextBrakeDir, false);
     for (const dir of await collectRuntimeDirs(runtimeDir)) dirs.set(dir, true);
   }
   return [...dirs.entries()]

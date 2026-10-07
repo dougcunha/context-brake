@@ -21,7 +21,7 @@ Triage spends little to avoid spending a lot: it gathers signals with evidence, 
    | Signal | Question |
    | --- | --- |
    | S1 Public contract | Does it change what a consumer sends or receives: a CLI command, flag, or output, the hook protocol with a harness, a JSON schema in `schemas/`, a file format, or configuration? Documentation-only text (README, comments, examples) counts as absent. |
-   | S2 Critical area | Does it touch an area that `AGENTS.md` declares critical or that requires a risk skill (e.g. the tool-call brake decision, harness settings or hooks, checkpoint and boot state)? |
+   | S2 Critical area | Does it touch an area that `AGENTS.md` declares critical or that requires a risk skill (e.g. the zone classification and actions, harness settings or hooks, files ContextBrake writes)? |
    | S3 Concurrency | Does it involve a transaction, lock, idempotency, queue, background polling, or shared state? |
    | S4 Blast radius | How many production files, modules, and transitive callers change behavior? |
    | S5 Open decision | Is there an ambiguous requirement or an unanswered product decision? |

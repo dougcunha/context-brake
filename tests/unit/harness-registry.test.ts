@@ -8,13 +8,13 @@ import {
 } from '../../src/infrastructure/harnesses/registry.js';
 
 const EXPECTED_EVENTS: Readonly<Record<HarnessId, string>> = {
-  'claude-code': 'PreToolUse',
-  'codex-cli': 'PreToolUse',
-  cursor: 'preToolUse',
-  'github-copilot-cli': 'preToolUse',
-  opencode: 'tool.execute.before',
-  pi: 'tool_call',
-  'oh-my-pi': 'tool_call',
+  'claude-code': 'PostToolUse',
+  'codex-cli': 'PostToolUse',
+  cursor: 'postToolUse',
+  'github-copilot-cli': 'postToolUse',
+  opencode: 'tool.execute.after',
+  pi: 'tool_result',
+  'oh-my-pi': 'tool_result',
   'antigravity-cli': 'PreInvocation',
 };
 

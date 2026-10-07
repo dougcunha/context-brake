@@ -1,5 +1,6 @@
-import { stat } from 'node:fs/promises';
-import { resolve } from 'node:path';
+import { copyFile, mkdir, mkdtemp, rm, stat } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import type { BenchmarkFixture } from '../../core/contracts/adapter.js';
 import type { HarnessId } from '../../core/contracts/harness.js';
 import type { OverheadMeasurement, OverheadMeasurer } from '../../core/contracts/diagnostics.js';
@@ -27,9 +28,20 @@ function unavailable(fixture: BenchmarkFixture): OverheadMeasurement {
   return { harness: fixture.harness, executionModel: fixture.executionModel, sampleCount: 0, p95Milliseconds: null, targetMilliseconds: fixture.targetMilliseconds, status: 'unavailable' };
 }
 
-async function sampleAsset(path: string, fixture: BenchmarkFixture): Promise<number[] | null> {
-  if (fixture.executionModel === 'process') return measureProcessSamples(path, fixture.event, fixture.samplePayload);
-  return sampleInProcess({ assetPath: path, event: fixture.event, payload: fixture.samplePayload });
+const SANDBOX_PREFIX = 'context-brake-benchmark-';
+type Sandbox = { readonly root: string; readonly assetPath: string };
+
+async function createSandbox(sourcePath: string, relativeAssetPath: string): Promise<Sandbox> {
+  const root = await mkdtemp(join(tmpdir(), SANDBOX_PREFIX));
+  const assetPath = join(root, relativeAssetPath);
+  await mkdir(dirname(assetPath), { recursive: true });
+  await copyFile(sourcePath, assetPath);
+  return { root, assetPath };
+}
+async function sampleAsset(sandbox: Sandbox, fixture: BenchmarkFixture): Promise<number[] | null> {
+  const benchmark = { event: fixture.event, payload: fixture.samplePayload, projectRoot: sandbox.root };
+  if (fixture.executionModel === 'process') return measureProcessSamples({ ...benchmark, path: sandbox.assetPath });
+  return sampleInProcess({ ...benchmark, assetPath: sandbox.assetPath });
 }
 
 function toMeasurement(harness: HarnessId, fixture: BenchmarkFixture, samples: number[]): OverheadMeasurement {
@@ -53,8 +65,9 @@ export class NodeOverheadMeasurer implements OverheadMeasurer {
       this.failure = { cause: 'asset_missing', detail: ASSET_PATHS[harness] };
       return unavailable(fixture);
     }
+    const sandbox = await createSandbox(fullPath, ASSET_PATHS[harness]);
     try {
-      const samples = await sampleAsset(fullPath, fixture);
+      const samples = await sampleAsset(sandbox, fixture);
       if (samples === null) {
         this.failure = { cause: 'handler_missing', detail: fixture.event };
         return unavailable(fixture);
@@ -63,6 +76,8 @@ export class NodeOverheadMeasurer implements OverheadMeasurer {
     } catch (error) {
       this.failure = describeFailure(error, 'handler_error');
       return unavailable(fixture);
+    } finally {
+      await rm(sandbox.root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
     }
   }
 }

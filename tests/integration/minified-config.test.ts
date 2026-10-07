@@ -48,7 +48,8 @@ describe('minified JSON config editing (CR-01, RF6, file-changes.md)', () => {
     await withMinified(async (dir) => {
       const parsed = await planMinified(dir, { configPath: '.claude/settings.json', harness: 'claude-code', file: 'minified-settings.json', planner: (root) => planClaudeInstall({ projectRoot: root }) });
       expect(hooksOf(parsed).UserHook).toBe('node custom.js');
-      expect(hooksOf(parsed).PreToolUse).toBeDefined();
+      expect(hooksOf(parsed).PostToolUse).toBeDefined();
+      expect(hooksOf(parsed).PreToolUse).toBeUndefined();
     });
   });
 
@@ -63,7 +64,8 @@ describe('minified JSON config editing (CR-01, RF6, file-changes.md)', () => {
   it('keeps a minified Codex hooks document valid and preserves user hooks', async () => {
     await withMinified(async (dir) => {
       const parsed = await planMinified(dir, { configPath: '.codex/hooks.json', harness: 'codex-cli', file: 'minified-hooks.json', planner: planCodexInstall });
-      expect(hooksOf(parsed).PreToolUse).toBeDefined();
+      expect(hooksOf(parsed).PostToolUse).toBeDefined();
+      expect(JSON.stringify(hooksOf(parsed).PreToolUse)).not.toContain('context-brake');
       expect(hooksOf(parsed).SessionStart).toBeDefined();
     });
   });

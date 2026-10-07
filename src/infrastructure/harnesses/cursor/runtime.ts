@@ -26,7 +26,6 @@ export function mapCursorEvent(eventName: string, payload: unknown): RuntimeEven
   const data = parsePayload(cursorPayloadSchema, payload);
   const session = sessionOf(data);
   switch (eventName) {
-    case 'preToolUse': return { kind: 'pre_tool', session, tool: toolOf(data) };
     case 'postToolUse': return { kind: 'post_tool', session, tool: toolOf(data), toolUseId: data.tool_use_id ?? null };
     case 'sessionStart': return { kind: 'session_reset', session, reason: 'new' };
     case 'preCompact': return { kind: 'session_reset', session, reason: 'compact' };
@@ -41,8 +40,6 @@ export function mapCursorInput(eventName: string, payload: unknown): RuntimeInpu
 }
 
 export function renderCursorDecision(decision: RuntimeDecision, eventName: string): string | null {
-  if (decision.kind === 'deny') return JSON.stringify({ permission: 'deny', agent_message: decision.message, user_message: `ContextBrake blocked ${decision.tool}: the session is above the critical ceiling.` });
-  if (eventName === 'preToolUse') return decision.kind === 'neutral' ? JSON.stringify({ permission: 'allow' }) : null;
   if (decision.kind === 'context' && (eventName === 'postToolUse' || eventName === 'sessionStart')) return JSON.stringify({ additional_context: decision.block });
   return null;
 }

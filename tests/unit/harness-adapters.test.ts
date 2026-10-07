@@ -11,48 +11,38 @@ const OTHER_AUTO_RESTART = ['auto_restart', 'Automatic restart in an interactive
 const VERSION: VersionProbe = { status: 'resolved', display: '1.0.0', normalized: '1.0.0', source: 'executable', minimumVersion: '1.0.0' };
 
 const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
-  'claude-code': { level: 'full', states: 'SSSS?U?', limitations: [
-    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the brake only warns.'],
-    ['timeout_fail_closed', 'A hook timeout, or a hook failure without an explicit deny, lets the tool call proceed.'],
+  'claude-code': { level: 'full', states: 'SS??', limitations: [
+    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.'],
     ['auto_restart', 'Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.'],
   ] },
-  'codex-cli': { level: 'partial', states: 'SUSSUUU', limitations: [
-    ['tool_coverage', 'Hosted tools such as web search bypass Codex CLI hooks.'],
+  'codex-cli': { level: 'full', states: 'SSUU', limitations: [
     ['context_usage', 'Context usage is not exposed to Codex CLI hooks.'],
-    ['timeout_fail_closed', 'A hook error, invalid output, or timeout lets the tool call proceed.'],
     OTHER_AUTO_RESTART,
   ] },
-  cursor: { level: 'full', states: 'SSSSUSU', limitations: [
+  cursor: { level: 'full', states: 'SSUU', limitations: [
     ['context_usage', 'Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.'],
     OTHER_AUTO_RESTART,
   ] },
-  'github-copilot-cli': { level: 'full', states: 'SSSSUUU', limitations: [
+  'github-copilot-cli': { level: 'full', states: 'SSUU', limitations: [
     ['context_usage', 'Context usage is not exposed to GitHub Copilot CLI hooks.'],
-    ['timeout_fail_closed', 'A hook timeout lets the tool call proceed; a command failure without a timeout denies it.'],
     OTHER_AUTO_RESTART,
   ] },
-  opencode: { level: 'partial', states: 'S?UUU?U', limitations: [
-    ['tool_coverage', 'Whether tool.execute.before runs for every OpenCode tool is not documented.'],
+  opencode: { level: 'partial', states: 'UUUU', limitations: [
     ['post_tool_telemetry', 'Model visibility of post-tool output modification is unconfirmed in OpenCode.'],
     ['session_boot', 'Stable boot injection is experimental in OpenCode.'],
     ['context_usage', 'No documented API exposes context usage to OpenCode plugins.'],
-    ['timeout_fail_closed', 'Failure and timeout behavior of OpenCode plugins is not documented.'],
     OTHER_AUTO_RESTART,
   ] },
-  pi: { level: 'full', states: 'SSSSS?U', limitations: [
-    ['timeout_fail_closed', 'Timeout behavior of Pi extension handlers is not documented, and a throwing handler is logged without blocking.'],
+  pi: { level: 'full', states: 'SSSU', limitations: [
     OTHER_AUTO_RESTART,
   ] },
-  'oh-my-pi': { level: 'full', states: 'SSSSS?U', limitations: [
-    ['timeout_fail_closed', 'Timeout behavior of Oh-My-Pi extension handlers is not documented.'],
+  'oh-my-pi': { level: 'full', states: 'SSSU', limitations: [
     OTHER_AUTO_RESTART,
   ] },
-  'antigravity-cli': { level: 'partial', states: 'S?UUU?U', limitations: [
-    ['tool_coverage', 'Hook coverage in the Antigravity CLI is not confirmed by its documentation.'],
+  'antigravity-cli': { level: 'partial', states: 'UUUU', limitations: [
     ['post_tool_telemetry', 'Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation.'],
     ['session_boot', 'Session boot is indirect via PreInvocation.'],
     ['context_usage', 'Context usage is not exposed to Antigravity CLI hooks.'],
-    ['timeout_fail_closed', 'Failure and timeout behavior of Antigravity hooks is not documented.'],
     OTHER_AUTO_RESTART,
   ] },
 };

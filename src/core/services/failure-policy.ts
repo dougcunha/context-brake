@@ -1,15 +1,10 @@
-import type { PlanPresence } from '../contracts/checkpoint-mode.js';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../contracts/configuration.js';
 import type { HarnessId } from '../contracts/harness.js';
 import type { HookPhase, PhaseTiming } from '../contracts/hook-phase.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent } from '../contracts/runtime.js';
 import type { RuntimeErrorCode, RuntimeErrorLog, SessionLedger } from '../contracts/session-ledger.js';
-import type { SessionKey } from '../contracts/runtime.js';
 import { InvalidConfigurationError } from '../validation/configuration-validator.js';
-import { renderBootOmission } from './boot-summary.js';
-import { summarizeLedger } from './session-counters.js';
-import { isTrustedWindow } from './window-trust.js';
-import { resolveFailureGuidance, type GuidanceSources } from './zone-guidance.js';
+import { resumeText } from './zone-guidance.js';
 
 export const INTERNAL_DEADLINE_MILLISECONDS = 1500;
 
@@ -31,8 +26,6 @@ export type FailureResolutionInput = {
   readonly descriptor: RuntimeDescriptor | null;
   readonly ledger: SessionLedger;
   readonly errors: RuntimeErrorLog;
-  readonly readValidationCommand: () => Promise<string | null>;
-  readonly planPresence?: PlanPresence | undefined;
   readonly timing?: PhaseTiming | undefined;
 };
 
@@ -56,19 +49,11 @@ export function runWithinDeadline<T>(work: Promise<T>, deadlineMilliseconds = IN
 export async function resolveFailure(input: FailureResolutionInput): Promise<RuntimeDecision> {
   await recordRuntimeFailure(input.errors, { harness: input.event.session.harness, event: input.event.kind, code: input.code, detail: input.detail, ...input.timing });
   if (input.event.kind === 'session_reset' && input.code === 'DEADLINE_EXCEEDED' && sessionBootSupported(input.descriptor)) return deadlineBootDecision(input);
-  if (input.event.kind !== 'pre_tool' || input.config?.lightMode !== undefined) return { kind: 'neutral' };
-  if (!(await wasTrustedCritical(input.ledger, input.event.session))) return { kind: 'neutral' };
-  const guidance = await resolveFailureGuidance(guidanceSources(input));
-  if (await guidance.allows(input.event.tool)) return { kind: 'neutral' };
-  return { kind: 'deny', tool: input.event.tool.name, reason: 'integration_failure', message: guidance.failureMessage(input.event.tool.name) };
+  return { kind: 'neutral' };
 }
-async function deadlineBootDecision(input: FailureResolutionInput): Promise<RuntimeDecision> {
-  const guidance = await resolveFailureGuidance(guidanceSources(input));
-  if (guidance.mode === 'plan') return { kind: 'context', block: renderBootOmission() };
-  return guidance.resumeText === null ? { kind: 'neutral' } : { kind: 'context', block: guidance.resumeText };
-}
-function guidanceSources(input: FailureResolutionInput): GuidanceSources {
-  return { config: input.config ?? DEFAULT_CONFIG, planPresence: input.planPresence, readValidationCommand: () => readTolerantly(input.readValidationCommand) };
+function deadlineBootDecision(input: FailureResolutionInput): RuntimeDecision {
+  const text = resumeText((input.config ?? DEFAULT_CONFIG).snapshot);
+  return text === null ? { kind: 'neutral' } : { kind: 'context', block: text };
 }
 export type RuntimeFailureRecord = PhaseTiming & { readonly harness: HarnessId; readonly event: string; readonly code: RuntimeErrorCode; readonly detail: string };
 export async function recordRuntimeFailure(errors: RuntimeErrorLog, record: RuntimeFailureRecord): Promise<void> {
@@ -80,19 +65,4 @@ export async function recordRuntimeFailure(errors: RuntimeErrorLog, record: Runt
 }
 function sessionBootSupported(descriptor: RuntimeDescriptor | null): boolean {
   return descriptor?.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported') ?? false;
-}
-async function wasTrustedCritical(ledger: SessionLedger, session: SessionKey): Promise<boolean> {
-  try {
-    const last = summarizeLedger(await ledger.readLines(session)).lastReading;
-    return last?.zone === 'CRITICAL' && isTrustedWindow(last.windowOrigin);
-  } catch {
-    return false;
-  }
-}
-async function readTolerantly(reader: () => Promise<string | null>): Promise<string | null> {
-  try {
-    return await reader();
-  } catch {
-    return null;
-  }
 }

@@ -1,4 +1,3 @@
-import type { ContextBrakeConfig } from '../core/contracts/configuration.js';
 import type { FileSnapshot } from '../core/contracts/changes.js';
 import { MANIFEST_RELATIVE_PATH } from '../core/contracts/manifest.js';
 import { MOD_FILES } from '../infrastructure/harnesses/claude-code/auto-restart-files.js';
@@ -17,25 +16,6 @@ const STANDARD_HARNESS_PATHS = [
   ...MOD_FILES,
 ] as const;
 
-export async function collectProjectSnapshots(root: string, config: ContextBrakeConfig | null, extraTargets: readonly string[] = []): Promise<FileSnapshot[]> {
-  return snapshotFiles(root, projectPaths(config, extraTargets, true));
-}
-export async function collectDoctorSnapshots(root: string, config: ContextBrakeConfig | null): Promise<FileSnapshot[]> {
-  return snapshotFiles(root, projectPaths(config, [], config?.lightMode === undefined));
-}
-function projectPaths(config: ContextBrakeConfig | null, extraTargets: readonly string[], includeState: boolean): string[] {
-  const protocol = config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md';
-  const plan = config?.stateStorage.planFile ?? 'task_plan.json';
-  const checkpoint = config?.stateStorage.checkpointFile ?? 'state_checkpoint.json';
-  const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
-  return Array.from(new Set([
-    'context-brake.config.json',
-    '.gitignore',
-    MANIFEST_RELATIVE_PATH,
-    protocol,
-    ...(includeState ? [plan, checkpoint] : []),
-    ...instTargets,
-    ...extraTargets,
-    ...STANDARD_HARNESS_PATHS,
-  ]));
+export async function collectProjectSnapshots(root: string): Promise<FileSnapshot[]> {
+  return snapshotFiles(root, ['context-brake.config.json', MANIFEST_RELATIVE_PATH, ...STANDARD_HARNESS_PATHS]);
 }

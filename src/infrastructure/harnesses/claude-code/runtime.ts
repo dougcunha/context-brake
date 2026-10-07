@@ -41,7 +41,6 @@ export function mapClaudeEvent(eventName: string, payload: unknown): RuntimeEven
   const data = parsePayload(claudePayloadSchema, payload);
   const session = sessionOf(data);
   switch (eventName) {
-    case 'PreToolUse': return { kind: 'pre_tool', session, tool: toolOf(data) };
     case 'PostToolUse': return { kind: 'post_tool', session, tool: toolOf(data), toolUseId: data.tool_use_id ?? null };
     case 'SessionStart': return resetEvent(session, data.source ?? null);
     case 'Stop': return { kind: 'response_end', session, text: data.last_assistant_message ?? '' };
@@ -50,11 +49,11 @@ export function mapClaudeEvent(eventName: string, payload: unknown): RuntimeEven
 }
 
 export async function mapClaudeInput(eventName: string, payload: unknown, errors: RuntimeErrorLog): Promise<RuntimeInput> {
-  if (eventName !== 'PreToolUse' && eventName !== 'PostToolUse') return {};
+  if (eventName !== 'PostToolUse') return {};
   const data = parsePayload(claudePayloadSchema, payload);
   const measured = data.agent_id === undefined ? await measuredUsage({ path: data.transcript_path, eventName, errors }) : undefined;
   const usage = measured === undefined ? {} : { measured };
-  return eventName === 'PreToolUse' ? usage : { ...usage, observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
+  return { ...usage, observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
 }
 
 type TranscriptRead = { readonly path: string | undefined; readonly eventName: string; readonly errors: RuntimeErrorLog };
@@ -69,7 +68,6 @@ async function measuredUsage(input: TranscriptRead): Promise<MeasuredUsage | und
 }
 
 export function renderClaudeDecision(decision: RuntimeDecision, eventName: string): string | null {
-  if (decision.kind === 'deny') return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, permissionDecision: 'deny', permissionDecisionReason: decision.message } });
   if (decision.kind === 'context' && (eventName === 'PostToolUse' || eventName === 'SessionStart')) return JSON.stringify({ hookSpecificOutput: { hookEventName: eventName, additionalContext: decision.block } });
   if (decision.kind === 'notify_user') return JSON.stringify({ systemMessage: decision.text });
   return null;

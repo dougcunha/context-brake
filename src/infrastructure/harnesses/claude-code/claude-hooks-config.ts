@@ -1,7 +1,7 @@
 import { removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 import { mergeHookGroups, removeHookGroups, type ClaudeHookGroup } from './claude-merger.js';
 
-const HOOK_EVENTS = [['PreToolUse', '*'], ['PostToolUse', '*'], ['SessionStart', 'startup|resume|clear|compact'], ['Stop', '*']] as const;
+const HOOK_EVENTS = [['PostToolUse', '*'], ['SessionStart', 'startup|resume|clear|compact'], ['Stop', '*']] as const;
 type HookTransform = (existing: unknown, event: string, matcher: string) => ClaudeHookGroup[];
 type EventPlan = { readonly hooks: Record<string, unknown>; readonly event: string; readonly matcher: string };
 

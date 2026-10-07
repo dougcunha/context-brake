@@ -4,7 +4,6 @@ import { failureErrorCode, INTERNAL_DEADLINE_MILLISECONDS } from '../../core/ser
 import { deadlineFor, HookDeadline, SESSION_START_DEADLINE_MILLISECONDS, type DeadlineLimits } from './hook-deadline.js';
 import { failureDecision, type HookState } from './hook-failure.js';
 import { composeRuntime, loadRuntimeConfiguration, systemClock, type RuntimePorts } from './runtime-composition.js';
-import { normalizeEventToolPaths } from './tool-path-normalizer.js';
 
 export const MAXIMUM_STDIN_BYTES = 16 * 1024 * 1024;
 const NEUTRAL: RuntimeDecision = { kind: 'neutral' };
@@ -71,7 +70,7 @@ async function dispatchHook(input: HookDispatch): Promise<RuntimeDecision> {
   deadline.mark('stdin');
   const payload = parsePayload(await input.context.readStdin());
   deadline.mark('event');
-  const event = await normalizeEventToolPaths(input.adapter.mapEvent(input.eventName, payload), projectRoot);
+  const event = input.adapter.mapEvent(input.eventName, payload);
   input.state.event = event;
   deadline.extendTo(deadlineFor(event, input.limits));
   deadline.mark('config');

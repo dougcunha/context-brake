@@ -10,16 +10,16 @@ function toolOf(event: RuntimeEvent | null): unknown {
 }
 
 describe('Codex CLI runtime event mapping (RF1, RF12, DEC-12, TC-33)', () => {
-  it('maps the documented PreToolUse fixture and classifies Bash as a shell call', async () => {
-    const payload = await loadHarnessPayload('codex-cli', 'pre-tool-use.json');
-    const event = mapCodexEvent('PreToolUse', { ...(payload as object), tool_input: { command: 'ls' } });
-    expect(event).toEqual({ kind: 'pre_tool', session: SESSION, tool: { name: 'apply_patch', category: 'other', paths: [], command: null } });
-    expect(toolOf(mapCodexEvent('PreToolUse', { session_id: 'codex-sess-1', tool_name: 'Bash', tool_input: { command: 'ls' } }))).toEqual({ name: 'Bash', category: 'shell', paths: [], command: 'ls' });
+  it('maps the documented PostToolUse fixture and classifies Bash as a shell call', async () => {
+    const event = mapCodexEvent('PostToolUse', await loadHarnessPayload('codex-cli', 'post-tool-use.json'));
+    expect(event).toEqual({ kind: 'post_tool', session: SESSION, tool: { name: 'Bash', category: 'shell', paths: [], command: 'git status' }, toolUseId: 'exec-codex-1' });
+    expect(toolOf(mapCodexEvent('PostToolUse', { session_id: 'codex-sess-1', tool_name: 'apply_patch' }))).toEqual({ name: 'apply_patch', category: 'other', paths: [], command: null });
+    expect(mapCodexEvent('PreToolUse', { session_id: 'codex-sess-1', tool_name: 'Bash' })).toBeNull();
   });
 
   it('parses the patch paths of an apply_patch call', () => {
     const command = '*** Begin Patch\n*** Update File: src/app.ts\n@@\n*** Add File: src/new.ts\n*** Delete File: src/old.ts\n*** Move to: src/moved.ts\n*** End Patch';
-    const event = mapCodexEvent('PreToolUse', { session_id: 'codex-sess-1', tool_name: 'apply_patch', tool_input: { command } });
+    const event = mapCodexEvent('PostToolUse', { session_id: 'codex-sess-1', tool_name: 'apply_patch', tool_input: { command } });
     expect(toolOf(event)).toEqual({ name: 'apply_patch', category: 'file_write', paths: ['src/app.ts', 'src/new.ts', 'src/old.ts', 'src/moved.ts'], command: null });
   });
 
@@ -45,8 +45,7 @@ describe('Codex CLI runtime event mapping (RF1, RF12, DEC-12, TC-33)', () => {
 });
 
 describe('Codex CLI response rendering (RF14, RF17, RF22, TC-14, TC-21)', () => {
-  it('renders deny, context, and notice in documented JSON fields and nothing else', () => {
-    expect(JSON.parse(renderCodexDecision({ kind: 'deny', tool: 'Bash', reason: 'critical_ceiling', message: 'BLOCKED' }, 'PreToolUse') ?? '')).toEqual({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: 'BLOCKED' } });
+  it('renders context and notice in documented JSON fields and nothing else', () => {
     expect(JSON.parse(renderCodexDecision({ kind: 'context', block: 'telemetry' }, 'PostToolUse') ?? '')).toEqual({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: 'telemetry' } });
     expect(JSON.parse(renderCodexDecision({ kind: 'notify_user', text: 'notice' }, 'Stop') ?? '')).toEqual({ systemMessage: 'notice' });
     expect(renderCodexDecision({ kind: 'neutral' }, 'PreToolUse')).toBeNull();

@@ -13,7 +13,6 @@ export const CURSOR_HOOK_FILE = '.cursor/hooks/context-brake.mjs';
 
 export function buildCursorEntries(): ManagedEntry[] {
   return [
-    { harness: 'cursor', path: CURSOR_CONFIG_FILE, identity: `preToolUse|${CURSOR_HOOK_FILE}` },
     { harness: 'cursor', path: CURSOR_CONFIG_FILE, identity: `postToolUse|${CURSOR_HOOK_FILE}` },
     { harness: 'cursor', path: CURSOR_CONFIG_FILE, identity: `sessionStart|${CURSOR_HOOK_FILE}` },
     { harness: 'cursor', path: CURSOR_CONFIG_FILE, identity: `preCompact|${CURSOR_HOOK_FILE}` },

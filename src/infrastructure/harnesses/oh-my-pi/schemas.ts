@@ -14,7 +14,6 @@ export const ompPayloadSchema = z.looseObject({
   last_assistant_message: z.optional(z.string()),
 });
 
-export const ompToolCallPayloadSchema = ompPayloadSchema;
 export const ompToolResultPayloadSchema = ompPayloadSchema;
 export const ompSessionStartPayloadSchema = ompPayloadSchema;
 export const ompSessionCompactPayloadSchema = ompPayloadSchema;

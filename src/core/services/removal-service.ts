@@ -5,24 +5,16 @@ import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/manifest.js';
 import { createChangePlan } from './change-plan-service.js';
-import { planGitignoreRemoval } from './gitignore-service.js';
-import { createRemovalFinding, planAssetDeletions, planInstructionRemoval } from './removal-helper.js';
-import { planRuntimeStateDeletions, planStateDeletions } from './state-removal.js';
+import { createRemovalFinding, planAssetDeletions, planRuntimeStateDeletions } from './removal-helper.js';
 
 export type RemovalInput = {
   projectRoot: string;
   config: ContextBrakeConfig | null;
   adapters: readonly HarnessAdapter[];
   context: HarnessContext;
-  instructionSnapshots: readonly FileSnapshot[];
-  protocolSnapshot: FileSnapshot;
-  gitignoreSnapshot: FileSnapshot;
   allSnapshots: readonly FileSnapshot[];
   manifest: InstallationManifest | null;
-  removeState?: boolean;
-  planSnapshot?: FileSnapshot;
-  checkpointSnapshot?: FileSnapshot;
-  runtimeStateSnapshots?: readonly FileSnapshot[];
+  runtimeStateSnapshots: readonly FileSnapshot[];
 };
 
 export type RemovalResult = {
@@ -32,9 +24,6 @@ export type RemovalResult = {
 
 function planCoreDeletions(input: RemovalInput, hasConflicts: boolean): PlannedChange[] {
   const changes: PlannedChange[] = [];
-  if (input.protocolSnapshot.exists) {
-    changes.push({ path: input.protocolSnapshot.path, realPath: input.protocolSnapshot.realPath, kind: 'delete', owner: 'protocol', content: null, preview: { summary: 'Delete protocol file' } });
-  }
   if (hasConflicts) return changes;
   const mSnap = input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH);
   const mPath = (mSnap?.realPath ?? resolve(input.projectRoot, MANIFEST_RELATIVE_PATH)).replace(/\\/g, '/');
@@ -76,21 +65,16 @@ export async function planRemoval(input: RemovalInput): Promise<RemovalResult> {
     excludedAssetPaths.add(MANIFEST_RELATIVE_PATH);
   }
   const assetPlan = planAssetDeletions(input.manifest, input.allSnapshots, excludedAssetPaths);
-  const gitignorePlan = planGitignoreRemoval({ snapshot: input.gitignoreSnapshot, removeState: Boolean(input.removeState) });
   const hasConflicts = adapterResult.conflicts.length > 0 || assetPlan.conflicts.length > 0;
   const plannedChanges: PlannedChange[] = [
     ...adapterResult.changes,
     ...assetPlan.changes,
-    ...planInstructionRemoval(input.instructionSnapshots),
-    ...planStateDeletions(input),
-    ...planRuntimeStateDeletions(input.removeState, input.runtimeStateSnapshots ?? []),
-    ...gitignorePlan.changes,
+    ...planRuntimeStateDeletions(input.runtimeStateSnapshots),
     ...planCoreDeletions(input, hasConflicts),
   ];
-  const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts, ...gitignorePlan.conflicts];
+  const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts];
   const assetFindings = assetPlan.conflicts.map((c) => createRemovalFinding(c, null));
-  const gitignoreFindings = gitignorePlan.conflicts.map((c) => createRemovalFinding(c, null));
-  const findings: DiagnosticFinding[] = [...adapterResult.findings, ...assetFindings, ...gitignoreFindings];
+  const findings: DiagnosticFinding[] = [...adapterResult.findings, ...assetFindings];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: adapterResult.harnesses });
   return { plan, findings };
 }

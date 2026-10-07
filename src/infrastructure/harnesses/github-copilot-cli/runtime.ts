@@ -42,7 +42,6 @@ export function mapCopilotEvent(eventName: string, payload: unknown): RuntimeEve
   const data = parsePayload(copilotPayloadSchema, payload);
   const session = sessionOf(data);
   switch (eventName) {
-    case 'preToolUse': return { kind: 'pre_tool', session, tool: toolOf(data) };
     case 'postToolUse': return { kind: 'post_tool', session, tool: toolOf(data), toolUseId: null };
     case 'sessionStart': return resetEvent(session, data.source ?? null);
     case 'preCompact': return { kind: 'session_reset', session, reason: 'compact' };
@@ -57,7 +56,6 @@ export function mapCopilotInput(eventName: string, payload: unknown): RuntimeInp
 }
 
 export function renderCopilotDecision(decision: RuntimeDecision): string | null {
-  if (decision.kind === 'deny') return JSON.stringify({ permissionDecision: 'deny', permissionDecisionReason: decision.message });
   if (decision.kind === 'context') return JSON.stringify({ additionalContext: decision.block });
   return null;
 }

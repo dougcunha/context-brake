@@ -52,7 +52,7 @@ Confirm by reading the implementations — same logic, same cases handled, one c
 - **Suppression** — `@ts-ignore`, `@ts-nocheck`, `@ts-expect-error` without an explanation, `eslint-disable`: name the diagnostic being silenced and say whether the underlying problem is fixed or merely hidden.
 - **Non-null assertion** — `x!.y`, `= x!`: asserts presence without proof and can hide a runtime `TypeError`.
 - **Unsafe cast** — `as T` on external data without validation; `as unknown as T` double casts.
-- **Unvalidated external input** — configuration, plan and checkpoint files, harness payloads, or command output used without a schema.
+- **Unvalidated external input** — configuration, the manifest, runtime ledgers, harness payloads, or command output used without a schema.
 - **Contract duplication** — the same shape declared in several places (cross-reference Duplication → Contract).
 - **Missing precision** — primitive obsession (ids as bare `string`), string values that should be literal unions, `Record<string, unknown>` passed deep into logic, exported functions without explicit return types.
 

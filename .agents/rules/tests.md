@@ -15,7 +15,7 @@ These rules apply to ContextBrake unit, integration, and end-to-end tests.
 
 Minimum coverage is 80%, measured by Vitest, and the run fails below it. Coverage is not the goal by itself: tests verify behaviors and requirements with meaningful assertions.
 
-Prioritize the highest product risk. Zone classification, blocking above the critical ceiling, plan and checkpoint validation, and changes to harness configuration and instruction files need success, failure, boundary, and recovery scenarios. The human-readable `doctor` formatting needs less depth. Never write tests only to raise the percentage.
+Prioritize the highest product risk. Zone classification, the zone actions and snapshot settings, the failure policy, and changes to harness configuration files need success, failure, boundary, and recovery scenarios. The human-readable `doctor` formatting needs less depth. Never write tests only to raise the percentage.
 
 ## FIRST Principle
 
@@ -41,7 +41,7 @@ it('classifies 75% usage as the critical ceiling (FR-03)', () => {
 
 1. **Unit (`tests/unit/`):** `src/core/` entities and services, parsers, schemas, and zone classification, using port fakes.
 2. **Integration (`tests/integration/`):** `src/infrastructure/` adapters against a real filesystem in a temporary directory, a temporary git repository, and harness fixtures.
-3. **End-to-end (`tests/e2e/`):** the built CLI run as a child process against fixture repositories, covering the critical `init`, `doctor`, `remove`, `plan init`, and `plan status` flows.
+3. **End-to-end (`tests/e2e/`):** the built CLI run as a child process against fixture repositories, covering the critical `init`, `doctor`, and `remove` flows.
 
 Keep the pyramid: many unit tests, fewer integration tests, and few end-to-end tests. This project has no web interface, browser, or Playwright.
 
@@ -49,8 +49,8 @@ Keep the pyramid: many unit tests, fewer integration tests, and few end-to-end t
 
 - **User file changes:** run each change against fixture copies and assert that content ContextBrake does not own stays byte-for-byte identical, including after a second run.
 - **Zone boundaries:** cover every usage and turn boundary defined in the telemetry PRD.
-- **Failure policy:** cover adapter failures below and above the critical ceiling.
-- **Agent-facing text:** assert the exact telemetry block, block message, and boot summary, plus their token budgets: 60 tokens for the telemetry block and 1,000 tokens for the boot summary of the reference fixtures.
+- **Failure policy:** cover adapter failures in every zone; each one lets the tool call proceed.
+- **Agent-facing text:** assert the exact telemetry block and resume text, plus the 60-token budget of the telemetry block.
 
 ## Harness Fixtures
 

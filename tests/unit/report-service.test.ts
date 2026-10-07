@@ -51,7 +51,7 @@ describe('TC-03: limitations create no finding and never change the exit code', 
         schemaVersion: 1, projectRoot: '/test', changes: [], conflicts: [], requiresConfirmation: false,
         harnesses: [{
           harness: 'github-copilot-cli', outcome: 'planned', supportLevel: 'full',
-          limitations: [{ capability: 'timeout_fail_closed', impact: 'A hook timeout lets the tool call proceed.' }],
+          limitations: [{ capability: 'context_usage', impact: 'Context usage is not exposed to GitHub Copilot CLI hooks.' }],
         }],
       },
     });

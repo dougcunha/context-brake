@@ -9,8 +9,6 @@ const LEGACY_TELEMETRY = {
 };
 const LEGACY_CONFIG = {
   schemaVersion: 1, activeHarnesses: ['claude-code'], telemetry: LEGACY_TELEMETRY,
-  stateStorage: { planFile: 'plans/task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: false, bootMaxTokens: 800 },
-  instructionFiles: { targets: ['CLAUDE.md'], protocolFile: 'docs/context-brake-protocol.md' },
 };
 const LEGACY_TEXT = `${JSON.stringify(LEGACY_CONFIG, null, 2)}\n`;
 let root: string;
@@ -32,8 +30,7 @@ describe('init migrates legacy turn limits (TC-20, FR-09, US-04)', () => {
     const telemetry = config['telemetry'] as Record<string, unknown>;
     expect(telemetry).not.toHaveProperty('turnCeiling');
     expect(telemetry['zones']).toEqual({ greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 });
-    expect(config['stateStorage']).toEqual(LEGACY_CONFIG.stateStorage);
-    expect(config['instructionFiles']).toEqual(LEGACY_CONFIG.instructionFiles);
+    expect(config['activeHarnesses']).toEqual(LEGACY_CONFIG.activeHarnesses);
   });
   it('changes nothing on a second run and doctor reports no legacy finding', async () => {
     await runCli(root, ['init', '--yes', '--json']);

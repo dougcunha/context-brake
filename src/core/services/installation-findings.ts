@@ -1,9 +1,7 @@
-import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { PlanConflict } from '../contracts/changes.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { ManagedAsset } from '../contracts/manifest.js';
 import { hashString } from './change-plan-service.js';
-import { renderProtocol } from './protocol-service.js';
 
 export function conflictFindings(conflicts: readonly PlanConflict[]): DiagnosticFinding[] {
   return conflicts.map((c) => ({
@@ -18,10 +16,9 @@ export function conflictFindings(conflicts: readonly PlanConflict[]): Diagnostic
   }));
 }
 
-export function buildManagedAssets(config: ContextBrakeConfig, configContent: string, adapterAssets: readonly ManagedAsset[]): ManagedAsset[] {
+export function buildManagedAssets(configContent: string, adapterAssets: readonly ManagedAsset[]): ManagedAsset[] {
   return [
     { path: 'context-brake.config.json', kind: 'config', sha256: hashString(configContent) },
-    ...(config.lightMode === undefined ? [{ path: config.instructionFiles.protocolFile, kind: 'protocol' as const, sha256: hashString(renderProtocol(config)) }] : []),
     ...adapterAssets,
   ];
 }

@@ -15,14 +15,12 @@ beforeEach(async () => {
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('GitHub Copilot CLI built hook with documented payloads (CA-15)', () => {
-  it('stays silent below the ceiling and denies above it', async () => {
+  it('stays silent below and above the ceiling (prd-12 FR-07)', async () => {
     const neutral = await runInstalledHook(hook, 'preToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' } });
     expect(neutral.stdout).toBe('');
     await seedCriticalSession(root, { harness: 'github-copilot-cli', sessionId: 'critical', agentId: null });
-    const denied = await runInstalledHook(hook, 'preToolUse', { sessionId: 'critical', toolName: 'bash', toolArgs: { command: 'rm -rf x' } });
-    const shape = JSON.parse(denied.stdout) as { permissionDecision: string; permissionDecisionReason: string };
-    expect(shape.permissionDecision).toBe('deny');
-    expect(shape.permissionDecisionReason).toContain('reason=critical_ceiling');
+    const critical = await runInstalledHook(hook, 'preToolUse', { sessionId: 'critical', toolName: 'bash', toolArgs: { command: 'rm -rf x' } });
+    expect(critical.stdout).toBe('');
   });
 
   it('injects additionalContext after the tool without touching the tool result', async () => {

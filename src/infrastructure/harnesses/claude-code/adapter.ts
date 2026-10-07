@@ -53,8 +53,8 @@ export class ClaudeAdapter implements HarnessAdapter {
           findings.push(createInvalidConfigFinding(this.id, CLAUDE_CONFIG_FILE, validation.errors.join('; ')));
         } else {
           const obj = JSON.parse(raw) as { hooks?: Record<string, unknown> };
-          const pre = obj.hooks?.PreToolUse;
-          if (!Array.isArray(pre) || !pre.some((g) => isTargetGroup(g, 'PreToolUse'))) {
+          const post = obj.hooks?.PostToolUse;
+          if (!Array.isArray(post) || !post.some((g) => isTargetGroup(g, 'PostToolUse'))) {
             findings.push(createIntegrationMissingFinding(this.id, CLAUDE_CONFIG_FILE));
           }
         }
@@ -74,13 +74,14 @@ export class ClaudeAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
-      event: 'PreToolUse',
+      event: 'PostToolUse',
       targetMilliseconds: 100,
       samplePayload: {
         session_id: 'bench-claude',
-        hook_event_name: 'PreToolUse',
+        hook_event_name: 'PostToolUse',
         tool_name: 'Bash',
         tool_input: { command: 'ls' },
+        tool_response: 'file.txt',
         tool_use_id: 'toolu_bench',
         cwd: '/repo',
       },

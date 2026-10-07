@@ -3,11 +3,9 @@ import type { CapabilityDefinition } from '../contracts/harness.js';
 import type { EstimationConstants } from '../contracts/runtime.js';
 import type { UsageReading, Zone } from '../contracts/zones.js';
 import type { SessionSummary } from './session-counters.js';
-import { isDebugModeInEffect } from './debug-mode-merge.js';
-import { renderTelemetryBlock } from './telemetry-block.js';
 import { estimatedTokens, resolveUsage } from './usage-resolver.js';
-import { acceptsDeclaredWindow, telemetryAction } from './window-trust.js';
-import { classifyZone, redStartTurn, usagePercentage } from './zone-classifier.js';
+import { acceptsDeclaredWindow } from './window-trust.js';
+import { classifyZone, usagePercentage } from './zone-classifier.js';
 
 export type MeasuredUsage = { readonly tokens: number | null; readonly contextWindow: number | null; readonly at?: string | undefined };
 export type ZoneSettings = { readonly descriptor: { readonly estimation: EstimationConstants; readonly capabilities: readonly CapabilityDefinition[] }; readonly config: Pick<ContextBrakeConfig, 'telemetry' | 'debug'> };
@@ -36,10 +34,4 @@ function mergeMeasurements(inputs: ZoneInputs): MeasuredUsage {
 function isStale(measured: Pick<MeasuredUsage, 'at'> | undefined, lastResetAt: string | null): boolean {
   if (measured?.at === undefined || lastResetAt === null) return false;
   return Date.parse(measured.at) <= Date.parse(lastResetAt);
-}
-
-export function renderSessionTelemetry(settings: ZoneSettings, inputs: ZoneInputs, actionFor: (zone: Zone) => string): string {
-  const { reading, percentage, zone } = readZone(settings, inputs);
-  const action = telemetryAction(zone, reading.windowOrigin, actionFor(zone));
-  return renderTelemetryBlock({ turn: inputs.turns, turnCeiling: redStartTurn(settings.config.telemetry.zones), usagePercentage: percentage, usage: reading, zone, action, debug: isDebugModeInEffect(settings.config) });
 }

@@ -34,7 +34,8 @@ describe('E2E symlinked harness install and idempotency (T10.5, CR-01)', () => {
     const contentAfterFirst = await readFile(settingsPath, 'utf8');
     const parsed = JSON.parse(contentAfterFirst) as { hooks: Record<string, unknown> };
     expect(parsed.hooks.UserHook).toBe('node custom.js');
-    expect(parsed.hooks.PreToolUse).toBeDefined();
+    expect(parsed.hooks.PostToolUse).toBeDefined();
+    expect(parsed.hooks.PreToolUse).toBeUndefined();
     const second = await runBuiltCli(['init', '--yes'], tempDir);
     expect(second.code).toBe(0);
     expect(await readFile(settingsPath, 'utf8')).toBe(contentAfterFirst);

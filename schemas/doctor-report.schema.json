@@ -174,8 +174,7 @@
                 "type": "string",
                 "enum": [
                   "full",
-                  "partial",
-                  "cooperative"
+                  "partial"
                 ]
               },
               "minimumVersion": {
@@ -192,12 +191,9 @@
                     "id": {
                       "type": "string",
                       "enum": [
-                        "pre_tool_block",
-                        "tool_coverage",
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",
-                        "timeout_fail_closed",
                         "auto_restart"
                       ]
                     },
@@ -225,12 +221,9 @@
                     "capability": {
                       "type": "string",
                       "enum": [
-                        "pre_tool_block",
-                        "tool_coverage",
                         "post_tool_telemetry",
                         "session_boot",
                         "context_usage",
-                        "timeout_fail_closed",
                         "auto_restart"
                       ]
                     },
@@ -424,104 +417,33 @@
         "additionalProperties": false
       }
     },
-    "checkpointMode": {
+    "snapshot": {
       "type": "object",
       "properties": {
-        "effective": {
+        "triggerZone": {
           "type": "string",
           "enum": [
-            "plan",
-            "delegated",
-            "light"
+            "YELLOW",
+            "RED"
           ]
         },
-        "reason": {
-          "type": "string",
-          "enum": [
-            "no_section",
-            "plan_present",
-            "plan_missing",
-            "light_mode"
+        "command": {
+          "type": [
+            "string",
+            "null"
           ]
         },
-        "delegatedSnapshot": {
-          "anyOf": [
-            {
-              "type": "object",
-              "properties": {
-                "snapshotCommand": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "triggerZone": {
-                  "default": "RED",
-                  "type": "string",
-                  "enum": [
-                    "YELLOW",
-                    "RED"
-                  ]
-                },
-                "resumeCommand": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 200
-                },
-                "allowedPaths": {
-                  "default": [],
-                  "maxItems": 20,
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "minLength": 1,
-                    "pattern": "^(?!\\/)(?!\\\\)(?![A-Za-z]:)(?!.*\\\\)(?!.*(?:^|\\/)\\.\\.?(?:\\/|$))(?!.*\\/\\/)(?!.*\\/$).+$"
-                  }
-                },
-                "allowedSkills": {
-                  "default": [],
-                  "maxItems": 20,
-                  "type": "array",
-                  "items": {
-                    "type": "string",
-                    "pattern": "^[A-Za-z0-9][A-Za-z0-9:._-]*$"
-                  }
-                }
-              },
-              "required": [
-                "snapshotCommand",
-                "triggerZone",
-                "allowedPaths",
-                "allowedSkills"
-              ],
-              "additionalProperties": false
-            },
-            {
-              "type": "null"
-            }
+        "resumeCommand": {
+          "type": [
+            "string",
+            "null"
           ]
-        },
-        "lightMode": {
-          "type": "object",
-          "properties": {
-            "triggerZone": {
-              "default": "RED",
-              "type": "string",
-              "enum": [
-                "YELLOW",
-                "RED"
-              ]
-            }
-          },
-          "required": [
-            "triggerZone"
-          ],
-          "additionalProperties": false
         }
       },
       "required": [
-        "effective",
-        "reason",
-        "delegatedSnapshot"
+        "triggerZone",
+        "command",
+        "resumeCommand"
       ],
       "additionalProperties": false
     },
@@ -658,46 +580,6 @@
     "debugMode": {
       "type": "boolean",
       "const": true
-    },
-    "brakeWindow": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "harness": {
-            "type": "string",
-            "enum": [
-              "claude-code",
-              "codex-cli",
-              "cursor",
-              "github-copilot-cli",
-              "opencode",
-              "pi",
-              "oh-my-pi",
-              "antigravity-cli"
-            ]
-          },
-          "canDeny": {
-            "type": "boolean"
-          },
-          "reason": {
-            "type": "string",
-            "enum": [
-              "harness",
-              "declared",
-              "bridge",
-              "bridge_absent",
-              "no_source"
-            ]
-          }
-        },
-        "required": [
-          "harness",
-          "canDeny",
-          "reason"
-        ],
-        "additionalProperties": false
-      }
     }
   },
   "required": [

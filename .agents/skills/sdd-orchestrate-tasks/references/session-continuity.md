@@ -8,7 +8,7 @@ Runs at every **boundary** the calling skill names (between tasks, slices, or wo
 
 ### Measure the context
 
-The **threshold** is 65% of the context window, where ContextBrake's `RED` zone starts. Pausing there leaves room to write the snapshot and ask before `CRITICAL` (75%), where ContextBrake blocks every tool except its plan, checkpoint, validation, and git commands, and the snapshot can no longer be written.
+The **threshold** is 65% of the context window, where ContextBrake's `RED` zone starts. Pausing there leaves room to write the snapshot and ask before `CRITICAL` (75%), where ContextBrake asks for the snapshot immediately and little room remains to write it. ContextBrake never blocks a tool call; with `snapshot.command` set, its `action=` names the snapshot command from the trigger zone on.
 
 - **Telemetry.** When a tool result carries a ContextBrake block (`[ContextBrake vN] … usage=<p>% … zone=<ZONE> …`), or the harness reports usage, use the latest reading: it is a measurement and overrides the estimate. `zone=RED` or `zone=CRITICAL` reaches the threshold at any `usage`.
 - **Estimate.** Without telemetry, add up what entered the context since the session started or last compacted: the fixed system and tool load (about 20k tokens), skills and sources read, tool outputs, diffs, and the text you wrote, at about 4 characters per token, against the model's window (200k tokens when unknown). Start from the estimate announced at the previous boundary and add only what came after; when in doubt, round up. A compaction in this session, or a low-context warning from the harness, reaches the threshold.

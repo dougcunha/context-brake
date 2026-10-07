@@ -13,7 +13,7 @@ import { diagnoseProject } from '../../core/services/doctor-service.js';
 import { readClaudeContextWindow } from '../../infrastructure/harnesses/claude-code/statusline-context-window.js';
 import { renderJsonOutput } from '../output/json.js';
 import { renderDoctorText } from '../output/text.js';
-import { collectDoctorSnapshots } from '../snapshot-helper.js';
+import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 
 async function readConfigSafely(root: string): Promise<{ config: ContextBrakeConfig | null; configError: Error | null }> {
@@ -30,13 +30,7 @@ async function readConfigSafely(root: string): Promise<{ config: ContextBrakeCon
 export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promise<number> {
   const { config, configError } = await readConfigSafely(env.projectRoot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
-  const allSnapshots = await collectDoctorSnapshots(env.projectRoot, config);
-  const protocolSnap = allSnapshots.find((s) => s.path === (config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md'))!;
-  const gitignoreSnap = allSnapshots.find((s) => s.path === '.gitignore')!;
-  const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
-  const instSnaps = allSnapshots.filter((s) => instTargets.includes(s.path));
-  const planSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.planFile ?? 'task_plan.json'));
-  const checkpointSnap = allSnapshots.find((s) => s.path === (config?.stateStorage.checkpointFile ?? 'state_checkpoint.json'));
+  const allSnapshots = await collectProjectSnapshots(env.projectRoot);
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest, { autoRestart: config?.autoRestart !== undefined });
   const sources = await collectHarnessSources(adapters, ctx);
@@ -45,8 +39,6 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const report = await diagnoseProject({
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,
     ...(args.harness.length > 0 ? { explicitHarnesses: args.harness } : {}), measurer,
-    instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap,
-    ...(planSnap ? { planSnapshot: planSnap } : {}), ...(checkpointSnap ? { checkpointSnapshot: checkpointSnap } : {}),
     manifest, allSnapshots, packageVersion, contextWindow: await readClaudeContextWindow(env.projectRoot),
     runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(), now: systemClock.now(),
   });

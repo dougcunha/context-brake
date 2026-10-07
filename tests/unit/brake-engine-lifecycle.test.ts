@@ -1,20 +1,20 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../../src/core/contracts/configuration.js';
 import type { RuntimeDescriptor, SessionKey, ToolCall } from '../../src/core/contracts/runtime.js';
-import type { BlockLog, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLine, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
+import type { LedgerLine, ResetReason, SessionLedger, ToolLine, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
 import { createBrakeEngine } from '../../src/core/services/brake-engine.js';
 import { LedgerUnreadableError } from '../../src/core/services/failure-policy.js';
 
 const AT = '2026-09-15T12:00:00.000Z';
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'pre_tool_block', state: 'supported' }, { id: 'tool_coverage', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
 
 function toolLine(observedCharacters: number, turn: number, toolUseId: string | null = `toolu_${turn}`): ToolLine {
   return { v: 1, type: 'tool', at: AT, toolUseId, observedCharacters, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: 'GREEN' };
 }
 function sessionLine(): LedgerLine {
-  return { v: 1, type: 'session', at: AT, harness: KEY.harness, sessionId: KEY.sessionId, agentId: null, brakeMode: 'enforced', brakeReason: null };
+  return { v: 1, type: 'session', at: AT, harness: KEY.harness, sessionId: KEY.sessionId, agentId: null };
 }
 class TestLedger implements SessionLedger {
   prunes = 0;
@@ -22,16 +22,15 @@ class TestLedger implements SessionLedger {
   readonly keys: SessionKey[] = [];
   constructor(readonly lines: LedgerLine[] = []) {}
   async readLines(): Promise<readonly LedgerLine[]> { if (this.failReads) throw new Error('unreadable'); return [...this.lines]; }
-  async appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'session', at: AT, harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input }); }
+  async appendSessionLine(key: SessionKey): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'session', at: AT, harness: key.harness, sessionId: key.sessionId, agentId: key.agentId }); }
   async appendToolLine(key: SessionKey, input: ToolLineInput): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'tool', at: AT, ...input }); }
   async appendResetLine(key: SessionKey, reason: ResetReason): Promise<void> { this.keys.push(key); this.lines.push({ v: 1, type: 'reset', at: AT, reason }); }
   async appendStatuslineLine(): Promise<void> { return undefined; }
   async pruneStaleSessions(): Promise<number> { this.prunes += 1; return 0; }
 }
-const blocks: BlockLog = { append: async () => Promise.resolve() };
 function setup(lines: LedgerLine[] = [], config: ContextBrakeConfig = DEFAULT_CONFIG) {
   const ledger = new TestLedger(lines);
-  return { ledger, engine: createBrakeEngine({ descriptor: DESCRIPTOR, config, ledger, blocks, readValidationCommand: async () => 'npm test', planPresence: { exists: async () => true } }) };
+  return { ledger, engine: createBrakeEngine({ descriptor: DESCRIPTOR, config, ledger }) };
 }
 
 describe('brake engine post-tool telemetry (RF12, RF13, CA-01, CA-06, TC-06)', () => {
@@ -47,7 +46,7 @@ describe('brake engine post-tool telemetry (RF12, RF13, CA-01, CA-06, TC-06)', (
   it('writes the derived session line on the first tool line', async () => {
     const { ledger, engine } = setup();
     await engine.handle({ kind: 'post_tool', session: KEY, tool: READ, toolUseId: 'toolu_1' }, { observedCharacters: 10 });
-    expect(ledger.lines[0]).toMatchObject({ type: 'session', brakeMode: 'enforced', brakeReason: null });
+    expect(ledger.lines[0]).toMatchObject({ type: 'session' });
     expect(ledger.lines[1]).toMatchObject({ type: 'tool', turn: 1, observedCharacters: 10 });
   });
   it('skips a duplicate call identifier and writes a green line below the threshold', async () => {
@@ -84,6 +83,6 @@ describe('brake engine lifecycle events (RF3, RF22, DEC-13, TC-21)', () => {
   it('surfaces an unreadable ledger as a dedicated error', async () => {
     const { ledger, engine } = setup();
     ledger.failReads = true;
-    await expect(engine.handle({ kind: 'pre_tool', session: KEY, tool: READ })).rejects.toBeInstanceOf(LedgerUnreadableError);
+    await expect(engine.handle({ kind: 'post_tool', session: KEY, tool: READ, toolUseId: null })).rejects.toBeInstanceOf(LedgerUnreadableError);
   });
 });

@@ -7,7 +7,7 @@ import { loadHarnessPayload } from '../helpers/harness-payloads.js';
 import { seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 type Handler = (payload: unknown, context?: unknown) => Promise<unknown>;
-type HookObject = { readonly 'tool.execute.before'?: Handler; readonly 'tool.execute.after'?: Handler; readonly event?: Handler };
+type HookObject = { readonly 'tool.execute.after'?: Handler; readonly event?: Handler };
 
 const PI_ASSET = resolve('dist/assets/runtime/pi-extension.js');
 const OMP_ASSET = resolve('dist/assets/runtime/omp-extension.js');
@@ -45,9 +45,7 @@ async function checkPi(root: string): Promise<void> {
   expect((rendered.content[1] as { text: string }).text).toContain('tokens=128000/200000 source=measured');
   await seedCriticalSession(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null });
   await expect(handlers.get('session_start')!({ reason: 'new' }, piContext(root, 'pi-reset', measured))).resolves.toBeUndefined();
-  const blocked = await handlers.get('tool_call')!({ toolName: 'read', input: { path: 'src/a.ts' } }, piContext(root, 'pi-critical', { tokens: 160000, contextWindow: 200000, percent: 80 })) as { block: boolean; reason: string };
-  expect(blocked).toMatchObject({ block: true });
-  expect(blocked.reason).toContain('zone=CRITICAL');
+  expect(handlers.has('tool_call')).toBe(false);
 }
 
 async function checkOmp(root: string): Promise<void> {
@@ -55,20 +53,16 @@ async function checkOmp(root: string): Promise<void> {
   await seedCriticalSession(root, { harness: 'oh-my-pi', sessionId: 'omp-built', agentId: null });
   const stop = await loadHarnessPayload('oh-my-pi', 'session-stop.json');
   await expect(handlers.get('session_stop')!(stop, piContext(root, 'omp-built', undefined))).resolves.toBeUndefined();
-  const blocked = await handlers.get('tool_call')!({ toolName: 'bash', input: { command: 'rm -rf x' } }, piContext(root, 'omp-built', { tokens: null, contextWindow: 128000 })) as { block: boolean; reason: string };
-  expect(blocked).toMatchObject({ block: true });
-  expect(blocked.reason).toContain('zone=CRITICAL');
+  expect(handlers.has('tool_call')).toBe(false);
 }
 
 async function checkOpenCode(root: string): Promise<void> {
   const hooks = await loadOpenCode({ directory: root });
-  const before = await loadHarnessPayload('opencode', 'tool-execute-before.json') as { input: Record<string, unknown>; output: unknown };
-  const green = { ...before.input, sessionID: 'opencode-green' };
-  const critical = { ...before.input, sessionID: 'opencode-critical' };
-  await expect(hooks['tool.execute.before']!(green, before.output)).resolves.toBeUndefined();
-  await expect(hooks['tool.execute.after']!(green, { args: { command: 'npm test' }, output: 'done' })).resolves.toBeUndefined();
+  const after = await loadHarnessPayload('opencode', 'tool-execute-after.json') as { input: Record<string, unknown>; output: unknown };
+  expect('tool.execute.before' in hooks).toBe(false);
+  await expect(hooks['tool.execute.after']!({ ...after.input, sessionID: 'opencode-green' }, after.output)).resolves.toBeUndefined();
   await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
-  await expect(hooks['tool.execute.before']!(critical, before.output)).rejects.toThrow('[ContextBrake v3] BLOCKED');
+  await expect(hooks['tool.execute.after']!({ ...after.input, sessionID: 'opencode-critical' }, after.output)).resolves.toBeUndefined();
   await expect(hooks.event!(await loadHarnessPayload('opencode', 'session-compacted.json'))).resolves.toBeUndefined();
 }
 
@@ -80,7 +74,7 @@ describe('built in-process extensions and plugin (RF5, RF12, RF17, RF21)', () =>
   });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('runs the built Pi extension: measured block, append, deny, and reset', async () => { await checkPi(root); });
+  it('runs the built Pi extension: measured block, append, no deny, and reset', async () => { await checkPi(root); });
   it('runs the built Oh-My-Pi extension with the session_stop notice', async () => { await checkOmp(root); });
-  it('runs the built OpenCode plugin: documented arguments, deny throw, and session reset', async () => { await checkOpenCode(root); });
+  it('runs the built OpenCode plugin: documented arguments, no deny, and session reset', async () => { await checkOpenCode(root); });
 });

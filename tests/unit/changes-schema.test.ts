@@ -4,13 +4,13 @@ import { CHANGE_OWNERS, changePlanSchema, fileChangeSchema, harnessInstallPlanSc
 describe('changes contracts schema validation', () => {
   it('validates a valid fileChange', () => {
     const change = {
-      path: 'CLAUDE.md',
-      realPath: '/repo/CLAUDE.md',
+      path: '.claude/settings.json',
+      realPath: '/repo/.claude/settings.json',
       kind: 'update' as const,
-      owner: 'instruction_block' as const,
+      owner: 'harness_entry' as const,
       beforeSha256: null,
       afterSha256: 'abc',
-      preview: { summary: 'Add block' },
+      preview: { summary: 'Add hook entry' },
       content: 'hello',
     };
     expect(fileChangeSchema.parse(change)).toEqual(change);
@@ -23,12 +23,16 @@ describe('changes contracts schema validation', () => {
 });
 
 describe('changes contract owner closed set (RF24, DEC-02)', () => {
-  it('accepts every closed owner including ignore_block', () => {
-    expect(CHANGE_OWNERS).toContain('ignore_block');
+  it('accepts every closed owner', () => {
     for (const owner of CHANGE_OWNERS) {
       const change = { path: '.gitignore', realPath: '/repo/.gitignore', kind: 'update' as const, owner, beforeSha256: null, afterSha256: null, preview: { summary: 'x' } };
       expect(fileChangeSchema.parse(change).owner).toBe(owner);
     }
+  });
+
+  it.each(['protocol', 'instruction_block', 'ignore_block'])('rejects the removed %s owner (prd-12 FR-08, DEC-11)', (owner) => {
+    const change = { path: 'x', realPath: '/repo/x', kind: 'update' as const, owner, beforeSha256: null, afterSha256: null, preview: { summary: 'x' } };
+    expect(fileChangeSchema.safeParse(change).success).toBe(false);
   });
 
   it('rejects an unknown owner', () => {
@@ -39,7 +43,7 @@ describe('changes contract owner closed set (RF24, DEC-02)', () => {
 
 describe('harness install plan contract (DEC-02, DEC-03)', () => {
   it('requires limitations alongside the derived support level', () => {
-    const plan = { harness: 'codex-cli' as const, outcome: 'planned' as const, supportLevel: 'partial' as const, limitations: [{ capability: 'tool_coverage' as const, impact: 'Hosted tools such as web search bypass Codex CLI hooks.' }] };
+    const plan = { harness: 'codex-cli' as const, outcome: 'planned' as const, supportLevel: 'full' as const, limitations: [{ capability: 'context_usage' as const, impact: 'Context usage is not exposed to Codex CLI hooks.' }] };
     expect(harnessInstallPlanSchema.parse(plan)).toEqual(plan);
     expect(harnessInstallPlanSchema.safeParse({ harness: 'codex-cli', outcome: 'planned', supportLevel: 'partial' }).success).toBe(false);
   });

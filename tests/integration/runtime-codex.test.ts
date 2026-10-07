@@ -29,12 +29,10 @@ describe('Codex CLI built hook answers documented payloads (TC-33, CA-10)', () =
     expect(output.hookSpecificOutput.additionalContext).toContain('zone=YELLOW');
   });
 
-  it('renders the deny shape above the ceiling', async () => {
+  it('stays silent on PreToolUse above the ceiling (prd-12 FR-07)', async () => {
     await seedCriticalSession(root, { harness: 'codex-cli', sessionId: 'critical', agentId: null });
-    const denied = await runInstalledHook(hook, 'PreToolUse', { session_id: 'critical', tool_name: 'Bash', tool_input: { command: 'rm -rf x' } });
-    const output = JSON.parse(denied.stdout) as { hookSpecificOutput: { hookEventName: string; permissionDecision: string; permissionDecisionReason: string } };
-    expect(output.hookSpecificOutput).toMatchObject({ hookEventName: 'PreToolUse', permissionDecision: 'deny' });
-    expect(output.hookSpecificOutput.permissionDecisionReason).toContain('reason=critical_ceiling');
+    const critical = await runInstalledHook(hook, 'PreToolUse', { session_id: 'critical', tool_name: 'Bash', tool_input: { command: 'rm -rf x' } });
+    expect(critical.stdout).toBe('');
   });
 });
 

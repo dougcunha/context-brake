@@ -14,7 +14,7 @@ async function loadCounters<T>(name: string): Promise<T> {
 
 async function runToolHandler(): Promise<void> {
   const mod = await loadCounters<{ counters: ToolCounters }>('in-process-handlers.mjs');
-  const samples = await sampleInProcess({ assetPath: join(FIXTURES, 'in-process-handlers.mjs'), event: 'tool_call', payload: { toolName: 'read', input: { path: 'a' } } });
+  const samples = await sampleInProcess({ assetPath: join(FIXTURES, 'in-process-handlers.mjs'), event: 'tool_result', payload: { toolName: 'read', input: { path: 'a' } } });
   expect(samples).toHaveLength(100);
   expect(mod.counters.toolCalls).toBe(110);
   expect(mod.counters.beforeAgentStart).toBe(0);
@@ -22,14 +22,14 @@ async function runToolHandler(): Promise<void> {
 }
 
 async function runMissingHandler(): Promise<void> {
-  const samples = await sampleInProcess({ assetPath: join(FIXTURES, 'in-process-missing.mjs'), event: 'tool_call', payload: {} });
+  const samples = await sampleInProcess({ assetPath: join(FIXTURES, 'in-process-missing.mjs'), event: 'tool_result', payload: {} });
   expect(samples).toBeNull();
 }
 
 async function runOpenCodeHandler(): Promise<void> {
   const mod = await loadCounters<{ counters: OpenCounters }>('in-process-opencode.mjs');
   const payload = { input: { tool: 'bash', sessionID: 's', callID: 'c' }, output: { args: { command: 'ls' } } };
-  const samples = await sampleInProcess({ assetPath: join(FIXTURES, 'in-process-opencode.mjs'), event: 'tool.execute.before', payload });
+  const samples = await sampleInProcess({ assetPath: join(FIXTURES, 'in-process-opencode.mjs'), event: 'tool.execute.after', payload });
   expect(samples).toHaveLength(100);
   expect(mod.counters.before).toBe(110);
   expect(mod.counters.badArgs).toBe(0);
@@ -43,9 +43,9 @@ describe('TC-04: in-process sampling selects the registered handler by event (FR
     Object.assign(open.counters, { before: 0, badArgs: 0 });
   });
 
-  it('runs only the tool_call handler across ten warm-ups and one hundred samples', runToolHandler);
+  it('runs only the tool_result handler across ten warm-ups and one hundred samples', runToolHandler);
   it('returns null instead of falling back when the named handler is absent', runMissingHandler);
-  it('invokes OpenCode tool.execute.before with the documented input and output arguments', runOpenCodeHandler);
+  it('invokes OpenCode tool.execute.after with the documented input and output arguments', runOpenCodeHandler);
   it('builds the documented synchronous ContextUsage shape and session manager', () => {
     const context = createBenchmarkContext();
     expect(context.getContextUsage()).toEqual({ tokens: 42000, contextWindow: 128000, percent: 33 });

@@ -28,9 +28,9 @@ describe('in-process deadline selection (FR-10, FR-11, DEC-11, DEC-12, TC-15)', 
   it('gives the session start its own limit, so the same work passes there and fails as a tool call', async () => {
     expect(await handle({ kind: 'session_reset', session: KEY, reason: 'new' })).toEqual({ kind: 'neutral' });
     expect(await errorLines()).toEqual([]);
-    await handle({ kind: 'pre_tool', session: KEY, tool: { name: 'Read', category: 'file_read', paths: [], command: null } });
+    await handle({ kind: 'post_tool', session: KEY, tool: { name: 'Read', category: 'file_read', paths: [], command: null }, toolUseId: null });
     const [line] = await errorLines();
-    expect(line).toMatchObject({ event: 'pre_tool', code: 'DEADLINE_EXCEEDED', phase: 'engine' });
+    expect(line).toMatchObject({ event: 'post_tool', code: 'DEADLINE_EXCEEDED', phase: 'engine' });
     expect(line?.['elapsedMs']).toEqual(expect.any(Number));
     expect(Number.isInteger(line?.['elapsedMs'])).toBe(true);
     expect(line?.['elapsedMs']).toBeGreaterThanOrEqual(0);

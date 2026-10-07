@@ -33,12 +33,12 @@ describe('runtime-state changed-file race leaves its directory unpruned (FR-09, 
 });
 
 describe('empty runtime-state directory pruning (FR-09, TC-05)', () => {
-  it('prunes an already-empty runtime directory when removeState is true', async () => {
+  it('prunes an already-empty runtime directory when pruneRuntime is true (DEC-04)', async () => {
     const dir = await realpath(await mkdtemp(join(tmpdir(), 'cb-empty-runtime-')));
     try {
       await mkdir(join(dir, '.context-brake/runtime/sessions'), { recursive: true });
       const plan = createChangePlan({ projectRoot: dir, plannedChanges: [], snapshots: [] });
-      const applier = new NodeChangeApplier({ removeState: true });
+      const applier = new NodeChangeApplier({ pruneRuntime: true });
       const report = await applier.apply(plan);
       expect(report.status).toBe('success');
       const runtimeExists = await stat(join(dir, '.context-brake/runtime')).then(() => true).catch(() => false);

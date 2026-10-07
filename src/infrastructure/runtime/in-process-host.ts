@@ -1,6 +1,6 @@
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey } from '../../core/contracts/runtime.js';
-import type { Clock, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLineInput } from '../../core/contracts/session-ledger.js';
+import type { Clock, LedgerLine, ResetReason, SessionLedger, ToolLineInput } from '../../core/contracts/session-ledger.js';
 import type { StatuslineLineInput } from '../../core/contracts/statusline-line.js';
 import type { RuntimeInput } from '../../core/services/brake-engine.js';
 import { failureDetail, failureErrorCode, resolveFailure } from '../../core/services/failure-policy.js';
@@ -38,7 +38,7 @@ export function createInProcessRuntime(input: InProcessRuntimeInput): InProcessR
 }
 async function handleFailure(input: { event: RuntimeEvent; error: unknown; config: ContextBrakeConfig; descriptor: RuntimeDescriptor; services: RuntimeServices; ledger: SessionLedger }): Promise<RuntimeDecision> {
   try {
-    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), timing: deadlineTiming(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors, readValidationCommand: input.services.readValidationCommand, planPresence: input.services.planPresence });
+    return await resolveFailure({ event: input.event, code: failureErrorCode(input.error), detail: failureDetail(input.error), timing: deadlineTiming(input.error), config: input.config, descriptor: input.descriptor, ledger: input.ledger, errors: input.services.errors });
   } catch {
     return { kind: 'neutral' };
   }
@@ -56,9 +56,9 @@ class CachedSessionLedger implements SessionLedger {
     this.cache.set(entryKey(key), lines);
     return lines;
   }
-  async appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void> {
-    await this.inner.appendSessionLine(key, input);
-    this.cache.get(entryKey(key))?.push({ v: 1, type: 'session', at: this.clock.now().toISOString(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input });
+  async appendSessionLine(key: SessionKey): Promise<void> {
+    await this.inner.appendSessionLine(key);
+    this.cache.get(entryKey(key))?.push({ v: 1, type: 'session', at: this.clock.now().toISOString(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId });
   }
   async appendToolLine(key: SessionKey, input: ToolLineInput): Promise<void> {
     await this.inner.appendToolLine(key, input);

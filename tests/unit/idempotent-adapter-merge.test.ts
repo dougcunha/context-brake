@@ -20,15 +20,15 @@ describe('UT-04: Repeated adapter merge is idempotent (CA-05)', () => {
   it('merges ContextBrake hooks three times idempotently while preserving user hooks', async () => {
     const claudeDir = join(tempDir, '.claude');
     await mkdir(claudeDir, { recursive: true });
-    const initialConfig = JSON.stringify({ hooks: { PreToolUse: [{ matcher: 'bash', hook: 'echo user-pre' }] } }, null, 2);
+    const initialConfig = JSON.stringify({ hooks: { PostToolUse: [{ matcher: 'bash', hook: 'echo user-post' }] } }, null, 2);
     await writeFile(join(claudeDir, 'settings.json'), initialConfig, 'utf8');
     const content1 = await applyClaudePlan(tempDir);
     const content2 = await applyClaudePlan(tempDir);
     const content3 = await applyClaudePlan(tempDir);
     expect(content2).toBe(content1);
     expect(content3).toBe(content1);
-    const parsed = JSON.parse(content3) as { hooks: { PreToolUse: unknown[] } };
-    expect(parsed.hooks.PreToolUse).toHaveLength(2);
-    expect(parsed.hooks.PreToolUse[0]).toEqual({ matcher: 'bash', hook: 'echo user-pre' });
+    const parsed = JSON.parse(content3) as { hooks: { PostToolUse: unknown[] } };
+    expect(parsed.hooks.PostToolUse).toHaveLength(2);
+    expect(parsed.hooks.PostToolUse[0]).toEqual({ matcher: 'bash', hook: 'echo user-post' });
   });
 });

@@ -33,9 +33,6 @@ function blockPayload(decision: unknown): string | null {
   const texts = content.flatMap((part) => (typeof (part as { text?: unknown }).text === 'string' ? [(part as { text: string }).text] : []));
   return texts.find((text) => text.startsWith('[ContextBrake v3]')) ?? null;
 }
-function isBlocked(decision: unknown): boolean {
-  return (decision as { block?: unknown } | undefined)?.block === true;
-}
 export type InProcessSessionInput = {
   readonly root: string;
   readonly harness: InProcessHarnessId;
@@ -51,12 +48,10 @@ function addLine(state: State, text: string): void {
   state.lines.push(text);
   state.tokenTotal += measureTokens(text) + 1;
 }
-async function runToolCall(state: State, step: SessionStep): Promise<HookOutcome> {
+function runToolCall(state: State, step: SessionStep): Promise<HookOutcome> {
   addLine(state, assistantText());
   addLine(state, JSON.stringify(toolInputOf(step.call)));
-  const payload = { toolName: toolNameOf(step.call), toolCallId: step.call.id, input: toolInputOf(step.call) };
-  const decision = await callHandler({ handlers: state.handlers, event: 'tool_call', payload, context: state.context });
-  return { allowed: !isBlocked(decision), response: JSON.stringify(decision ?? null) };
+  return Promise.resolve({ allowed: true, response: '' });
 }
 async function runToolResult(state: State, step: SessionStep, output: string): Promise<string | null> {
   addLine(state, output);

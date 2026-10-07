@@ -6,12 +6,10 @@ import { type CapabilityProfile, type DetectionSources, type HarnessId } from '.
 import type { InstallationManifest } from '../contracts/manifest.js';
 import { activeSessions } from './active-sessions.js';
 import { assetCurrencyFindings } from './asset-currency.js';
-import { brakeSessionFindings, type RuntimeStateReading } from './brake-session-checks.js';
+import { runtimeErrorFindings, type RuntimeStateReading } from './runtime-error-checks.js';
 import { detectHarnesses } from './detection-service.js';
 import { checkConfig } from './doctor-checks.js';
-import { delegatedSnapshotFindings } from './delegated-diagnostics.js';
 import { doctorReportExtras } from './doctor-report-extras.js';
-import { projectFileFindings } from './project-file-checks.js';
 import { buildDoctorReport } from './report-service.js';
 
 export type DoctorInput = {
@@ -23,11 +21,6 @@ export type DoctorInput = {
   sources: Partial<DetectionSources>;
   explicitHarnesses?: readonly HarnessId[];
   measurer?: OverheadMeasurer;
-  instructionSnapshots: readonly FileSnapshot[];
-  protocolSnapshot: FileSnapshot;
-  gitignoreSnapshot: FileSnapshot;
-  planSnapshot?: FileSnapshot;
-  checkpointSnapshot?: FileSnapshot;
   manifest: InstallationManifest | null;
   allSnapshots: readonly FileSnapshot[];
   packageVersion: string;
@@ -92,9 +85,7 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
     integrations.push(diagnostic);
     allFindings.push(...findings);
   }
-  allFindings.push(...projectFileFindings(input, effective));
-  if (input.runtimeState) allFindings.push(...brakeSessionFindings(input.runtimeState));
-  allFindings.push(...delegatedSnapshotFindings(input.config, [...targetIds]));
+  if (input.runtimeState) allFindings.push(...runtimeErrorFindings(input.runtimeState));
   const sessions = input.now === undefined ? [] : activeSessions(input.runtimeState?.ledgers ?? [], { now: input.now, zones: effective.telemetry.zones });
-  return buildDoctorReport({ detections, integrations, ...doctorReportExtras({ config: input.config, planPresent: input.planSnapshot?.exists ?? false, contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, sessions, integrations }, allFindings) });
+  return buildDoctorReport({ detections, integrations, ...doctorReportExtras({ config: input.config, planPresent: false, contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, sessions }, allFindings) });
 }

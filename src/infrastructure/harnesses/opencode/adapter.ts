@@ -62,11 +62,11 @@ export class OpenCodeAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'in_process',
-      event: 'tool.execute.before',
+      event: 'tool.execute.after',
       targetMilliseconds: 15,
       samplePayload: {
         input: { tool: 'bash', sessionID: 'bench-opencode', callID: 'call_bench' },
-        output: { args: { command: 'ls' } },
+        output: { args: { command: 'ls' }, output: 'file.txt' },
       },
     };
   }

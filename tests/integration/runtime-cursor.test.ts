@@ -16,21 +16,10 @@ beforeEach(async () => {
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('Cursor built hook with documented payloads (CA-15, TC-18)', () => {
-  it('answers a neutral pre-tool call with the required explicit allow', async () => {
-    const result = await runInstalledHook(hook, 'preToolUse', { conversation_id: 'c1', tool_name: 'Shell', tool_input: { command: 'ls' } });
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout)).toEqual({ permission: 'allow' });
-  });
-
-  it('denies a non-allowlisted shell call above the ceiling and allows git status', async () => {
+  it('writes nothing for an unregistered preToolUse event, even above the ceiling (prd-12 FR-07, TC-09)', async () => {
     await seedCriticalSession(root, { harness: 'cursor', sessionId: 'critical', agentId: null });
-    const denied = await runInstalledHook(hook, 'preToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'rm -rf x' } });
-    const shape = JSON.parse(denied.stdout) as { permission: string; agent_message: string; user_message: string };
-    expect(shape.permission).toBe('deny');
-    expect(shape.agent_message).toContain('reason=critical_ceiling');
-    expect(shape.user_message).toBe('ContextBrake blocked Shell: the session is above the critical ceiling.');
-    const allowed = await runInstalledHook(hook, 'preToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'git status' } });
-    expect(JSON.parse(allowed.stdout)).toEqual({ permission: 'allow' });
+    const critical = await runInstalledHook(hook, 'preToolUse', { conversation_id: 'critical', tool_name: 'Shell', tool_input: { command: 'rm -rf x' } });
+    expect([critical.code, critical.stdout]).toEqual([0, '']);
   });
 });
 

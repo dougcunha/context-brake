@@ -24,6 +24,5 @@ export const cursorPayloadSchema = z.looseObject({
   is_first_compaction: z.optional(z.boolean()),
 });
 
-export const cursorPreToolUsePayloadSchema = cursorPayloadSchema;
 export const cursorPostToolUsePayloadSchema = cursorPayloadSchema;
 export type CursorPayload = z.infer<typeof cursorPayloadSchema>;

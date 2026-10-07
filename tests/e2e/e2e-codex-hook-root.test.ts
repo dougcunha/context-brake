@@ -42,7 +42,7 @@ describe('E2E Codex hook execution (CR-07)', () => {
     const subDir = join(root, 'deep', 'sub', 'dir');
     await mkdir(subDir, { recursive: true });
     const config = JSON.parse(await readFile(join(root, '.codex/hooks.json'), 'utf8'));
-    const hook = config.hooks?.PreToolUse?.[0]?.hooks?.[0];
+    const hook = config.hooks?.PostToolUse?.[0]?.hooks?.[0];
     const isWin = process.platform === 'win32';
     const res = isWin
       ? await execShell('cmd.exe', ['/c', hook.commandWindows], subDir)

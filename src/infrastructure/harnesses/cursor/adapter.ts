@@ -62,13 +62,14 @@ export class CursorAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
-      event: 'preToolUse',
+      event: 'postToolUse',
       targetMilliseconds: 100,
       samplePayload: {
         conversation_id: 'bench-cursor',
-        hook_event_name: 'preToolUse',
+        hook_event_name: 'postToolUse',
         tool_name: 'Shell',
         tool_input: { command: 'ls' },
+        tool_output: 'file.txt',
         tool_use_id: 'toolu_bench',
       },
     };

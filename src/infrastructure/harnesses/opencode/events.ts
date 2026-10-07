@@ -1,6 +1,6 @@
 import type { RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
 import { asRecord, characterLength, parsePayload, textValue } from '../common/runtime-support.js';
-import { opencodeEventPayloadSchema, opencodeToolAfterOutputSchema, opencodeToolBeforeOutputSchema, opencodeToolExecuteInputSchema } from './schemas.js';
+import { opencodeEventPayloadSchema, opencodeToolAfterOutputSchema, opencodeToolExecuteInputSchema } from './schemas.js';
 
 const SHELL_TOOLS = ['bash'];
 const WRITE_TOOLS = ['write', 'edit'];
@@ -15,12 +15,6 @@ function toolOf(name: string | undefined, args: unknown): ToolCall {
   if (WRITE_TOOLS.includes(tool)) return { name: tool, category: 'file_write', paths: [path], command: null };
   if (READ_TOOLS.includes(tool)) return { name: tool, category: 'file_read', paths: [path], command: null };
   return { name: tool, category: 'other', paths: [], command: null };
-}
-
-export function mapOpenCodeToolCall(input: unknown, output: unknown, session: SessionKey): RuntimeEvent {
-  const data = parsePayload(opencodeToolExecuteInputSchema, input);
-  const args = parsePayload(opencodeToolBeforeOutputSchema, output ?? {}).args;
-  return { kind: 'pre_tool', session, tool: toolOf(data.tool, args) };
 }
 
 export function mapOpenCodeToolResult(input: unknown, output: unknown, session: SessionKey): RuntimeEvent {

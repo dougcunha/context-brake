@@ -7,12 +7,12 @@ function hasContext(ctx) {
 }
 
 export default function register(api) {
-  api.on('tool_call', async (event, ctx) => {
+  api.on('tool_result', async (event, ctx) => {
     counters.toolCalls += 1;
     if (!hasContext(ctx)) counters.badContext += 1;
     return {};
   });
-  api.on('tool_result', async () => ({}));
+  api.on('message_end', async () => ({}));
   api.on('before_agent_start', async () => {
     counters.beforeAgentStart += 1;
     return {};

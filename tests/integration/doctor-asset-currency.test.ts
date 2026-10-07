@@ -21,7 +21,7 @@ async function setupInstalledRepo(root: string): Promise<void> {
   await mkdir(join(root, '.cursor'), { recursive: true });
   await mkdir(join(root, '.github'), { recursive: true });
   const code = await runInit(
-    { command: 'init', dryRun: false, yes: true, json: true, harness: ['claude-code', 'cursor', 'github-copilot-cli'], excludeHarness: [], instructionFile: [], createInstructions: false, migrateLegacy: false },
+    { command: 'init', dryRun: false, yes: true, json: true, harness: ['claude-code', 'cursor', 'github-copilot-cli'], excludeHarness: [] },
     { projectRoot: root },
   );
   expect(code).toBe(0);
@@ -38,17 +38,14 @@ async function corruptManifestAsset(root: string, path: string, shaValue: string
 async function runDoctorReport(root: string) {
   const config = await new ProjectConfigStore(join(root, 'context-brake.config.json')).read();
   const manifest = await new NodeManifestStore(root).load();
-  const snapshots = await collectProjectSnapshots(root, config);
-  const protocolSnapshot = snapshots.find((s) => s.path === config.instructionFiles.protocolFile)!;
-  const gitignoreSnapshot = snapshots.find((s) => s.path === '.gitignore')!;
+  const snapshots = await collectProjectSnapshots(root);
   const adapters = getAllAdapters();
   const context = buildHarnessContext({ projectRoot: root }, manifest);
   const sources = await collectHarnessSources(adapters, context);
   const packageVersion = await readPackageVersion();
   return diagnoseProject({
     projectRoot: root, config, adapters, context, sources,
-    instructionSnapshots: snapshots.filter((s) => config.instructionFiles.targets.includes(s.path)),
-    protocolSnapshot, gitignoreSnapshot, manifest, allSnapshots: snapshots, packageVersion,
+    manifest, allSnapshots: snapshots, packageVersion,
   });
 }
 

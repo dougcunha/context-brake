@@ -27,7 +27,7 @@
 
 ## Contracts and data
 
-[Include only changed contracts: configuration, plan and checkpoint files, harness payloads, agent-facing text, `--json` output, and exit codes. For each one, document fields, types, requiredness, validation, schema version, compatibility, and necessary examples. Remove the section when it does not apply.]
+[Include only changed contracts: configuration, manifest and runtime ledgers, harness payloads, agent-facing text, `--json` output, and exit codes. For each one, document fields, types, requiredness, validation, schema version, compatibility, and necessary examples. Remove the section when it does not apply.]
 
 ## Integrations and interfaces
 

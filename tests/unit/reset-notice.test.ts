@@ -84,6 +84,6 @@ describe('reset notice channels per harness (RF22, DEC-12, TC-21)', () => {
   it('registers no notice channel for OpenCode', () => {
     const hooks = createOpenCodePlugin({ directory: ROOT });
     expect(hooks.event).toBeDefined();
-    expect(hooks['tool.execute.before']).toBeDefined();
+    expect(hooks['tool.execute.after']).toBeDefined();
   });
 });

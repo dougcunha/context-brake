@@ -62,9 +62,9 @@ export class OhMyPiAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'in_process',
-      event: 'tool_call',
+      event: 'tool_result',
       targetMilliseconds: 15,
-      samplePayload: { toolName: 'read', toolCallId: 'call_bench', input: { path: 'file.txt' } },
+      samplePayload: { toolName: 'read', toolCallId: 'call_bench', input: { path: 'file.txt' }, content: [{ type: 'text', text: 'file.txt' }] },
     };
   }
 }

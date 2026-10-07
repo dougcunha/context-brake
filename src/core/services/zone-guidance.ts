@@ -1,64 +1,23 @@
-import type { CheckpointMode, PlanPresence, ZoneGuidance } from '../contracts/checkpoint-mode.js';
-import type { ContextBrakeConfig } from '../contracts/configuration.js';
-import type { ToolCall } from '../contracts/runtime.js';
-import type { Zone } from '../contracts/zones.js';
-import { renderBlockMessage, renderFailureBlockMessage } from './block-message.js';
-import { isToolCallAllowed } from './brake-allowlist.js';
-import { delegatedGuidance } from './delegated-guidance.js';
-import { lightGuidance } from './light-guidance.js';
-import { compactZoneAction, isPlanAwareZone } from './zone-actions.js';
+import type { SnapshotConfig } from '../contracts/configuration.js';
+import { ZONES, type Zone } from '../contracts/zones.js';
+import { SESSION_RESET_SIGNAL } from './reset-notice.js';
 
-export type ValidationCommandSource = () => Promise<string | null>;
-export type GuidanceSources = {
-  readonly config: ContextBrakeConfig;
-  readonly planPresence?: PlanPresence | undefined;
-  readonly readValidationCommand: ValidationCommandSource;
-  readonly zone?: Zone | undefined;
+const RESUME_PREFIX = '[ContextBrake resume v1]';
+const GENERIC_ACTIONS: Readonly<Record<Zone, string>> = {
+  GREEN: 'work normally',
+  YELLOW: 'keep working; finish the current unit before large new explorations',
+  RED: 'finish or pause the current unit and tell the user what remains',
+  CRITICAL: 'stop starting new work; tell the user what remains',
 };
 
-export async function resolveCheckpointMode(config: ContextBrakeConfig, presence: PlanPresence | undefined): Promise<CheckpointMode> {
-  if (config.lightMode !== undefined) return 'light';
-  if (config.delegatedSnapshot === undefined || presence === undefined) return 'plan';
-  return (await presence.exists()) ? 'plan' : 'delegated';
+export function zoneAction(zone: Zone, snapshot: SnapshotConfig): string {
+  const command = snapshot.command;
+  if (command === undefined || zone === 'GREEN' || !isAtOrAbove(zone, snapshot.triggerZone)) return GENERIC_ACTIONS[zone];
+  return zone === 'CRITICAL' ? `run "${command}" now, then end reply with ${SESSION_RESET_SIGNAL}` : `run "${command}", then end reply with ${SESSION_RESET_SIGNAL}`;
 }
-export async function resolveGuidance(sources: GuidanceSources): Promise<ZoneGuidance> {
-  if (sources.config.lightMode !== undefined) return lightGuidance(sources.config, sources.config.lightMode);
-  const section = sources.config.delegatedSnapshot;
-  if (section === undefined) return planGuidance(sources, await isPlanPresentForActions(sources));
-  const planPresent = sources.planPresence === undefined ? true : await sources.planPresence.exists();
-  return planPresent ? planGuidance(sources, true) : delegatedGuidance(sources.config, section);
+export function resumeText(snapshot: SnapshotConfig): string | null {
+  return snapshot.resumeCommand === undefined ? null : `${RESUME_PREFIX} Run "${snapshot.resumeCommand}" before continuing.`;
 }
-async function isPlanPresentForActions(sources: GuidanceSources): Promise<boolean> {
-  if (sources.planPresence === undefined || sources.zone === undefined || !isPlanAwareZone(sources.zone)) return true;
-  return sources.planPresence.exists();
-}
-export async function resolveFailureGuidance(sources: GuidanceSources): Promise<ZoneGuidance> {
-  try {
-    return await resolveGuidance(sources);
-  } catch {
-    return unionGuidance(sources);
-  }
-}
-export function planGuidance(sources: GuidanceSources, planPresent = true): ZoneGuidance {
-  const { config } = sources;
-  return {
-    mode: 'plan',
-    actionFor: (zone) => compactZoneAction(zone, planPresent),
-    allows: (call) => isPlanCallAllowed(call, sources),
-    denyMessage: (input) => renderBlockMessage({ ...input, config }),
-    failureMessage: (tool) => renderFailureBlockMessage({ tool, config }),
-    resumeText: null,
-  };
-}
-async function isPlanCallAllowed(call: ToolCall, sources: GuidanceSources): Promise<boolean> {
-  const validationCommand = call.category === 'shell' ? await sources.readValidationCommand() : null;
-  return isToolCallAllowed(call, { config: sources.config, validationCommand });
-}
-function unionGuidance(sources: GuidanceSources): ZoneGuidance {
-  if (sources.config.lightMode !== undefined) return lightGuidance(sources.config, sources.config.lightMode);
-  const plan = planGuidance(sources);
-  const section = sources.config.delegatedSnapshot;
-  if (section === undefined) return plan;
-  const delegated = delegatedGuidance(sources.config, section);
-  return { ...delegated, allows: async (call) => (await delegated.allows(call)) || plan.allows(call) };
+function isAtOrAbove(zone: Zone, trigger: Zone): boolean {
+  return ZONES.indexOf(zone) >= ZONES.indexOf(trigger);
 }

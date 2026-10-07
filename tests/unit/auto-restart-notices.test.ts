@@ -5,7 +5,6 @@ import { appendLogRecord, buildLogRecord, renderRestartNotice, seedText } from '
 
 const encoding = getEncoding('o200k_base');
 const SEED_TOKEN_BUDGET = 60;
-const FULL_SEED = 'ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded. Follow the boot summary above.';
 const LIGHT_SEED = 'ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.';
 
 function recordsFilledToTheLimit() {
@@ -23,24 +22,18 @@ describe('notices (FR-10, TC-07)', () => {
 
   it('names the cause and the way out in the skip notices', () => {
     expect(renderRestartNotice('PAUSED_LOOP_GUARD')).toContain('Send a message to resume');
-    expect(renderRestartNotice('SKIP_CHECKPOINT_INVALID')).toContain('context-brake doctor');
     expect(renderRestartNotice('SKIP_DISABLED_ENV')).toContain('CONTEXT_BRAKE_AUTO_RESTART=0');
   });
 });
 
-describe('seed text (FR-02, DEC-14, TC-07)', () => {
-  it('builds the exact full-mode seed with the boot sentence', () => {
-    expect(seedText('checkpoint')).toBe(FULL_SEED);
+describe('seed text (FR-02, prd-12 FR-10)', () => {
+  it('builds the exact generic seed without mentioning the boot', () => {
+    expect(seedText()).toBe(LIGHT_SEED);
+    expect(seedText().toLowerCase()).not.toContain('boot');
   });
 
-  it('builds the exact light-mode seed without mentioning the boot', () => {
-    expect(seedText('signal-only')).toBe(LIGHT_SEED);
-    expect(seedText('signal-only').toLowerCase()).not.toContain('boot');
-  });
-
-  it('keeps both seeds inside the token budget', () => {
-    expect(encoding.encode(seedText('checkpoint')).length).toBeLessThan(SEED_TOKEN_BUDGET);
-    expect(encoding.encode(seedText('signal-only')).length).toBeLessThan(SEED_TOKEN_BUDGET);
+  it('keeps the seed inside the token budget', () => {
+    expect(encoding.encode(seedText()).length).toBeLessThan(SEED_TOKEN_BUDGET);
   });
 });
 

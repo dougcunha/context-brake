@@ -84,13 +84,14 @@ export class CodexAdapter implements HarnessAdapter {
     return {
       harness: this.id,
       executionModel: 'process',
-      event: 'PreToolUse',
+      event: 'PostToolUse',
       targetMilliseconds: 100,
       samplePayload: {
         session_id: 'bench-codex',
-        hook_event_name: 'PreToolUse',
+        hook_event_name: 'PostToolUse',
         tool_name: 'Bash',
         tool_input: { command: 'ls' },
+        tool_response: 'file.txt',
         tool_use_id: 'toolu_bench',
         cwd: '/repo',
       },

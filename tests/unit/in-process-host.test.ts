@@ -11,7 +11,7 @@ import { runtimeDirectory, sessionLedgerPath } from '../../src/infrastructure/ru
 
 const KEY: SessionKey = { harness: 'opencode', sessionId: 'session-1', agentId: null };
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'opencode', capabilities: [{ id: 'pre_tool_block', state: 'supported' }, { id: 'tool_coverage', state: 'unknown', impact: 'coverage unknown' }, { id: 'context_usage', state: 'unsupported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: null };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'opencode', capabilities: [{ id: 'context_usage', state: 'unsupported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: null };
 const clock: Clock = { now: () => new Date('2026-09-15T12:00:00.000Z') };
 
 function toolInput(turn: number, toolUseId: string | null = `toolu_${turn}`): ToolLineInput {
@@ -32,8 +32,8 @@ describe('in-process host decisions (TC-32, DEC-16)', () => {
     const ledger = new NodeSessionLedger(root, clock);
     for (let turn = 1; turn <= 12; turn += 1) await ledger.appendToolLine(KEY, { ...toolInput(turn), observedCharacters: 30000 });
     const write = vi.spyOn(process.stdout, 'write').mockImplementation(() => true);
-    const decision = await runtime.handle({ kind: 'pre_tool', session: KEY, tool: READ });
-    expect(decision).toMatchObject({ kind: 'deny', reason: 'critical_ceiling' });
+    const decision = await runtime.handle({ kind: 'post_tool', session: KEY, tool: READ, toolUseId: 'toolu_13' });
+    expect(decision).toMatchObject({ kind: 'context', block: expect.stringContaining('zone=CRITICAL') as unknown });
     expect(write).not.toHaveBeenCalled();
     write.mockRestore();
   });
@@ -58,7 +58,7 @@ describe('in-process failure fallback (DEC-09, TC-32)', () => {
 
   it('returns the neutral fallback and records an unreadable ledger', async () => {
     await mkdir(sessionLedgerPath(root, KEY), { recursive: true });
-    expect(await runtime.handle({ kind: 'pre_tool', session: KEY, tool: READ })).toEqual({ kind: 'neutral' });
+    expect(await runtime.handle({ kind: 'post_tool', session: KEY, tool: READ, toolUseId: null })).toEqual({ kind: 'neutral' });
     expect(await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8')).toContain('"code":"LEDGER_UNREADABLE"');
   });
 });

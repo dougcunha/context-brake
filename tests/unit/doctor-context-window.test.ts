@@ -1,14 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderDoctorText } from '../../src/cli/output/text.js';
 import type { HarnessAdapter } from '../../src/core/contracts/adapter.js';
-import type { FileSnapshot } from '../../src/core/contracts/changes.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import type { ContextWindowReport } from '../../src/core/contracts/context-window-report.js';
 import type { DoctorReport } from '../../src/core/contracts/diagnostics.js';
 import { diagnoseProject } from '../../src/core/services/doctor-service.js';
 
 const WINDOW: ContextWindowReport = { bridge: 'installed', source: 'statusline', lastWindowTokens: 1000000 };
-const SNAPSHOT: FileSnapshot = { path: 'x', realPath: '/repo/x', exists: false, content: null, sha256: null, isSymlink: false, fileIdentity: 'x' };
+const ABSENT: ContextWindowReport = { bridge: 'absent', source: 'contextWindowCeiling', lastWindowTokens: null };
 
 function adapter(id: HarnessAdapter['id']): HarnessAdapter {
   return {
@@ -19,10 +18,10 @@ function adapter(id: HarnessAdapter['id']): HarnessAdapter {
     diagnose: async () => [], benchmarkFixture: () => ({ harness: id, executionModel: 'process', event: 'PreToolUse', targetMilliseconds: 100, samplePayload: {} }),
   };
 }
-function diagnose(id: HarnessAdapter['id']): Promise<DoctorReport> {
+function diagnose(id: HarnessAdapter['id'], contextWindow: ContextWindowReport = WINDOW): Promise<DoctorReport> {
   return diagnoseProject({
     projectRoot: '/repo', config: { ...DEFAULT_CONFIG, activeHarnesses: [id] }, adapters: [adapter(id)], context: { projectRoot: '/repo' }, sources: {},
-    instructionSnapshots: [], protocolSnapshot: SNAPSHOT, gitignoreSnapshot: SNAPSHOT, manifest: null, allSnapshots: [], packageVersion: '1.0.0', contextWindow: WINDOW,
+    manifest: null, allSnapshots: [], packageVersion: '1.0.0', contextWindow,
   });
 }
 
@@ -51,5 +50,19 @@ describe('doctor context window section (FR-07, DEC-10, TC-17)', () => {
     vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => { output.push(String(chunk)); return true; });
     renderDoctorText({ schemaVersion: 1, command: 'doctor', status: 'healthy', exitCode: 0, detections: [], integrations: [], findings: [], contextWindow: { bridge: 'absent', source: 'contextWindowCeiling', lastWindowTokens: null } });
     expect(output.join('')).toContain('  - context window: contextWindowCeiling (bridge: absent, last window: unknown)');
+  });
+});
+
+describe('status line bridge finding (prd-12 FR-09, DEC-10, TC-14)', () => {
+  it('warns with Claude Code active and the bridge absent, without a brake window or blocking text', async () => {
+    const report = await diagnose('claude-code', ABSENT);
+    const finding = report.findings.find((entry) => entry.code === 'STATUSLINE_BRIDGE_ABSENT');
+    expect(finding).toMatchObject({ severity: 'warning', harness: 'claude-code' });
+    expect(`${finding?.message ?? ''} ${finding?.impact ?? ''}`).not.toMatch(/block/i);
+    expect('brakeWindow' in report).toBe(false);
+  });
+  it('stays silent with the bridge installed or Claude Code inactive', async () => {
+    expect((await diagnose('claude-code')).findings.some((entry) => entry.code === 'STATUSLINE_BRIDGE_ABSENT')).toBe(false);
+    expect((await diagnose('cursor', ABSENT)).findings.some((entry) => entry.code === 'STATUSLINE_BRIDGE_ABSENT')).toBe(false);
   });
 });

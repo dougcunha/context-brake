@@ -8,12 +8,12 @@ import type { SimulatedCall } from './scenarios.js';
 export const PROCESS_HARNESSES = ['claude-code', 'codex-cli', 'cursor', 'github-copilot-cli'] as const;
 export type ProcessHarnessId = (typeof PROCESS_HARNESSES)[number];
 
-type Surface = { readonly read: string; readonly write: string; readonly shell: string; readonly path: string; readonly pre: string; readonly post: string };
+type Surface = { readonly read: string; readonly write: string; readonly shell: string; readonly path: string; readonly post: string };
 const SURFACES: Record<ProcessHarnessId, Surface> = {
-  'claude-code': { read: 'Read', write: 'Write', shell: 'Bash', path: 'file_path', pre: 'PreToolUse', post: 'PostToolUse' },
-  'codex-cli': { read: 'Read', write: 'apply_patch', shell: 'Bash', path: 'file_path', pre: 'PreToolUse', post: 'PostToolUse' },
-  cursor: { read: 'Read', write: 'Write', shell: 'Shell', path: 'path', pre: 'preToolUse', post: 'postToolUse' },
-  'github-copilot-cli': { read: 'view', write: 'edit', shell: 'bash', path: 'path', pre: 'preToolUse', post: 'postToolUse' },
+  'claude-code': { read: 'Read', write: 'Write', shell: 'Bash', path: 'file_path', post: 'PostToolUse' },
+  'codex-cli': { read: 'Read', write: 'apply_patch', shell: 'Bash', path: 'file_path', post: 'PostToolUse' },
+  cursor: { read: 'Read', write: 'Write', shell: 'Shell', path: 'path', post: 'postToolUse' },
+  'github-copilot-cli': { read: 'view', write: 'edit', shell: 'bash', path: 'path', post: 'postToolUse' },
 };
 export function toolNameOf(harness: ProcessHarnessId, call: SimulatedCall): string {
   return call.tool === 'shell' ? SURFACES[harness].shell : (call.tool === 'write' ? SURFACES[harness].write : SURFACES[harness].read);
@@ -42,13 +42,6 @@ const PAYLOAD_BUILDERS: Record<ProcessHarnessId, PayloadBuilder> = {
   cursor: cursorPayload,
   'github-copilot-cli': copilotPayload,
 };
-function isDenied(harness: ProcessHarnessId, response: string): boolean {
-  if (response === '') return false;
-  const value = JSON.parse(response) as Record<string, unknown>;
-  if (harness === 'cursor') return value['permission'] === 'deny';
-  if (harness === 'github-copilot-cli') return value['permissionDecision'] === 'deny';
-  return (value['hookSpecificOutput'] as Record<string, unknown> | undefined)?.['permissionDecision'] === 'deny';
-}
 function contextBlock(harness: ProcessHarnessId, response: string): string | null {
   if (response === '') return null;
   const value = JSON.parse(response) as Record<string, unknown>;
@@ -67,7 +60,7 @@ function eventRequest(harness: ProcessHarnessId, sessionId: string, kind: 'reset
   return { event: 'SessionStart', payload: { session_id: sessionId, hook_event_name: 'SessionStart', source: kind } };
 }
 export async function installHarness(root: string, harness: ProcessHarnessId): Promise<void> {
-  const result = await runBuiltCli(['init', '--yes', '--no-light', '--harness', harness], root);
+  const result = await runBuiltCli(['init', '--yes', '--harness', harness], root);
   if (result.code !== 0) throw new Error(`context-brake init failed for ${harness}: ${result.stderr}`);
 }
 export type ProcessSession = SessionChannel & { readonly harness: ProcessHarnessId; readonly sessionId: string };
@@ -80,10 +73,7 @@ export function createProcessSession(input: { readonly root: string; readonly ha
   }
   return {
     harness: input.harness, sessionId: input.sessionId,
-    pre: async (step) => {
-      const result = await runInstalledHook(hook, ids.pre, build(step, null, ids.pre));
-      return { allowed: !isDenied(input.harness, result.stdout), response: result.stdout };
-    },
+    pre: async () => ({ allowed: true, response: '' }),
     post: async (step, output) => contextBlock(input.harness, (await runInstalledHook(hook, ids.post, build(step, output, ids.post))).stdout),
     reset: async () => {
       const req = eventRequest(input.harness, input.sessionId, 'reset');

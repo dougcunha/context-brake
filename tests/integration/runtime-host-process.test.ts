@@ -1,12 +1,11 @@
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import type { Clock, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
-import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths.js';
 import { seedBridgeWindow } from '../helpers/runtime-seed.js';
 
 const HOST_ENTRY = resolve('tests/fixtures/runtime-host/host-entry.ts');
@@ -40,16 +39,13 @@ describe('process hook host end to end (CMP-17, TC-15, TC-16)', () => {
   beforeEach(async () => { projectRoot = await mkdtemp(join(tmpdir(), 'cb-t04-e2e-')); });
   afterEach(async () => { await rm(projectRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('denies a code read above the ceiling, records the block, and exits zero', async () => {
+  it('stays neutral on a code read above the ceiling and exits zero (prd-12 FR-07)', async () => {
     await seedCriticalSession(projectRoot);
     await seedBridgeWindow(projectRoot, KEY, 128000);
     const result = await runHost('PreToolUse', { session_id: 'session-1', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_use_id: 'toolu_x' }, projectRoot);
     expect(result.code).toBe(0);
     expect(result.stderr).toBe('');
-    const decision = JSON.parse(result.stdout) as { kind: string; message?: string };
-    expect(decision.kind).toBe('deny');
-    expect(decision.message).toContain('reason=critical_ceiling');
-    expect(await readFile(join(runtimeDirectory(projectRoot), 'blocks.jsonl'), 'utf8')).toContain('"tool":"Read"');
+    expect(JSON.parse(result.stdout)).toEqual({ kind: 'neutral' });
   }, SPAWN_TIMEOUT_MS);
 
   it('returns neutral below the ceiling and appends the tool line', async () => {

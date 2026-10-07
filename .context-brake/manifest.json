@@ -5,30 +5,40 @@
     {
       "path": "context-brake.config.json",
       "kind": "config",
-      "sha256": "91b4a8d04f3bd8a5fa194db6dced09e303f34932df366e61ae1ef30769f9678c"
-    },
-    {
-      "path": "docs/context-brake-protocol.md",
-      "kind": "protocol",
-      "sha256": "3bdcdd3ecd3793d1123375e443e4140bc313d35c65505b2e6142b3836526479d"
+      "sha256": "5913bb90cddcb5ad912a0e7e91841fd8f852089bd314d1222fcc075639b03f9b"
     },
     {
       "path": ".claude/hooks/context-brake.mjs",
       "kind": "runtime_asset",
-      "sha256": "ff3eba004139ceb30d4b925f3e855ee9d67aa8ae678cd62dcd3493fd68031be3"
+      "sha256": "429680fc3d5685f9bcf7c11f8f33b73f0b13359f1627e6113dd79ae5a9279873"
     },
     {
       "path": ".claude/hooks/context-brake-statusline.mjs",
       "kind": "runtime_asset",
-      "sha256": "b0a6ea37f88d1f89c397bd6f5202e80271e3bd94ba854fc291b2ea4a9d0aa508"
+      "sha256": "9d9c4cf3a1fc47a21c8dd0c7e2832eaa3afaab48ffb9246a62510aa8239fa6cb"
+    },
+    {
+      "path": ".context-brake/claude-mod/.claude-plugin/marketplace.json",
+      "kind": "runtime_asset",
+      "sha256": "e71295f58bf141c4a90e3fe97fcc04a642915f377d37b5bce7792afe878e0d57"
+    },
+    {
+      "path": ".context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json",
+      "kind": "runtime_asset",
+      "sha256": "e5cad4f121bc7ea717f9cab17378383bcf4f165dcd06f1d6673db672a4f73ad8"
+    },
+    {
+      "path": ".context-brake/claude-mod/context-brake-restart/hooks/hooks.json",
+      "kind": "runtime_asset",
+      "sha256": "0dfcd8f97ca4751ac9ecd8a3e962b075b1412af9deb20b43ed72a4f5a8df5ddc"
+    },
+    {
+      "path": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs",
+      "kind": "runtime_asset",
+      "sha256": "c3fe331036d1d73775d0077ae41caac51431838c351f277e85bd8b351161676f"
     }
   ],
   "entries": [
-    {
-      "harness": "claude-code",
-      "path": ".claude/settings.json",
-      "identity": "PreToolUse|*|.claude/hooks/context-brake.mjs"
-    },
     {
       "harness": "claude-code",
       "path": ".claude/settings.json",

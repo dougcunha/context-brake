@@ -52,7 +52,7 @@ async function applySingleChange(change: FileChange): Promise<ApplyOutcome> {
 }
 
 export type ChangeApplierOptions = {
-  removeState?: boolean | undefined;
+  pruneRuntime?: boolean | undefined;
 };
 
 export class NodeChangeApplier implements ChangeApplier {
@@ -70,8 +70,8 @@ export class NodeChangeApplier implements ChangeApplier {
       outcomes.push(outcome);
       if (change.kind === 'delete' && outcome.status === 'applied') appliedDeletePaths.add(change.path);
     }
-    const removeState = this.options?.removeState ?? plan.changes.some((c) => c.owner === 'runtime_state');
-    outcomes.push(...await pruneEmptyContextBrakeDirectories({ root: plan.projectRoot, changes: plan.changes, appliedPaths: appliedDeletePaths, removeState }));
+    const pruneRuntime = this.options?.pruneRuntime ?? false;
+    outcomes.push(...await pruneEmptyContextBrakeDirectories({ root: plan.projectRoot, changes: plan.changes, appliedPaths: appliedDeletePaths, pruneRuntime }));
     for (const conflict of plan.conflicts) {
       outcomes.push({ path: conflict.path, status: 'skipped', detail: `${conflict.code}: ${conflict.detail}` });
     }

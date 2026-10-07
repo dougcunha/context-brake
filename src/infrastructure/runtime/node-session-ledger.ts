@@ -2,7 +2,7 @@ import { appendFile, readFile, stat, unlink } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { SessionKey } from '../../core/contracts/runtime.js';
 import { parseLedgerLines, resetLineSchema, sessionLineSchema, toolLineSchema, SESSION_RETENTION_DAYS } from '../../core/contracts/session-ledger.js';
-import type { Clock, LedgerLine, ResetReason, SessionLedger, SessionLineInput, ToolLineInput } from '../../core/contracts/session-ledger.js';
+import type { Clock, LedgerLine, ResetReason, SessionLedger, ToolLineInput } from '../../core/contracts/session-ledger.js';
 import { statuslineLineSchema, type StatuslineLineInput } from '../../core/contracts/statusline-line.js';
 import { listRuntimeStateFiles } from '../storage/runtime-state-files.js';
 import { ensureSessionDirectory, isMissingFileError, LEDGER_FILE_EXTENSION, sessionLedgerPath, SESSIONS_RELATIVE_PREFIX } from './runtime-paths.js';
@@ -20,8 +20,8 @@ export class NodeSessionLedger implements SessionLedger {
     return parseLedgerLines(content);
   }
 
-  async appendSessionLine(key: SessionKey, input: SessionLineInput): Promise<void> {
-    await this.append(key, sessionLineSchema.parse({ v: 1, type: 'session', at: this.timestamp(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId, ...input }));
+  async appendSessionLine(key: SessionKey): Promise<void> {
+    await this.append(key, sessionLineSchema.parse({ v: 1, type: 'session', at: this.timestamp(), harness: key.harness, sessionId: key.sessionId, agentId: key.agentId }));
   }
 
   async appendToolLine(key: SessionKey, input: ToolLineInput): Promise<void> {

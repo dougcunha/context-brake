@@ -21,7 +21,7 @@ const NEW_EVENTS: readonly NewEventGroup[] = [
   { harness: 'codex-cli', events: ['Stop'] },
   { harness: 'cursor', events: ['preCompact'] },
   { harness: 'github-copilot-cli', events: ['preCompact'] },
-  { harness: 'antigravity-cli', events: ['PreToolUse', 'PostToolUse'] },
+  { harness: 'antigravity-cli', events: ['PostToolUse'] },
 ];
 
 async function verifyIdempotentRegistration(tempDir: string, group: NewEventGroup): Promise<void> {

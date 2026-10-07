@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { CHANGE_OWNERS } from './changes.js';
-import { configurationSchema, delegatedSnapshotSchema } from './configuration.js';
+import { configurationSchema, SNAPSHOT_TRIGGER_ZONES } from './configuration.js';
 import { contextWindowReportSchema } from './context-window-report.js';
-import { lightModeSchema } from './light-mode.js';
 import { CAPABILITY_IDS, CAPABILITY_STATES, DETECTION_ORIGINS, DETECTION_STATES, HARNESS_IDS, SUPPORT_LEVELS } from './harness.js';
 import { USAGE_SOURCES, ZONES } from './zones.js';
 
@@ -22,33 +21,12 @@ const harnessPlan = z.object({ harness: z.enum(HARNESS_IDS), outcome: z.enum(['p
 const outcome = z.object({ path: z.string(), status: z.enum(['planned', 'applied', 'unchanged', 'skipped', 'failed']), detail: z.string().nullable() }).strict();
 const plan = z.object({ schemaVersion: z.literal(1), projectRoot: z.string(), changes: z.array(fileChange), conflicts: z.array(conflict), harnesses: z.array(harnessPlan), requiresConfirmation: z.boolean() }).strict();
 export const installReportSchema = z.object({ schemaVersion: z.literal(1), command: z.enum(['init', 'remove']), mode: z.enum(['dry_run', 'applied']), status: z.enum(['success', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), plan, outcomes: z.array(outcome), findings: z.array(finding) }).strict();
-const checkpointMode = z.object({ effective: z.enum(['plan', 'delegated', 'light']), reason: z.enum(['no_section', 'plan_present', 'plan_missing', 'light_mode']), delegatedSnapshot: z.nullable(delegatedSnapshotSchema), lightMode: z.optional(lightModeSchema) }).strict();
+const snapshotReport = z.object({ triggerZone: z.enum(SNAPSHOT_TRIGGER_ZONES), command: z.string().nullable(), resumeCommand: z.string().nullable() }).strict();
 const sessionUsage = z.object({ percentage: z.number().int().nonnegative(), usedTokens: z.number().int().nonnegative(), windowTokens: z.number().int().positive(), zone: z.enum(ZONES), source: z.enum(USAGE_SOURCES), at: z.string() }).strict();
 const activeSession = z.object({ harness: z.enum(HARNESS_IDS), sessionId: z.string().nullable(), lastActivityAt: z.string(), usage: sessionUsage.nullable() }).strict();
-const brakeWindowEntry = z.object({ harness: z.enum(HARNESS_IDS), canDeny: z.boolean(), reason: z.enum(['harness', 'declared', 'bridge', 'bridge_absent', 'no_source']) }).strict();
-export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding), checkpointMode: checkpointMode.optional(), contextWindow: contextWindowReportSchema.optional(), activeSessions: z.array(activeSession).optional(), debugMode: z.optional(z.literal(true)), brakeWindow: z.optional(z.array(brakeWindowEntry)) }).strict();
-const stepStatus = z.enum(['PENDING', 'IN_PROGRESS', 'COMPLETED', 'FAILED']);
-const statusStep = z.object({ id: z.union([z.string(), z.number().int()]), title: z.string(), status: stepStatus }).strict();
-const statusPlan = z.object({ taskId: z.string(), title: z.string(), currentStepId: z.union([z.string(), z.number().int()]).nullable(), activeStep: statusStep.nullable(), steps: z.array(statusStep) }).strict();
-const statusCheckpoint = z.object({ timestamp: z.string().nullable(), lastCommitHash: z.string().nullable(), branch: z.string().nullable(), constraintsCount: z.number().int().nonnegative(), decisionsCount: z.number().int().nonnegative() }).strict();
-const statusFileIssues = z.object({ path: z.string(), rule: z.string() }).strict();
-const statusFileValidity = z.object({ path: z.string(), exists: z.boolean(), valid: z.boolean(), issues: z.array(statusFileIssues) }).strict();
-const statusFiles = z.object({ plan: statusFileValidity, checkpoint: statusFileValidity }).strict();
-const gitDivergence = z.union([
-  z.object({ kind: z.literal('checks_omitted'), reason: z.string() }).strict(),
-  z.object({ kind: z.literal('missing_commit'), recordedCommit: z.string() }).strict(),
-  z.object({ kind: z.literal('outside_history'), recordedCommit: z.string(), currentCommit: z.string().nullable() }).strict(),
-  z.object({ kind: z.literal('pending_changes') }).strict(),
-  z.object({ kind: z.literal('branch_changed'), recordedBranch: z.string(), currentBranch: z.string().nullable() }).strict(),
-]);
-const statusGit = z.object({ status: z.enum(['available', 'unavailable']), branch: z.string().nullable(), headCommit: z.string().nullable(), cleanWorkingTree: z.boolean().nullable(), divergences: z.array(gitDivergence) }).strict();
-export const planStatusReportSchema = z.object({
-  schemaVersion: z.literal(1), command: z.literal('plan'), subcommand: z.literal('status'),
-  status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]),
-  plan: statusPlan.nullable(), checkpoint: statusCheckpoint.nullable(), files: statusFiles, findings: z.array(finding), git: statusGit.nullable().optional(),
-}).strict();
-export const CLI_ERROR_COMMANDS = ['init', 'remove', 'doctor', 'plan', 'wrap', 'run'] as const;
-export const CLI_ERROR_CODES = ['INVALID_CONTEXTBRAKE_CONFIG', 'CONFIRMATION_REQUIRED', 'UNEXPECTED_ERROR', 'INVALID_STATE_FILE', 'RUN_HARNESS_UNSUPPORTED', 'RUN_HARNESS_MISSING', 'RUN_PLAN_NOT_RUNNABLE', 'RUN_IN_PROGRESS'] as const;
+export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding), snapshot: snapshotReport.optional(), contextWindow: contextWindowReportSchema.optional(), activeSessions: z.array(activeSession).optional(), debugMode: z.optional(z.literal(true)) }).strict();
+export const CLI_ERROR_COMMANDS = ['init', 'remove', 'doctor'] as const;
+export const CLI_ERROR_CODES = ['INVALID_CONTEXTBRAKE_CONFIG', 'CONFIRMATION_REQUIRED', 'UNEXPECTED_ERROR'] as const;
 const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(CLI_ERROR_COMMANDS), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
 export const cliErrorSchema = z.union([
   z.object({ ...cliErrorBase, exitCode: z.literal(64), error: z.object({ code: z.literal('INVALID_ARGUMENTS'), message: z.string() }).strict() }).strict(),
@@ -57,8 +35,7 @@ export const cliErrorSchema = z.union([
 ]);
 export type DiagnosticFinding = z.infer<typeof diagnosticFindingSchema>;
 export type DoctorReport = z.infer<typeof doctorReportSchema>;
-export type CheckpointModeReport = NonNullable<DoctorReport['checkpointMode']>;
-export type PlanStatusReport = z.infer<typeof planStatusReportSchema>;
+export type SnapshotReport = NonNullable<DoctorReport['snapshot']>;
 export type InstallReport = z.infer<typeof installReportSchema>;
 export type CliErrorDocument = z.infer<typeof cliErrorSchema>;
 export type OverheadMeasurement = z.infer<typeof overhead>;

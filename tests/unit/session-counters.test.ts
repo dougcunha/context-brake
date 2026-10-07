@@ -5,7 +5,7 @@ import { nextTurn, summarizeLedger } from '../../src/core/services/session-count
 const AT = '2026-09-15T10:00:00.000Z';
 
 function sessionLine(): SessionLine {
-  return { v: 1, type: 'session', at: AT, harness: 'claude-code', sessionId: 's1', agentId: null, brakeMode: 'enforced', brakeReason: null };
+  return { v: 1, type: 'session', at: AT, harness: 'claude-code', sessionId: 's1', agentId: null };
 }
 function toolLine(overrides: Partial<ToolLine> = {}): ToolLine {
   return { v: 1, type: 'tool', at: AT, toolUseId: 'toolu_1', observedCharacters: 100, turn: 1, usedTokens: 15100, windowTokens: 128000, estimatedTokens: 15100, source: 'estimated', zone: 'GREEN', ...overrides };
@@ -55,7 +55,7 @@ describe('session counter resets and deduplication (RF1, RF3, CA-06, CA-07)', ()
   it('keeps the session line across a reset', () => {
     const summary = summarizeLedger([sessionLine(), resetLine('clear')]);
     expect(summary.turns).toBe(0);
-    expect(summary.sessionLine?.brakeMode).toBe('enforced');
+    expect(summary.sessionLine?.type).toBe('session');
   });
 });
 

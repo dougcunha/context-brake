@@ -8,7 +8,7 @@ import { usageSteps } from '../support/harness-simulator/agent-profiles.js';
 import { IN_PROCESS_HARNESSES, createInProcessSession, type InProcessHarnessId } from '../support/harness-simulator/in-process-driver.js';
 import { createProcessSession, installHarness } from '../support/harness-simulator/process-driver.js';
 import { SessionRecorder, readLedgerLines, runScript } from '../support/harness-simulator/session-recorder.js';
-import { OUTPUT_KINDS, PLAN_FILE, SIMULATED_WINDOWS, planContent, type OutputKind, type SimulatedWindow } from '../support/harness-simulator/scenarios.js';
+import { OUTPUT_KINDS, SIMULATED_WINDOWS, type OutputKind, type SimulatedWindow } from '../support/harness-simulator/scenarios.js';
 
 const USAGE_TURNS = 12;
 const OUTPUT_CHARACTERS = 5000;
@@ -27,7 +27,6 @@ async function createFixture(window: SimulatedWindow): Promise<string> {
   await writeRuntimeConfig(root, window);
   await mkdir(join(root, 'src'), { recursive: true });
   await writeFile(join(root, 'src/app.ts'), 'export const app = true;\n', 'utf8');
-  await writeFile(join(root, PLAN_FILE), planContent(), 'utf8');
   return root;
 }
 type MeasuredInput = { readonly root: string; readonly harness: InProcessHarnessId; readonly window: SimulatedWindow; readonly kind: OutputKind };

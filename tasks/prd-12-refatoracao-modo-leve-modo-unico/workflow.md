@@ -1,0 +1,44 @@
+# Workflow and Decisions — prd-12-refatoracao-modo-leve-modo-unico
+
+## Feature Summary
+
+- Feature: `prd-12-refatoracao-modo-leve-modo-unico` (light mode as the only mode: remove plan/checkpoint/boot, `run`/`wrap`, and the tool-call deny; optional snapshot skill)
+- Workspace: `D:/MyProjects/ContextBrake`
+- Status: `completed` (accepted at HIL 3, DEC-HIL-03)
+- Git base: `1474f541e9cfedcd3c759e39580065525e10fd20` (branch `master`)
+- Pre-existing changes: untracked per-developer `.agents/settings.local.json`; untracked `tasks/prd-11-reinicio-automatico-no-claude-code/rtk/`; `tasks/triage-log.jsonl` with this request's triage line
+- Slice set (prefix `refatoracao-modo-leve`): this feature → `prd-13-refatoracao-modo-leve-testes-rapidos` → `prd-14-refatoracao-modo-leve-reinicio-multi-harness`. This workflow records the decisions shared by the set until each slice opens its own state.
+
+## Human Decisions Log
+
+| Decision ID | Date | Scope | Decision & Summary | Status |
+| --- | --- | --- | --- | --- |
+| DEC-PD-00 | 2026-10-06 | Request | Human text: "Vamos fazer uma refatoração pesada no contextBrake. Vamos remover a feature que usa o snapshot/checkpoint, deixando apenas o modo leve disponível com suporte a chamada automatica da skill de snapshot se configurado. Se não tiver, vai apenas injetar os headers de zona [...] Paralelo a isso, vamos simplificar os testes. [...] Os testes não podem demorar mais que 2 minutos, no máximo, idealmente 1 minuto. [...] Também vamos focar em implementar nos harnesses que suportam a mesma feature que implementamos no claude code [...] ou se não tiver injeta uma instrução para a llm salvar um handoff em markdown [...]". | RECORDED |
+| DEC-HIL-00 | 2026-10-06 | Triage (HIL 0) | Rubric `sdd-full`, sliced through `sdd-orchestrate-prds` (three primary outcomes; S1, S2, S3, S5, S8 present). Human choice: "sdd-full fatiado (Recommended)". Record: last line of `tasks/triage-log.jsonl`. | APPROVED |
+| DEC-PD-01 | 2026-10-06 | `run` and `wrap` | "Remover run e wrap (Recommended)": PRD-04 runner goes away with plan mode. | APPROVED |
+| DEC-PD-02 | 2026-10-06 | Brake | "Sem negação, só avisos (Recommended)": no tool-call deny in any zone. | APPROVED |
+| DEC-PD-03 | 2026-10-06 | Migration | Human text: "Não se preocupe com migração. O contextBrake nunca foi liberado. Só é usado aqui nesse ambiente para testes. Não tem que manter compatibilidade com nada." | APPROVED |
+| DEC-SLICE-01 | 2026-10-06 | Slicing | "3 fatias, remoção primeiro (Recommended)": prd-12 modo-unico → prd-13 testes-rapidos (owns the 120 s budget) → prd-14 reinicio-multi-harness. Based on the 2026-10-06 measurement: 596 s wall, plan/run-related tests ~143 s. | APPROVED |
+| DEC-PD-04 | 2026-10-06 | prd-13 budget | "test e coverage; bench separado (Recommended)": `npm test` and `npm run coverage` ≤ 120 s each; latency benchmarks and acceptance scale move to a separate script run by `release:check`. | APPROVED |
+| DEC-PD-05 | 2026-10-06 | prd-13 e2e | "Smoke mínimo por comando (Recommended)": built-CLI e2e reduced to one per command and one hook round trip per harness; the rest in process; `AGENTS.md` updated. | APPROVED |
+| DEC-PD-06 | 2026-10-06 | prd-14 handoff trigger | "Só com reinício automático ligado (Recommended)": markdown handoff only when automatic restart is on and no snapshot skill is configured; otherwise zone headers only. | APPROVED |
+| DEC-PD-07 | 2026-10-06 | prd-14 harness scope | "Pi, Oh-My-Pi e sonda no OpenCode (Recommended)": automatic restart where a probe verifies the API; semi-automatic (notice + resume injected at session start) elsewhere. | APPROVED |
+| DEC-PD-08 | 2026-10-06 | prd-14 handoff file | ".context-brake/handoff.md, arquivado (Recommended)": runtime directory, archived after resume. | APPROVED |
+| DEC-HIL-01 | 2026-10-06 | HIL 1 (sliced set) | "Aprovar os três (Recommended)": PRDs of prd-12, prd-13 and prd-14 approved (hashes in each checkpoint's `approved_sources`). Session: "Continuar nesta sessão" at ~50% estimated. | APPROVED |
+| DEC-HIL-02 | 2026-10-06 | HIL 2 | "Aprovar (Recommended)": TechSpec (DEC-01..DEC-16) and DAG T01-T07 approved, with authorization to implement and to correct within these contracts (hashes in `checkpoint.json#approved_sources`). CLI QA at step 6: "Só revisão de código (Recommended)" — no independent QA run; e2e rewrites and MA-01 in T07 cover the CLI flow. Session: "Encerrar e retomar em nova sessão (Recommended)" at 62% measured. | APPROVED |
+| DEC-AMEND-01 | 2026-10-06 | FR-07 criterion (DEC-07) | "Aprovar a emenda (Recommended)": FR-07 acceptance now reads "no harness adapter installs or handles a pre-tool hook"; requirement ID unchanged; prd.md re-hashed. | APPROVED |
+| DEC-PROC-01 | 2026-10-06 | Validation cadence T04-T07 | Human text: "sim, siga assim" to the proposal: each task runs only the suites it touches plus lint, typecheck, and schemas:check; one full `npm run coverage` runs once after T07, before the delegated review. End the session after T03 at ~62% measured context. | APPROVED |
+| DEC-PROC-02 | 2026-10-06 | Test runs between tasks | Human text, on stopping a full-suite run during T03: "6 a 10 minutos? Não tem como rodar só os testes relacionados? A ideia aqui é matar codigo para que os testes fiquem rapidos." Each task runs only its related suites; failures owned by later tasks are listed in the handoff instead of being chased by a full run. DEC-PROC-01 still places the one full `npm run coverage` after T07. | APPROVED |
+| DEC-T05-01 | 2026-10-06 | T05 doctor benchmark | Exception decision: `doctor` runs the overhead benchmark on every run, and a post-tool sample would write a `bench-*` session into the project ledger. Human choice: "Post-tool em dir temporário (Recommended)": the benchmark measures the post-tool event by running the asset in a temporary copy of the project, so nothing is written to the user runtime directory. | APPROVED |
+| DEC-T07-01 | 2026-10-06 | T07 repository config | Human choice: "/sdd-snapshot + /sdd-orchestrate-flow (Recommended)": this repository's `snapshot` is `{ triggerZone: RED, command: "/sdd-snapshot", resumeCommand: "/sdd-orchestrate-flow" }`. | APPROVED |
+| REC-SET-01 | 2026-10-06 | Set check | Agent reconciliation at the set check: prd-12 FR-06 no longer asks for the reset marker without a snapshot command (restart fires only with a skill until prd-14); trigger zone became its own setting (FR-04); FR-12 covers repository instructions and SDD skills that assume the deny; prd-14 FR-13 keeps handoffs on `remove`; prd-13 FR-03 notes the plan-based simulated suites leave in prd-12. Agent record, not a human decision. | RECORDED |
+| DEC-T07-02 | 2026-10-07 | MA-01 (d) failure (exception HIL) | Human choice: "Repetir com --debug (Recommended)". The maintainer reopens Claude Code with `claude --continue --debug`; the coordinator ends a reply with the marker and reads the debug log to see whether `turn.complete` reached the mod, before any code change. Evidence: `task_07.md#Handoff`. | APPROVED |
+| REC-T07-01 | 2026-10-07 | MA-01 (d) rerun | Agent record of the DEC-T07-02 outcome: under `claude --continue --debug` the marker reply made the mod log `RESTARTED`, run `/clear`, and submit the seed; `SessionStart:clear` injected the resume text. T07.6 closed and T07 moved to `done/`. The first attempt (11:54:56Z) stays unexplained, recorded as an open item. Evidence: `done/task_07.md#Handoff`. Not a human decision. | RECORDED |
+| DEC-HIL-RES-01 | 2026-10-07 | Reservations HIL (codereview_03, APPROVED WITH RESERVATIONS) | Human choice: "Corrigir OI-01, OI-03, OI-04 (Recommended)". Round 3 corrects OI-01 (`task_plan.json` test fixtures), OI-03 (`tasks.md` TC-01 row), and OI-04 (install text summary keyed on the config owner); OI-02 (unread `ToolCall` members) stays an accepted open item for prd-14. Session: "Continuar nesta sessão (Recommended)" at ~15% estimated. | APPROVED |
+| DEC-HIL-03 | 2026-10-07 | HIL 3 (acceptance) | Human choice: "Aceitar e commitar". Delivery accepted on codereview_04 (APPROVED WITH RESERVATIONS); OI-02 stays an accepted open item for prd-14; limitations accepted: NFR-01 (Linux/macOS unverified), NFR-04 (Claude Code overhead 163-223 ms vs 100 ms target, no baseline), O-07 (first MA-01 (d) failure unexplained), historical `RUNTIME_ERRORS_RECORDED`. `tasks.md` re-hashed to `43116ad88346…` (status, links, T13 row). Commit authorized, no push. Session: "Continuar nesta sessão (Recommended)". | APPROVED |
+
+## Recovery Events
+
+- 2026-10-06: state opened after `sdd-orchestrate-prds` wrote the three PRDs; HIL 1 pending for the whole set.
+- 2026-10-07: session `7a0aa04b` started by the mod restart (MA-01 (d) rerun); it closed T07 and delegated the review.
+- 2026-10-07: HIL 3 accepted (DEC-HIL-03); checkpoint completed and snapshot closed.

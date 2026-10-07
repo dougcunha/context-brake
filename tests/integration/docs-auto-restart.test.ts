@@ -16,17 +16,17 @@ function section(text: string, heading: string): string {
 }
 
 describe('automatic restart documentation (FR-11, TC-26)', () => {
-  it('describes switching on and off, the per-mode gate, requirements and doctor codes in the README', async () => {
+  it('describes switching on and off, the resume text, requirements and doctor codes in the README', async () => {
     const readme = section(await read('README.md'), '### Automatic Restart in Claude Code');
-    for (const topic of ['--auto-restart', '--no-auto-restart', 'full mode', 'light mode', 'CONTEXT_BRAKE_AUTO_RESTART=0', 'disableAllHooks', '--safe-mode', 'WSL', 'AUTO_RESTART_NOT_LOADED', 'context-brake remove']) expect(readme).toContain(topic);
+    for (const topic of ['--auto-restart', '--no-auto-restart', 'generic seed', 'snapshot.resumeCommand', 'CONTEXT_BRAKE_AUTO_RESTART=0', 'disableAllHooks', '--safe-mode', 'WSL', 'AUTO_RESTART_NOT_LOADED', 'context-brake remove']) expect(readme).toContain(topic);
     expect(readme).toContain(MINIMUM_VERSION);
     expect(readme).toContain(`verified on ${CHECKED_VERSION}`);
   });
 
-  it('tells the agent in the protocol that Claude Code clears the session itself', async () => {
-    const protocol = await read('docs/context-brake-protocol.md');
-    expect(protocol).toContain('context-brake init --auto-restart');
-    expect(protocol).toContain('[REQUEST_SESSION_RESET]');
+  it('tells the user in the telemetry specification that Claude Code can clear the session itself (prd-12 DEC-15)', async () => {
+    const telemetry = await read('docs/telemetry-block.md');
+    expect(telemetry).toContain('With automatic restart on, interactive Claude Code clears the session by itself');
+    expect(telemetry).toContain('[REQUEST_SESSION_RESET]');
   });
 
   it('records the verified mods behavior with date and version in the research file', async () => {

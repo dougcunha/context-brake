@@ -3,7 +3,6 @@ import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import type { HookPhase } from '../../src/core/contracts/hook-phase.js';
 import type { RuntimeDescriptor, SessionKey } from '../../src/core/contracts/runtime.js';
 import type { LedgerLine, SessionLedger } from '../../src/core/contracts/session-ledger.js';
-import type { BootDecision } from '../../src/core/services/boot-policy.js';
 import { DeadlineExceededError } from '../../src/core/services/failure-policy.js';
 import { handleSessionReset } from '../../src/core/services/session-reset-handler.js';
 import { deadlineFor, deadlineTiming, HookDeadline } from '../../src/infrastructure/runtime/hook-deadline.js';
@@ -23,14 +22,8 @@ function recordingLedger(phases: HookPhase[], mark: (phase: HookPhase) => void):
     appendToolLine: async () => undefined,
     appendResetLine: async () => { phases.push('ledger'); },
     appendStatuslineLine: async () => undefined,
-    pruneStaleSessions: async () => { mark('prune'); return 0; },
+    pruneStaleSessions: async () => { mark('prune'); await sleep(200); return 0; },
   };
-}
-async function slowGitBoot(onPhase?: (phase: HookPhase) => void): Promise<BootDecision> {
-  onPhase?.('boot_files');
-  onPhase?.('boot_git');
-  await sleep(200);
-  return { kind: 'none' };
 }
 
 describe('hook deadline selection (FR-10, DEC-11, TC-15)', () => {
@@ -53,13 +46,13 @@ describe('hook deadline selection (FR-10, DEC-11, TC-15)', () => {
 });
 
 describe('session reset phases (FR-11, DEC-12, TC-16)', () => {
-  it('reports the git step of the boot when the deadline elapses there', async () => {
+  it('reports the prune step when the deadline elapses there', async () => {
     const deadline = new HookDeadline(80, 'engine');
     const phases: HookPhase[] = [];
-    const options = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, ledger: recordingLedger(phases, deadline.mark), readValidationCommand: async () => null, readBoot: slowGitBoot, planPresence: { exists: async () => true } };
+    const options = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, ledger: recordingLedger(phases, deadline.mark) };
     const error: unknown = await deadline.run(handleSessionReset(options, { kind: 'session_reset', session: KEY, reason: 'new' }, deadline.mark)).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(DeadlineExceededError);
-    expect(deadlineTiming(error)).toMatchObject({ phase: 'boot_git' });
+    expect(deadlineTiming(error)).toMatchObject({ phase: 'prune' });
     expect(deadlineTiming(error)?.elapsedMs).toBeGreaterThanOrEqual(75);
     expect(phases).toEqual(['ledger']);
   });

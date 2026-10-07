@@ -71,8 +71,6 @@ let root: string;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cb-t08-overhead-'));
   await writeRuntimeConfig(root);
-  const plan = { currentStepId: 1, steps: [{ id: 1, status: 'IN_PROGRESS', validationCommand: 'npm test' }] };
-  await writeFile(join(root, 'task_plan.json'), JSON.stringify(plan), 'utf8');
 });
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
@@ -82,10 +80,10 @@ describe('runtime overhead targets (TC-22, CA-20, DEC-17)', () => {
     await measureProcessPath({ label: 'post-tool', event: 'PostToolUse', payload, cwd: root });
   });
 
-  it('measures critical pre-tool path with allowlist evaluation within overhead limit', async () => {
+  it('measures the critical post-tool path within overhead limit', async () => {
     await seedCriticalSession(root, { harness: 'claude-code', sessionId: 'bench-crit', agentId: null });
-    const payload = { session_id: 'bench-crit', tool_name: 'Bash', tool_input: { command: 'npm test' } };
-    await measureProcessPath({ label: 'pre-tool', event: 'PreToolUse', payload, cwd: root });
+    const payload = { session_id: 'bench-crit', tool_name: 'Bash', tool_input: { command: 'npm test' }, tool_response: 'ok' };
+    await measureProcessPath({ label: 'critical post-tool', event: 'PostToolUse', payload, cwd: root });
   });
 
   it('measures the post-tool path reading a 20 MB transcript at a path with spaces and accents (NFR-01, NFR-06, TC-16)', async () => {
@@ -97,10 +95,10 @@ describe('runtime overhead targets (TC-22, CA-20, DEC-17)', () => {
     await measureProcessPath({ label: 'post-tool 20 MB transcript', event: 'PostToolUse', payload, cwd: root });
   });
 
-  it('measures in-process tool_call handler within 15 ms limit', async () => {
-    const samples = await sampleInProcess({ assetPath: PI_ASSET, event: 'tool_call', payload: { toolName: 'read', input: { path: 'src/a.ts' } } });
+  it('measures in-process tool_result handler within 15 ms limit', async () => {
+    const samples = await sampleInProcess({ assetPath: PI_ASSET, event: 'tool_result', payload: { toolName: 'read', toolCallId: 'call_bench', input: { path: 'src/a.ts' }, content: [{ type: 'text', text: 'ok' }] }, projectRoot: root });
     const p95 = calculateNearestRankP95(samples ?? []);
-    console.log(`[overhead] in-process tool_call: n=${samples?.length ?? 0} p95=${p95 ?? 'n/a'}ms`);
+    console.log(`[overhead] in-process tool_result: n=${samples?.length ?? 0} p95=${p95 ?? 'n/a'}ms`);
     expect(p95).not.toBeNull();
     expect(p95!).toBeLessThanOrEqual(IN_PROCESS_TARGET_MS);
   });

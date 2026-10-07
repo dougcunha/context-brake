@@ -14,29 +14,12 @@
       "criticalPercentage": 75
     }
   },
-  "stateStorage": {
-    "planFile": "task_plan.json",
-    "checkpointFile": "state_checkpoint.json",
-    "instructCheckpointCommit": true,
-    "bootMaxTokens": 1000
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": "/sdd-snapshot",
+    "resumeCommand": "/sdd-orchestrate-flow"
   },
-  "instructionFiles": {
-    "targets": [
-      "CLAUDE.md",
-      "AGENTS.md"
-    ],
-    "protocolFile": "docs/context-brake-protocol.md"
-  },
-  "brake": {
-    "additionalAllowedCommands": []
-  },
-  "runner": {
-    "maxSessions": 20,
-    "maxTotalMinutes": 240,
-    "maxSessionMinutes": 30,
-    "maxTotalTokens": 5000000,
-    "validationTimeoutSeconds": 600,
-    "maxConsecutiveFailures": 2,
-    "criticalGraceSeconds": 120
+  "autoRestart": {
+    "maxConsecutiveRestarts": 2
   }
 }

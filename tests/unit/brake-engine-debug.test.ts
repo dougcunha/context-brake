@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../../src/core/contracts/configuration.js';
 import { createBrakeEngine } from '../../src/core/services/brake-engine.js';
 import { TELEMETRY_BLOCK_PREFIX } from '../../src/core/services/telemetry-block.js';
-import { CountingPresence, DELEGATED_DESCRIPTOR, DELEGATED_KEY, MemoryBlocks, MemoryLedger, toolCall } from '../helpers/delegated-fixtures.js';
+import { DELEGATED_DESCRIPTOR, DELEGATED_KEY, MemoryLedger, toolCall } from '../helpers/delegated-fixtures.js';
 
 const READ = toolCall({ name: 'Read', category: 'file_read', paths: ['src/app.ts'] });
 const LOW_USAGE = { measured: { tokens: 12800, contextWindow: 128000 } };
@@ -10,8 +10,7 @@ const DEBUG_LINE = ' debug_line="📊 ContextBrake: 10% · 12800/128000 (harness
 
 async function postToolDecision(config: ContextBrakeConfig) {
   const engine = createBrakeEngine({
-    descriptor: DELEGATED_DESCRIPTOR, config, ledger: new MemoryLedger([]), blocks: new MemoryBlocks(), planPresence: new CountingPresence(false),
-    readValidationCommand: async () => null,
+    descriptor: DELEGATED_DESCRIPTOR, config, ledger: new MemoryLedger([]),
   });
   return engine.handle({ kind: 'post_tool', session: DELEGATED_KEY, tool: READ, toolUseId: 'toolu_1' }, LOW_USAGE);
 }
@@ -27,11 +26,6 @@ describe('telemetry injection in the debug mode (FR-06, DEC-07, TC-09, TC-10)', 
   });
   it('stays neutral at 10% GREEN when the debug mode is off', async () => {
     expect(await postToolDecision({ ...DEFAULT_CONFIG, debug: false })).toEqual({ kind: 'neutral' });
-  });
-  it('injects the same block with the debug line in light mode (FR-06)', async () => {
-    const block = blockOf(await postToolDecision({ ...DEFAULT_CONFIG, debug: true, lightMode: { triggerZone: 'RED' } }));
-    expect(block).toContain(`${TELEMETRY_BLOCK_PREFIX} turn=1 usage=10%`);
-    expect(block).toContain(DEBUG_LINE);
   });
   it('leaves the stored injection mode unchanged', async () => {
     const config: ContextBrakeConfig = { ...DEFAULT_CONFIG, debug: true };

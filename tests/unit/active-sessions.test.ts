@@ -7,7 +7,7 @@ import { activeSessions, type HarnessLedger } from '../../src/core/services/acti
 const NOW = new Date('2026-09-26T12:00:00.000Z');
 const ZONES = DEFAULT_CONFIG.telemetry.zones;
 function minutesAgo(minutes: number): string { return new Date(NOW.getTime() - minutes * 60_000).toISOString(); }
-function sessionLine(sessionId: string, at: string): SessionLine { return { v: 1, type: 'session', at, harness: 'claude-code', sessionId, agentId: null, brakeMode: 'enforced', brakeReason: null }; }
+function sessionLine(sessionId: string, at: string): SessionLine { return { v: 1, type: 'session', at, harness: 'claude-code', sessionId, agentId: null }; }
 function toolLine(at: string, usedTokens = 64000): ToolLine { return { v: 1, type: 'tool', at, toolUseId: `t-${at}`, observedCharacters: 10, turn: 1, usedTokens, windowTokens: 128000, estimatedTokens: usedTokens, source: 'estimated', zone: 'YELLOW' }; }
 function statusLine(at: string, inputTokens: number): StatuslineLine { return { v: 1, type: 'statusline', at, windowTokens: 1000000, inputTokens, usedPercentage: null, model: null }; }
 function ledger(sessionId: string, lines: LedgerLine[]): HarnessLedger { return { harness: 'claude-code', lines: [sessionLine(sessionId, lines[0]?.at ?? minutesAgo(0)), ...lines] }; }

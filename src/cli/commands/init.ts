@@ -2,8 +2,7 @@ import { resolve } from 'node:path';
 import { isAutoRestartWanted } from '../../core/services/auto-restart-merge.js';
 import { assertAutoRestartTarget, assertStatuslineBridgeTarget, harnessSelection, type ParsedInitArgs } from '../init-arguments.js';
 import type { ProcessRunner } from '../../core/contracts/processes.js';
-import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
-import type { DiagnosticFinding, InstallReport } from '../../core/contracts/diagnostics.js';
+import type { InstallReport } from '../../core/contracts/diagnostics.js';
 import { ProjectConfigStore } from '../../infrastructure/storage/project-config-store.js';
 import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.js';
 import { NodeChangeApplier } from '../../infrastructure/storage/change-applier.js';
@@ -12,13 +11,11 @@ import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
 import { planInstallation } from '../../core/services/installation-service.js';
 import { buildInstallReport } from '../../core/services/report-service.js';
 import { renderJsonOutput } from '../output/json.js';
-import { findingPrintKey, renderInstallText, renderFinding } from '../output/text.js';
+import { renderInstallText } from '../output/text.js';
 import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 import { authorizeWrite } from '../confirmation.js';
 import { planConfigUpdates } from '../init-config-updates.js';
-import { isLightModeInEffect } from '../../core/services/light-mode-merge.js';
-import { lightDefaultAppliedFindings } from '../../core/services/light-default-findings.js';
 
 export type CommandEnv = { projectRoot: string; runner?: ProcessRunner; userHome?: string };
 
@@ -30,51 +27,27 @@ async function loadExistingConfig(root: string) {
   }
 }
 
-function outputReport(report: InstallReport, json: boolean, text: { printed?: ReadonlySet<string>; planHint?: boolean } = {}): number {
+function outputReport(report: InstallReport, json: boolean): number {
   if (json) {
     renderJsonOutput(report);
   } else {
-    renderInstallText(report, text.printed, text.planHint);
+    renderInstallText(report);
   }
   return report.exitCode;
-}
-
-async function loadInitSnapshots(root: string, config: ContextBrakeConfig | null, userFiles: readonly string[]) {
-  const allSnapshots = await collectProjectSnapshots(root, config, userFiles);
-  const protocolSnap = allSnapshots.find((s) => s.path === (config?.instructionFiles.protocolFile ?? 'docs/context-brake-protocol.md'))!;
-  const gitignoreSnap = allSnapshots.find((s) => s.path === '.gitignore')!;
-  const instTargets = config?.instructionFiles.targets ?? ['CLAUDE.md', 'AGENTS.md'];
-  const instSnaps = allSnapshots.filter((s) => instTargets.includes(s.path) || userFiles.includes(s.path));
-  return { allSnapshots, protocolSnap, gitignoreSnap, instSnaps };
-}
-
-export type PreviewGate = { json: boolean; yes: boolean; dryRun: boolean };
-
-export function emitLegacyPreview(findings: readonly DiagnosticFinding[], gate: PreviewGate): ReadonlySet<string> {
-  const printed = new Set<string>();
-  if (gate.json || gate.yes || gate.dryRun) return printed;
-  for (const finding of findings) {
-    if (finding.code !== 'LEGACY_BLOCK_DETECTED') continue;
-    process.stderr.write(`${renderFinding(finding)}\n`);
-    printed.add(findingPrintKey(finding.code, finding.path));
-  }
-  return printed;
 }
 
 export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<number> {
   const config = await loadExistingConfig(env.projectRoot);
   const updates = planConfigUpdates(config, args);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
-  const { allSnapshots, protocolSnap, gitignoreSnap, instSnaps } = await loadInitSnapshots(env.projectRoot, config, args.instructionFile);
+  const allSnapshots = await collectProjectSnapshots(env.projectRoot);
   const adapters = getAllAdapters();
-  const lightMode = isLightModeInEffect(config, { light: args.light ?? false, noLight: args.noLight ?? false });
   const ctx = buildHarnessContext(env, manifest, { statuslineBridge: args.statuslineBridge ?? 'default', autoRestart: isAutoRestartWanted(config?.autoRestart, updates.autoRestart) });
   const sources = await collectHarnessSources(adapters, ctx);
   const result = await planInstallation({
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources, selection: harnessSelection(args),
-    instructionSnapshots: instSnaps, protocolSnapshot: protocolSnap, gitignoreSnapshot: gitignoreSnap, allSnapshots,
-    createInstructions: args.createInstructions, migrateLegacy: args.migrateLegacy, previousManifest: manifest,
-    packageVersion: await readPackageVersion(), delegatedSnapshot: updates.delegatedSnapshot, lightMode: updates.lightMode, debug: updates.debug, autoRestart: updates.autoRestart,
+    allSnapshots, previousManifest: manifest,
+    packageVersion: await readPackageVersion(), snapshotUpdate: updates.snapshot, debug: updates.debug, autoRestart: updates.autoRestart,
   });
   assertStatuslineBridgeTarget(args.statuslineBridge, result.detections);
   assertAutoRestartTarget(args, result.detections);
@@ -82,12 +55,10 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
     const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: result.findings });
     return outputReport(report, args.json);
   }
-  const printed = emitLegacyPreview(result.findings, args);
   const confirmed = await authorizeWrite(args.yes, result.plan.requiresConfirmation, 'Apply ContextBrake installation plan?');
   if (!confirmed) return 0;
   const applier = new NodeChangeApplier();
   const applyReport = await applier.apply(result.plan);
-  const findings = [...result.findings, ...lightDefaultAppliedFindings(config, updates.lightMode)];
-  const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings });
-  return outputReport(report, args.json, { printed, planHint: !lightMode });
+  const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
+  return outputReport(report, args.json);
 }

@@ -2,7 +2,7 @@ import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
 import { appendJsonArrayItem, parseAndValidateJson, removeJsonArrayItem, removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 
 export const CODEX_HOOK_FILE = '.codex/hooks/context-brake.mjs';
-export const CODEX_EVENTS = ['PreToolUse', 'PostToolUse', 'SessionStart', 'Stop'] as const;
+export const CODEX_EVENTS = ['PostToolUse', 'SessionStart', 'Stop'] as const;
 
 export type CodexHook = { type: string; command: string; commandWindows?: string };
 export type CodexGroup = { matcher: string; hooks: CodexHook[] };

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CliArgumentError } from '../../src/cli/argument-validator.js';
 import type { HarnessDetection } from '../../src/core/contracts/harness.js';
 import { assertStatuslineBridgeTarget, parseInit } from '../../src/cli/init-arguments.js';
+import { parseCliArgs } from '../../src/cli/argument-parser.js';
 
 describe('init status line bridge flags (FR-01, FR-08, DEC-08, TC-15)', () => {
   it.each([
@@ -46,5 +47,18 @@ describe('init debug flags (TC-02, FR-01, FR-04)', () => {
     [['--debug', '--no-debug'], true, true],
   ])('parses %j as debug=%s and noDebug=%s', (args, debug, noDebug) => {
     expect(parseInit(args)).toMatchObject({ debug, noDebug });
+  });
+});
+
+describe('removed mode flags (prd-12 FR-02, TC-06)', () => {
+  it.each([['--light'], ['--no-light'], ['--snapshot-path', 'a.md'], ['--snapshot-skill', 'x'], ['--no-delegated-snapshot'], ['--instruction-file', 'A.md'], ['--create-instructions'], ['--migrate-legacy']])('rejects %s', (...args) => {
+    expect(() => parseInit(args)).toThrow();
+  });
+  it('rejects remove --remove-state (prd-12 FR-08, DEC-04)', () => {
+    expect(() => parseCliArgs(['remove', '--remove-state'])).toThrow();
+  });
+  it('maps the snapshot flags', () => {
+    expect(parseInit(['--snapshot-command', '/s', '--snapshot-trigger', 'YELLOW', '--resume-command', '/r']).snapshot).toEqual({ command: '/s', triggerZone: 'YELLOW', resumeCommand: '/r', clearCommand: false });
+    expect(parseInit(['--no-snapshot-command']).snapshot?.clearCommand).toBe(true);
   });
 });

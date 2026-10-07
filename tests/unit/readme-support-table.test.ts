@@ -20,10 +20,6 @@ function parseSupportTable(source: string): SupportTable {
   return { rows, source };
 }
 
-function pointerLine(source: string): string | undefined {
-  return source.split(/\r?\n/).find((line) => line.includes('<!-- CONTEXTBRAKE:START -->'));
-}
-
 const table = parseSupportTable(readFileSync(join(__dirname, '../../README.md'), 'utf8'));
 
 describe('README support table rows (T34, TC-13, DEC-12)', () => {
@@ -49,18 +45,15 @@ describe('README installation claims (T34, CR-05)', () => {
     expect(table.rows.get('oh-my-pi')?.[0]?.level).toBe('full');
   });
 
-  it('describes the canonical three-line instruction pointer', () => {
-    const pointer = pointerLine(table.source);
-    expect(pointer).toBeDefined();
-    expect(pointer).toContain('three-line');
-    expect(pointer).toContain('<!-- CONTEXTBRAKE:END -->');
-    expect(table.source).not.toMatch(/four[- ]line|4-line/i);
+  it('describes no instruction pointer or gitignore block (prd-12 FR-08, FR-12)', () => {
+    expect(table.source).not.toMatch(/CONTEXTBRAKE:(START|END)/);
+    expect(table.source).toContain('it never edits instruction files or `.gitignore`');
   });
 
-  it('reports the Antigravity pre-tool limitation without promising full coverage', () => {
+  it('reports the indirect Antigravity telemetry without promising full support (prd-12 DEC-08)', () => {
     const row = table.rows.get('antigravity-cli')?.[0];
     expect(row?.level).toBe('partial');
-    expect(row?.limitation).toContain('coverage in the CLI is unconfirmed');
+    expect(row?.limitation).not.toContain('PreToolUse');
     expect(row?.limitation).toContain('PreInvocation');
   });
 });

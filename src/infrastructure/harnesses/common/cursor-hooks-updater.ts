@@ -2,13 +2,12 @@ import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
 import { appendJsonArrayItem, parseAndValidateJson, removeJsonArrayItem, removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 
 export const CURSOR_HOOK_FILE = '.cursor/hooks/context-brake.mjs';
-const CURSOR_EVENTS = ['preToolUse', 'postToolUse', 'sessionStart', 'preCompact'] as const;
+const CURSOR_EVENTS = ['postToolUse', 'sessionStart', 'preCompact'] as const;
 
 type CursorEvent = (typeof CURSOR_EVENTS)[number];
-type CursorEntry = { command: string; failClosed?: boolean };
+type CursorEntry = { command: string };
 
 const CURSOR_DESIRED: Record<CursorEvent, CursorEntry> = {
-  preToolUse: { command: `node ${CURSOR_HOOK_FILE} preToolUse`, failClosed: true },
   postToolUse: { command: `node ${CURSOR_HOOK_FILE} postToolUse` },
   sessionStart: { command: `node ${CURSOR_HOOK_FILE} sessionStart` },
   preCompact: { command: `node ${CURSOR_HOOK_FILE} preCompact` },
@@ -22,8 +21,7 @@ export function isCursorOwned(entry: unknown): boolean {
 
 function matchesDesired(entry: unknown, desired: CursorEntry): boolean {
   if (typeof entry !== 'object' || entry === null) return false;
-  const e = entry as { command?: unknown; failClosed?: unknown };
-  return e.command === desired.command && Boolean(e.failClosed) === Boolean(desired.failClosed);
+  return (entry as { command?: unknown }).command === desired.command;
 }
 
 function isEmptyEventArray(text: string, event: CursorEvent): boolean {

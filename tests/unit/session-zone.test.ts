@@ -4,22 +4,24 @@ import type { RuntimeDescriptor, SessionKey } from '../../src/core/contracts/run
 import type { LedgerLine, SessionLedger, ToolLine } from '../../src/core/contracts/session-ledger.js';
 import { createBrakeEngine } from '../../src/core/services/brake-engine.js';
 import { summarizeLedger } from '../../src/core/services/session-counters.js';
-import { readZone, renderSessionTelemetry } from '../../src/core/services/session-zone.js';
-import { planGuidance } from '../../src/core/services/zone-guidance.js';
+import { readZone } from '../../src/core/services/session-zone.js';
+import { renderSessionTelemetry } from '../helpers/session-telemetry.js';
+import { zoneAction } from '../../src/core/services/zone-guidance.js';
 
 const AT = '2026-09-23T12:00:00.000Z';
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
 const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
 const SETTINGS = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG };
-const WITH_PLAN = planGuidance({ config: DEFAULT_CONFIG, readValidationCommand: async () => null }, true);
-const WITHOUT_PLAN = planGuidance({ config: DEFAULT_CONFIG, readValidationCommand: async () => null }, false);
+function ACTION_FOR(zone: Parameters<typeof zoneAction>[0]): string {
+  return zoneAction(zone, DEFAULT_CONFIG.snapshot);
+}
 
 function toolLines(characters: readonly number[]): ToolLine[] {
   return characters.map((observedCharacters, index) => ({ v: 1, type: 'tool', at: AT, toolUseId: `toolu_${index + 1}`, observedCharacters, turn: index + 1, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: 'GREEN' }));
 }
 function engineFor(lines: readonly LedgerLine[]) {
   const ledger: SessionLedger = { readLines: async () => lines, appendSessionLine: async () => undefined, appendToolLine: async () => undefined, appendResetLine: async () => undefined, appendStatuslineLine: async () => undefined, pruneStaleSessions: async () => 0 };
-  return createBrakeEngine({ descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, ledger, blocks: { append: async () => undefined }, readValidationCommand: async () => null, planPresence: { exists: async () => true } });
+  return createBrakeEngine({ descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, ledger });
 }
 
 describe('session zone extraction matches the brake engine (TC-16, DEC-20)', () => {
@@ -31,21 +33,21 @@ describe('session zone extraction matches the brake engine (TC-16, DEC-20)', () 
     const lines = toolLines(characters);
     const decision = await engineFor(lines).handle({ kind: 'pre_invocation', session: KEY });
     const summary = summarizeLedger(lines);
-    expect(decision).toEqual({ kind: 'context', block: renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, WITH_PLAN.actionFor) });
+    expect(decision).toEqual({ kind: 'context', block: renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, ACTION_FOR) });
   });
 
   it('renders a block below the activation threshold, where the engine stays neutral (CA-12)', async () => {
     const lines = toolLines([100]);
     const summary = summarizeLedger(lines);
     expect(await engineFor(lines).handle({ kind: 'pre_invocation', session: KEY })).toEqual({ kind: 'neutral' });
-    expect(renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, WITH_PLAN.actionFor)).toMatch(/^\[ContextBrake v3\] turn=1 .* zone=GREEN /);
+    expect(renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, ACTION_FOR)).toMatch(/^\[ContextBrake v3\] turn=1 .* zone=GREEN /);
   });
 });
 
 describe('session telemetry plan-aware actions (FR-08, DEC-05, DEC-HIL-04, TC-07)', () => {
   it('uses the no-plan action from the plan guidance for a yellow session without a plan file', () => {
     const summary = summarizeLedger(toolLines([200000]));
-    const block = renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, WITHOUT_PLAN.actionFor);
+    const block = renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, ACTION_FOR);
     expect(block).toContain('zone=YELLOW action=keep working; finish the current unit before large new explorations');
   });
 });

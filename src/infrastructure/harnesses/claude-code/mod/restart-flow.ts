@@ -23,9 +23,9 @@ export async function reportSafely($: ModHost, code: RestartReasonCode): Promise
   }
 }
 
-async function submitSeed($: ModHost, config: ModConfig): Promise<void> {
+async function submitSeed($: ModHost): Promise<void> {
   try {
-    await $.prompt.submit({ text: seedText(config.gate) });
+    await $.prompt.submit({ text: seedText() });
   } catch {
     await reportSafely($, 'ERROR_INTERNAL');
   }
@@ -33,7 +33,7 @@ async function submitSeed($: ModHost, config: ModConfig): Promise<void> {
 
 async function seedAfterClear($: ModHost, config: ModConfig): Promise<void> {
   const seeded = markSeeded($, config.root).then(undefined, () => reportSafely($, 'ERROR_INTERNAL'));
-  await Promise.all([seeded, submitSeed($, config)]);
+  await Promise.all([seeded, submitSeed($)]);
 }
 
 async function abandonRestart($: ModHost, config: ModConfig): Promise<void> {
@@ -56,7 +56,7 @@ export async function handleTurnComplete($: ModHost, event: TurnCompleteEvent): 
   if (!endsWithResetSignal(event.answer ?? '')) return;
   const config = await readModConfig($);
   if (config === undefined) return;
-  const decision = decideRestart(await gatherFacts($, config, turn.startedAt));
+  const decision = decideRestart(await gatherFacts($, config));
   if (decision.kind === 'skip') return report($, decision.code);
   await bumpConsecutive($, config.root);
   await report($, 'RESTARTED');

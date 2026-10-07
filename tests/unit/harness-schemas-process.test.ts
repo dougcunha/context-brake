@@ -7,7 +7,6 @@ import {
 import {
   claudePayloadSchema,
   claudePostToolUseResponseSchema,
-  claudePreToolUseResponseSchema,
   claudeSettingsSchema,
 } from '../../src/infrastructure/harnesses/claude-code/schemas.js';
 import {
@@ -32,15 +31,11 @@ describe('process harness schemas: Claude Code and Codex CLI (RF5, RF6)', () => 
     const post = claudePayloadSchema.parse({ session_id: 's1', tool_response: 'out', tool_use_id: 'toolu_1' });
     expect(post.tool_response).toBe('out');
     expect(post.tool_use_id).toBe('toolu_1');
-    const preResp = claudePreToolUseResponseSchema.parse({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny' } });
-    expect(preResp.hookSpecificOutput?.permissionDecision).toBe('deny');
     const postResp = claudePostToolUseResponseSchema.parse({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: 'ctx' } });
     expect(postResp.hookSpecificOutput?.additionalContext).toBe('ctx');
   });
 
   it('rejects Claude Code hook-specific output without the matching hookEventName', () => {
-    expect(claudePreToolUseResponseSchema.safeParse({ hookSpecificOutput: { permissionDecision: 'deny' } }).success).toBe(false);
-    expect(claudePreToolUseResponseSchema.safeParse({ hookSpecificOutput: { hookEventName: 'PostToolUse' } }).success).toBe(false);
     expect(claudePostToolUseResponseSchema.safeParse({ hookSpecificOutput: { additionalContext: 'ctx' } }).success).toBe(false);
   });
 
@@ -75,12 +70,12 @@ describe('process harness schemas: Cursor, Copilot, and Antigravity (RF5, RF6)',
     expect(antigravityPayloadSchema.parse({ invocationNum: 2 }).invocationNum).toBe(2);
   });
 
-  it('parses the documented Antigravity PreToolUse fixture with toolCall.name/args (FR-06, TC-01)', async () => {
-    const raw = await readFile('tests/fixtures/harnesses/antigravity-cli/pre-tool-use.json', 'utf8');
+  it('parses the documented Antigravity PostToolUse fixture with toolCall.name/args (FR-06, TC-01)', async () => {
+    const raw = await readFile('tests/fixtures/harnesses/antigravity-cli/post-tool-use.json', 'utf8');
     const payload = antigravityPayloadSchema.parse(JSON.parse(raw));
     expect(payload.conversationId).toBe('agy-conv-1');
     expect(payload.toolCall?.name).toBe('run_command');
-    expect(payload.toolCall?.args).toEqual({ CommandLine: 'ls' });
-    expect((payload as Record<string, unknown>).extraField).toBe('ignored');
+    expect(payload.toolCall?.args).toEqual({ CommandLine: 'git status' });
+    expect((payload as Record<string, unknown>).stepIdx).toBe(2);
   });
 });

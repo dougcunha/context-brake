@@ -4,9 +4,6 @@ import type { CommandEnv } from './commands/init.js';
 import { runInit } from './commands/init.js';
 import { runDoctor } from './commands/doctor.js';
 import { runRemove } from './commands/remove.js';
-import { runPlan } from './commands/plan.js';
-import { runWrap } from './commands/wrap.js';
-import { runRun } from './commands/run.js';
 import { CLI_ERROR_CODES } from '../core/contracts/diagnostics.js';
 import { buildCliErrorDocument, type BuildCliErrorInput } from '../core/services/report-service.js';
 import { renderJsonOutput } from './output/json.js';
@@ -15,23 +12,17 @@ import { InvalidConfigurationError } from '../core/validation/configuration-vali
 
 function renderHelp(): void {
   process.stdout.write([
-    'ContextBrake: Context telemetry and tool-call safeguards for coding-agent harnesses', '',
+    'ContextBrake: Context telemetry and an advisory brake for coding-agent harnesses', '',
     'Usage:',
     '  context-brake init [options]',
     '  context-brake doctor [options]',
     '  context-brake remove [options]',
-    '  context-brake plan init --task="<name>" [options]',
-    '  context-brake plan status [options]',
-    '  context-brake run --harness <claude-code|codex-cli> [options]',
-    '  context-brake wrap -- <command> [args...]', '',
-
+    '',
     'Commands:',
     '  init     Detect harnesses, register integrations, and initialize ContextBrake',
     '  doctor   Diagnose integrations, configurations, versions, and overhead',
     '  remove   Remove ContextBrake integrations and managed files',
-    '  plan     Create and inspect the task plan and checkpoint',
-    '  run      Drive the plan through fresh harness sessions, validating each step before advancing',
-    '  wrap     Run a command in a runner session and append its context telemetry', '',
+    '',
   ].join('\n'));
 }
 
@@ -65,9 +56,6 @@ export async function dispatchCommand(args: ParsedCliArgs, env: CommandEnv): Pro
     if (args.command === 'init') return await runInit(args, canonicalEnv);
     if (args.command === 'doctor') return await runDoctor(args, canonicalEnv);
     if (args.command === 'remove') return await runRemove(args, canonicalEnv);
-    if (args.command === 'plan') return await runPlan(args, canonicalEnv);
-    if (args.command === 'wrap') return await runWrap(args, canonicalEnv);
-    if (args.command === 'run') return await runRun(args, canonicalEnv);
     return 0;
   } catch (err) {
     return handleCommandError(err, args.command, args.json);

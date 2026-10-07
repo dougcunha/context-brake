@@ -20,7 +20,7 @@ export async function failureDecision(input: HookFailure): Promise<RuntimeDecisi
     return NEUTRAL;
   }
   try {
-    return await resolveFailure({ event: input.state.event, code, detail, timing, config: input.state.config, descriptor: input.descriptor, ledger: ports.ledger, errors: ports.errors, readValidationCommand: ports.readValidationCommand, planPresence: ports.planPresence });
+    return await resolveFailure({ event: input.state.event, code, detail, timing, config: input.state.config, descriptor: input.descriptor, ledger: ports.ledger, errors: ports.errors });
   } catch {
     return NEUTRAL;
   }

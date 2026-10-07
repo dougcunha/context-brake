@@ -27,16 +27,7 @@ export const claudePayloadSchema = z.looseObject({
   last_assistant_message: z.optional(z.string()),
 });
 
-export const claudePreToolUsePayloadSchema = claudePayloadSchema;
 export type ClaudePayload = z.infer<typeof claudePayloadSchema>;
-
-export const claudePreToolUseResponseSchema = z.looseObject({
-  hookSpecificOutput: z.optional(z.looseObject({
-    hookEventName: z.literal('PreToolUse'),
-    permissionDecision: z.optional(z.enum(['allow', 'deny', 'ask', 'defer'])),
-    permissionDecisionReason: z.optional(z.string()),
-  })),
-});
 
 export const claudePostToolUseResponseSchema = z.looseObject({
   hookSpecificOutput: z.optional(z.looseObject({

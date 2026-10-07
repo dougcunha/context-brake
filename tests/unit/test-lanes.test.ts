@@ -1,14 +1,13 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { TEST_MODE_VARIABLE, testConfig } from '../../vitest.config.js';
+import { testConfig } from '../../vitest.config.js';
 import { hasProcessMarker, isProcessLaneFile, isSerialLaneFile, PROCESS_LANE_DIRECTORIES, PROCESS_LANE_FILES, processLaneGlobs, TEST_FILE_PATTERN, TEST_FILE_SUFFIX, SERIAL_LANE_FILES } from '../test-lanes.js';
 
 const TEST_ROOT = 'tests';
 const LANES = ['parallel', 'process', 'serial'] as const;
 const GLOBAL_TIMEOUT_MS = 30000;
 const MAX_WORKERS = 2;
-const ACCEPTANCE_MODE = 'acceptance';
-const config = testConfig('test');
+const config = testConfig();
 
 type Lane = (typeof LANES)[number];
 type LaneProject = {
@@ -17,7 +16,6 @@ type LaneProject = {
     include?: string[];
     exclude?: string[];
     testTimeout?: number;
-    env?: Record<string, string>;
     poolOptions?: { forks?: { singleFork?: boolean } };
     sequence?: { groupOrder?: number };
   };
@@ -29,8 +27,8 @@ async function listTestFiles(): Promise<string[]> {
   return files.filter((file) => file.endsWith(TEST_FILE_SUFFIX)).sort();
 }
 
-function laneProject(name: Lane, mode = 'test'): LaneProject['test'] {
-  const projects = (testConfig(mode).test?.projects ?? []) as unknown as LaneProject[];
+function laneProject(name: Lane): LaneProject['test'] {
+  const projects = (testConfig().test?.projects ?? []) as unknown as LaneProject[];
   return projects.find((project) => project.test?.name === name)?.test;
 }
 
@@ -70,10 +68,10 @@ describe('T23/CR-01: the Vitest configuration wires the three lanes', () => {
     expect(laneProject('parallel')?.exclude).toEqual(expect.arrayContaining([...processLaneGlobs(), ...SERIAL_LANE_FILES]));
   });
 
-  it('gives every lane the global timeout and the Vitest mode', () => {
+  it('gives every lane the global timeout and no test mode variable (prd-12 DEC-16)', () => {
     for (const name of LANES) {
       expect(laneProject(name)?.testTimeout).toBe(GLOBAL_TIMEOUT_MS);
-      expect(laneProject(name, ACCEPTANCE_MODE)?.env?.[TEST_MODE_VARIABLE]).toBe(ACCEPTANCE_MODE);
+      expect(laneProject(name)).not.toHaveProperty('env');
     }
   });
 });

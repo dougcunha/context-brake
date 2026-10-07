@@ -5,9 +5,10 @@ import { mapClaudeEvent, mapClaudeInput, renderClaudeDecision } from '../../src/
 const SESSION = { harness: 'claude-code', sessionId: 'session-claude-1', agentId: null };
 
 describe('Claude Code runtime tool events (RF12, RF14, TC-14, TC-33)', () => {
-  it('maps the documented PreToolUse fixture to a classified pre-tool event', async () => {
-    const event = mapClaudeEvent('PreToolUse', await loadHarnessPayload('claude-code', 'pre-tool-use.json'));
-    expect(event).toEqual({ kind: 'pre_tool', session: SESSION, tool: { name: 'Bash', category: 'shell', paths: [], command: 'git status' } });
+  it('maps the documented PostToolUse fixture to a classified post-tool event and ignores PreToolUse (prd-12 TC-09)', async () => {
+    const event = mapClaudeEvent('PostToolUse', await loadHarnessPayload('claude-code', 'post-tool-use.json'));
+    expect(event).toMatchObject({ kind: 'post_tool', session: SESSION, tool: { name: 'Bash', category: 'shell', paths: [], command: 'git status' } });
+    expect(mapClaudeEvent('PreToolUse', { session_id: 's', tool_name: 'Bash' })).toBeNull();
   });
 
   it('maps the documented PostToolUse fixture with its tool_use_id and tool_response', async () => {
@@ -21,10 +22,10 @@ describe('Claude Code runtime tool events (RF12, RF14, TC-14, TC-33)', () => {
   });
 
   it('classifies every documented file tool and tolerates unknown fields', () => {
-    expect(mapClaudeEvent('PreToolUse', { session_id: 's', tool_name: 'Write', tool_input: { file_path: 'state_checkpoint.json' }, extra: true })).toMatchObject({ tool: { category: 'file_write', paths: ['state_checkpoint.json'] } });
-    expect(mapClaudeEvent('PreToolUse', { session_id: 's', tool_name: 'Read', tool_input: { file_path: 'task_plan.json' } })).toMatchObject({ tool: { category: 'file_read' } });
-    expect(mapClaudeEvent('PreToolUse', { session_id: 's', tool_name: 'WebSearch' })).toMatchObject({ tool: { category: 'other' } });
-    expect(() => mapClaudeEvent('PreToolUse', {})).toThrow('The harness payload is invalid.');
+    expect(mapClaudeEvent('PostToolUse', { session_id: 's', tool_name: 'Write', tool_input: { file_path: 'state_checkpoint.json' }, extra: true })).toMatchObject({ tool: { category: 'file_write', paths: ['state_checkpoint.json'] } });
+    expect(mapClaudeEvent('PostToolUse', { session_id: 's', tool_name: 'Read', tool_input: { file_path: 'task_plan.json' } })).toMatchObject({ tool: { category: 'file_read' } });
+    expect(mapClaudeEvent('PostToolUse', { session_id: 's', tool_name: 'WebSearch' })).toMatchObject({ tool: { category: 'other' } });
+    expect(() => mapClaudeEvent('PostToolUse', {})).toThrow('The harness payload is invalid.');
   });
 });
 
@@ -50,9 +51,8 @@ describe('Claude Code runtime lifecycle events (RF3, RF22, TC-21)', () => {
 });
 
 describe('Claude Code response rendering (RF14, RF17, RF22, TC-14, TC-21)', () => {
-  it('renders deny and context in the documented hookSpecificOutput fields', () => {
-    const deny = renderClaudeDecision({ kind: 'deny', tool: 'Read', reason: 'critical_ceiling', message: 'BLOCKED' }, 'PreToolUse');
-    expect(JSON.parse(deny ?? '')).toEqual({ hookSpecificOutput: { hookEventName: 'PreToolUse', permissionDecision: 'deny', permissionDecisionReason: 'BLOCKED' } });
+  it('renders context in the documented hookSpecificOutput fields and nothing on PreToolUse', () => {
+    expect(renderClaudeDecision({ kind: 'neutral' }, 'PreToolUse')).toBeNull();
     const context = renderClaudeDecision({ kind: 'context', block: 'telemetry' }, 'PostToolUse');
     expect(JSON.parse(context ?? '')).toEqual({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: 'telemetry' } });
   });

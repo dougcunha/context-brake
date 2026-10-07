@@ -21,7 +21,8 @@ describe('E2E-01: Claude installation (CA-01)', () => {
     const hookStat = await stat(join(tempDir, '.claude/hooks/context-brake.mjs'));
     expect(hookStat.isFile()).toBe(true);
     const settings = JSON.parse(await readFile(join(tempDir, '.claude/settings.json'), 'utf8'));
-    expect(settings.hooks.PreToolUse).toBeDefined();
+    expect(settings.hooks.PostToolUse).toBeDefined();
+    expect(settings.hooks.PreToolUse).toBeUndefined();
   });
 
   it('records the running package version in the manifest (FR-07, TC-02)', async () => {

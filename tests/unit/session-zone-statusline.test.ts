@@ -4,7 +4,8 @@ import type { RuntimeDescriptor } from '../../src/core/contracts/runtime.js';
 import type { LedgerLine } from '../../src/core/contracts/session-ledger.js';
 import type { StatuslineLine } from '../../src/core/contracts/statusline-line.js';
 import { summarizeLedger } from '../../src/core/services/session-counters.js';
-import { readZone, renderSessionTelemetry, type MeasuredUsage } from '../../src/core/services/session-zone.js';
+import { readZone, type MeasuredUsage } from '../../src/core/services/session-zone.js';
+import { renderSessionTelemetry } from '../helpers/session-telemetry.js';
 
 const RESET_AT = '2026-09-25T12:00:00.000Z';
 const BEFORE = '2026-09-25T11:59:00.000Z';

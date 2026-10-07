@@ -29,7 +29,7 @@ async function slowStdin(): Promise<string> {
 }
 function eventFor(eventName: string): RuntimeEvent | null {
   if (eventName === 'SessionStart') return { kind: 'session_reset', session: KEY, reason: 'clear' };
-  if (eventName === 'PreToolUse') return { kind: 'pre_tool', session: KEY, tool: { name: 'Read', category: 'file_read', paths: [], command: null } };
+  if (eventName === 'PostToolUse') return { kind: 'post_tool', session: KEY, tool: { name: 'Read', category: 'file_read', paths: [], command: null }, toolUseId: null };
   return null;
 }
 function slowAdapter(inputDelay: number): ProcessHarnessAdapter {
@@ -70,7 +70,7 @@ describe('session start deadline (FR-10, DEC-11, TC-15)', () => {
     expect(await errorLines()).toHaveLength(1);
   });
   it('keeps the event deadline for a tool call of the same duration', async () => {
-    const { stderr } = await runHook('PreToolUse', WITHIN_SESSION_START);
+    const { stderr } = await runHook('PostToolUse', WITHIN_SESSION_START);
     expect(stderr[0]).toContain('DEADLINE_EXCEEDED');
   });
 });
@@ -85,8 +85,8 @@ describe('deadline phase record (FR-11, DEC-12, TC-16)', () => {
   });
   it('names the phase of a failure before the event is known', async () => {
     const stderr: string[] = [];
-    const context: ProcessHookContext = { argv: ['node', 'hook', 'PreToolUse'], readStdin: slowStdin, writeStdout: () => undefined, writeStderr: (text) => { stderr.push(text); }, deadlineMilliseconds: 5 };
+    const context: ProcessHookContext = { argv: ['node', 'hook', 'PostToolUse'], readStdin: slowStdin, writeStdout: () => undefined, writeStderr: (text) => { stderr.push(text); }, deadlineMilliseconds: 5 };
     await runProcessHook(slowAdapter(0), context);
-    expect(errorLineSchema.parse((await errorLines())[0])).toMatchObject({ event: 'PreToolUse', phase: 'stdin' });
+    expect(errorLineSchema.parse((await errorLines())[0])).toMatchObject({ event: 'PostToolUse', phase: 'stdin' });
   });
 });

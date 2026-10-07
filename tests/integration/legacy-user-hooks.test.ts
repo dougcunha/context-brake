@@ -21,7 +21,9 @@ describe('Legacy entries and CRLF formatting (CR-01)', () => {
     await mkdir(join(root, '.cursor'), { recursive: true });
     await copyFile('tests/fixtures/harnesses/cursor/legacy-hooks.json', cursor);
     const p2 = await planCursorInstall(root);
-    expect(p2.changes.find((c) => c.path === CURSOR_CONFIG_FILE)?.content).toContain('"failClosed": true');
+    const cursorContent = p2.changes.find((c) => c.path === CURSOR_CONFIG_FILE)?.content ?? '';
+    expect(cursorContent).toContain('"command": "node .cursor/hooks/context-brake.mjs postToolUse"');
+    expect(cursorContent).not.toMatch(/\.\/\.cursor|preToolUse|failClosed/);
 
     const crlf = '{\r\n  "version": 1,\r\n  "hooks": {}\r\n}\r\n';
     await writeFile(cursor, crlf, 'utf8');
@@ -38,7 +40,7 @@ describe('Mixed Codex groups (CR-01)', () => {
   it('preserves user handler in mixed Codex group on install and remove', async () => {
     const file = join(root, CODEX_CONFIG_FILE);
     await mkdir(join(root, '.codex'), { recursive: true });
-    const mixed = '{\n  "hooks": {\n    "PreToolUse": [\n      {\n        "matcher": "*",\n        "hooks": [\n          { "type": "command", "command": "echo user" },\n          { "type": "command", "command": "node .codex/hooks/context-brake.mjs PreToolUse" }\n        ]\n      }\n    ]\n  }\n}\n';
+    const mixed = '{\n  "hooks": {\n    "PostToolUse": [\n      {\n        "matcher": "*",\n        "hooks": [\n          { "type": "command", "command": "echo user" },\n          { "type": "command", "command": "node .codex/hooks/context-brake.mjs PostToolUse" }\n        ]\n      }\n    ]\n  }\n}\n';
     await writeFile(file, mixed, 'utf8');
 
     const p1 = await planCodexInstall(root);

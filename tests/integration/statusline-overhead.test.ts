@@ -85,7 +85,7 @@ describe('status line bridge and hook overhead (NFR-01, OBJ-04, DEC-13, TC-20)',
     assertBudget(p95, BRIDGE_TARGET_OVER_NODE_START_MS + await sampleNodeStart());
   }, FLOW_TIMEOUT_MS);
 
-  it.each(['PreToolUse', 'PostToolUse'])('keeps %s within 120 ms p95 with 200 statusline lines in the ledger', async (event) => {
+  it.each(['PostToolUse'])('keeps %s within 120 ms p95 with 200 statusline lines in the ledger', async (event) => {
     await seedStatuslineLines();
     const payload = { session_id: KEY.sessionId, tool_name: 'Read', tool_input: { file_path: 'src/a.ts' }, tool_response: 'ok' };
     const p95 = await samplePair(() => runPreviousCommand(EMPTY_NODE, ''), () => runHook(event, payload));

@@ -6,10 +6,10 @@ const SESSION = { harness: 'cursor', sessionId: 'cursor-conv-1', agentId: null }
 
 describe('Cursor runtime event mapping (RF3, RF12, DEC-13, TC-33)', () => {
   it('keeps undocumented file tools unclassified and classifies Shell from its command', async () => {
-    const fixture = await loadHarnessPayload('cursor', 'pre-tool-use.json');
-    expect(mapCursorEvent('preToolUse', fixture)).toMatchObject({ tool: { name: 'ReadFile', category: 'other' } });
+    expect(mapCursorEvent('postToolUse', { conversation_id: 'cursor-conv-1', tool_name: 'ReadFile' })).toMatchObject({ tool: { name: 'ReadFile', category: 'other' } });
     const shell = { conversation_id: 'cursor-conv-1', tool_name: 'Shell', tool_input: { command: 'ls' } };
-    expect(mapCursorEvent('preToolUse', shell)).toEqual({ kind: 'pre_tool', session: SESSION, tool: { name: 'Shell', category: 'shell', paths: [], command: 'ls' } });
+    expect(mapCursorEvent('postToolUse', shell)).toEqual({ kind: 'post_tool', session: SESSION, tool: { name: 'Shell', category: 'shell', paths: [], command: 'ls' }, toolUseId: null });
+    expect(mapCursorEvent('preToolUse', shell)).toBeNull();
   });
 
   it('maps the documented postToolUse fixture with its call identifier', async () => {
@@ -31,14 +31,6 @@ describe('Cursor runtime event mapping (RF3, RF12, DEC-13, TC-33)', () => {
 });
 
 describe('Cursor response rendering (RF14, RF17, TC-14)', () => {
-  it('allows neutrally on preToolUse because permission is a required field', () => {
-    expect(JSON.parse(renderCursorDecision({ kind: 'neutral' }, 'preToolUse') ?? '')).toEqual({ permission: 'allow' });
-  });
-
-  it('renders the deny shape with both documented messages', () => {
-    const rendered = JSON.parse(renderCursorDecision({ kind: 'deny', tool: 'Shell', reason: 'critical_ceiling', message: 'BLOCKED' }, 'preToolUse') ?? '') as Record<string, unknown>;
-    expect(rendered).toEqual({ permission: 'deny', agent_message: 'BLOCKED', user_message: 'ContextBrake blocked Shell: the session is above the critical ceiling.' });
-  });
 
   it('injects telemetry through additional_context and stays silent elsewhere', () => {
     expect(JSON.parse(renderCursorDecision({ kind: 'context', block: 'telemetry' }, 'postToolUse') ?? '')).toEqual({ additional_context: 'telemetry' });

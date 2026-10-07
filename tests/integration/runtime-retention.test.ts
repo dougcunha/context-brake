@@ -4,7 +4,6 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import type { Clock, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
-import { NodeBlockLog } from '../../src/infrastructure/runtime/node-runtime-logs.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 import { runtimeDirectory, sessionLedgerPath } from '../../src/infrastructure/runtime/runtime-paths.js';
 
@@ -35,15 +34,11 @@ describe('T03 prunes stale ledgers (DEC-16, TC-29)', () => {
     const freshDate = new Date(NOW.getTime() - 13 * MILLISECONDS_PER_DAY);
     await ledger.appendToolLine(stale, toolInput(1));
     await ledger.appendToolLine(fresh, toolInput(1));
-    const blocks = new NodeBlockLog(tempDir, clock);
-    await blocks.append(stale, { tool: 'Read', zone: 'CRITICAL', turn: 12, percentage: 75, source: 'estimated', reason: 'critical_ceiling' });
     await utimes(sessionLedgerPath(tempDir, stale), staleDate, staleDate);
     await utimes(sessionLedgerPath(tempDir, fresh), freshDate, freshDate);
-    await utimes(join(runtimeDirectory(tempDir), 'blocks.jsonl'), staleDate, staleDate);
     expect(await ledger.pruneStaleSessions()).toBe(1);
     expect(await exists(sessionLedgerPath(tempDir, stale))).toBe(false);
     expect(await exists(sessionLedgerPath(tempDir, fresh))).toBe(true);
-    expect(await exists(join(runtimeDirectory(tempDir), 'blocks.jsonl'))).toBe(true);
   });
 });
 

@@ -17,7 +17,8 @@ describe('E2E minified config install (CR-01, RF6)', () => {
       const afterFirst = await readFile(settingsPath, 'utf8');
       const parsed = JSON.parse(afterFirst) as { hooks: Record<string, unknown> };
       expect(parsed.hooks.UserHook).toBe('node custom.js');
-      expect(parsed.hooks.PreToolUse).toBeDefined();
+      expect(parsed.hooks.PostToolUse).toBeDefined();
+      expect(parsed.hooks.PreToolUse).toBeUndefined();
       const second = await runBuiltCli(['init', '--yes'], dir);
       expect(second.code).toBe(0);
       expect(await readFile(settingsPath, 'utf8')).toBe(afterFirst);

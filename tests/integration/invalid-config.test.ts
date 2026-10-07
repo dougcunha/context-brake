@@ -15,8 +15,6 @@ const invalidConfig = JSON.stringify({
     turnCeiling: 12,
     zones: { greenMaxPercentage: 60, yellowMaxPercentage: 50, criticalPercentage: 75, greenMaxTurn: 7, yellowMaxTurn: 10, criticalTurn: 12 },
   },
-  stateStorage: { planFile: 'task_plan.json', checkpointFile: 'state_checkpoint.json', instructCheckpointCommit: true, bootMaxTokens: 1000 },
-  instructionFiles: { targets: ['CLAUDE.md'], protocolFile: 'docs/context-brake-protocol.md' },
 }, null, 2);
 
 describe('IT-10: Invalid ContextBrake config blocks writes (CA-13)', () => {
@@ -27,9 +25,9 @@ describe('IT-10: Invalid ContextBrake config blocks writes (CA-13)', () => {
   it('blocks writes in init and remove with exit code 2 and leaves repo unchanged', async () => {
     await writeFile(join(tempDir, 'context-brake.config.json'), invalidConfig, 'utf8');
     const beforeConfig = await readFile(join(tempDir, 'context-brake.config.json'), 'utf8');
-    const initExit = await dispatchCommand({ command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [], instructionFile: [], createInstructions: false, migrateLegacy: false }, { projectRoot: tempDir });
+    const initExit = await dispatchCommand({ command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [] }, { projectRoot: tempDir });
     expect(initExit).toBe(2);
-    const removeExit = await dispatchCommand({ command: 'remove', dryRun: false, yes: true, json: true, removeState: false }, { projectRoot: tempDir });
+    const removeExit = await dispatchCommand({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
     expect(removeExit).toBe(2);
     const afterConfig = await readFile(join(tempDir, 'context-brake.config.json'), 'utf8');
     expect(afterConfig).toBe(beforeConfig);

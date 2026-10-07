@@ -26,13 +26,9 @@ describe('LEGACY_TURN_LIMITS in doctor (TC-19, FR-09, DEC-03)', () => {
     expect(checkLegacyTurnLimits(withTurns({ green: 7, yellow: 10, critical: 15 }))[0]?.message).toContain('are ignored');
   });
   it('reports nothing for a normalized config', () => {
-    expect(checkConfig({ ...DEFAULT_CONFIG, fullMode: true }).findings).toEqual([]);
+    expect(checkConfig({ ...DEFAULT_CONFIG }).findings).toEqual([]);
     const custom = withTurns({ green: 20, yellow: 30, critical: 40 });
     expect(checkLegacyTurnLimits({ ...custom, telemetry: normalizeTurnLimits(custom.telemetry) })).toEqual([]);
-  });
-  it('adds the light default notice to a configuration that never chose (FR-07, DEC-09, TC-11)', () => {
-    expect(checkConfig(DEFAULT_CONFIG).findings).toEqual([expect.objectContaining({ code: 'LIGHT_MODE_DEFAULT_PENDING', severity: 'ok' })]);
-    expect(checkConfig({ ...DEFAULT_CONFIG, lightMode: { triggerZone: 'RED' } }).findings).toEqual([]);
   });
 });
 

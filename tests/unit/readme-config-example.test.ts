@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { configurationSchema, DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
+import { configurationSchema } from '../../src/core/contracts/configuration.js';
 
 const readme = readFileSync(join(__dirname, '../../README.md'), 'utf8');
 const telemetry = readFileSync(join(__dirname, '../../docs/telemetry-block.md'), 'utf8');
@@ -12,22 +12,9 @@ function readmeConfigExample(): unknown {
   return JSON.parse(match[1]) as unknown;
 }
 
-describe('README configuration example (T09, RF17, CR-03)', () => {
+describe('README configuration example (T09, RF17, CR-03, prd-12 TC-15)', () => {
   it('parses against the published configuration schema', () => {
     expect(configurationSchema.safeParse(readmeConfigExample()).success).toBe(true);
-  });
-});
-
-function readmeDelegatedExample(): unknown {
-  const block = [...readme.matchAll(/```json\n([\s\S]*?)\n```/g)].map((match) => match[1] ?? '').find((json) => json.includes('"delegatedSnapshot"'));
-  if (block === undefined) throw new Error('README delegated snapshot example not found');
-  return JSON.parse(block) as unknown;
-}
-
-describe('README delegated snapshot example (TC-15, FR-09)', () => {
-  it('parses against the configuration schema when merged into the defaults', () => {
-    const example = readmeDelegatedExample() as Record<string, unknown>;
-    expect(configurationSchema.safeParse({ ...DEFAULT_CONFIG, ...example }).success).toBe(true);
   });
 });
 
@@ -41,15 +28,15 @@ describe('README and telemetry docs for the status line bridge (PRD 2.2 FR-09, D
   it('documents the footer effect, the 1M zones, and the non-interactive and Windows limits', () => {
     expect(readme).toContain('hides most footer keyboard hints');
     expect(readme).toContain('With a 1,000,000-token model, `RED` starts above 650,000 tokens');
-    expect(readme).toContain('so `claude -p`, including the sessions of `context-brake run`, keep using `contextWindowCeiling`');
+    expect(readme).toContain('so `claude -p` sessions keep using `contextWindowCeiling`');
     expect(readme).toContain('set `CLAUDE_CODE_GIT_BASH_PATH` to the `bash.exe` of Git for Windows');
     expect(readme).toContain('`STATUSLINE_POWERSHELL_FALLBACK`');
   });
 
-  it('documents the window origin rule, the default bridge, and the declared window (prd-09 FR-08, TC-14)', () => {
-    expect(readme).toContain('A window taken from `contextWindowCeiling` never blocks a tool call');
+  it('documents the window origins, the default bridge, and the declared window (prd-09 FR-08, TC-14)', () => {
+    expect(readme).toContain('the telemetry block shows `window=config`');
     expect(readme).toContain('`telemetry.declaredContextWindow` (`window=declared`)');
-    expect(readme).toContain('`init` installs it by default in full **and** light mode');
+    expect(readme).toContain('`init` installs it by default');
     expect(telemetry).toContain('window=<harness|declared|config>');
   });
 
@@ -65,31 +52,31 @@ describe('README and telemetry docs for the status line bridge (PRD 2.2 FR-09, D
   });
 });
 
-describe('README for the mode defaults and the debug channel (FR-06, FR-07, FR-08, FR-10, TC-18)', () => {
-  it('documents light mode as the default and how to keep full mode', () => {
-    expect(readme).toContain('Light Mode (telemetry only, the default)');
-    expect(readme).toContain('npx context-brake init --no-light # full mode, recorded in the configuration');
-    expect(readme).toContain('`LIGHT_MODE_DEFAULT_PENDING`');
-    expect(readme).toContain('`LIGHT_MODE_DEFAULT_APPLIED`');
+describe('README for the single mode and the debug channel (prd-12 FR-04, FR-12, TC-15)', () => {
+  it('documents the snapshot and resume commands with their init flags', () => {
+    expect(readme).toContain('### Snapshot and Resume Commands');
+    for (const flag of ['--snapshot-command <text>', '--resume-command <text>', '--snapshot-trigger <YELLOW|RED>', '--no-snapshot-command']) expect(readme).toContain(flag);
+    expect(readme).toContain('run "<command>", then end reply with [REQUEST_SESSION_RESET]');
+    expect(readme).toContain('[ContextBrake resume v1] Run "<resumeCommand>" before continuing.');
   });
 
-  it('documents debug mode in both modes and nowhere in the instruction files', () => {
-    expect(readme).not.toContain('Not in light mode');
+  it('documents that no tool call is ever blocked, in the README and the telemetry specification', () => {
+    expect(readme).toContain('It never blocks a tool call.');
+    expect(telemetry).toContain('ContextBrake never denies a tool call');
+    expect(`${readme}\n${telemetry}`).not.toMatch(/BLOCKED tool=|blocks\.jsonl|other tools are blocked/);
+  });
+
+  it('documents debug mode without the instruction files', () => {
     expect(readme).toContain('debug_line=');
-    expect(readme).toContain('Nothing is written to instruction files any more');
-  });
-
-  it('names the protocol file as the other place that documents the debug line', () => {
-    expect(readme).toContain('the same instruction also appears in the protocol file');
+    expect(readme).toContain('Nothing is written to instruction files.');
   });
 
   it('documents the hook deadlines', () => {
     expect(readme).toContain('Each hook call has an internal deadline of 1.5 seconds; the session start event gets 5 seconds');
   });
 
-  it('documents the upgrade to the light default and the downgrade fields', () => {
-    expect(readme).toContain('**Upgrading to the light default:**');
+  it('documents the upgrade from the earlier modes and the downgrade', () => {
+    expect(readme).toContain('**Upgrading an installation from before the single mode:**');
     expect(readme).toContain('**Downgrading:**');
-    expect(readme).toContain('`"fullMode": true` in the configuration');
   });
 });

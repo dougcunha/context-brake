@@ -9,7 +9,6 @@ function desiredHandler(event: string): { type: string; command: string } {
 }
 const DESIRED_HOOK = {
   PreInvocation: [desiredHandler('PreInvocation')],
-  PreToolUse: [desiredHandler('PreToolUse')],
   PostToolUse: [desiredHandler('PostToolUse')],
 };
 

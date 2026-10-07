@@ -23,6 +23,5 @@ export const antigravityPayloadSchema = z.looseObject({
   terminationReason: z.optional(z.string()),
 });
 
-export const antigravityPreToolUsePayloadSchema = antigravityPayloadSchema;
 export const antigravityPreInvocationPayloadSchema = antigravityPayloadSchema;
 export type AntigravityPayload = z.infer<typeof antigravityPayloadSchema>;

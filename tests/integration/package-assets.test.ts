@@ -7,8 +7,6 @@ import { ASSET_ENTRIES } from '../../scripts/asset-bundler.js';
 
 const RUNTIME_ASSET_DIR = 'dist/assets/runtime';
 const NO_OUTPUT = '';
-const CURSOR_ALLOW = '{"permission":"allow"}';
-const ANTIGRAVITY_ALLOW = '{"decision":"allow"}';
 const EMPTY_RESPONSE = '{}';
 
 const INSTALL_PATHS: Readonly<Record<string, string>> = {
@@ -26,12 +24,12 @@ const HOOK_CASES: readonly HookCase[] = [
   { asset: 'claude-code-hook.mjs', event: 'Stop', stdout: NO_OUTPUT },
   { asset: 'codex-cli-hook.mjs', event: 'PreToolUse', stdout: NO_OUTPUT },
   { asset: 'codex-cli-hook.mjs', event: 'Stop', stdout: NO_OUTPUT },
-  { asset: 'cursor-hook.mjs', event: 'preToolUse', stdout: CURSOR_ALLOW },
+  { asset: 'cursor-hook.mjs', event: 'preToolUse', stdout: NO_OUTPUT },
   { asset: 'cursor-hook.mjs', event: 'postToolUse', stdout: NO_OUTPUT },
   { asset: 'cursor-hook.mjs', event: 'preCompact', stdout: NO_OUTPUT },
   { asset: 'github-copilot-cli-hook.mjs', event: 'preToolUse', stdout: NO_OUTPUT },
   { asset: 'github-copilot-cli-hook.mjs', event: 'postToolUse', stdout: NO_OUTPUT },
-  { asset: 'antigravity-cli-hook.mjs', event: 'PreToolUse', stdout: ANTIGRAVITY_ALLOW },
+  { asset: 'antigravity-cli-hook.mjs', event: 'PreToolUse', stdout: NO_OUTPUT },
   { asset: 'antigravity-cli-hook.mjs', event: 'PostToolUse', stdout: EMPTY_RESPONSE },
   { asset: 'antigravity-cli-hook.mjs', event: 'PreInvocation', stdout: '{"injectSteps":[]}' },
 ];
@@ -74,9 +72,9 @@ describe('runtime asset existence and execution (RF5, RF22)', () => {
   });
 
   it('keeps the command event when stdin is malformed, without exiting non-zero', async () => {
-    const result = await execHook('cursor-hook.mjs', 'preToolUse', 'not valid json {{{');
+    const result = await execHook('antigravity-cli-hook.mjs', 'PostToolUse', 'not valid json {{{');
     expect(result.code).toBe(0);
-    expect(result.stdout).toBe(CURSOR_ALLOW);
+    expect(result.stdout).toBe(EMPTY_RESPONSE);
   });
 
   it('writes nothing for an event the harness hook does not handle', async () => {

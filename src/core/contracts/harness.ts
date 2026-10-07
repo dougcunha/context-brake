@@ -10,15 +10,12 @@ export const HARNESS_IDS = [
 ] as const;
 export const DETECTION_ORIGINS = ['project', 'machine'] as const;
 export const DETECTION_STATES = ['project', 'candidate', 'excluded'] as const;
-export const SUPPORT_LEVELS = ['full', 'partial', 'cooperative'] as const;
+export const SUPPORT_LEVELS = ['full', 'partial'] as const;
 export const CAPABILITY_STATES = ['supported', 'unsupported', 'unknown'] as const;
 export const CAPABILITY_IDS = [
-  'pre_tool_block',
-  'tool_coverage',
   'post_tool_telemetry',
   'session_boot',
   'context_usage',
-  'timeout_fail_closed',
   'auto_restart',
 ] as const;
 export const VERSION_STATUSES = ['resolved', 'old', 'unknown', 'malformed', 'timed_out'] as const;

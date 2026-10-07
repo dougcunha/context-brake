@@ -15,14 +15,10 @@ beforeEach(async () => {
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('Antigravity CLI built hook follows the documented response shape (DEC-14)', () => {
-  it('answers PreToolUse with the required decision and denies above the ceiling', async () => {
-    const allowed = await runInstalledHook(hook, 'PreToolUse', { conversationId: 'c1', toolCall: { name: 'run_command', args: { CommandLine: 'ls' } } });
-    expect(JSON.parse(allowed.stdout)).toEqual({ decision: 'allow' });
+  it('writes nothing for an unregistered PreToolUse event, even above the ceiling (prd-12 FR-07, TC-09)', async () => {
     await seedCriticalSession(root, { harness: 'antigravity-cli', sessionId: 'critical', agentId: null });
-    const denied = await runInstalledHook(hook, 'PreToolUse', { conversationId: 'critical', toolCall: { name: 'run_command', args: { CommandLine: 'rm -rf x' } } });
-    const shape = JSON.parse(denied.stdout) as { decision: string; reason: string };
-    expect(shape.decision).toBe('deny');
-    expect(shape.reason).toContain('reason=critical_ceiling');
+    const critical = await runInstalledHook(hook, 'PreToolUse', { conversationId: 'critical', toolCall: { name: 'run_command', args: { CommandLine: 'rm -rf x' } } });
+    expect([critical.code, critical.stdout]).toEqual([0, '']);
   });
 });
 

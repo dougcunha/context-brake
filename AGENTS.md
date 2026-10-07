@@ -28,13 +28,13 @@ Hexagonal (ports and adapters), with this planned layout:
 - `src/core/`: entities (telemetry, zones, snapshot settings), pure services, and port interfaces in `contracts/`. Never import from `infrastructure/` or `cli/`.
 - `src/infrastructure/`: port implementations, with one adapter per harness in `harnesses/`, plus `storage/`, `tokenizers/`, and `git/`.
 - `src/cli/`: command entrypoints and terminal output; wires `core` to adapters through dependency injection.
-- `tests/unit/`, `tests/integration/`, `tests/e2e/`, `tests/fixtures/`.
+- `tests/unit/`, `tests/integration/`, `tests/e2e/` (smoke set), `tests/bench/` (benchmarks), `tests/fixtures/`.
 
 Harness event names, payload shapes, and config file formats stay inside that harness's adapter; `core` depends only on its ports. Keep module dependencies acyclic, with shared contracts in `src/core/contracts/`.
 
 ## Project constraints
 
-- ContextBrake is a CLI plus harness hooks and plugins. There is no web server, frontend, or browser UI, so skip port allocation, browser E2E, and visual or responsive checks. End-to-end tests run the built CLI against fixture repositories in temporary directories.
+- ContextBrake is a CLI plus harness hooks and plugins. There is no web server, frontend, or browser UI, so skip port allocation, browser E2E, and visual or responsive checks. Tests run in process by default; `tests/e2e/` holds only a smoke set that runs the built CLI and built hooks against fixture repositories in temporary directories (`.agents/rules/tests.md`, Time Budget and Processes).
 - Commands must work on Linux, macOS, and Windows (PowerShell and Git Bash), including repositories whose instruction files are symlinks.
 
 ## Commands
@@ -45,6 +45,8 @@ Harness event names, payload shapes, and config file formats stay inside that ha
 - Lint: `npm run lint`
 - Tests: `npm test`
 - Coverage: `npm run coverage`
+- Benchmarks: `npm run test:bench`
+- Test budget: `npm run test:budget` (fails when `npm test` exceeds 120 s)
 - Schema currency: `npm run schemas:check`
 - Dependency scripts: `npm run dependencies:check`
 - Package smoke: `npm run package:smoke`

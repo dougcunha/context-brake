@@ -41,9 +41,17 @@ it('classifies 75% usage as the critical ceiling (FR-03)', () => {
 
 1. **Unit (`tests/unit/`):** `src/core/` entities and services, parsers, schemas, and zone classification, using port fakes.
 2. **Integration (`tests/integration/`):** `src/infrastructure/` adapters against a real filesystem in a temporary directory, a temporary git repository, and harness fixtures.
-3. **End-to-end (`tests/e2e/`):** the built CLI run as a child process against fixture repositories, covering the critical `init`, `doctor`, and `remove` flows.
+3. **End-to-end (`tests/e2e/`):** a smoke set only: one built-CLI test per command (`init`, `doctor`, `remove`) and one built hook round trip per process harness, against fixture repositories in temporary directories. Every other behavior is tested in process.
+4. **Benchmarks (`tests/bench/`):** latency and timing-target suites, run by `npm run test:bench` and `release:check`, never by `npm test`.
 
 Keep the pyramid: many unit tests, fewer integration tests, and few end-to-end tests. This project has no web interface, browser, or Playwright.
+
+## Time Budget and Processes
+
+- `npm test` and `npm run coverage` must each finish within 120 s of wall time on the development machine; the target is 60 s. `npm run test:budget` times `npm test`, lists the ten slowest files, and fails above 120 s. Run it after adding or moving tests.
+- Test in process by default: commands through `tests/helpers/in-process-cli.ts` (`runInProcessCli`) or `delegated-world.ts` (`runCli`), hooks through `tests/helpers/in-process-hook.ts` (`runHookInProcess`), and `doctor` with the fake overhead measurer and the fake process runner (`tests/helpers/fake-process-runner.ts`) those helpers inject. A test that calls `runInit`, `runRemove`, `runDoctor`, or `dispatchCommand` directly passes `overheadMeasurer: fakeOverheadMeasurer` and `runner: fakeProcessRunner` itself, so it starts no `git` or version-probe process.
+- A test may start a child process only when the behavior depends on one: shell quoting, signal or timeout handling, the hook process boundary (stdin, stdout, exit code), concurrency between hook processes, packaging, or the e2e smoke set. List such a file in `PROCESS_LANE_FILES` in `tests/test-lanes.ts`; the lane test fails otherwise.
+- Latency benchmarks and timing targets go to `tests/bench/`. Never raise a test timeout or add a retry to hide a slow or flaky test; fix its cause.
 
 ## Required Scenarios
 

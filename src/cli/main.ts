@@ -8,6 +8,7 @@ import { dispatchCommand } from './composition-root.js';
 import { buildCliErrorDocument } from '../core/services/report-service.js';
 import { renderJsonOutput } from './output/json.js';
 import { renderCliErrorText } from './output/text.js';
+import type { CommandEnv } from './commands/init.js';
 
 function handleParseError(err: CliArgumentError, argsList: readonly string[]): number {
   const isJson = argsList.includes('--json');
@@ -22,11 +23,12 @@ function handleParseError(err: CliArgumentError, argsList: readonly string[]): n
   return doc.exitCode;
 }
 
-export async function main(argumentsList: readonly string[] = process.argv.slice(2)): Promise<number> {
+export async function main(argumentsList: readonly string[] = process.argv.slice(2), overrides: Partial<CommandEnv> = {}): Promise<number> {
   try {
     const parsed = parseCliArgs(argumentsList);
-    const projectRoot = await realpath(process.cwd()).catch(() => process.cwd());
-    const env = { projectRoot };
+    const workingDirectory = overrides.projectRoot ?? process.cwd();
+    const projectRoot = await realpath(workingDirectory).catch(() => workingDirectory);
+    const env = { ...overrides, projectRoot };
     return await dispatchCommand(parsed, env);
   } catch (err) {
     if (err instanceof CliArgumentError) return handleParseError(err, argumentsList);

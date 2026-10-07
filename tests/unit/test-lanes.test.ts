@@ -1,12 +1,13 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { testConfig } from '../../vitest.config.js';
+import { BENCH_DIRECTORY } from '../../vitest.bench.config.js';
 import { hasProcessMarker, isProcessLaneFile, isSerialLaneFile, PROCESS_LANE_DIRECTORIES, PROCESS_LANE_FILES, processLaneGlobs, TEST_FILE_PATTERN, TEST_FILE_SUFFIX, SERIAL_LANE_FILES } from '../test-lanes.js';
 
 const TEST_ROOT = 'tests';
 const LANES = ['parallel', 'process', 'serial'] as const;
 const GLOBAL_TIMEOUT_MS = 30000;
-const MAX_WORKERS = 2;
+const MAX_WORKERS = 6;
 const config = testConfig();
 
 type Lane = (typeof LANES)[number];
@@ -34,7 +35,7 @@ function laneProject(name: Lane): LaneProject['test'] {
 
 describe('T23/CR-01: process-heavy test files leave the parallel lane', () => {
   it('assigns every test file with a process marker to the process or serial lane', async () => {
-    const files = await listTestFiles();
+    const files = (await listTestFiles()).filter((file) => !file.startsWith(BENCH_DIRECTORY));
     const sources = await Promise.all(files.map(async (file) => ({ file, source: await readFile(file, 'utf8') })));
     const misplaced = sources.filter(({ file, source }) => hasProcessMarker(source) && !isProcessLaneFile(file) && !isSerialLaneFile(file));
     expect(misplaced.map(({ file }) => file)).toEqual([]);
@@ -44,6 +45,27 @@ describe('T23/CR-01: process-heavy test files leave the parallel lane', () => {
     const files = await listTestFiles();
     for (const directory of PROCESS_LANE_DIRECTORIES) expect(files.some((file) => file.startsWith(directory))).toBe(true);
     for (const laneFile of [...PROCESS_LANE_FILES, ...SERIAL_LANE_FILES]) expect(files).toContain(laneFile);
+  });
+});
+
+const ALLOWED_PROCESS_FILES = [
+  'tests/integration/cli-shells.test.ts',
+  'tests/integration/codex-hook-command-shells.test.ts',
+  'tests/integration/codex-hook-root.test.ts',
+  'tests/integration/node-process-runner.test.ts',
+  'tests/integration/package-assets.test.ts',
+  'tests/integration/package-contents.test.ts',
+  'tests/integration/runtime-host-process.test.ts',
+  'tests/integration/runtime-parallel-turns.test.ts',
+  'tests/integration/statusline-bridge-lifecycle.test.ts',
+  'tests/integration/statusline-bridge-previous.test.ts',
+  'tests/integration/statusline-bridge.test.ts',
+  'tests/integration/statusline-shell.test.ts',
+];
+
+describe('only the listed tests start a process (prd-13 FR-05, DEC-04, DEC-05, TC-06)', () => {
+  it('keeps the process lane equal to the TechSpec list as amended by DEC-EXC-01', () => {
+    expect([...PROCESS_LANE_FILES].sort()).toEqual(ALLOWED_PROCESS_FILES);
   });
 });
 

@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runDoctor } from '../../src/cli/commands/doctor.js';
 import { doctorReportSchema } from '../../src/core/contracts/diagnostics.js';
+import { fakeOverheadMeasurer } from '../helpers/fake-overhead-measurer.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 const COMMAND = 'node "/repo/.claude/hooks/context-brake-statusline.mjs"';
 type PublishedSchema = { readonly properties: { readonly schemaVersion: { readonly const: number }; readonly contextWindow?: unknown }; readonly required: readonly string[] };
@@ -29,7 +31,7 @@ afterEach(async () => {
 
 describe('doctor --json with the context window section (NFR-04, DEC-10, TC-18)', () => {
   it('emits a report that matches the doctor schema at version 1', async () => {
-    await runDoctor({ command: 'doctor', json: true, harness: ['claude-code'] }, { projectRoot: root });
+    await runDoctor({ command: 'doctor', json: true, harness: ['claude-code'] }, { projectRoot: root, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
     const report = doctorReportSchema.parse(JSON.parse(stdout.join('')));
     expect(report.schemaVersion).toBe(1);
     expect(report.contextWindow).toEqual({ bridge: 'installed', source: 'contextWindowCeiling', lastWindowTokens: null });

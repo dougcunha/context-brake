@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { vi } from 'vitest';
 import { parseCliArgs } from '../../src/cli/argument-parser.js';
 import { dispatchCommand } from '../../src/cli/composition-root.js';
+import { fakeOverheadMeasurer } from './fake-overhead-measurer.js';
+import { fakeProcessRunner } from './fake-process-runner.js';
 
 export const PROTOCOL_PATH = 'docs/context-brake-protocol.md';
 export const CONFIG_PATH = 'context-brake.config.json';
@@ -27,7 +29,7 @@ export async function runCli(root: string, argv: readonly string[]): Promise<Com
   const out = vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => { stdout.push(String(chunk)); return true; });
   const err = vi.spyOn(process.stderr, 'write').mockImplementation((chunk: unknown) => { stderr.push(String(chunk)); return true; });
   try {
-    const code = await dispatchCommand(parseCliArgs(argv), { projectRoot: root });
+    const code = await dispatchCommand(parseCliArgs(argv), { projectRoot: root, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
     return { code, stdout: stdout.join(''), stderr: stderr.join('') };
   } finally {
     out.mockRestore();

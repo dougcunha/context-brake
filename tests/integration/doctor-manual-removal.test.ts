@@ -3,6 +3,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runDoctor } from '../../src/cli/commands/doctor.js';
+import { fakeOverheadMeasurer } from '../helpers/fake-overhead-measurer.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 const sampleConfig = {
   schemaVersion: 1,
@@ -25,7 +27,7 @@ describe('IT-11: Doctor detects manual integration removal (CA-14)', () => {
     await mkdir(join(tempDir, '.claude'), { recursive: true });
     await writeFile(join(tempDir, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
     await writeFile(join(tempDir, 'context-brake.config.json'), JSON.stringify(sampleConfig, null, 2), 'utf8');
-    const exitCode = await runDoctor({ command: 'doctor', json: true, harness: [] }, { projectRoot: tempDir });
+    const exitCode = await runDoctor({ command: 'doctor', json: true, harness: [] }, { projectRoot: tempDir, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
     expect(exitCode).toBe(2);
   });
 });

@@ -2,7 +2,7 @@ import { resolve } from 'node:path';
 import { isAutoRestartWanted } from '../../core/services/auto-restart-merge.js';
 import { assertAutoRestartTarget, assertStatuslineBridgeTarget, harnessSelection, type ParsedInitArgs } from '../init-arguments.js';
 import type { ProcessRunner } from '../../core/contracts/processes.js';
-import type { InstallReport } from '../../core/contracts/diagnostics.js';
+import type { InstallReport, OverheadMeasurer } from '../../core/contracts/diagnostics.js';
 import { ProjectConfigStore } from '../../infrastructure/storage/project-config-store.js';
 import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.js';
 import { NodeChangeApplier } from '../../infrastructure/storage/change-applier.js';
@@ -17,7 +17,7 @@ import { buildHarnessContext, collectHarnessSources } from '../detection-collect
 import { authorizeWrite } from '../confirmation.js';
 import { planConfigUpdates } from '../init-config-updates.js';
 
-export type CommandEnv = { projectRoot: string; runner?: ProcessRunner; userHome?: string };
+export type CommandEnv = { projectRoot: string; runner?: ProcessRunner; userHome?: string; overheadMeasurer?: OverheadMeasurer };
 
 async function loadExistingConfig(root: string) {
   const store = new ProjectConfigStore(resolve(root, 'context-brake.config.json'));

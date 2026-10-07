@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { DoctorReport } from '../../src/core/contracts/diagnostics.js';
 import { removeProject, runCli } from '../helpers/delegated-world.js';
 import { createLightProject, LIGHT_INIT } from '../helpers/light-world.js';
+import { FAKE_P95_MILLISECONDS, FAKE_SAMPLE_COUNT } from '../helpers/fake-overhead-measurer.js';
 
 const REMOVED_CODES = ['PROTOCOL_FILE_MISSING', 'PROTOCOL_FILE_MISMATCH', 'INSTRUCTION_REFERENCE_MISSING', 'STATE_FILES_NOT_IGNORED', 'INVALID_STATE_FILE', 'DELEGATED_SNAPSHOT_INACTIVE', 'DELEGATED_SNAPSHOT_NO_PATHS', 'LIGHT_MODE_DEFAULT_PENDING', 'LIGHT_MODE_LEFTOVER', 'LIGHT_MODE_ASSET_KEPT', 'MALFORMED_GITIGNORE_MARKERS', 'LEGACY_BLOCK_DETECTED'];
 let root: string;
@@ -30,5 +31,13 @@ describe('doctor snapshot report (prd-12 FR-09, TC-13)', () => {
   it('reports the configured snapshot and resume commands', async () => {
     await runCli(root, [...LIGHT_INIT, '--snapshot-command', '/sdd-snapshot', '--resume-command', '/sdd-resume', '--snapshot-trigger', 'YELLOW']);
     expect((await doctor()).snapshot).toEqual({ triggerZone: 'YELLOW', command: '/sdd-snapshot', resumeCommand: '/sdd-resume' });
+  });
+});
+
+describe('in-process doctor uses the injected overhead measurer (prd-13 DEC-02, TC-09)', () => {
+  it('reports the fake measurement instead of sampling hook processes', async () => {
+    await runCli(root, [...LIGHT_INIT]);
+    const overhead = (await doctor()).integrations.map((integration) => integration.overhead);
+    expect(overhead).toEqual([expect.objectContaining({ harness: 'claude-code', sampleCount: FAKE_SAMPLE_COUNT, p95Milliseconds: FAKE_P95_MILLISECONDS, status: 'pass' })]);
   });
 });

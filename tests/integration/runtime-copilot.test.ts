@@ -2,31 +2,31 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { installBuiltHook, runInstalledHook } from '../helpers/built-hook.js';
+import { bindHookInProcess, runBoundHook, type BoundHook } from '../helpers/in-process-hook.js';
 import { seedCriticalSession, seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 let root = '';
-let hook = '';
+let hook: BoundHook;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cb-copilot-runtime-'));
   await writeRuntimeConfig(root);
-  hook = await installBuiltHook('github-copilot-cli', root);
+  hook = await bindHookInProcess('github-copilot-cli', root);
 });
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('GitHub Copilot CLI built hook with documented payloads (CA-15)', () => {
   it('stays silent below and above the ceiling (prd-12 FR-07)', async () => {
-    const neutral = await runInstalledHook(hook, 'preToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' } });
+    const neutral = await runBoundHook(hook, 'preToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' } });
     expect(neutral.stdout).toBe('');
     await seedCriticalSession(root, { harness: 'github-copilot-cli', sessionId: 'critical', agentId: null });
-    const critical = await runInstalledHook(hook, 'preToolUse', { sessionId: 'critical', toolName: 'bash', toolArgs: { command: 'rm -rf x' } });
+    const critical = await runBoundHook(hook, 'preToolUse', { sessionId: 'critical', toolName: 'bash', toolArgs: { command: 'rm -rf x' } });
     expect(critical.stdout).toBe('');
   });
 
   it('injects additionalContext after the tool without touching the tool result', async () => {
     let last = { stdout: '' };
     for (let call = 1; call <= 4; call += 1) {
-      last = await runInstalledHook(hook, 'postToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' }, toolResult: { textResultForLlm: 'out', resultType: 'success' } });
+      last = await runBoundHook(hook, 'postToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' }, toolResult: { textResultForLlm: 'out', resultType: 'success' } });
     }
     const shape = JSON.parse(last.stdout) as Record<string, unknown>;
     expect(shape).toHaveProperty('additionalContext');
@@ -38,11 +38,11 @@ describe('GitHub Copilot CLI built hook with documented payloads (CA-15)', () =>
 describe('GitHub Copilot CLI built hook resets (DEC-13)', () => {
   it('resets on preCompact and on a new session source', async () => {
     await seedTurns(root, { harness: 'github-copilot-cli', sessionId: 'cp', agentId: null }, 9);
-    await runInstalledHook(hook, 'preCompact', { sessionId: 'cp' });
-    const reset = await runInstalledHook(hook, 'postToolUse', { sessionId: 'cp', toolName: 'bash' });
+    await runBoundHook(hook, 'preCompact', { sessionId: 'cp' });
+    const reset = await runBoundHook(hook, 'postToolUse', { sessionId: 'cp', toolName: 'bash' });
     expect(reset.stdout).toContain('turn=1 ');
-    await runInstalledHook(hook, 'sessionStart', { sessionId: 'cp', source: 'new' });
-    const started = await runInstalledHook(hook, 'postToolUse', { sessionId: 'cp', toolName: 'bash' });
+    await runBoundHook(hook, 'sessionStart', { sessionId: 'cp', source: 'new' });
+    const started = await runBoundHook(hook, 'postToolUse', { sessionId: 'cp', toolName: 'bash' });
     expect(started.stdout).toContain('turn=1 ');
   });
 });

@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { dispatchCommand } from '../../src/cli/composition-root.js';
 import { runDoctor } from '../../src/cli/commands/doctor.js';
+import { fakeOverheadMeasurer } from '../helpers/fake-overhead-measurer.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 const invalidConfig = JSON.stringify({
   schemaVersion: 1,
@@ -25,9 +27,9 @@ describe('IT-10: Invalid ContextBrake config blocks writes (CA-13)', () => {
   it('blocks writes in init and remove with exit code 2 and leaves repo unchanged', async () => {
     await writeFile(join(tempDir, 'context-brake.config.json'), invalidConfig, 'utf8');
     const beforeConfig = await readFile(join(tempDir, 'context-brake.config.json'), 'utf8');
-    const initExit = await dispatchCommand({ command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [] }, { projectRoot: tempDir });
+    const initExit = await dispatchCommand({ command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [] }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(initExit).toBe(2);
-    const removeExit = await dispatchCommand({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    const removeExit = await dispatchCommand({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(removeExit).toBe(2);
     const afterConfig = await readFile(join(tempDir, 'context-brake.config.json'), 'utf8');
     expect(afterConfig).toBe(beforeConfig);
@@ -41,7 +43,7 @@ describe('IT-10: Invalid ContextBrake config remains diagnosable (CA-13)', () =>
 
   it('doctor continues diagnostics and reports INVALID_CONTEXTBRAKE_CONFIG with rule issue', async () => {
     await writeFile(join(tempDir, 'context-brake.config.json'), invalidConfig, 'utf8');
-    const doctorExit = await runDoctor({ command: 'doctor', json: true, harness: [] }, { projectRoot: tempDir });
+    const doctorExit = await runDoctor({ command: 'doctor', json: true, harness: [] }, { projectRoot: tempDir, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
     expect(doctorExit).toBe(2);
   });
 });

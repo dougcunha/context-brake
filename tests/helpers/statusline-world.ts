@@ -5,6 +5,8 @@ import { vi } from 'vitest';
 import { parseCliArgs } from '../../src/cli/argument-parser.js';
 import { dispatchCommand } from '../../src/cli/composition-root.js';
 import { createClaudeProject, removeProject } from './delegated-world.js';
+import { fakeOverheadMeasurer } from './fake-overhead-measurer.js';
+import { fakeProcessRunner } from './fake-process-runner.js';
 
 export const LOCAL_PATH = '.claude/settings.local.json';
 export const STATE_PATH = '.context-brake/runtime/claude-statusline.json';
@@ -26,7 +28,7 @@ export async function runJson(world: StatuslineWorld, argv: readonly string[]): 
   vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => { stdout.push(String(chunk)); return true; });
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
   try {
-    await dispatchCommand(parseCliArgs(argv), { projectRoot: world.root, userHome: world.home });
+    await dispatchCommand(parseCliArgs(argv), { projectRoot: world.root, userHome: world.home, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
   } finally {
     vi.restoreAllMocks();
   }

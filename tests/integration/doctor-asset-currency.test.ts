@@ -11,6 +11,7 @@ import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
 import { NodeManifestStore } from '../../src/infrastructure/storage/manifest-store.js';
 import { readPackageVersion } from '../../src/infrastructure/storage/package-metadata.js';
 import { ProjectConfigStore } from '../../src/infrastructure/storage/project-config-store.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 function sha256(content: string): string {
   return createHash('sha256').update(content).digest('hex');
@@ -22,7 +23,7 @@ async function setupInstalledRepo(root: string): Promise<void> {
   await mkdir(join(root, '.github'), { recursive: true });
   const code = await runInit(
     { command: 'init', dryRun: false, yes: true, json: true, harness: ['claude-code', 'cursor', 'github-copilot-cli'], excludeHarness: [] },
-    { projectRoot: root },
+    { projectRoot: root, runner: fakeProcessRunner },
   );
   expect(code).toBe(0);
 }

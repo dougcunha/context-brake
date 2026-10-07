@@ -34,7 +34,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest, { autoRestart: config?.autoRestart !== undefined });
   const sources = await collectHarnessSources(adapters, ctx);
-  const measurer = new NodeOverheadMeasurer(env.projectRoot);
+  const measurer = env.overheadMeasurer ?? new NodeOverheadMeasurer(env.projectRoot);
   const packageVersion = await readPackageVersion();
   const report = await diagnoseProject({
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,

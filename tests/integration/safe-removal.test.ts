@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runRemove } from '../../src/cli/commands/remove.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 const LEGACY_CLAUDE_MD = '# My Instructions\n\n<!-- CONTEXTBRAKE:START -->\nfollow docs/context-brake-protocol.md\n<!-- CONTEXTBRAKE:END -->\n\n# User Section\nKeep this.';
 
@@ -50,7 +51,7 @@ describe('IT-09: Removal leaves files it does not own untouched (CA-12, FR-08, T
 
   it('preserves user settings, instruction files, the protocol file, and old plan files', async () => {
     await setupInstalledRepo(tempDir);
-    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(code).toBe(0);
     const settings = JSON.parse(await readFile(join(tempDir, '.claude/settings.json'), 'utf8'));
     expect(settings.hooks.PostToolUse).toHaveLength(1);

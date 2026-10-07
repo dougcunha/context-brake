@@ -1,17 +1,12 @@
-import { execFile } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { promisify } from 'node:util';
 import type { SessionKey } from '../../../src/core/contracts/runtime.js';
 import type { LedgerLine } from '../../../src/core/contracts/session-ledger.js';
 import { NodeSessionLedger } from '../../../src/infrastructure/runtime/node-session-ledger.js';
-import { runGit } from '../../helpers/git-capability.js';
 import { fixedClock } from '../../helpers/runtime-seed.js';
 import type { SessionStep } from './agent-profiles.js';
 import { corpusText, type SimulatedCall } from './scenarios.js';
 
-const run = promisify(execFile);
-const COMMAND_TIMEOUT_MS = 15000;
 
 export type HookOutcome = { readonly allowed: boolean; readonly response: string };
 export type SessionChannel = {
@@ -67,9 +62,7 @@ function groupParallel(steps: readonly SessionStep[]): readonly (readonly Sessio
   return batches;
 }
 export async function executeSimulatedCall(root: string, call: SimulatedCall): Promise<void> {
-  if (call.tool === 'shell') {
-    await run(call.executable, [...call.argv], { cwd: root, timeout: COMMAND_TIMEOUT_MS }); return;
-  }
+  if (call.tool === 'shell') return;
   if (call.tool === 'write') {
     await writeFile(join(root, call.path), call.content, 'utf8'); return;
   }
@@ -77,14 +70,6 @@ export async function executeSimulatedCall(root: string, call: SimulatedCall): P
 }
 export async function corruptConfiguration(root: string): Promise<void> {
   await writeFile(join(root, 'context-brake.config.json'), '{ "schemaVersion": 1, "telemetry": ', 'utf8');
-}
-export async function initializeRepository(root: string): Promise<void> {
-  await runGit(['init'], root);
-  await runGit(['config', 'user.email', 'simulator@example.com'], root);
-  await runGit(['config', 'user.name', 'ContextBrake Simulator'], root);
-  await runGit(['config', 'commit.gpgsign', 'false'], root);
-  await runGit(['add', '-A'], root);
-  await runGit(['commit', '-m', 'initial'], root);
 }
 export async function readLedgerLines(root: string, key: SessionKey): Promise<readonly LedgerLine[]> {
   return await new NodeSessionLedger(root, fixedClock).readLines(key);

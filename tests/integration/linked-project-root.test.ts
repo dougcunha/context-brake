@@ -8,6 +8,7 @@ import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import { normalizeSeparators } from '../../src/infrastructure/storage/path-boundary.js';
 import { snapshotFiles } from '../../src/infrastructure/storage/node-file-system.js';
 import { attemptLink, linkExists, requireLink } from '../helpers/link-capability.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 const initArgs: ParsedInitArgs = {
   command: 'init', dryRun: false, yes: true, json: true,
@@ -32,13 +33,13 @@ describe('linked project root installation and idempotency (T11.4)', () => {
       await requireLink(ctx, await attemptLink(realRoot, linkRoot), linkRoot);
       expect(await linkExists(linkRoot)).toBe(true);
       const canonical = normalizeSeparators(await realpath(realRoot));
-      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
+      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot, runner: fakeProcessRunner })).toBe(0);
       const snaps = await snapshotFiles(linkRoot, ['context-brake.config.json', '.context-brake/manifest.json']);
       expect(snaps[0]?.realPath).toBe(`${canonical}/context-brake.config.json`);
       expect(snaps[1]?.realPath).toBe(`${canonical}/.context-brake/manifest.json`);
       const firstContent = await readFile(join(realRoot, 'context-brake.config.json'), 'utf8');
       const firstManifest = await readFile(join(realRoot, '.context-brake/manifest.json'), 'utf8');
-      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
+      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot, runner: fakeProcessRunner })).toBe(0);
       expect(await readFile(join(realRoot, 'context-brake.config.json'), 'utf8')).toBe(firstContent);
       expect(await readFile(join(realRoot, '.context-brake/manifest.json'), 'utf8')).toBe(firstManifest);
     });
@@ -53,10 +54,10 @@ describe('symlinked config and linked manifest in linked root (T11.4)', () => {
       const configLink = join(realRoot, 'context-brake.config.json');
       await requireLink(ctx, await attemptLink(realTarget, configLink, 'file'), configLink);
       await requireLink(ctx, await attemptLink(realRoot, linkRoot), linkRoot);
-      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
+      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot, runner: fakeProcessRunner })).toBe(0);
       expect((await lstat(join(realRoot, 'context-brake.config.json'))).isSymbolicLink()).toBe(true);
       const content1 = await readFile(realTarget, 'utf8');
-      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
+      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot, runner: fakeProcessRunner })).toBe(0);
       expect(await readFile(realTarget, 'utf8')).toBe(content1);
     });
   });
@@ -67,10 +68,10 @@ describe('symlinked config and linked manifest in linked root (T11.4)', () => {
       await mkdir(realCb, { recursive: true });
       await requireLink(ctx, await attemptLink(realCb, join(realRoot, '.context-brake')), join(realRoot, '.context-brake'));
       await requireLink(ctx, await attemptLink(realRoot, linkRoot), linkRoot);
-      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
+      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot, runner: fakeProcessRunner })).toBe(0);
       expect((await lstat(join(realRoot, '.context-brake'))).isSymbolicLink()).toBe(true);
       const manifest1 = await readFile(join(realCb, 'manifest.json'), 'utf8');
-      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot })).toBe(0);
+      expect(await dispatchCommand(initArgs, { projectRoot: linkRoot, runner: fakeProcessRunner })).toBe(0);
       expect(await readFile(join(realCb, 'manifest.json'), 'utf8')).toBe(manifest1);
     });
   });

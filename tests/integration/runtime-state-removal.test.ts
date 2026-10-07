@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runRemove } from '../../src/cli/commands/remove.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
 async function writeConfigAndManifest(root: string, hookSha: string): Promise<void> {
   const manifest = {
@@ -42,7 +43,7 @@ describe('runtime-state removal on every remove (prd-12 FR-08, DEC-04, TC-12)', 
     await mkdir(join(tempDir, '.context-brake/runtime/sessions'), { recursive: true });
     await writeFile(join(tempDir, '.context-brake/runtime/lock.json'), '{}', 'utf8');
     await writeFile(join(tempDir, '.context-brake/runtime/sessions/s1.json'), '{}', 'utf8');
-    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(code).toBe(0);
     const runtimeDirExists = await stat(join(tempDir, '.context-brake/runtime')).then(() => true).catch(() => false);
     const contextBrakeDirExists = await stat(join(tempDir, '.context-brake')).then(() => true).catch(() => false);
@@ -52,8 +53,8 @@ describe('runtime-state removal on every remove (prd-12 FR-08, DEC-04, TC-12)', 
 
   it('plans and changes nothing when repeating remove after everything is already gone', async () => {
     await setupInstalledRepo(tempDir);
-    await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
-    const secondCode = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
+    const secondCode = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(secondCode).toBe(0);
   });
 });
@@ -68,7 +69,7 @@ describe('runtime-state removal leaves stray content alone (prd-12 DEC-04, TC-12
     await mkdir(join(tempDir, '.context-brake/runtime'), { recursive: true });
     await writeFile(join(tempDir, '.context-brake/runtime/lock.json'), '{}', 'utf8');
     await writeFile(join(tempDir, '.context-brake/stray.txt'), 'not ours', 'utf8');
-    const result = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir });
+    const result = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(result).toBe(0);
     const runtimeDirExists = await stat(join(tempDir, '.context-brake/runtime')).then(() => true).catch(() => false);
     const strayExists = await stat(join(tempDir, '.context-brake/stray.txt')).then(() => true).catch(() => false);

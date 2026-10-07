@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "generation": 24,
+  "feature": "prd-13-refatoracao-modo-leve-testes-rapidos",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": "7a0aa04b-a714-4b09-b0cd-5e010c328810",
+  "objective": "npm test and npm run coverage within 120 s (target 60 s): benchmarks and acceptance scale in a separate script, e2e reduced to a smoke set, in-process tests, budget check.",
+  "constraints": [
+    "Starts after prd-12 is accepted (budget measured after its deletions)",
+    "No migration or backward compatibility (prd-12 DEC-PD-03)"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_04/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "e3d411c798719936cb5700138eacab18c784da38954d07488528d9e61e450386",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "e26b423869d7c61ddddf866747a23ce57b74b0a073e0638aea9b2ce7b784c500",
+      "decision_id": "DEC-EXC-01"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "291bb70ddc2630969b9f7fa48891319d17533d5d9972fbbe8d6a2b02819c629c",
+      "decision_id": "DEC-EXC-01"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-02",
+    "DEC-EXC-01",
+    "DEC-EXC-02",
+    "DEC-RES-01"
+  ],
+  "git_base": "cca3a29",
+  "worktree_evidence": "done/task_01-07.md; codereview_01/done/task_08-10.md#Handoff",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "Reservations + HIL 3",
+    "question": "Accept the new rule-wording reservation and accept the prd-13 delivery?",
+    "affected": [
+      "codereview_04",
+      "prd-13"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 3,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "Reservations decision on codereview_04 new item, then HIL 3 acceptance (commit on request).",
+    "read": [
+      {
+        "path": "tasks/prd-13-refatoracao-modo-leve-testes-rapidos/codereview_04/codereview.md",
+        "section": "Limitations and open items"
+      }
+    ]
+  }
+}

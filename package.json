@@ -26,9 +26,11 @@
     "lint": "eslint .",
     "test": "vitest run",
     "coverage": "vitest run --coverage",
+    "test:bench": "vitest run --config vitest.bench.config.ts",
+    "test:budget": "tsx scripts/check-test-budget.ts",
     "package:smoke": "npm run assets:check && tsx scripts/check-package.ts && node dist/src/cli/main.js",
     "release:verify-tag": "tsx scripts/check-release-tag.ts",
-    "release:check": "npm run schemas:check && npm run dependencies:check && npm run build && npm run typecheck && npm run lint && npm run coverage && npm run package:smoke"
+    "release:check": "npm run schemas:check && npm run dependencies:check && npm run build && npm run typecheck && npm run lint && npm run coverage && npm run test:bench && npm run test:budget && npm run package:smoke"
   },
   "dependencies": {
     "jsonc-parser": "^3.3.1",

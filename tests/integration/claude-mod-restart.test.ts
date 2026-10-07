@@ -69,7 +69,7 @@ describe('failures never break the session (NFR-04, TC-13)', () => {
     scene.state.seedFailure = true;
     await signalTurn(scene);
     await settleClear(scene);
-    expect(await readCodes(scene)).toEqual(['RESTARTED', 'ERROR_INTERNAL']);
+    expect(await waitForCodes(scene, 2)).toEqual(['RESTARTED', 'ERROR_INTERNAL']);
   });
 });
 

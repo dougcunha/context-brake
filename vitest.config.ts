@@ -1,11 +1,12 @@
 import { configDefaults, defineConfig, type TestProjectInlineConfiguration, type ViteUserConfig } from 'vitest/config';
 import { processLaneGlobs, TEST_FILE_PATTERN, SERIAL_LANE_FILES } from './tests/test-lanes.js';
+import { BENCH_FILE_PATTERN } from './vitest.bench.config.js';
 
 const GLOBAL_TIMEOUT_MS = 30000;
 const PARALLEL_GROUP_ORDER = 0;
 const PROCESS_GROUP_ORDER = 1;
 const SERIAL_GROUP_ORDER = 2;
-const MAX_WORKERS = 2;
+const MAX_WORKERS = 6;
 
 type LaneOptions = NonNullable<TestProjectInlineConfiguration['test']>;
 
@@ -18,7 +19,7 @@ function lanes(): TestProjectInlineConfiguration[] {
     lane({
       name: 'parallel',
       include: [TEST_FILE_PATTERN],
-      exclude: [...configDefaults.exclude, ...processLaneGlobs(), ...SERIAL_LANE_FILES],
+      exclude: [...configDefaults.exclude, BENCH_FILE_PATTERN, ...processLaneGlobs(), ...SERIAL_LANE_FILES],
       sequence: { groupOrder: PARALLEL_GROUP_ORDER },
     }),
     lane({

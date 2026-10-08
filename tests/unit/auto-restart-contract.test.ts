@@ -1,9 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
-import { modLogSchema } from '../../src/core/contracts/auto-restart.js';
+import { restartLogSchema } from '../../src/core/contracts/restart-log.js';
 import { configurationSchema, DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 
-const VALID_LOG = { v: 1, modVersion: '1.0.0', claudeVersion: '2.1.289', records: [{ at: '2026-10-04T21:00:00.000Z', code: 'RESTARTED' }] };
+const VALID_LOG = { v: 2, harness: 'claude-code', componentVersion: '1.0.0', harnessVersion: '2.1.289', records: [{ at: '2026-10-04T21:00:00.000Z', code: 'RESTARTED' }] };
 
 function parseWith(autoRestart: unknown) {
   return configurationSchema.safeParse({ ...DEFAULT_CONFIG, autoRestart });
@@ -47,11 +47,11 @@ describe('compatibility and published schema (NFR-03, TC-24)', () => {
 
 describe('mod log shape (DEC-10)', () => {
   it('accepts a log of coded records', () => {
-    expect(modLogSchema.safeParse(VALID_LOG).success).toBe(true);
+    expect(restartLogSchema.safeParse(VALID_LOG).success).toBe(true);
   });
 
   it('rejects unknown codes and any free-text field', () => {
-    expect(modLogSchema.safeParse({ ...VALID_LOG, records: [{ at: 'x', code: 'UNKNOWN' }] }).success).toBe(false);
-    expect(modLogSchema.safeParse({ ...VALID_LOG, records: [{ at: 'x', code: 'RESTARTED', text: 'leak' }] }).success).toBe(false);
+    expect(restartLogSchema.safeParse({ ...VALID_LOG, records: [{ at: 'x', code: 'UNKNOWN' }] }).success).toBe(false);
+    expect(restartLogSchema.safeParse({ ...VALID_LOG, records: [{ at: 'x', code: 'RESTARTED', text: 'leak' }] }).success).toBe(false);
   });
 });

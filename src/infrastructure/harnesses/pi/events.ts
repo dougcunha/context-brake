@@ -30,6 +30,12 @@ function assistantText(message: unknown): string {
   }).join('\n');
 }
 
+export function lastAssistantText(messages: unknown): string {
+  if (!Array.isArray(messages)) return '';
+  const last = [...messages].reverse().find((message) => asRecord(message)?.['role'] === 'assistant');
+  return assistantText(last);
+}
+
 function resetOf(session: SessionKey, reason: string | undefined): RuntimeEvent | null {
   if (reason === 'new' || reason === 'startup') return { kind: 'session_reset', session, reason: 'new' };
   return null;

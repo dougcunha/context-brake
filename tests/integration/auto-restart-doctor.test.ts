@@ -71,10 +71,10 @@ describe('doctor last automatic-restart skip (FR-08, DEC-10, TC-22)', () => {
     await runJson(world, [...INIT, '--auto-restart']);
     await writeModLog(world.root, 'skip', modLog([{ at: '2026-10-05T10:00:00.000Z', code: 'RESTARTED' }, { at: '2026-10-05T11:00:00.000Z', code: 'SKIP_NO_PROGRESS' }]));
     expect(codes(await autoRestartFindings(world.root, true))).toEqual(['AUTO_RESTART_READY:ok', 'AUTO_RESTART_LAST_SKIP:ok']);
-    await writeModLog(world.root, 'skip', modLog([{ at: '2026-10-05T12:00:00.000Z', code: 'ERROR_CLEAR_REJECTED' }]));
+    await writeModLog(world.root, 'skip', modLog([{ at: '2026-10-05T12:00:00.000Z', code: 'ERROR_RESTART_REJECTED' }]));
     const last = (await autoRestartFindings(world.root, true)).at(-1);
     expect(last?.severity).toBe('warning');
-    expect(last?.message).toContain('ERROR_CLEAR_REJECTED');
+    expect(last?.message).toContain('ERROR_RESTART_REJECTED');
   });
 });
 

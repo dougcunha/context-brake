@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
 import { CliArgumentError } from '../../src/cli/argument-validator.js';
 import { planConfigUpdates } from '../../src/cli/init-config-updates.js';
 import { assertAutoRestartTarget, parseInit } from '../../src/cli/init-arguments.js';
@@ -55,15 +56,16 @@ describe('auto restart command line (FR-07, TC-21)', () => {
     expect(() => planConfigUpdates(null, parseInit(['--auto-restart', '--no-auto-restart']))).toThrow('--auto-restart cannot be combined with --no-auto-restart.');
   });
 
-  it('requires claude-code among the target harnesses', () => {
-    expect(() => parseInit(['--auto-restart', '--exclude-harness', 'claude-code'])).toThrow(CliArgumentError);
-    expect(() => parseInit(['--no-auto-restart', '--harness', 'codex-cli'])).toThrow(CliArgumentError);
-    expect(() => assertAutoRestartTarget(parseInit(['--auto-restart']), [detection('codex-cli', 'project')])).toThrow(CliArgumentError);
-    expect(() => assertAutoRestartTarget(parseInit(['--auto-restart']), [detection('claude-code', 'project')])).not.toThrow();
+  it('requires one active harness with a restart mode (prd-14 DEC-11, TC-13)', () => {
+    expect(() => parseInit(['--auto-restart', '--exclude-harness', 'claude-code'])).not.toThrow();
+    expect(() => assertAutoRestartTarget(parseInit(['--auto-restart']), [detection('antigravity-cli', 'project'), detection('opencode', 'project')], getAllAdapters())).toThrow('--auto-restart needs at least one active harness with a restart mode');
+    expect(() => assertAutoRestartTarget(parseInit(['--auto-restart']), [detection('codex-cli', 'project')], getAllAdapters())).not.toThrow();
+    expect(() => assertAutoRestartTarget(parseInit(['--auto-restart']), [detection('pi', 'project')], getAllAdapters())).not.toThrow();
+    expect(() => assertAutoRestartTarget(parseInit(['--no-auto-restart']), [detection('antigravity-cli', 'project')], getAllAdapters())).not.toThrow();
   });
 
   it('accepts runs without the flags whatever the harnesses are', () => {
-    expect(() => assertAutoRestartTarget(parseInit([]), [detection('codex-cli', 'project')])).not.toThrow();
+    expect(() => assertAutoRestartTarget(parseInit([]), [detection('codex-cli', 'project')], getAllAdapters())).not.toThrow();
     expect(() => parseInit(['--exclude-harness', 'claude-code'])).not.toThrow();
   });
 });

@@ -81,7 +81,7 @@ async function dispatchHook(input: HookDispatch): Promise<RuntimeDecision> {
   deadline.mark('input');
   const engineInput = await input.adapter.mapInput(input.eventName, payload, services.errors);
   deadline.mark('engine');
-  return services.engine.handle(event, { ...engineInput, onPhase: deadline.mark });
+  return services.engine.handle(event, { ...engineInput, onPhase: deadline.mark, deadline });
 }
 type DecisionWrite = { readonly adapter: ProcessHarnessAdapter; readonly context: ProcessHookContext; readonly decision: RuntimeDecision; readonly eventName: string };
 function writeDecision(input: DecisionWrite): void {

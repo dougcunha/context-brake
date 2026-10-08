@@ -1,0 +1,933 @@
+# doctor on a claude-code-only fixture with restart on (TC-12, FR-10, FR-11)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor
+exit=1
+--- stdout
+[WARN] ContextBrake doctor: warnings
+  - claude-code: installed (support: full, overhead: 139.1ms/100ms (fail))
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+    * post_tool_telemetry: The minimum harness version is unverified, so version compatibility cannot be claimed.
+  - context window: contextWindowCeiling (bridge: installed, last window: unknown)
+  - snapshot: not configured (zone headers only, trigger: RED)
+  [WARN] AUTO_RESTART_NOT_LOADED: Automatic restart is on, but no Claude Code session has loaded the mod yet.
+    Impact: Claude Code does not clear the session when ContextBrake asks for a reset.
+    Remediation: Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions; check those settings.
+  [WARN] STATUSLINE_LOCAL_TRACKED: .claude/settings.local.json is not ignored by Git.
+    Impact: The machine-specific status line command can be committed.
+    Remediation: Add .claude/settings.local.json to .gitignore.
+  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.
+    Impact: ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.
+    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.
+  [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 140.1,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "Automatic restart is on, but no Claude Code session has loaded the mod yet.",
+      "impact": "Claude Code does not clear the session when ContextBrake asks for a reset.",
+      "remediation": "Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions; check those settings."
+    },
+    {
+      "code": "STATUSLINE_LOCAL_TRACKED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": ".claude/settings.local.json is not ignored by Git.",
+      "impact": "The machine-specific status line command can be committed.",
+      "remediation": "Add .claude/settings.local.json to .gitignore."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+--- stderr
+--- end
+
+# AUTO_RESTART findings: [["AUTO_RESTART_NOT_LOADED","claude-code","Automatic restart is on, but no Claude Code session has loaded the mod yet.","Claude Code does not clear the session when ContextBrake asks for a reset."],["AUTO_RESTART_HANDOFF",null,"Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",null]]
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 160.1,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "STATUSLINE_LOCAL_TRACKED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": ".claude/settings.local.json is not ignored by Git.",
+      "impact": "The machine-specific status line command can be committed.",
+      "remediation": "Add .claude/settings.local.json to .gitignore."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_LAST_SKIP",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "The last restart request was not carried out: SKIP_HANDOFF_STALE at 2026-10-08T12:51:46.153Z.",
+      "impact": null,
+      "remediation": "See the notice in the Claude Code transcript for that turn."
+    },
+    {
+      "code": "AUTO_RESTART_READY",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "Automatic restart is on and Claude Code loaded the mod.",
+      "impact": null,
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+--- stderr
+--- end
+
+# LAST_SKIP finding: {"code":"AUTO_RESTART_LAST_SKIP","severity":"ok","scope":"harness","harness":"claude-code","path":".context-brake/runtime/restart/claude-code","message":"The last restart request was not carried out: SKIP_HANDOFF_STALE at 2026-10-08T12:51:46.153Z.","impact":null,"remediation":"See the notice in the Claude Code transcript for that turn."}
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 140,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_OUTDATED_MOD",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "The last Claude Code session loaded mod 0.0.1, but ContextBrake installs 1.0.0.",
+      "impact": "The running mod may not match this ContextBrake version.",
+      "remediation": "Run context-brake init --auto-restart, then restart Claude Code."
+    },
+    {
+      "code": "STATUSLINE_LOCAL_TRACKED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": ".claude/settings.local.json is not ignored by Git.",
+      "impact": "The machine-specific status line command can be committed.",
+      "remediation": "Add .claude/settings.local.json to .gitignore."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 135.9,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "Automatic restart is on, but no Claude Code session has loaded the mod yet.",
+      "impact": "Claude Code does not clear the session when ContextBrake asks for a reset.",
+      "remediation": "Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions; check those settings."
+    },
+    {
+      "code": "STATUSLINE_LOCAL_TRACKED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": ".claude/settings.local.json is not ignored by Git.",
+      "impact": "The machine-specific status line command can be committed.",
+      "remediation": "Add .claude/settings.local.json to .gitignore."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 177,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "Automatic restart is on, but no Claude Code session has loaded the mod yet.",
+      "impact": "Claude Code does not clear the session when ContextBrake asks for a reset.",
+      "remediation": "Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions; check those settings."
+    },
+    {
+      "code": "STATUSLINE_LOCAL_TRACKED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": ".claude/settings.local.json is not ignored by Git.",
+      "impact": "The machine-specific status line command can be committed.",
+      "remediation": "Add .claude/settings.local.json to .gitignore."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/handoff.md",
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --snapshot-command /sdd-snapshot
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /sdd-snapshot at RED
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 168.6,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "Automatic restart is on, but no Claude Code session has loaded the mod yet.",
+      "impact": "Claude Code does not clear the session when ContextBrake asks for a reset.",
+      "remediation": "Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions; check those settings."
+    },
+    {
+      "code": "STATUSLINE_LOCAL_TRACKED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.local.json",
+      "message": ".claude/settings.local.json is not ignored by Git.",
+      "impact": "The machine-specific status line command can be committed.",
+      "remediation": "Add .claude/settings.local.json to .gitignore."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/handoff.md",
+      "message": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": "/sdd-snapshot",
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+--- stderr
+--- end

@@ -36,7 +36,7 @@ async function collectCandidateDirectories(input: PruneInput): Promise<Candidate
     if (change.kind !== 'delete' || !PRUNABLE_OWNERS.has(change.owner) || !input.appliedPaths.has(change.path)) continue;
     let current = posix.dirname(normalize(change.realPath));
     while (current.startsWith(contextBrakeDir)) {
-      dirs.set(current, current !== contextBrakeDir);
+      dirs.set(current, input.pruneRuntime && current !== contextBrakeDir);
       if (current === contextBrakeDir) break;
       current = posix.dirname(current);
     }

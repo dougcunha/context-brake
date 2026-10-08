@@ -11,7 +11,7 @@ export const ompPayloadSchema = z.looseObject({
   content: z.optional(z.unknown()),
   reason: z.optional(z.string()),
   message: z.optional(z.unknown()),
-  last_assistant_message: z.optional(z.string()),
+  last_assistant_message: z.optional(z.unknown()),
 });
 
 export const ompToolResultPayloadSchema = ompPayloadSchema;

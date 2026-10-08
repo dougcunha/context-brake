@@ -1,0 +1,26 @@
+{
+  "id": "evt_1179dc65b0019L2Df8BOoX5SNt",
+  "created": 1791397578331,
+  "type": "session.inbox.enqueued",
+  "durable": {
+    "aggregateID": "ses_ee8638753ffeQa6NIK0nsEBB6V",
+    "seq": 14,
+    "version": 1
+  },
+  "location": {
+    "directory": "<project>"
+  },
+  "data": {
+    "sessionID": "ses_ee8638753ffeQa6NIK0nsEBB6V",
+    "inboxID": "msg_1179dc63e001o6tfNLenUR3Vy3",
+    "item": {
+      "type": "user",
+      "payload": {
+        "text": "Reply with exactly two lines: first the word READY, then [REQUEST_SESSION_RESET]",
+        "files": [],
+        "agents": []
+      },
+      "delivery": "steer"
+    }
+  }
+}

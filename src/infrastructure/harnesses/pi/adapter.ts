@@ -10,7 +10,9 @@ import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { detectPi, PI_EXECUTABLES } from './detector.js';
 import { PI_CAPABILITIES } from './capabilities.js';
-import { PI_EXTENSION_FILE, planPiInstall, planPiRemove } from './planner.js';
+import { diagnoseInProcessRestart } from '../common/restart-diagnostics.js';
+import { harnessRestartMode } from '../../../core/services/restart-install-extras.js';
+import { PI_EXTENSION_FILE, PI_RESTART_FILE, planPiInstall, planPiRemove } from './planner.js';
 
 export class PiAdapter implements HarnessAdapter {
   readonly id = 'pi';
@@ -29,11 +31,11 @@ export class PiAdapter implements HarnessAdapter {
   }
 
   planInstall(context: HarnessContext) {
-    return planPiInstall(context.projectRoot);
+    return planPiInstall(context);
   }
 
   planRemove(context: HarnessContext) {
-    return planPiRemove(context.projectRoot);
+    return planPiRemove(context);
   }
 
   async diagnose(context: HarnessContext): Promise<readonly DiagnosticFinding[]> {
@@ -55,6 +57,7 @@ export class PiAdapter implements HarnessAdapter {
         findings.push(createInvalidConfigFinding(this.id, '.pi/settings.json', msg));
       }
     }
+    findings.push(...await diagnoseInProcessRestart(context, { harness: this.id, label: 'Pi', restartFile: PI_RESTART_FILE, modeText: harnessRestartMode(this.capabilityProfile()).reason }));
     return findings;
   }
 

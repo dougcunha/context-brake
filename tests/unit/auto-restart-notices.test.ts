@@ -1,6 +1,7 @@
 import { getEncoding } from 'js-tiktoken';
 import { describe, expect, it } from 'vitest';
-import { MOD_LOG_MAX_RECORDS, RESTART_REASON_CODES } from '../../src/core/contracts/auto-restart.js';
+import { RESTART_REASON_CODES } from '../../src/core/contracts/auto-restart.js';
+import { RESTART_LOG_MAX_RECORDS as MOD_LOG_MAX_RECORDS } from '../../src/core/contracts/restart-log.js';
 import { appendLogRecord, buildLogRecord, renderRestartNotice, seedText } from '../../src/core/services/auto-restart-notices.js';
 
 const encoding = getEncoding('o200k_base');

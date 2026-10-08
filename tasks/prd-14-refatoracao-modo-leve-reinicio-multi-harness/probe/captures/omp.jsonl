@@ -1,0 +1,18 @@
+{"at":"2026-10-07T17:59:49.095Z","harness":"omp","loadId":"zpqpyw5e","event":"loaded","data":{"cwd":"<project>"}}
+{"at":"2026-10-07T17:59:49.712Z","harness":"omp","loadId":"zpqpyw5e","event":"session_start","data":{"event":{"type":"session_start"},"mode":"tui","hasUI":true,"sessionId":"01a11785-869a-708c-8db4-b6844e96fd6d","state":{"restarts":0,"strategy":"send-user-message"}}}
+{"at":"2026-10-07T18:03:39.904Z","harness":"omp","loadId":"zpqpyw5e","event":"input","data":{"text":"Reply with exactly two lines: first the word READY, then [REQUEST_SESSION_RESET]","source":"interactive"}}
+{"at":"2026-10-07T18:03:39.950Z","harness":"omp","loadId":"zpqpyw5e","event":"agent_start","data":{"event":{"type":"agent_start"},"at":1791396219950}}
+{"at":"2026-10-07T18:03:41.607Z","harness":"omp","loadId":"zpqpyw5e","event":"session_stop","data":{"turnId":0,"sessionId":"01a11785-869a-708c-8db4-b6844e96fd6d","lastAssistantText":"READY\n[REQUEST_SESSION_RESET]","marker":true,"mode":"tui","hasUI":true}}
+{"at":"2026-10-07T18:03:41.620Z","harness":"omp","loadId":"zpqpyw5e","event":"dispatch","data":{"via":"pi.sendUserMessage"}}
+{"at":"2026-10-07T18:03:41.631Z","harness":"omp","loadId":"zpqpyw5e","event":"agent_start","data":{"event":{"type":"agent_start"},"at":1791396221631}}
+{"at":"2026-10-07T18:06:11.216Z","harness":"omp","loadId":"zpqpyw5e","event":"input","data":{"text":"Reply with exactly two lines: first the word READY, then [REQUEST_SESSION_RESET]","source":"interactive"}}
+{"at":"2026-10-07T18:06:11.228Z","harness":"omp","loadId":"zpqpyw5e","event":"agent_start","data":{"event":{"type":"agent_start"},"at":1791396371228}}
+{"at":"2026-10-07T18:06:15.182Z","harness":"omp","loadId":"zpqpyw5e","event":"session_stop","data":{"turnId":0,"sessionId":"01a11785-869a-708c-8db4-b6844e96fd6d","lastAssistantText":"READY\n[REQUEST_SESSION_RESET]","marker":true,"mode":"tui","hasUI":true}}
+{"at":"2026-10-07T18:06:15.187Z","harness":"omp","loadId":"zpqpyw5e","event":"dispatch","data":{"via":"ctx.ui.setEditorText"}}
+{"at":"2026-10-07T18:06:34.731Z","harness":"omp","loadId":"zpqpyw5e","event":"input","data":{"text":"/context-brake-probe-restart","source":"interactive"}}
+{"at":"2026-10-07T18:06:34.734Z","harness":"omp","loadId":"zpqpyw5e","event":"command","data":{"args":"","hasNewSession":true}}
+{"at":"2026-10-07T18:06:34.826Z","harness":"omp","loadId":"zpqpyw5e","event":"new_session_result","data":{"result":{"cancelled":false},"sessionId":"01a1178b-b6f9-7385-8916-cf9ceba0f2f9"}}
+{"at":"2026-10-07T18:06:34.843Z","harness":"omp","loadId":"zpqpyw5e","event":"seed_sent","data":{}}
+{"at":"2026-10-07T18:06:34.848Z","harness":"omp","loadId":"zpqpyw5e","event":"agent_start","data":{"event":{"type":"agent_start"},"at":1791396394848}}
+{"at":"2026-10-07T18:06:36.031Z","harness":"omp","loadId":"zpqpyw5e","event":"session_stop","data":{"turnId":0,"sessionId":"01a1178b-b6f9-7385-8916-cf9ceba0f2f9","lastAssistantText":"SEEDED","marker":false,"mode":"tui","hasUI":true}}
+{"at":"2026-10-07T18:06:47.079Z","harness":"omp","loadId":"zpqpyw5e","event":"input","data":{"text":"/q","source":"interactive"}}

@@ -1,0 +1,24 @@
+# init --auto-restart on a opencode-only fixture (TC-13, FR-07, FR-08, FR-10, DEC-11, DEC-12)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart --dry-run
+exit=64
+--- stdout
+--- stderr
+[ERROR] INVALID_ARGUMENTS: --auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run init where one of them is configured.
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart
+exit=64
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "INVALID_ARGUMENTS",
+    "message": "--auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run init where one of them is configured."
+  },
+  "exitCode": 64
+}
+--- stderr
+--- end

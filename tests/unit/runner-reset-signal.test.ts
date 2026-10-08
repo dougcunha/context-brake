@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { endsWithResetSignal, hasResetSignal, SESSION_RESET_SIGNAL } from '../../src/core/services/reset-notice.js';
+import { endsWithResetSignal, SESSION_RESET_SIGNAL } from '../../src/core/services/reset-notice.js';
 
 describe('runner reset signal (RF3, DEC-05, TC-10)', () => {
   it.each([
@@ -19,10 +19,5 @@ describe('runner reset signal (RF3, DEC-05, TC-10)', () => {
     '',
   ])('rejects a signal that does not end the final line', (text) => {
     expect(endsWithResetSignal(text)).toBe(false);
-  });
-
-  it('keeps the brake predicate as an exact match', () => {
-    expect(endsWithResetSignal(`Done. ${SESSION_RESET_SIGNAL}`)).toBe(true);
-    expect(hasResetSignal(`Done. ${SESSION_RESET_SIGNAL}`)).toBe(false);
   });
 });

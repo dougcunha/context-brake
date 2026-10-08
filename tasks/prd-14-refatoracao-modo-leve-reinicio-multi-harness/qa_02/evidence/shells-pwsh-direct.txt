@@ -1,0 +1,14 @@
+# NFR-02: built CLI run directly in a PowerShell 7.6.6 session (this QA session's PowerShell tool), fixture copy pi + codex-cli
+# under the scratchpad (qa2/runs/pwsh-direct/repo), HOME/USERPROFILE set to a scratch home, NO_COLOR=1.
+# The spawned pwsh/powershell.exe attempts in shells.txt printed nothing (exit 0) from the Node harness; this direct run replaces them.
+PS 7.6.6
+$ node dist/src/cli/main.js init --yes --auto-restart   (filtered: AUTO_RESTART_MODE | ContextBrake init)
+[OK] ContextBrake init (applied)
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+  [OK] AUTO_RESTART_MODE: Restart is automatic on pi.
+exit=0
+restart file: True        (.pi/extensions/context-brake-restart.js)
+$ node dist/src/cli/main.js remove --yes   (filtered: ContextBrake remove)
+[OK] ContextBrake remove (applied)
+exit=0
+restart file: False

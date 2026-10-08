@@ -17,6 +17,8 @@ export const ASSET_ENTRIES: readonly AssetEntry[] = [
   { source: 'assets/runtime/opencode-plugin.ts', destination: 'dist/assets/runtime/opencode-plugin.js' },
   { source: 'assets/runtime/pi-extension.ts', destination: 'dist/assets/runtime/pi-extension.js' },
   { source: 'assets/runtime/omp-extension.ts', destination: 'dist/assets/runtime/omp-extension.js' },
+  { source: 'assets/runtime/pi-restart.ts', destination: 'dist/assets/runtime/pi-restart.js' },
+  { source: 'assets/runtime/omp-restart.ts', destination: 'dist/assets/runtime/omp-restart.js' },
 ];
 
 const BUNDLE_TARGET = 'node20';

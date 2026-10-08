@@ -1,0 +1,321 @@
+PASS [init-claude-code] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-claude-code] dry-run text: text carries status labels
+PASS [init-claude-code] dry-run exit 0
+PASS [init-claude-code] dry-run lists .context-brake/.gitignore
+PASS [init-claude-code] dry-run lists .context-brake/claude-mod/context-brake-restart/hooks/register.mjs
+PASS [init-claude-code] dry-run writes nothing
+PASS [init-claude-code] init --json exit 0 and matches the install report schema
+PASS [init-claude-code] one AUTO_RESTART_MODE finding for the harness
+PASS [init-claude-code] .context-brake/.gitignore content
+PASS [init-claude-code] .pi/extensions/context-brake-restart.js absent
+PASS [init-claude-code] .omp/extensions/context-brake-restart.js absent
+PASS [init-claude-code] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs installed
+PASS [init-claude-code] manifest records the ignore file
+PASS [init-claude-code] second run plans no change
+PASS [init-codex-cli] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-codex-cli] dry-run text: text carries status labels
+PASS [init-codex-cli] dry-run exit 0
+PASS [init-codex-cli] dry-run lists .context-brake/.gitignore
+PASS [init-codex-cli] dry-run writes nothing
+PASS [init-codex-cli] init --json exit 0 and matches the install report schema
+PASS [init-codex-cli] one AUTO_RESTART_MODE finding for the harness
+PASS [init-codex-cli] AUTO_RESTART_MODE impact text (DEC-10)
+PASS [init-codex-cli] .context-brake/.gitignore content
+PASS [init-codex-cli] .pi/extensions/context-brake-restart.js absent
+PASS [init-codex-cli] .omp/extensions/context-brake-restart.js absent
+PASS [init-codex-cli] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent
+PASS [init-codex-cli] manifest records the ignore file
+PASS [init-codex-cli] second run plans no change
+PASS [init-cursor] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-cursor] dry-run text: text carries status labels
+PASS [init-cursor] dry-run exit 0
+PASS [init-cursor] dry-run lists .context-brake/.gitignore
+PASS [init-cursor] dry-run writes nothing
+PASS [init-cursor] init --json exit 0 and matches the install report schema
+PASS [init-cursor] one AUTO_RESTART_MODE finding for the harness
+PASS [init-cursor] AUTO_RESTART_MODE impact text (DEC-10)
+PASS [init-cursor] .context-brake/.gitignore content
+PASS [init-cursor] .pi/extensions/context-brake-restart.js absent
+PASS [init-cursor] .omp/extensions/context-brake-restart.js absent
+PASS [init-cursor] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent
+PASS [init-cursor] manifest records the ignore file
+PASS [init-cursor] second run plans no change
+PASS [init-github-copilot-cli] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-github-copilot-cli] dry-run text: text carries status labels
+PASS [init-github-copilot-cli] dry-run exit 0
+PASS [init-github-copilot-cli] dry-run lists .context-brake/.gitignore
+PASS [init-github-copilot-cli] dry-run writes nothing
+PASS [init-github-copilot-cli] init --json exit 0 and matches the install report schema
+PASS [init-github-copilot-cli] one AUTO_RESTART_MODE finding for the harness
+PASS [init-github-copilot-cli] AUTO_RESTART_MODE impact text (DEC-10)
+PASS [init-github-copilot-cli] .context-brake/.gitignore content
+PASS [init-github-copilot-cli] .pi/extensions/context-brake-restart.js absent
+PASS [init-github-copilot-cli] .omp/extensions/context-brake-restart.js absent
+PASS [init-github-copilot-cli] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent
+PASS [init-github-copilot-cli] manifest records the ignore file
+PASS [init-github-copilot-cli] second run plans no change
+PASS [init-pi] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-pi] dry-run text: text carries status labels
+PASS [init-pi] dry-run exit 0
+PASS [init-pi] dry-run lists .context-brake/.gitignore
+PASS [init-pi] dry-run lists .pi/extensions/context-brake-restart.js
+PASS [init-pi] dry-run writes nothing
+PASS [init-pi] init --json exit 0 and matches the install report schema
+PASS [init-pi] one AUTO_RESTART_MODE finding for the harness
+PASS [init-pi] AUTO_RESTART_MODE impact text (DEC-10)
+PASS [init-pi] .context-brake/.gitignore content
+PASS [init-pi] .pi/extensions/context-brake-restart.js installed
+PASS [init-pi] .omp/extensions/context-brake-restart.js absent
+PASS [init-pi] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent
+PASS [init-pi] manifest records the ignore file
+PASS [init-pi] second run plans no change
+PASS [init-oh-my-pi] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-oh-my-pi] dry-run text: text carries status labels
+PASS [init-oh-my-pi] dry-run exit 0
+PASS [init-oh-my-pi] dry-run lists .context-brake/.gitignore
+PASS [init-oh-my-pi] dry-run lists .omp/extensions/context-brake-restart.js
+PASS [init-oh-my-pi] dry-run writes nothing
+PASS [init-oh-my-pi] init --json exit 0 and matches the install report schema
+PASS [init-oh-my-pi] one AUTO_RESTART_MODE finding for the harness
+PASS [init-oh-my-pi] AUTO_RESTART_MODE impact text (DEC-10)
+PASS [init-oh-my-pi] .context-brake/.gitignore content
+PASS [init-oh-my-pi] .pi/extensions/context-brake-restart.js absent
+PASS [init-oh-my-pi] .omp/extensions/context-brake-restart.js installed
+PASS [init-oh-my-pi] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent
+PASS [init-oh-my-pi] manifest records the ignore file
+PASS [init-oh-my-pi] second run plans no change
+PASS [init-opencode] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-opencode] dry-run text: text carries status labels
+PASS [init-opencode] dry-run fails with the target error (exit 64, usage error)
+PASS [init-opencode] applied --json fails, writes nothing
+PASS [init-antigravity-cli] dry-run text: NO_COLOR text has no ANSI escape
+PASS [init-antigravity-cli] dry-run text: text carries status labels
+PASS [init-antigravity-cli] dry-run fails with the target error (exit 64, usage error)
+PASS [init-antigravity-cli] applied --json fails, writes nothing
+PASS [init-all] exit 0
+PASS [init-all] init text: NO_COLOR text has no ANSI escape
+PASS [init-all] init text: text carries status labels
+PASS [init-all] eight AUTO_RESTART_MODE lines in text
+PASS [init-all] each AUTO_RESTART_MODE text line names a distinct harness id, covering all 8 (UX, qa_01/BUG-01)
+PASS [init-all] text line for claude-code reads "Restart is automatic on claude-code."
+PASS [init-all] text line for codex-cli reads "Restart is semi-automatic on codex-cli."
+PASS [init-all] text line for cursor reads "Restart is semi-automatic on cursor."
+PASS [init-all] text line for github-copilot-cli reads "Restart is semi-automatic on github-copilot-cli."
+PASS [init-all] text line for pi reads "Restart is automatic on pi."
+PASS [init-all] text line for oh-my-pi reads "Restart is semi-automatic on oh-my-pi."
+PASS [init-all] text line for opencode reads "Restart is not available on opencode."
+PASS [init-all] text line for antigravity-cli reads "Restart is not available on antigravity-cli."
+PASS [init-all] JSON AUTO_RESTART_MODE per harness matches DEC-10 destinations
+PASS [init-all] git ignores handoff.md and handoffs/ (NFR-04)
+PASS [init-off] exit 0, schema valid
+PASS [init-off] no restart file, ignore file, or Claude mod
+PASS [init-off] no AUTO_RESTART_MODE finding
+PASS [init-off] config has no autoRestart
+PASS [init-pi-codex] succeeds without claude-code
+PASS [init-pi-codex] no Claude mod installed
+PASS [doctor-claude-code] doctor text: NO_COLOR text has no ANSI escape
+PASS [doctor-claude-code] doctor text: text carries status labels
+PASS [doctor-claude-code] doctor --json matches the doctor report schema
+PASS [doctor-claude-code] exit code equals report.exitCode
+PASS [doctor-claude-code] AUTO_RESTART_HANDOFF states markdown handoff, none pending
+PASS [doctor-claude-code] NOT_LOADED before any session
+PASS [doctor-claude-code] READY and LAST_SKIP from a current v2 log
+PASS [doctor-claude-code] OUTDATED_MOD from an older component version
+PASS [doctor-claude-code] v1 log ignored: NOT_LOADED, no crash
+PASS [doctor-claude-code] AUTO_RESTART_HANDOFF reports a pending handoff
+PASS [doctor-claude-code] AUTO_RESTART_HANDOFF names the snapshot skill mode
+PASS [doctor-codex-cli] doctor text: NO_COLOR text has no ANSI escape
+PASS [doctor-codex-cli] doctor text: text carries status labels
+PASS [doctor-codex-cli] doctor --json matches the doctor report schema
+PASS [doctor-codex-cli] exit code equals report.exitCode
+PASS [doctor-codex-cli] integration shows the declared auto_restart impact
+PASS [doctor-codex-cli] AUTO_RESTART_HANDOFF states markdown handoff, none pending
+PASS [doctor-codex-cli] semi-automatic READY with harness
+PASS [doctor-codex-cli] doctor text READY line names the harness id (qa_01/BUG-01)
+PASS [doctor-codex-cli] AUTO_RESTART_HANDOFF reports a pending handoff
+PASS [doctor-codex-cli] AUTO_RESTART_HANDOFF names the snapshot skill mode
+PASS [doctor-cursor] doctor text: NO_COLOR text has no ANSI escape
+PASS [doctor-cursor] doctor text: text carries status labels
+PASS [doctor-cursor] doctor --json matches the doctor report schema
+PASS [doctor-cursor] exit code equals report.exitCode
+PASS [doctor-cursor] integration shows the declared auto_restart impact
+PASS [doctor-cursor] AUTO_RESTART_HANDOFF states markdown handoff, none pending
+PASS [doctor-cursor] semi-automatic READY with harness
+PASS [doctor-cursor] doctor text READY line names the harness id (qa_01/BUG-01)
+PASS [doctor-cursor] AUTO_RESTART_HANDOFF reports a pending handoff
+PASS [doctor-cursor] AUTO_RESTART_HANDOFF names the snapshot skill mode
+PASS [doctor-github-copilot-cli] doctor text: NO_COLOR text has no ANSI escape
+PASS [doctor-github-copilot-cli] doctor text: text carries status labels
+PASS [doctor-github-copilot-cli] doctor --json matches the doctor report schema
+PASS [doctor-github-copilot-cli] exit code equals report.exitCode
+PASS [doctor-github-copilot-cli] integration shows the declared auto_restart impact
+PASS [doctor-github-copilot-cli] AUTO_RESTART_HANDOFF states markdown handoff, none pending
+PASS [doctor-github-copilot-cli] semi-automatic READY with harness
+PASS [doctor-github-copilot-cli] doctor text READY line names the harness id (qa_01/BUG-01)
+PASS [doctor-github-copilot-cli] AUTO_RESTART_HANDOFF reports a pending handoff
+PASS [doctor-github-copilot-cli] AUTO_RESTART_HANDOFF names the snapshot skill mode
+PASS [doctor-pi] doctor text: NO_COLOR text has no ANSI escape
+PASS [doctor-pi] doctor text: text carries status labels
+PASS [doctor-pi] doctor --json matches the doctor report schema
+PASS [doctor-pi] exit code equals report.exitCode
+PASS [doctor-pi] AUTO_RESTART_HANDOFF states markdown handoff, none pending
+PASS [doctor-pi] NOT_LOADED before any session
+PASS [doctor-pi] READY and LAST_SKIP from a current v2 log
+PASS [doctor-pi] Pi READY carries the automatic restart impact (DEC-10)
+PASS [doctor-pi] OUTDATED_MOD from an older component version
+PASS [doctor-pi] v1 log ignored: NOT_LOADED, no crash
+PASS [doctor-pi] AUTO_RESTART_HANDOFF reports a pending handoff
+PASS [doctor-pi] AUTO_RESTART_HANDOFF names the snapshot skill mode
+PASS [doctor-oh-my-pi] doctor text: NO_COLOR text has no ANSI escape
+PASS [doctor-oh-my-pi] doctor text: text carries status labels
+PASS [doctor-oh-my-pi] doctor --json matches the doctor report schema
+PASS [doctor-oh-my-pi] exit code equals report.exitCode
+PASS [doctor-oh-my-pi] integration shows the declared auto_restart impact
+PASS [doctor-oh-my-pi] AUTO_RESTART_HANDOFF states markdown handoff, none pending
+PASS [doctor-oh-my-pi] NOT_LOADED before any session
+PASS [doctor-oh-my-pi] READY and LAST_SKIP from a current v2 log
+PASS [doctor-oh-my-pi] OUTDATED_MOD from an older component version
+PASS [doctor-oh-my-pi] v1 log ignored: NOT_LOADED, no crash
+PASS [doctor-oh-my-pi] AUTO_RESTART_HANDOFF reports a pending handoff
+PASS [doctor-oh-my-pi] AUTO_RESTART_HANDOFF names the snapshot skill mode
+PASS [doctor-off] no AUTO_RESTART_* findings with restart off
+PASS [remove-claude-code] dry run names the kept handoffs
+PASS [remove-claude-code] dry run changes nothing
+PASS [remove-claude-code] text: NO_COLOR text has no ANSI escape
+PASS [remove-claude-code] text: text carries status labels
+PASS [remove-claude-code] exit 0
+PASS [remove-claude-code] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [remove-claude-code] no restart artifact remains
+PASS [remove-claude-code] pending handoff kept byte-identical
+PASS [remove-claude-code] archive kept (10 files)
+PASS [remove-claude-code] .claude/settings.json byte-identical to the fixture after remove
+PASS [remove-codex-cli] dry run names the kept handoffs
+PASS [remove-codex-cli] dry run changes nothing
+PASS [remove-codex-cli] text: NO_COLOR text has no ANSI escape
+PASS [remove-codex-cli] text: text carries status labels
+PASS [remove-codex-cli] exit 0
+PASS [remove-codex-cli] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [remove-codex-cli] no restart artifact remains
+PASS [remove-codex-cli] pending handoff kept byte-identical
+PASS [remove-codex-cli] archive kept (10 files)
+PASS [remove-codex-cli] .codex/hooks.json byte-identical to the fixture after remove
+PASS [remove-cursor] dry run names the kept handoffs
+PASS [remove-cursor] dry run changes nothing
+PASS [remove-cursor] text: NO_COLOR text has no ANSI escape
+PASS [remove-cursor] text: text carries status labels
+PASS [remove-cursor] exit 0
+PASS [remove-cursor] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [remove-cursor] no restart artifact remains
+PASS [remove-cursor] pending handoff kept byte-identical
+PASS [remove-cursor] archive kept (10 files)
+PASS [remove-cursor] .cursor/hooks.json byte-identical to the fixture after remove
+PASS [remove-github-copilot-cli] dry run names the kept handoffs
+PASS [remove-github-copilot-cli] dry run changes nothing
+PASS [remove-github-copilot-cli] text: NO_COLOR text has no ANSI escape
+PASS [remove-github-copilot-cli] text: text carries status labels
+PASS [remove-github-copilot-cli] exit 0
+PASS [remove-github-copilot-cli] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [remove-github-copilot-cli] no restart artifact remains
+PASS [remove-github-copilot-cli] pending handoff kept byte-identical
+PASS [remove-github-copilot-cli] archive kept (10 files)
+PASS [remove-github-copilot-cli] .github/copilot/settings.json byte-identical to the fixture after remove
+PASS [remove-pi] dry run names the kept handoffs
+PASS [remove-pi] dry run changes nothing
+PASS [remove-pi] text: NO_COLOR text has no ANSI escape
+PASS [remove-pi] text: text carries status labels
+PASS [remove-pi] exit 0
+PASS [remove-pi] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [remove-pi] no restart artifact remains
+PASS [remove-pi] pending handoff kept byte-identical
+PASS [remove-pi] archive kept (10 files)
+PASS [remove-pi] .pi/settings.json byte-identical to the fixture after remove
+PASS [remove-oh-my-pi] dry run names the kept handoffs
+PASS [remove-oh-my-pi] dry run changes nothing
+PASS [remove-oh-my-pi] text: NO_COLOR text has no ANSI escape
+PASS [remove-oh-my-pi] text: text carries status labels
+PASS [remove-oh-my-pi] exit 0
+PASS [remove-oh-my-pi] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [remove-oh-my-pi] no restart artifact remains
+PASS [remove-oh-my-pi] pending handoff kept byte-identical
+PASS [remove-oh-my-pi] archive kept (10 files)
+PASS [remove-oh-my-pi] .omp/config.yml byte-identical to the fixture after remove
+PASS [no-auto-restart-claude-code] dry run names the kept handoffs
+PASS [no-auto-restart-claude-code] dry run changes nothing
+PASS [no-auto-restart-claude-code] text: NO_COLOR text has no ANSI escape
+PASS [no-auto-restart-claude-code] text: text carries status labels
+PASS [no-auto-restart-claude-code] exit 0
+PASS [no-auto-restart-claude-code] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [no-auto-restart-claude-code] no restart artifact remains
+PASS [no-auto-restart-claude-code] pending handoff kept byte-identical
+PASS [no-auto-restart-claude-code] archive kept (10 files)
+PASS [no-auto-restart-claude-code] config autoRestart removed
+PASS [no-auto-restart-claude-code] telemetry integration kept
+PASS [no-auto-restart-claude-code] other runtime state kept (session ledger)
+PASS [no-auto-restart-claude-code] text header is not [WARN] (qa_01/BUG-02)
+PASS [no-auto-restart-codex-cli] dry run names the kept handoffs
+PASS [no-auto-restart-codex-cli] dry run changes nothing
+PASS [no-auto-restart-codex-cli] text: NO_COLOR text has no ANSI escape
+PASS [no-auto-restart-codex-cli] text: text carries status labels
+PASS [no-auto-restart-codex-cli] exit 0
+PASS [no-auto-restart-codex-cli] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [no-auto-restart-codex-cli] no restart artifact remains
+PASS [no-auto-restart-codex-cli] pending handoff kept byte-identical
+PASS [no-auto-restart-codex-cli] archive kept (10 files)
+PASS [no-auto-restart-codex-cli] config autoRestart removed
+PASS [no-auto-restart-codex-cli] telemetry integration kept
+PASS [no-auto-restart-codex-cli] other runtime state kept (session ledger)
+PASS [no-auto-restart-codex-cli] text header is not [WARN] (qa_01/BUG-02)
+PASS [no-auto-restart-cursor] dry run names the kept handoffs
+PASS [no-auto-restart-cursor] dry run changes nothing
+PASS [no-auto-restart-cursor] text: NO_COLOR text has no ANSI escape
+PASS [no-auto-restart-cursor] text: text carries status labels
+PASS [no-auto-restart-cursor] exit 0
+PASS [no-auto-restart-cursor] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [no-auto-restart-cursor] no restart artifact remains
+PASS [no-auto-restart-cursor] pending handoff kept byte-identical
+PASS [no-auto-restart-cursor] archive kept (10 files)
+PASS [no-auto-restart-cursor] config autoRestart removed
+PASS [no-auto-restart-cursor] telemetry integration kept
+PASS [no-auto-restart-cursor] other runtime state kept (session ledger)
+PASS [no-auto-restart-cursor] text header is not [WARN] (qa_01/BUG-02)
+PASS [no-auto-restart-github-copilot-cli] dry run names the kept handoffs
+PASS [no-auto-restart-github-copilot-cli] dry run changes nothing
+PASS [no-auto-restart-github-copilot-cli] text: NO_COLOR text has no ANSI escape
+PASS [no-auto-restart-github-copilot-cli] text: text carries status labels
+PASS [no-auto-restart-github-copilot-cli] exit 0
+PASS [no-auto-restart-github-copilot-cli] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [no-auto-restart-github-copilot-cli] no restart artifact remains
+PASS [no-auto-restart-github-copilot-cli] pending handoff kept byte-identical
+PASS [no-auto-restart-github-copilot-cli] archive kept (10 files)
+PASS [no-auto-restart-github-copilot-cli] config autoRestart removed
+PASS [no-auto-restart-github-copilot-cli] telemetry integration kept
+PASS [no-auto-restart-github-copilot-cli] other runtime state kept (session ledger)
+PASS [no-auto-restart-github-copilot-cli] text header is not [WARN] (qa_01/BUG-02)
+PASS [no-auto-restart-pi] dry run names the kept handoffs
+PASS [no-auto-restart-pi] dry run changes nothing
+PASS [no-auto-restart-pi] text: NO_COLOR text has no ANSI escape
+PASS [no-auto-restart-pi] text: text carries status labels
+PASS [no-auto-restart-pi] exit 0
+PASS [no-auto-restart-pi] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [no-auto-restart-pi] no restart artifact remains
+PASS [no-auto-restart-pi] pending handoff kept byte-identical
+PASS [no-auto-restart-pi] archive kept (10 files)
+PASS [no-auto-restart-pi] config autoRestart removed
+PASS [no-auto-restart-pi] telemetry integration kept
+PASS [no-auto-restart-pi] other runtime state kept (session ledger)
+PASS [no-auto-restart-pi] text header is not [WARN] (qa_01/BUG-02)
+PASS [no-auto-restart-oh-my-pi] dry run names the kept handoffs
+PASS [no-auto-restart-oh-my-pi] dry run changes nothing
+PASS [no-auto-restart-oh-my-pi] text: NO_COLOR text has no ANSI escape
+PASS [no-auto-restart-oh-my-pi] text: text carries status labels
+PASS [no-auto-restart-oh-my-pi] exit 0
+PASS [no-auto-restart-oh-my-pi] output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)
+PASS [no-auto-restart-oh-my-pi] no restart artifact remains
+PASS [no-auto-restart-oh-my-pi] pending handoff kept byte-identical
+PASS [no-auto-restart-oh-my-pi] archive kept (10 files)
+PASS [no-auto-restart-oh-my-pi] config autoRestart removed
+PASS [no-auto-restart-oh-my-pi] telemetry integration kept
+PASS [no-auto-restart-oh-my-pi] other runtime state kept (session ledger)
+PASS [no-auto-restart-oh-my-pi] text header is not [WARN] (qa_01/BUG-02)
+
+TOTAL 319 checks, 0 failed

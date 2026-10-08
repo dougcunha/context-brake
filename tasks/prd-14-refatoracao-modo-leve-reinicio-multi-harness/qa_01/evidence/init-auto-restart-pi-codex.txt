@@ -1,0 +1,221 @@
+# init --auto-restart without claude-code (TC-13)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart
+exit=0
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\\scratchpad\\qa\\runs\\init-pi-codex-hVdgsk\\repo",
+    "changes": [
+      {
+        "path": ".codex/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/.codex/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "e980a327715a1e80afa52eb8e7cfc959da8361b98854662f5101b48cdd422949",
+        "afterSha256": "d79d212297022a4de5ac0b0c097dccae0e0a49554077a0bf9b2e15236ecd82ba",
+        "preview": {
+          "summary": "Register Codex hooks"
+        }
+      },
+      {
+        "path": ".codex/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/.codex/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "7dc5074e7e73ccf8ebd32a8a676afd1cb7fb80d568e069c3111873ed669256b6",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".context-brake/.gitignore",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/.context-brake/.gitignore",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "9f27a3dfa624c731d12e6ed820923ad477400dee282a2b9c08f31584011df6c4",
+        "preview": {
+          "summary": "Keep the session handoffs out of Git"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "9c6c162492264f520af86cc01c32153769b2c3d5aadd4eb5689b0ecd969c254a",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".pi/extensions/context-brake-restart.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/.pi/extensions/context-brake-restart.js",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "708bd34795d3de01633a6f5befb538129de347c4908547134739ea3c40b59319",
+        "preview": {
+          "summary": "Install the automatic restart module"
+        }
+      },
+      {
+        "path": ".pi/extensions/context-brake.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/.pi/extensions/context-brake.js",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a802f2d57ce2f9d566dc41813ac56b83e7e5fddfebf0af0e2e3f7c1244b57779",
+        "preview": {
+          "summary": "Install Pi extension"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-codex-hVdgsk/repo/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "1158534e6f691a1e6cda8978b969eb2d4478b6cdd14486f19714ac1a220f42e0",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": []
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".codex/hooks.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".codex/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/.gitignore",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".pi/extensions/context-brake-restart.js",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".pi/extensions/context-brake.js",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "codex-cli",
+      "path": null,
+      "message": "Restart is semi-automatic on this harness.",
+      "impact": "Semi-automatic restart: run /new; the new session resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "Restart is automatic on this harness.",
+      "impact": "Automatic restart: a valid reset signal opens a new session by itself.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr
+--- end

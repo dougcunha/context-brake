@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "generation": 57,
+  "feature": "prd-14-refatoracao-modo-leve-reinicio-multi-harness",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "objective": "Generalize the PRD-11 automatic restart: markdown handoff without a snapshot skill when restart is on, automatic restart where a probe verifies the API (Pi, Oh-My-Pi, OpenCode), semi-automatic elsewhere.",
+  "constraints": [
+    "Starts after prd-12 and prd-13; new tests respect the 120 s budget",
+    "No migration or backward compatibility (prd-12 DEC-PD-03)"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_09/codereview.md",
+    "qa": "qa_02/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "46d5157438af972eab922c698591f7c5c6a381d77ff54b69bb09cb4eafbd5fba",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "be5a0c65ec49ed06562acae34773de8f22183961ceee24f5ce6489c4fb7b906e",
+      "decision_id": "DEC-HIL-04"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "cbe22d7e8aaef5cc87265d2299621f56eaa81dee77b31ee1925fb3ec435910fd",
+      "decision_id": "DEC-HIL-04"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-02",
+    "DEC-HIL-05",
+    "DEC-HIL-06",
+    "DEC-HIL-07"
+  ],
+  "git_base": "a31e183",
+  "worktree_evidence": "workflow.md#Milestones (untracked tasks/prd-11-reinicio-automatico-no-claude-code/rtk/ predates this slice)",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the prd-14 delivery: TechSpec amendments, DEC-HIL-05..07, accepted open items, manual acceptance on real Pi/Oh-My-Pi/Codex sessions, OpenCode 2.x follow-up PRD.",
+    "affected": [
+      "prd.md",
+      "techspec.md",
+      "codereview_09",
+      "qa_02"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 8,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "Answer HIL 3; on acceptance mark the checkpoint completed and the snapshot closed; commit only if requested.",
+    "read": [
+      {
+        "path": "tasks/prd-14-refatoracao-modo-leve-reinicio-multi-harness/workflow.md",
+        "section": "Human Decisions Log, Milestones"
+      }
+    ]
+  }
+}

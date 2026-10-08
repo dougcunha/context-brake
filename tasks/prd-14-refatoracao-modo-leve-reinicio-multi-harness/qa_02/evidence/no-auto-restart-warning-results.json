@@ -1,0 +1,116 @@
+[
+ {
+  "scenario": "warn3-claude-code-plain",
+  "name": "exit 0 and status success",
+  "ok": true,
+  "detail": "exit=0 status=success"
+ },
+ {
+  "scenario": "warn3-claude-code-plain",
+  "name": "no skipped outcome (no \"Directory is not empty\" for .context-brake/runtime)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "warn3-claude-code-plain",
+  "name": "runtime/restart/ gone",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-pi-ledger",
+  "name": "exit 0 and status success",
+  "ok": true,
+  "detail": "exit=0 status=success"
+ },
+ {
+  "scenario": "warn3-pi-ledger",
+  "name": "no skipped outcome (no \"Directory is not empty\" for .context-brake/runtime)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "warn3-pi-ledger",
+  "name": "runtime/restart/ gone",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-pi-ledger",
+  "name": "other runtime entry kept",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-codex-cli-ledger",
+  "name": "exit 0 and status success",
+  "ok": true,
+  "detail": "exit=0 status=success"
+ },
+ {
+  "scenario": "warn3-codex-cli-ledger",
+  "name": "no skipped outcome (no \"Directory is not empty\" for .context-brake/runtime)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "warn3-codex-cli-ledger",
+  "name": "runtime/restart/ gone",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-codex-cli-ledger",
+  "name": "other runtime entry kept",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-oh-my-pi-ledger",
+  "name": "exit 0 and status success",
+  "ok": true,
+  "detail": "exit=0 status=success"
+ },
+ {
+  "scenario": "warn3-oh-my-pi-ledger",
+  "name": "no skipped outcome (no \"Directory is not empty\" for .context-brake/runtime)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "warn3-oh-my-pi-ledger",
+  "name": "runtime/restart/ gone",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-oh-my-pi-ledger",
+  "name": "other runtime entry kept",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-pi-plain",
+  "name": "exit 0 and status success",
+  "ok": true,
+  "detail": "exit=0 status=success"
+ },
+ {
+  "scenario": "warn3-pi-plain",
+  "name": "no skipped outcome (no \"Directory is not empty\" for .context-brake/runtime)",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "warn3-pi-plain",
+  "name": "runtime/restart/ gone",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "warn3-text-pi",
+  "name": "text exit 0, header [OK], no [WARN]",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - pi: full support (planned)\n  Planned changes:\n    [delete] .context-brake/.gitignore (runtime_asset)\n    [update] .context-brake/manifest.json (manifest)\n    [delete] .context-brake/runtime/restart/pi/s1.json (runtime_state)\n    [delete] .pi/extensions/context-brake-restart.js (runtime_asset)\n    [update] context-brake.config.json (config)\n      Configure Conte"
+ }
+]

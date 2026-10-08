@@ -30,6 +30,10 @@ function assistantText(message: unknown): string {
   }).join('\n');
 }
 
+export function stopMessageText(message: unknown): string {
+  return typeof message === 'string' ? message : assistantText(message);
+}
+
 function resetOf(session: SessionKey, reason: string | undefined): RuntimeEvent | null {
   if (reason === 'new' || reason === 'startup') return { kind: 'session_reset', session, reason: 'new' };
   return null;
@@ -39,9 +43,9 @@ export function mapOmpEvent(eventName: string, payload: unknown, session: Sessio
   const data = parsePayload(ompPayloadSchema, payload);
   switch (eventName) {
     case 'tool_result': return { kind: 'post_tool', session, tool: toolOf(data.toolName, data.input), toolUseId: data.toolCallId ?? null };
-    case 'session_start': return resetOf(session, data.reason);
+    case 'session_start': case 'session_switch': return resetOf(session, data.reason);
     case 'session_compact': case 'auto_compaction_end': return { kind: 'session_reset', session, reason: 'compact' };
-    case 'session_stop': return { kind: 'response_end', session, text: data.last_assistant_message ?? '' };
+    case 'session_stop': return { kind: 'response_end', session, text: stopMessageText(data.last_assistant_message) };
     case 'message_end': return asRecord(data.message)?.['role'] === 'assistant' ? { kind: 'response_end', session, text: assistantText(data.message) } : null;
     default: return null;
   }

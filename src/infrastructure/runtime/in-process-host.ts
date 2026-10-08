@@ -29,7 +29,7 @@ export function createInProcessRuntime(input: InProcessRuntimeInput): InProcessR
       try {
         if (event.kind === 'session_reset') ledger.invalidate(event.session);
         const deadline = new HookDeadline(deadlineFor(event, input.deadlines ?? DEFAULT_DEADLINE_LIMITS), 'engine');
-        return await deadline.run(services.engine.handle(event, { ...engineInput, onPhase: deadline.mark }));
+        return await deadline.run(services.engine.handle(event, { ...engineInput, onPhase: deadline.mark, deadline }));
       } catch (error) {
         return handleFailure({ event, error, config: input.config, descriptor: input.descriptor, services, ledger });
       }

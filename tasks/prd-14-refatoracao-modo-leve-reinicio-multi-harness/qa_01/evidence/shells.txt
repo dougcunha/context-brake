@@ -1,0 +1,81 @@
+# Built CLI under PowerShell and Git Bash on Windows (NFR-02)
+
+$ (cwd=repo env={"PATH":"C:\\Windows/System32/WindowsPowerShell/v1.0;C:\\Windows/System32;C:/Program Files/nodejs;C:/Users/Admin/scoop/apps/git/2.56.0.2/ucrt64/bin"}) powershell.exe -NoProfile -NonInteractive -Command & 'C:\Program Files\nodejs\node.exe' '<repo>/dist/src/cli/main.js' init --yes --auto-restart
+exit=0
+--- stdout
+--- stderr
+--- end
+
+$ (cwd=repo env={"PATH":"C:\\Windows/System32/WindowsPowerShell/v1.0;C:\\Windows/System32;C:/Program Files/nodejs;C:/Users/Admin/scoop/apps/git/2.56.0.2/ucrt64/bin"}) powershell.exe -NoProfile -NonInteractive -Command & 'C:\Program Files\nodejs\node.exe' '<repo>/dist/src/cli/main.js' remove --yes
+exit=0
+--- stdout
+--- stderr
+--- end
+
+$ (cwd=repo env={"PATH":"C:\\Windows/System32/WindowsPowerShell/v1.0;C:\\Windows/System32;C:/Program Files/nodejs;C:/Users/Admin/scoop/apps/git/2.56.0.2/ucrt64/bin"}) C:/Users/Admin/scoop/apps/git/current/bin/bash.exe -c "C:/Program Files/nodejs/node.exe" "<repo>/dist/src/cli/main.js" init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - pi: full support (planned)
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on this harness.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo env={"PATH":"C:\\Windows/System32/WindowsPowerShell/v1.0;C:\\Windows/System32;C:/Program Files/nodejs;C:/Users/Admin/scoop/apps/git/2.56.0.2/ucrt64/bin"}) C:/Users/Admin/scoop/apps/git/current/bin/bash.exe -c "C:/Program Files/nodejs/node.exe" "<repo>/dist/src/cli/main.js" remove --yes
+exit=0
+--- stdout
+[OK] ContextBrake remove (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - pi: full support (planned)
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [delete] .codex/hooks/context-brake.mjs (runtime_asset)
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [delete] .context-brake/manifest.json (manifest)
+    [delete] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [delete] .pi/extensions/context-brake.js (runtime_asset)
+    [delete] context-brake.config.json (runtime_asset)
+--- stderr
+--- end
+# PowerShell 7 (pwsh) direct run, fixture pi
+$ node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+$ node <repo>/dist/src/cli/main.js remove --yes
+exit=0
+[OK] ContextBrake remove (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [delete] .context-brake/manifest.json (manifest)
+    [delete] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [delete] .pi/extensions/context-brake.js (runtime_asset)
+    [delete] context-brake.config.json (runtime_asset)
+

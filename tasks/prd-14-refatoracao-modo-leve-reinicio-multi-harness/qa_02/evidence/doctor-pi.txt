@@ -1,0 +1,777 @@
+# doctor on a pi-only fixture with restart on (TC-12, FR-10, FR-11)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on pi.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor
+exit=1
+--- stdout
+[WARN] ContextBrake doctor: warnings
+  - pi: installed (support: full, overhead: 0.1ms/15ms (pass))
+    * post_tool_telemetry: The minimum harness version is unverified, so version compatibility cannot be claimed.
+  - snapshot: not configured (zone headers only, trigger: RED)
+  [WARN] AUTO_RESTART_NOT_LOADED: Automatic restart is on, but no Pi session has loaded the restart module yet.
+    Impact: Pi does not restart the session when ContextBrake asks for a reset.
+    Remediation: Start Pi in this project and trust the folder.
+  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for pi is unknown, so version compatibility cannot be verified.
+    Impact: ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.
+    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.
+  [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "Automatic restart is on, but no Pi session has loaded the restart module yet.",
+      "impact": "Pi does not restart the session when ContextBrake asks for a reset.",
+      "remediation": "Start Pi in this project and trust the folder."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+# AUTO_RESTART findings: [["AUTO_RESTART_NOT_LOADED","pi","Automatic restart is on, but no Pi session has loaded the restart module yet.","Pi does not restart the session when ContextBrake asks for a reset."],["AUTO_RESTART_HANDOFF",null,"Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",null]]
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_LAST_SKIP",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "The last restart request was not carried out: SKIP_HANDOFF_STALE at 2026-10-08T12:52:58.971Z.",
+      "impact": null,
+      "remediation": "See the notice in the Pi session for that turn."
+    },
+    {
+      "code": "AUTO_RESTART_READY",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "Automatic restart is on and Pi loaded the restart module.",
+      "impact": "Automatic restart: a valid reset signal opens a new session by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+# LAST_SKIP finding: {"code":"AUTO_RESTART_LAST_SKIP","severity":"ok","scope":"harness","harness":"pi","path":".context-brake/runtime/restart/pi","message":"The last restart request was not carried out: SKIP_HANDOFF_STALE at 2026-10-08T12:52:58.971Z.","impact":null,"remediation":"See the notice in the Pi session for that turn."}
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_OUTDATED_MOD",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "The last Pi session loaded restart module 0.0.1, but ContextBrake installs 1.0.0.",
+      "impact": "The running module may not match this ContextBrake version.",
+      "remediation": "Run context-brake init --auto-restart, then restart the harness."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "Automatic restart is on, but no Pi session has loaded the restart module yet.",
+      "impact": "Pi does not restart the session when ContextBrake asks for a reset.",
+      "remediation": "Start Pi in this project and trust the folder."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "Automatic restart is on, but no Pi session has loaded the restart module yet.",
+      "impact": "Pi does not restart the session when ContextBrake asks for a reset.",
+      "remediation": "Start Pi in this project and trust the folder."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/handoff.md",
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --snapshot-command /sdd-snapshot
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /sdd-snapshot at RED
+  [OK] AUTO_RESTART_MODE: Restart is automatic on pi.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": ".context-brake/runtime/restart/pi",
+      "message": "Automatic restart is on, but no Pi session has loaded the restart module yet.",
+      "impact": "Pi does not restart the session when ContextBrake asks for a reset.",
+      "remediation": "Start Pi in this project and trust the folder."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/handoff.md",
+      "message": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": "/sdd-snapshot",
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end

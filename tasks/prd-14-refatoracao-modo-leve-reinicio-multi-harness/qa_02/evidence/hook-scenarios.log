@@ -1,0 +1,44 @@
+PASS [start-claude-code-startup] first start injects the resume instruction with the archived path
+PASS [start-claude-code-startup] handoff.md moved to the named archive file with its content
+PASS [start-claude-code-startup] second start injects no resume instruction (one delivery)
+PASS [start-claude-code-clear] first start injects the resume instruction with the archived path
+PASS [start-claude-code-clear] handoff.md moved to the named archive file with its content
+PASS [start-claude-code-clear] second start injects no resume instruction (one delivery)
+PASS [start-claude-code-compact] compact neither claims nor injects
+PASS [start-codex-cli-startup] first start injects the resume instruction with the archived path
+PASS [start-codex-cli-startup] handoff.md moved to the named archive file with its content
+PASS [start-codex-cli-startup] second start injects no resume instruction (one delivery)
+PASS [start-codex-cli-clear] first start injects the resume instruction with the archived path
+PASS [start-codex-cli-clear] handoff.md moved to the named archive file with its content
+PASS [start-codex-cli-clear] second start injects no resume instruction (one delivery)
+PASS [start-codex-cli-compact] compact neither claims nor injects
+PASS [start-cursor-startup] first start injects the resume instruction with the archived path
+PASS [start-cursor-startup] handoff.md moved to the named archive file with its content
+PASS [start-cursor-startup] second start injects no resume instruction (one delivery)
+PASS [start-github-copilot-cli-startup] first start injects the resume instruction with the archived path
+PASS [start-github-copilot-cli-startup] handoff.md moved to the named archive file with its content
+PASS [start-github-copilot-cli-startup] second start injects no resume instruction (one delivery)
+PASS [archive-limit] round 1: archive holds 10 files, the delivered one included, oldest pruned
+PASS [archive-limit] round 2: archive holds 10 files, the delivered one included, oldest pruned
+PASS [start-restart-off-claude-code] no resume, handoff stays pending
+PASS [start-restart-off-codex-cli] no resume, handoff stays pending
+PASS [telemetry] handoff mode RED and CRITICAL carry the handoff path and the marker
+PASS [telemetry] handoff mode YELLOW keeps the generic action
+PASS [telemetry] restart off: RED and CRITICAL contain neither handoff path nor marker
+PASS [telemetry] snapshot mode RED names the skill, not the handoff
+PASS [stop-on] alone: notice fires
+PASS [stop-on] alone: notice names /new with the resume suffix
+PASS [stop-on] own-line: notice fires
+PASS [stop-on] own-line: notice names /new with the resume suffix
+PASS [stop-on] same-line: notice fires
+PASS [stop-on] same-line: notice names /new with the resume suffix
+PASS [stop-on] mid-reply: notice does not fire
+PASS [stop-off] alone: notice fires
+PASS [stop-off] alone: notice keeps the restart-off text
+PASS [stop-off] own-line: notice fires
+PASS [stop-off] own-line: notice keeps the restart-off text
+PASS [stop-off] same-line: notice fires
+PASS [stop-off] same-line: notice keeps the restart-off text
+PASS [stop-off] mid-reply: notice does not fire
+
+TOTAL 42 checks, 0 failed

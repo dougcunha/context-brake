@@ -1,0 +1,1916 @@
+[
+ {
+  "scenario": "init-claude-code",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (dry_run)\n  - claude-code: full support (planned)\n    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context win"
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "dry-run exit 0",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "dry-run lists .context-brake/.gitignore",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "dry-run lists .context-brake/claude-mod/context-brake-restart/hooks/register.mjs",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "dry-run writes nothing",
+  "ok": true,
+  "detail": ".claude/settings.json"
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "init --json exit 0 and matches the install report schema",
+  "ok": true,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "one AUTO_RESTART_MODE finding for the harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_MODE\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"claude-code\",\"path\":null,\"message\":\"Restart is automatic on claude-code.\",\"impact\":\"Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.\",\"remediation\":null}]"
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": ".context-brake/.gitignore content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": ".pi/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": ".omp/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs installed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "manifest records the ignore file",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-claude-code",
+  "name": "second run plans no change",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (dry_run)\n  - codex-cli: full support (planned)\n    * context_usage: Context usage is not exposed to Codex CLI hooks.\n    * auto_restart: Semi-automatic restart: run /new; the n"
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "dry-run exit 0",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "dry-run lists .context-brake/.gitignore",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "dry-run writes nothing",
+  "ok": true,
+  "detail": ".codex/hooks.json"
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "init --json exit 0 and matches the install report schema",
+  "ok": true,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "one AUTO_RESTART_MODE finding for the harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_MODE\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"codex-cli\",\"path\":null,\"message\":\"Restart is semi-automatic on codex-cli.\",\"impact\":\"Semi-automatic restart: run /new; the new session resumes by itself.\",\"remediation\":null}]"
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "AUTO_RESTART_MODE impact text (DEC-10)",
+  "ok": true,
+  "detail": "Semi-automatic restart: run /new; the new session resumes by itself."
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": ".context-brake/.gitignore content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": ".pi/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": ".omp/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "manifest records the ignore file",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-codex-cli",
+  "name": "second run plans no change",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (dry_run)\n  - cursor: full support (planned)\n    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.\n    * auto_restart: Se"
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "dry-run exit 0",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "dry-run lists .context-brake/.gitignore",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "dry-run writes nothing",
+  "ok": true,
+  "detail": ".cursor/hooks.json"
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "init --json exit 0 and matches the install report schema",
+  "ok": true,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "one AUTO_RESTART_MODE finding for the harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_MODE\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"cursor\",\"path\":null,\"message\":\"Restart is semi-automatic on cursor.\",\"impact\":\"Semi-automatic restart: start a new session; it resumes by itself.\",\"remediation\":null}]"
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "AUTO_RESTART_MODE impact text (DEC-10)",
+  "ok": true,
+  "detail": "Semi-automatic restart: start a new session; it resumes by itself."
+ },
+ {
+  "scenario": "init-cursor",
+  "name": ".context-brake/.gitignore content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": ".pi/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": ".omp/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "manifest records the ignore file",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-cursor",
+  "name": "second run plans no change",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (dry_run)\n  - github-copilot-cli: full support (planned)\n    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.\n    * auto_restart: Semi-automatic restar"
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "dry-run exit 0",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "dry-run lists .context-brake/.gitignore",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "dry-run writes nothing",
+  "ok": true,
+  "detail": ".github/copilot/settings.json"
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "init --json exit 0 and matches the install report schema",
+  "ok": true,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "one AUTO_RESTART_MODE finding for the harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_MODE\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"github-copilot-cli\",\"path\":null,\"message\":\"Restart is semi-automatic on github-copilot-cli.\",\"impact\":\"Semi-automatic restart: start a new session; it resumes by itself.\",\"remediation\":null}]"
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "AUTO_RESTART_MODE impact text (DEC-10)",
+  "ok": true,
+  "detail": "Semi-automatic restart: start a new session; it resumes by itself."
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": ".context-brake/.gitignore content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": ".pi/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": ".omp/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "manifest records the ignore file",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-github-copilot-cli",
+  "name": "second run plans no change",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "init-pi",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (dry_run)\n  - pi: full support (planned)\n  Planned changes:\n    [create] .context-brake/.gitignore (runtime_asset)\n    [create] .context-brake/manifest.json (manifest)\n    [crea"
+ },
+ {
+  "scenario": "init-pi",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": "dry-run exit 0",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "init-pi",
+  "name": "dry-run lists .context-brake/.gitignore",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": "dry-run lists .pi/extensions/context-brake-restart.js",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": "dry-run writes nothing",
+  "ok": true,
+  "detail": ".pi/settings.json"
+ },
+ {
+  "scenario": "init-pi",
+  "name": "init --json exit 0 and matches the install report schema",
+  "ok": true,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "init-pi",
+  "name": "one AUTO_RESTART_MODE finding for the harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_MODE\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"pi\",\"path\":null,\"message\":\"Restart is automatic on pi.\",\"impact\":\"Automatic restart: a valid reset signal opens a new session by itself.\",\"remediation\":null}]"
+ },
+ {
+  "scenario": "init-pi",
+  "name": "AUTO_RESTART_MODE impact text (DEC-10)",
+  "ok": true,
+  "detail": "Automatic restart: a valid reset signal opens a new session by itself."
+ },
+ {
+  "scenario": "init-pi",
+  "name": ".context-brake/.gitignore content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": ".pi/extensions/context-brake-restart.js installed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": ".omp/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": "manifest records the ignore file",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi",
+  "name": "second run plans no change",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (dry_run)\n  - oh-my-pi: full support (planned)\n    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself"
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "dry-run exit 0",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "dry-run lists .context-brake/.gitignore",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "dry-run lists .omp/extensions/context-brake-restart.js",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "dry-run writes nothing",
+  "ok": true,
+  "detail": ".omp/config.yml"
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "init --json exit 0 and matches the install report schema",
+  "ok": true,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "one AUTO_RESTART_MODE finding for the harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_MODE\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"oh-my-pi\",\"path\":null,\"message\":\"Restart is semi-automatic on oh-my-pi.\",\"impact\":\"Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.\",\"remediation\":null}]"
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "AUTO_RESTART_MODE impact text (DEC-10)",
+  "ok": true,
+  "detail": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself."
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": ".context-brake/.gitignore content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": ".pi/extensions/context-brake-restart.js absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": ".omp/extensions/context-brake-restart.js installed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs absent",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "manifest records the ignore file",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-oh-my-pi",
+  "name": "second run plans no change",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "init-opencode",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[ERROR] INVALID_ARGUMENTS: --auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run"
+ },
+ {
+  "scenario": "init-opencode",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-opencode",
+  "name": "dry-run fails with the target error (exit 64, usage error)",
+  "ok": true,
+  "detail": "exit=64 [ERROR] INVALID_ARGUMENTS: --auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run init where one of them is configured.\n"
+ },
+ {
+  "scenario": "init-opencode",
+  "name": "applied --json fails, writes nothing",
+  "ok": true,
+  "detail": "exit=64"
+ },
+ {
+  "scenario": "init-antigravity-cli",
+  "name": "dry-run text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[ERROR] INVALID_ARGUMENTS: --auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run"
+ },
+ {
+  "scenario": "init-antigravity-cli",
+  "name": "dry-run text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-antigravity-cli",
+  "name": "dry-run fails with the target error (exit 64, usage error)",
+  "ok": true,
+  "detail": "exit=64 [ERROR] INVALID_ARGUMENTS: --auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run init where one of them is configured.\n"
+ },
+ {
+  "scenario": "init-antigravity-cli",
+  "name": "applied --json fails, writes nothing",
+  "ok": true,
+  "detail": "exit=64"
+ },
+ {
+  "scenario": "init-all",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-all",
+  "name": "init text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - antigravity-cli: partial support (planned)\n    * post_tool_telemetry: Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocatio"
+ },
+ {
+  "scenario": "init-all",
+  "name": "init text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-all",
+  "name": "eight AUTO_RESTART_MODE lines in text",
+  "ok": true,
+  "detail": "8"
+ },
+ {
+  "scenario": "init-all",
+  "name": "each AUTO_RESTART_MODE text line names a distinct harness id, covering all 8 (UX, qa_01/BUG-01)",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for claude-code reads \"Restart is automatic on claude-code.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for codex-cli reads \"Restart is semi-automatic on codex-cli.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for cursor reads \"Restart is semi-automatic on cursor.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for github-copilot-cli reads \"Restart is semi-automatic on github-copilot-cli.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for pi reads \"Restart is automatic on pi.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for oh-my-pi reads \"Restart is semi-automatic on oh-my-pi.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for opencode reads \"Restart is not available on opencode.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "text line for antigravity-cli reads \"Restart is not available on antigravity-cli.\"",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli. |   [OK] AUTO_RESTART_MODE: Restart is not available on opencode. |   [OK] AUTO_RESTART_MODE: Restart is automatic on pi. |   [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi. |   [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli."
+ },
+ {
+  "scenario": "init-all",
+  "name": "JSON AUTO_RESTART_MODE per harness matches DEC-10 destinations",
+  "ok": true,
+  "detail": "{\"claude-code\":\"Restart is automatic on claude-code.\",\"codex-cli\":\"Restart is semi-automatic on codex-cli.\",\"cursor\":\"Restart is semi-automatic on cursor.\",\"github-copilot-cli\":\"Restart is semi-automatic on github-copilot-cli.\",\"opencode\":\"Restart is not available on opencode.\",\"pi\":\"Restart is automatic on pi.\",\"oh-my-pi\":\"Restart is semi-automatic on oh-my-pi.\",\"antigravity-cli\":\"Restart is not available on antigravity-cli.\"}"
+ },
+ {
+  "scenario": "init-all",
+  "name": "git ignores handoff.md and handoffs/ (NFR-04)",
+  "ok": true,
+  "detail": "?? .context-brake/\n!! .context-brake/handoff.md\n!! .context-brake/handoffs/\n"
+ },
+ {
+  "scenario": "init-off",
+  "name": "exit 0, schema valid",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-off",
+  "name": "no restart file, ignore file, or Claude mod",
+  "ok": true,
+  "detail": ".agents/hooks.json,.agents/hooks/context-brake.mjs,.claude/hooks/context-brake-statusline.mjs,.claude/hooks/context-brake.mjs,.claude/settings.json,.claude/settings.local.json,.codex/hooks.json,.codex/hooks/context-brake.mjs,.context-brake/manifest.json,.context-brake/runtime/claude-statusline.json,.cursor/hooks.json,.cursor/hooks/context-brake.mjs,.github/copilot/settings.json,.github/hooks/context-brake.json,.github/hooks/context-brake.mjs,.omp/config.yml,.omp/extensions/context-brake.js,.opencode/plugins/context-brake.js,.pi/extensions/context-brake.js,.pi/settings.json,context-brake.config.json,opencode.json"
+ },
+ {
+  "scenario": "init-off",
+  "name": "no AUTO_RESTART_MODE finding",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-off",
+  "name": "config has no autoRestart",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi-codex",
+  "name": "succeeds without claude-code",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "init-pi-codex",
+  "name": "no Claude mod installed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "doctor text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[WARN] ContextBrake doctor: warnings\n  - claude-code: installed (support: full, overhead: 139.1ms/100ms (fail))\n    * context_usage: Read from the session transcript, whose format is undocumented; fal"
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "doctor text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "doctor --json matches the doctor report schema",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "exit code equals report.exitCode",
+  "ok": true,
+  "detail": "1 vs 1"
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "AUTO_RESTART_HANDOFF states markdown handoff, none pending",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "NOT_LOADED before any session",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "READY and LAST_SKIP from a current v2 log",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_LAST_SKIP\",\"AUTO_RESTART_READY\"]"
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "OUTDATED_MOD from an older component version",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_OUTDATED_MOD\",\"AUTO_RESTART_HANDOFF\"]"
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "v1 log ignored: NOT_LOADED, no crash",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_NOT_LOADED\",\"AUTO_RESTART_HANDOFF\"]"
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "AUTO_RESTART_HANDOFF reports a pending handoff",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-claude-code",
+  "name": "AUTO_RESTART_HANDOFF names the snapshot skill mode",
+  "ok": true,
+  "detail": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "doctor text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[WARN] ContextBrake doctor: warnings\n  - codex-cli: installed (support: full, overhead: 125.1ms/100ms (fail))\n    * context_usage: Context usage is not exposed to Codex CLI hooks.\n    * auto_restart: "
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "doctor text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "doctor --json matches the doctor report schema",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "exit code equals report.exitCode",
+  "ok": true,
+  "detail": "1 vs 1"
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "integration shows the declared auto_restart impact",
+  "ok": true,
+  "detail": "{\"capability\":\"auto_restart\",\"impact\":\"Semi-automatic restart: run /new; the new session resumes by itself.\"}"
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "AUTO_RESTART_HANDOFF states markdown handoff, none pending",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "semi-automatic READY with harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_READY\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"codex-cli\",\"path\":null,\"message\":\"Semi-automatic restart is ready on codex-cli.\",\"impact\":\"Semi-automatic restart: run /new; the new session resumes by itself.\",\"remediation\":null},{\"code\":\"AUTO_RESTART_HANDOFF\",\"severity\":\"ok\",\"scope\":\"project\",\"harness\":null,\"path\":null,\"message\":\"Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.\",\"impact\":null,\"remediation\":null}]"
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "doctor text READY line names the harness id (qa_01/BUG-01)",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on codex-cli. |   [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "AUTO_RESTART_HANDOFF reports a pending handoff",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-codex-cli",
+  "name": "AUTO_RESTART_HANDOFF names the snapshot skill mode",
+  "ok": true,
+  "detail": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "doctor text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[WARN] ContextBrake doctor: warnings\n  - cursor: installed (support: full, overhead: 177.2ms/100ms (fail))\n    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBra"
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "doctor text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "doctor --json matches the doctor report schema",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "exit code equals report.exitCode",
+  "ok": true,
+  "detail": "1 vs 1"
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "integration shows the declared auto_restart impact",
+  "ok": true,
+  "detail": "{\"capability\":\"auto_restart\",\"impact\":\"Semi-automatic restart: start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "AUTO_RESTART_HANDOFF states markdown handoff, none pending",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "semi-automatic READY with harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_READY\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"cursor\",\"path\":null,\"message\":\"Semi-automatic restart is ready on cursor.\",\"impact\":\"Semi-automatic restart: start a new session; it resumes by itself.\",\"remediation\":null},{\"code\":\"AUTO_RESTART_HANDOFF\",\"severity\":\"ok\",\"scope\":\"project\",\"harness\":null,\"path\":null,\"message\":\"Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.\",\"impact\":null,\"remediation\":null}]"
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "doctor text READY line names the harness id (qa_01/BUG-01)",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on cursor. |   [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "AUTO_RESTART_HANDOFF reports a pending handoff",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-cursor",
+  "name": "AUTO_RESTART_HANDOFF names the snapshot skill mode",
+  "ok": true,
+  "detail": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "doctor text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[WARN] ContextBrake doctor: warnings\n  - github-copilot-cli: installed (support: full, overhead: 206.3ms/100ms (fail))\n    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.\n  "
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "doctor text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "doctor --json matches the doctor report schema",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "exit code equals report.exitCode",
+  "ok": true,
+  "detail": "1 vs 1"
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "integration shows the declared auto_restart impact",
+  "ok": true,
+  "detail": "{\"capability\":\"auto_restart\",\"impact\":\"Semi-automatic restart: start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "AUTO_RESTART_HANDOFF states markdown handoff, none pending",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "semi-automatic READY with harness",
+  "ok": true,
+  "detail": "[{\"code\":\"AUTO_RESTART_READY\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"github-copilot-cli\",\"path\":null,\"message\":\"Semi-automatic restart is ready on github-copilot-cli.\",\"impact\":\"Semi-automatic restart: start a new session; it resumes by itself.\",\"remediation\":null},{\"code\":\"AUTO_RESTART_HANDOFF\",\"severity\":\"ok\",\"scope\":\"project\",\"harness\":null,\"path\":null,\"message\":\"Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.\",\"impact\":null,\"remediation\":null}]"
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "doctor text READY line names the harness id (qa_01/BUG-01)",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on github-copilot-cli. |   [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "AUTO_RESTART_HANDOFF reports a pending handoff",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-github-copilot-cli",
+  "name": "AUTO_RESTART_HANDOFF names the snapshot skill mode",
+  "ok": true,
+  "detail": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "doctor text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[WARN] ContextBrake doctor: warnings\n  - pi: installed (support: full, overhead: 0.1ms/15ms (pass))\n    * post_tool_telemetry: The minimum harness version is unverified, so version compatibility canno"
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "doctor text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "doctor --json matches the doctor report schema",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "exit code equals report.exitCode",
+  "ok": true,
+  "detail": "1 vs 1"
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "AUTO_RESTART_HANDOFF states markdown handoff, none pending",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "NOT_LOADED before any session",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "READY and LAST_SKIP from a current v2 log",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_LAST_SKIP\",\"AUTO_RESTART_READY\"]"
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "Pi READY carries the automatic restart impact (DEC-10)",
+  "ok": true,
+  "detail": "{\"code\":\"AUTO_RESTART_READY\",\"severity\":\"ok\",\"scope\":\"harness\",\"harness\":\"pi\",\"path\":\".context-brake/runtime/restart/pi\",\"message\":\"Automatic restart is on and Pi loaded the restart module.\",\"impact\":\"Automatic restart: a valid reset signal opens a new session by itself.\",\"remediation\":null}"
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "OUTDATED_MOD from an older component version",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_OUTDATED_MOD\",\"AUTO_RESTART_HANDOFF\"]"
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "v1 log ignored: NOT_LOADED, no crash",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_NOT_LOADED\",\"AUTO_RESTART_HANDOFF\"]"
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "AUTO_RESTART_HANDOFF reports a pending handoff",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-pi",
+  "name": "AUTO_RESTART_HANDOFF names the snapshot skill mode",
+  "ok": true,
+  "detail": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "doctor text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[WARN] ContextBrake doctor: warnings\n  - oh-my-pi: installed (support: full, overhead: 0.1ms/15ms (pass))\n    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restar"
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "doctor text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "doctor --json matches the doctor report schema",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "exit code equals report.exitCode",
+  "ok": true,
+  "detail": "1 vs 1"
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "integration shows the declared auto_restart impact",
+  "ok": true,
+  "detail": "{\"capability\":\"auto_restart\",\"impact\":\"Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.\"}"
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "AUTO_RESTART_HANDOFF states markdown handoff, none pending",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending."
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "NOT_LOADED before any session",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "READY and LAST_SKIP from a current v2 log",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_LAST_SKIP\",\"AUTO_RESTART_READY\"]"
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "OUTDATED_MOD from an older component version",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_OUTDATED_MOD\",\"AUTO_RESTART_HANDOFF\"]"
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "v1 log ignored: NOT_LOADED, no crash",
+  "ok": true,
+  "detail": "[\"AUTO_RESTART_NOT_LOADED\",\"AUTO_RESTART_HANDOFF\"]"
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "AUTO_RESTART_HANDOFF reports a pending handoff",
+  "ok": true,
+  "detail": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-oh-my-pi",
+  "name": "AUTO_RESTART_HANDOFF names the snapshot skill mode",
+  "ok": true,
+  "detail": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session."
+ },
+ {
+  "scenario": "doctor-off",
+  "name": "no AUTO_RESTART_* findings with restart off",
+  "ok": true,
+  "detail": "[]"
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "/qa.json (runtime_state)\n    [delete] .context-brake/runtime/sessions/claude-code/qa-ledger.jsonl (runtime_state)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake remove (applied)\n  - claude-code: full support (planned)\n    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context w"
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "/qa.json (runtime_state)\n    [delete] .context-brake/runtime/sessions/claude-code/qa-ledger.jsonl (runtime_state)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".claude/settings.json,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md"
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-claude-code",
+  "name": ".claude/settings.json byte-identical to the fixture after remove",
+  "ok": true,
+  "detail": "{\n  \"hooks\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"Bash\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"echo 'user pre hook'\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "li/qa.json (runtime_state)\n    [delete] .context-brake/runtime/sessions/codex-cli/qa-ledger.jsonl (runtime_state)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake remove (applied)\n  - codex-cli: full support (planned)\n    * context_usage: Context usage is not exposed to Codex CLI hooks.\n    * auto_restart: Semi-automatic restart: run /new; the"
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "li/qa.json (runtime_state)\n    [delete] .context-brake/runtime/sessions/codex-cli/qa-ledger.jsonl (runtime_state)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".codex/hooks.json,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md"
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-codex-cli",
+  "name": ".codex/hooks.json byte-identical to the fixture after remove",
+  "ok": true,
+  "detail": "{\n  \"hooks\": {\n    \"PreToolUse\": [\n      {\n        \"matcher\": \"apply_patch\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"echo 'user patch hook'\"\n          }\n        ]\n      }\n    ]\n  }\n}\n"
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "ate)\n    [update] .cursor/hooks.json (harness_entry)\n    [delete] .cursor/hooks/context-brake.mjs (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake remove (applied)\n  - cursor: full support (planned)\n    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.\n    * auto_restart: "
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "ate)\n    [update] .cursor/hooks.json (harness_entry)\n    [delete] .cursor/hooks/context-brake.mjs (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.cursor/hooks.json"
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-cursor",
+  "name": ".cursor/hooks.json byte-identical to the fixture after remove",
+  "ok": true,
+  "detail": "{\n  \"version\": 1,\n  \"hooks\": {\n    \"preToolUse\": [\n      {\n        \"command\": \"echo 'user pre-tool hook'\"\n      }\n    ]\n  }\n}\n"
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "te] .github/hooks/context-brake.json (harness_entry)\n    [delete] .github/hooks/context-brake.mjs (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake remove (applied)\n  - github-copilot-cli: full support (planned)\n    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.\n    * auto_restart: Semi-automatic rest"
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "te] .github/hooks/context-brake.json (harness_entry)\n    [delete] .github/hooks/context-brake.mjs (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.github/copilot/settings.json"
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-github-copilot-cli",
+  "name": ".github/copilot/settings.json byte-identical to the fixture after remove",
+  "ok": true,
+  "detail": "{\n  \"theme\": \"dark\"\n}\n"
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "/extensions/context-brake-restart.js (runtime_asset)\n    [delete] .pi/extensions/context-brake.js (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake remove (applied)\n  - pi: full support (planned)\n  Planned changes:\n    [delete] .context-brake/.gitignore (runtime_asset)\n    [delete] .context-brake/manifest.json (manifest)\n    [de"
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "/extensions/context-brake-restart.js (runtime_asset)\n    [delete] .pi/extensions/context-brake.js (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.pi/settings.json"
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-pi",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-pi",
+  "name": ".pi/settings.json byte-identical to the fixture after remove",
+  "ok": true,
+  "detail": "{\n  \"extensions\": []\n}\n"
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "extensions/context-brake-restart.js (runtime_asset)\n    [delete] .omp/extensions/context-brake.js (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake remove (applied)\n  - oh-my-pi: full support (planned)\n    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itse"
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "extensions/context-brake-restart.js (runtime_asset)\n    [delete] .omp/extensions/context-brake.js (runtime_asset)\n    [delete] context-brake.config.json (runtime_asset)\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.omp/config.yml"
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "remove-oh-my-pi",
+  "name": ".omp/config.yml byte-identical to the fixture after remove",
+  "ok": true,
+  "detail": "extensions: []\n"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - claude-code: full support (planned)\n    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context win"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".claude/hooks/context-brake-statusline.mjs,.claude/hooks/context-brake.mjs,.claude/settings.json,.claude/settings.local.json,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/claude-statusline.json,.context-brake/runtime/sessions/claude-code/qa-ledger.jsonl,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "config autoRestart removed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "telemetry integration kept",
+  "ok": true,
+  "detail": ".claude/hooks/context-brake-statusline.mjs,.claude/hooks/context-brake.mjs,.claude/settings.json,.claude/settings.local.json,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/claude-statusline.json,.context-brake/runtime/sessions/claude-code/qa-ledger.jsonl,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "other runtime state kept (session ledger)",
+  "ok": true,
+  "detail": ".claude/hooks/context-brake-statusline.mjs,.claude/hooks/context-brake.mjs,.claude/settings.json,.claude/settings.local.json,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/claude-statusline.json,.context-brake/runtime/sessions/claude-code/qa-ledger.jsonl,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-claude-code",
+  "name": "text header is not [WARN] (qa_01/BUG-02)",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - claude-code: full support (planned)\n    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls "
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - codex-cli: full support (planned)\n    * context_usage: Context usage is not exposed to Codex CLI hooks.\n    * auto_restart: Semi-automatic restart: run /new; the n"
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".codex/hooks.json,.codex/hooks/context-brake.mjs,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/codex-cli/qa-ledger.jsonl,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "config autoRestart removed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "telemetry integration kept",
+  "ok": true,
+  "detail": ".codex/hooks.json,.codex/hooks/context-brake.mjs,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/codex-cli/qa-ledger.jsonl,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "other runtime state kept (session ledger)",
+  "ok": true,
+  "detail": ".codex/hooks.json,.codex/hooks/context-brake.mjs,.context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/codex-cli/qa-ledger.jsonl,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-codex-cli",
+  "name": "text header is not [WARN] (qa_01/BUG-02)",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - codex-cli: full support (planned)\n    * context_usage: Context usage is not exposed to Codex CLI hooks.\n    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.\n  Planned changes:\n    [delete] .context-brake/.gitignore (runtime_ass"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - cursor: full support (planned)\n    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.\n    * auto_restart: Se"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/cursor/qa-ledger.jsonl,.cursor/hooks.json,.cursor/hooks/context-brake.mjs,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "config autoRestart removed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "telemetry integration kept",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/cursor/qa-ledger.jsonl,.cursor/hooks.json,.cursor/hooks/context-brake.mjs,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "other runtime state kept (session ledger)",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/cursor/qa-ledger.jsonl,.cursor/hooks.json,.cursor/hooks/context-brake.mjs,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-cursor",
+  "name": "text header is not [WARN] (qa_01/BUG-02)",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - cursor: full support (planned)\n    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.\n    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.\n  Planned changes:\n    [delete] .co"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - github-copilot-cli: full support (planned)\n    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.\n    * auto_restart: Semi-automatic restar"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/github-copilot-cli/qa-ledger.jsonl,.github/copilot/settings.json,.github/hooks/context-brake.json,.github/hooks/context-brake.mjs,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "config autoRestart removed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "telemetry integration kept",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/github-copilot-cli/qa-ledger.jsonl,.github/copilot/settings.json,.github/hooks/context-brake.json,.github/hooks/context-brake.mjs,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "other runtime state kept (session ledger)",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/github-copilot-cli/qa-ledger.jsonl,.github/copilot/settings.json,.github/hooks/context-brake.json,.github/hooks/context-brake.mjs,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-github-copilot-cli",
+  "name": "text header is not [WARN] (qa_01/BUG-02)",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - github-copilot-cli: full support (planned)\n    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.\n    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.\n  Planned changes:\n    [delete] .context-brake/.gitign"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - pi: full support (planned)\n  Planned changes:\n    [delete] .context-brake/.gitignore (runtime_asset)\n    [update] .context-brake/manifest.json (manifest)\n    [dele"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/pi/qa-ledger.jsonl,.pi/extensions/context-brake.js,.pi/settings.json,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "config autoRestart removed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "telemetry integration kept",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/pi/qa-ledger.jsonl,.pi/extensions/context-brake.js,.pi/settings.json,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "other runtime state kept (session ledger)",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/pi/qa-ledger.jsonl,.pi/extensions/context-brake.js,.pi/settings.json,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-pi",
+  "name": "text header is not [WARN] (qa_01/BUG-02)",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - pi: full support (planned)\n  Planned changes:\n    [delete] .context-brake/.gitignore (runtime_asset)\n    [update] .context-brake/manifest.json (manifest)\n    [delete] .context-brake/runtime/restart/pi/qa.json (runtime_state)\n    [delete] .pi/extensions/context-br"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "dry run names the kept handoffs",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "dry run changes nothing",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "text: NO_COLOR text has no ANSI escape",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - oh-my-pi: full support (planned)\n    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "text: text carries status labels",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "output names the kept handoffs (AUTO_RESTART_HANDOFF_KEPT)",
+  "ok": true,
+  "detail": "nfig)\n      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart\n  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.\n    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.\n"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "no restart artifact remains",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/oh-my-pi/qa-ledger.jsonl,.omp/config.yml,.omp/extensions/context-brake.js,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "pending handoff kept byte-identical",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "archive kept (10 files)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "config autoRestart removed",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "telemetry integration kept",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/oh-my-pi/qa-ledger.jsonl,.omp/config.yml,.omp/extensions/context-brake.js,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "other runtime state kept (session ledger)",
+  "ok": true,
+  "detail": ".context-brake/handoff.md,.context-brake/handoffs/20260101T000000.000Z.md,.context-brake/handoffs/20260101T000001.000Z.md,.context-brake/handoffs/20260101T000002.000Z.md,.context-brake/handoffs/20260101T000003.000Z.md,.context-brake/handoffs/20260101T000004.000Z.md,.context-brake/handoffs/20260101T000005.000Z.md,.context-brake/handoffs/20260101T000006.000Z.md,.context-brake/handoffs/20260101T000007.000Z.md,.context-brake/handoffs/20260101T000008.000Z.md,.context-brake/handoffs/20260101T000009.000Z.md,.context-brake/manifest.json,.context-brake/runtime/sessions/oh-my-pi/qa-ledger.jsonl,.omp/config.yml,.omp/extensions/context-brake.js,context-brake.config.json"
+ },
+ {
+  "scenario": "no-auto-restart-oh-my-pi",
+  "name": "text header is not [WARN] (qa_01/BUG-02)",
+  "ok": true,
+  "detail": "[OK] ContextBrake init (applied)\n  - oh-my-pi: full support (planned)\n    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.\n  Planned changes:\n    [delete] .context-brake/.gitignore (runtime_asset)\n    [update] .context-br"
+ }
+]

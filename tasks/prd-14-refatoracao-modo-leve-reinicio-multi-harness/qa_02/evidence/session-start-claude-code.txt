@@ -1,0 +1,123 @@
+# Built claude-code session-start hook with a pending handoff (FR-02, FR-03, FR-08, NFR-05, TC-02, TC-10)
+
+# scenario start-claude-code-startup
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-claude-code-startup-JlaFfZ\repo\.claude\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"session-claude-1","cwd":"/repo","hook_event_name":"SessionStart","source":"startup"}
+exit=0
+--- stdout
+{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261008T125346.390Z.md\" and continue the previous work from it."}}--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-claude-code-startup-JlaFfZ\repo\.claude\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"session-claude-1","cwd":"/repo","hook_event_name":"SessionStart","source":"startup"}
+exit=0
+--- stdout
+--- stderr
+--- end
+
+# scenario start-claude-code-clear
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-claude-code-clear-tiQIYk\repo\.claude\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"session-claude-1","cwd":"/repo","hook_event_name":"SessionStart","source":"clear"}
+exit=0
+--- stdout
+{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261008T125347.372Z.md\" and continue the previous work from it."}}--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-claude-code-clear-tiQIYk\repo\.claude\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"session-claude-1","cwd":"/repo","hook_event_name":"SessionStart","source":"clear"}
+exit=0
+--- stdout
+--- stderr
+--- end
+
+# scenario start-claude-code-compact
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-claude-code-compact-GFnMlm\repo\.claude\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"session-claude-1","cwd":"/repo","hook_event_name":"SessionStart","source":"compact"}
+exit=0
+--- stdout
+--- stderr
+--- end

@@ -10,6 +10,7 @@ export const DEFAULT_DEADLINE_LIMITS: DeadlineLimits = { event: INTERNAL_DEADLIN
 
 export class HookDeadline {
   private phase: HookPhase;
+  private expiredAtLeastOnce = false;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private rejectExpired: (error: DeadlineExceededError) => void = () => undefined;
   private readonly startedAt: number;
@@ -24,6 +25,15 @@ export class HookDeadline {
   }
 
   readonly mark = (phase: HookPhase): void => { this.phase = phase; };
+
+  readonly isExpired = (): boolean => this.expiredAtLeastOnce;
+
+  readonly commit = (): boolean => {
+    if (this.expiredAtLeastOnce) return false;
+    clearTimeout(this.timer);
+    this.timer = undefined;
+    return true;
+  };
 
   extendTo(milliseconds: number): void {
     if (this.timer === undefined) return;
@@ -42,7 +52,7 @@ export class HookDeadline {
 
   private schedule(milliseconds: number): void {
     const remaining = Math.max(0, milliseconds - (this.now() - this.startedAt));
-    this.timer = setTimeout(() => { this.rejectExpired(new DeadlineExceededError(this.phase, Math.round(this.now() - this.startedAt))); }, remaining);
+    this.timer = setTimeout(() => { this.expiredAtLeastOnce = true; this.rejectExpired(new DeadlineExceededError(this.phase, Math.round(this.now() - this.startedAt))); }, remaining);
   }
 }
 

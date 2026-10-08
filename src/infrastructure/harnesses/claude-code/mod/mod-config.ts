@@ -1,11 +1,13 @@
 import type { ContextBrakeConfig } from '../../../../core/contracts/configuration.js';
 import { configurationSchema } from '../../../../core/contracts/configuration.js';
+import { restartMode, type RestartMode } from '../../../../core/services/restart-mode.js';
 import type { ModHost } from './host.js';
 import { CONFIG_FILE } from './mod-info.js';
 
 export type ModConfig = {
   readonly root: string;
   readonly maxConsecutive: number;
+  readonly mode: RestartMode;
 };
 
 async function readConfigText($: ModHost, root: string): Promise<string | undefined> {
@@ -32,5 +34,6 @@ export async function readModConfig($: ModHost): Promise<ModConfig | undefined> 
   return {
     root,
     maxConsecutive: config.autoRestart.maxConsecutiveRestarts,
+    mode: restartMode(config),
   };
 }

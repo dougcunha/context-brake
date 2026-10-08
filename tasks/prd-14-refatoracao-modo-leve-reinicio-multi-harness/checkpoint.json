@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generation": 1,
+  "generation": 58,
   "feature": "prd-14-refatoracao-modo-leve-reinicio-multi-harness",
   "workspace": "D:/MyProjects/ContextBrake",
-  "phase": "plan-project",
-  "status": "paused",
+  "phase": "completed",
+  "status": "completed",
   "safe_to_stop": true,
   "owner_session": null,
   "objective": "Generalize the PRD-11 automatic restart: markdown handoff without a snapshot skill when restart is on, automatic restart where a probe verifies the API (Pi, Oh-My-Pi, OpenCode), semi-automatic elsewhere.",
@@ -15,42 +15,48 @@
   "sources": {
     "workflow": "workflow.md",
     "prd": "prd.md",
-    "techspec": null,
-    "tasks": null,
-    "review": null,
-    "qa": null,
-    "snapshot": null
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_09/codereview.md",
+    "qa": "qa_02/qa.md",
+    "snapshot": "context-snapshot.md"
   },
-  "review_status": null,
-  "qa_status": null,
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "APPROVED",
   "approved_sources": [
     {
       "path": "prd.md",
       "sha256": "46d5157438af972eab922c698591f7c5c6a381d77ff54b69bb09cb4eafbd5fba",
       "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "305fea9c9b0facf681f85ca1128659f1c09bd460aa4ec2852232ccfc8cd053ff",
+      "decision_id": "DEC-HIL-08"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "3bd8e7903710568a39436998419edf8f2901c5d1f2a60c8088273999a44b3c01",
+      "decision_id": "DEC-HIL-08"
     }
   ],
   "decisions_to_read": [
-    "DEC-HIL-01"
+    "DEC-HIL-08"
   ],
-  "git_base": null,
-  "worktree_evidence": null,
+  "git_base": "a31e183",
+  "worktree_evidence": "workflow.md#Milestones (untracked tasks/prd-11-reinicio-automatico-no-claude-code/rtk/ predates this slice)",
   "active_work": [],
   "pending_hil": null,
   "blockers": [],
-  "correction_round": 0,
+  "correction_round": 8,
   "rounds_without_progress": 0,
   "next_action": {
-    "kind": "run",
-    "instruction": "After the predecessor slice completes, write techspec.md with sdd-create-techspec.",
+    "kind": "close",
+    "instruction": "Feature completed (DEC-HIL-08). Owed by the person: manual acceptance (techspec.md:122). Proposed follow-up: OpenCode 2.x migration PRD.",
     "read": [
       {
-        "path": "tasks/prd-14-refatoracao-modo-leve-reinicio-multi-harness/prd.md",
-        "section": "all"
-      },
-      {
-        "path": "tasks/prd-12-refatoracao-modo-leve-modo-unico/workflow.md",
-        "section": "Human Decisions Log"
+        "path": "tasks/prd-14-refatoracao-modo-leve-reinicio-multi-harness/workflow.md",
+        "section": "DEC-HIL-08"
       }
     ]
   }

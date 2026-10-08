@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { hasResetSignal, renderResetNotice } from '../../src/core/services/reset-notice.js';
+import { endsWithResetSignal, renderResetNotice } from '../../src/core/services/reset-notice.js';
 import { antigravityDescriptor, renderAntigravityDecision } from '../../src/infrastructure/harnesses/antigravity-cli/runtime.js';
 import { claudeDescriptor, renderClaudeDecision } from '../../src/infrastructure/harnesses/claude-code/runtime.js';
 import { codexDescriptor, renderCodexDecision } from '../../src/infrastructure/harnesses/codex-cli/runtime.js';
@@ -27,16 +27,21 @@ function notifyContext(notify: (message: string, level?: string) => void, sessio
   return { cwd: ROOT, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => undefined, ui: { notify } };
 }
 
-describe('reset signal detection (RF22, DEC-12, TC-21)', () => {
-  it('recognizes the signal as the trimmed final text', () => {
-    expect(hasResetSignal('[REQUEST_SESSION_RESET]')).toBe(true);
-    expect(hasResetSignal('  [REQUEST_SESSION_RESET]  \n')).toBe(true);
+describe('reset signal detection (RF22, prd-14 FR-12, TC-11)', () => {
+  it('recognizes the marker alone and the marker ending the last line after other text', () => {
+    expect(endsWithResetSignal('[REQUEST_SESSION_RESET]')).toBe(true);
+    expect(endsWithResetSignal('  [REQUEST_SESSION_RESET]  \n')).toBe(true);
+    expect(endsWithResetSignal('Saved the handoff.\n[REQUEST_SESSION_RESET]')).toBe(true);
+    expect(endsWithResetSignal('Saved the handoff. [REQUEST_SESSION_RESET]')).toBe(true);
   });
-  it('does not recognize the signal when other text remains', () => {
-    expect(hasResetSignal('Please end with [REQUEST_SESSION_RESET] when done.')).toBe(false);
-    expect(hasResetSignal('[REQUEST_SESSION_RESET] and more')).toBe(false);
-    expect(hasResetSignal('')).toBe(false);
-    expect(hasResetSignal('requested a session reset')).toBe(false);
+  it('does not recognize the marker in the middle of the reply', () => {
+    expect(endsWithResetSignal('Please end with [REQUEST_SESSION_RESET] when done.')).toBe(false);
+    expect(endsWithResetSignal('[REQUEST_SESSION_RESET] and more')).toBe(false);
+    expect(endsWithResetSignal('')).toBe(false);
+    expect(endsWithResetSignal('requested a session reset')).toBe(false);
+  });
+  it('says the new session resumes by itself when restart is on (prd-14 DEC-18)', () => {
+    expect(renderResetNotice('/new', true)).toBe('ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.');
   });
   it('renders the notice with the harness command', () => {
     expect(renderResetNotice('/clear')).toBe('ContextBrake: the agent requested a session reset. Run /clear to start a new session.');
@@ -50,7 +55,7 @@ async function checkInProcessNotices(): Promise<void> {
   const pi = registration<PiApi>((api) => createPiExtension(api));
   const omp = registration<OmpApi>((api) => createOmpExtension(api));
   await pi.get('message_end')!({ message: { role: 'assistant', content: [{ type: 'text', text: '[REQUEST_SESSION_RESET]' }] } }, notifyContext(piNotify, 'pi-reset'));
-  await omp.get('session_stop')!({ last_assistant_message: '[REQUEST_SESSION_RESET]' }, notifyContext(ompNotify, 'omp-reset'));
+  await omp.get('session_stop')!({ last_assistant_message: 'Handoff written.\n[REQUEST_SESSION_RESET]' }, notifyContext(ompNotify, 'omp-reset'));
   expect(piNotify).toHaveBeenCalledWith(NOTICE, 'info');
   expect(ompNotify).toHaveBeenCalledWith(NOTICE, 'info');
   await pi.get('message_end')!({ message: { role: 'assistant', content: [{ type: 'text', text: 'still working' }] } }, notifyContext(piNotify, 'pi-reset'));

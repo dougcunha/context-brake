@@ -1,0 +1,7 @@
+FAIL [shell-pwsh] init --auto-restart exit 0, restart file installed, text names pi :: exit=0  
+PASS [shell-pwsh] remove exit 0 and restart file gone
+FAIL [shell-powershell-5.1] init --auto-restart exit 0, restart file installed, text names pi :: exit=0  
+PASS [shell-powershell-5.1] remove exit 0 and restart file gone
+PASS [shell-git-bash] init --auto-restart exit 0, restart file installed, text names pi
+PASS [shell-git-bash] remove exit 0 and restart file gone
+TOTAL 6, failed 2

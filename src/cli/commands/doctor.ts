@@ -2,6 +2,7 @@ import { resolve } from 'node:path';
 import type { ParsedDoctorArgs } from '../argument-parser.js';
 import type { CommandEnv } from './init.js';
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
+import type { DiagnosticFinding } from '../../core/contracts/diagnostics.js';
 import { ProjectConfigStore } from '../../infrastructure/storage/project-config-store.js';
 import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.js';
 import { NodeOverheadMeasurer } from '../../infrastructure/diagnostics/overhead-measurer.js';
@@ -15,6 +16,7 @@ import { renderJsonOutput } from '../output/json.js';
 import { renderDoctorText } from '../output/text.js';
 import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
+import { doctorRestartFindings } from '../handoff-findings.js';
 
 async function readConfigSafely(root: string): Promise<{ config: ContextBrakeConfig | null; configError: Error | null }> {
   const store = new ProjectConfigStore(resolve(root, 'context-brake.config.json'));
@@ -27,6 +29,10 @@ async function readConfigSafely(root: string): Promise<{ config: ContextBrakeCon
   }
 }
 
+function reportsRestart(findings: readonly DiagnosticFinding[], harness: string): boolean {
+  return findings.some((finding) => finding.harness === harness && finding.code.startsWith('AUTO_RESTART'));
+}
+
 export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promise<number> {
   const { config, configError } = await readConfigSafely(env.projectRoot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
@@ -36,12 +42,14 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
   const sources = await collectHarnessSources(adapters, ctx);
   const measurer = env.overheadMeasurer ?? new NodeOverheadMeasurer(env.projectRoot);
   const packageVersion = await readPackageVersion();
-  const report = await diagnoseProject({
+  const diagnosed = await diagnoseProject({
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,
     ...(args.harness.length > 0 ? { explicitHarnesses: args.harness } : {}), measurer,
     manifest, allSnapshots, packageVersion, contextWindow: await readClaudeContextWindow(env.projectRoot),
     runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(), now: systemClock.now(),
   });
+  const installed = adapters.filter((adapter) => !reportsRestart(diagnosed.findings, adapter.id) && diagnosed.integrations.some((integration) => integration.harness === adapter.id && integration.state === 'installed'));
+  const report = { ...diagnosed, findings: [...diagnosed.findings, ...await doctorRestartFindings(env.projectRoot, config, installed)] };
   if (args.json) {
     renderJsonOutput(report);
   } else {

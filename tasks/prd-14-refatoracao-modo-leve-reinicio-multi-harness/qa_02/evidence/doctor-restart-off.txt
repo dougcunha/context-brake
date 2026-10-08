@@ -1,0 +1,197 @@
+# doctor with restart off (FR-11 "per harness that has restart on", NFR-05)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - pi: full support (planned)
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "codex-cli",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "codex-cli",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unsupported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unsupported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "codex-cli",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 205,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    },
+    {
+      "harness": "pi",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "pi",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "supported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "supported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "pi",
+        "executionModel": "in_process",
+        "sampleCount": 100,
+        "p95Milliseconds": 0.1,
+        "targetMilliseconds": 15,
+        "status": "pass"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "codex-cli",
+      "path": null,
+      "message": "The minimum verified version for codex-cli is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected codex-cli version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "The minimum verified version for pi is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected pi version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end

@@ -1,14 +1,16 @@
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { modLogSchema, type RestartReasonCode } from '../../src/core/contracts/auto-restart.js';
+import type { RestartReasonCode } from '../../src/core/contracts/auto-restart.js';
+import { restartLogSchema } from '../../src/core/contracts/restart-log.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import { SESSION_RESET_SIGNAL } from '../../src/core/services/reset-notice.js';
 import type { HookHandler, HookRegistrar, ModHost } from '../../src/infrastructure/harnesses/claude-code/mod/host.js';
+import { MOD_LOG_DIR } from '../../src/infrastructure/harnesses/claude-code/mod/mod-info.js';
 import { register } from '../../src/infrastructure/harnesses/claude-code/mod/register.js';
 import { createHost, createHostState, flush, type HostState } from './claude-mod-host.js';
 
-export type SceneOptions = { readonly autoRestart?: boolean; readonly max?: number };
+export type SceneOptions = { readonly autoRestart?: boolean; readonly max?: number; readonly handoff?: boolean };
 export type Scene = { readonly root: string; readonly state: HostState; readonly host: ModHost; fire(event: string, input: unknown): Promise<unknown> };
 
 const TURN_AGE_MS = 60_000;
@@ -17,7 +19,8 @@ const roots: string[] = [];
 
 async function writeConfig(root: string, options: SceneOptions): Promise<void> {
   const autoRestart = options.autoRestart === false ? {} : { autoRestart: { maxConsecutiveRestarts: options.max ?? 2 } };
-  await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({ ...DEFAULT_CONFIG, ...autoRestart }), 'utf8');
+  const snapshot = options.handoff === true ? DEFAULT_CONFIG.snapshot : { ...DEFAULT_CONFIG.snapshot, command: '/sdd-snapshot' };
+  await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({ ...DEFAULT_CONFIG, snapshot, ...autoRestart }), 'utf8');
 }
 
 function driver(host: ModHost): Pick<Scene, 'fire'> {
@@ -59,8 +62,8 @@ export async function settleClear(scene: Scene, outcome: 'resolve' | 'reject' = 
 }
 
 export async function readCodes(scene: Scene): Promise<RestartReasonCode[]> {
-  const text = await readFile(join(scene.root, '.context-brake/runtime/claude-mod/session-1.json'), 'utf8').catch(() => '');
-  const parsed = modLogSchema.safeParse(text === '' ? undefined : JSON.parse(text));
+  const text = await readFile(join(scene.root, MOD_LOG_DIR, 'session-1.json'), 'utf8').catch(() => '');
+  const parsed = restartLogSchema.safeParse(text === '' ? undefined : JSON.parse(text));
   return parsed.success ? parsed.data.records.map((record) => record.code) : [];
 }
 

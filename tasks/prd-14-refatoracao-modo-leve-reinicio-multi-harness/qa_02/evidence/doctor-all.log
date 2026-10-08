@@ -1,0 +1,3 @@
+PASS [doctor-all] init exit 0
+PASS [doctor-all] three semi-automatic READY lines (codex-cli, cursor, github-copilot-cli), each naming a distinct harness id
+TOTAL 2, failed 0

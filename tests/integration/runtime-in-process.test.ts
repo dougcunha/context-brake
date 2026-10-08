@@ -36,6 +36,10 @@ function piContext(root: string, sessionId: string, usage: unknown): unknown {
   return { cwd: root, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => usage, ui: { notify: () => {} } };
 }
 
+function noticeContext(root: string, sessionId: string, notices: string[]): unknown {
+  return { cwd: root, sessionManager: { getSessionId: () => sessionId }, getContextUsage: () => undefined, ui: { notify: (text: string) => { notices.push(text); } } };
+}
+
 async function checkPi(root: string): Promise<void> {
   const handlers = await loadPi();
   const measured = { tokens: 128000, contextWindow: 200000, percent: 64 };
@@ -45,6 +49,9 @@ async function checkPi(root: string): Promise<void> {
   expect((rendered.content[1] as { text: string }).text).toContain('tokens=128000/200000 source=measured');
   await seedCriticalSession(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null });
   await expect(handlers.get('session_start')!({ reason: 'new' }, piContext(root, 'pi-reset', measured))).resolves.toBeUndefined();
+  const notices: string[] = [];
+  await handlers.get('message_end')!(await loadHarnessPayload('pi', 'message-end.json'), noticeContext(root, 'pi-built', notices));
+  expect(notices).toEqual(['ContextBrake: the agent requested a session reset. Run /new to start a new session.']);
   expect(handlers.has('tool_call')).toBe(false);
 }
 
@@ -52,7 +59,9 @@ async function checkOmp(root: string): Promise<void> {
   const handlers = await loadOmp();
   await seedCriticalSession(root, { harness: 'oh-my-pi', sessionId: 'omp-built', agentId: null });
   const stop = await loadHarnessPayload('oh-my-pi', 'session-stop.json');
-  await expect(handlers.get('session_stop')!(stop, piContext(root, 'omp-built', undefined))).resolves.toBeUndefined();
+  const notices: string[] = [];
+  await expect(handlers.get('session_stop')!(stop, noticeContext(root, 'omp-built', notices))).resolves.toBeUndefined();
+  expect(notices).toEqual(['ContextBrake: the agent requested a session reset. Run /new to start a new session.']);
   expect(handlers.has('tool_call')).toBe(false);
 }
 

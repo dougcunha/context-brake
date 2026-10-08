@@ -60,7 +60,7 @@ describe('failures never break the session (NFR-04, TC-13)', () => {
     await signalTurn(scene);
     await settleClear(scene, 'reject');
     expect(scene.state.seeds).toEqual([]);
-    expect(await readCodes(scene)).toEqual(['RESTARTED', 'ERROR_CLEAR_REJECTED']);
+    expect(await waitForCodes(scene, 2)).toEqual(['RESTARTED', 'ERROR_RESTART_REJECTED']);
     expect([...scene.state.store.values()]).toEqual([{ consecutive: 0, toolCallsSinceSeed: null }]);
   });
 

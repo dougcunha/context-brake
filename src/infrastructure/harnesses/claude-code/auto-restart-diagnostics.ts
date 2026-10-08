@@ -1,10 +1,10 @@
-import { readdir, readFile, stat } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import semver from 'semver';
-import { modLogSchema, type ModLog } from '../../../core/contracts/auto-restart.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
 import type { VersionProbe } from '../../../core/contracts/harness.js';
 import { pathExists } from '../common/path-helpers.js';
+import { latestRestartLog } from '../common/restart-diagnostics.js';
 import { MOD_FILES } from './auto-restart-files.js';
 import { hasModKeys } from './auto-restart-settings.js';
 import { MOD_LOG_DIR, MOD_VERSION } from './mod/mod-info.js';
@@ -37,9 +37,9 @@ export async function diagnoseAutoRestart(input: AutoRestartDiagnosis): Promise<
   const normalized = input.version?.normalized ?? null;
   if (normalized !== null && semver.lt(normalized, MODS_MINIMUM_CLAUDE_VERSION)) return [finding(tooOld(normalized))];
   if (!(await isInstalled(input.projectRoot))) return [finding(FILES_DRIFTED)];
-  const log = await latestLog(input.projectRoot);
+  const log = await latestRestartLog(input.projectRoot, 'claude-code');
   if (log === null) return [finding(NOT_LOADED)];
-  if (log.modVersion !== MOD_VERSION) return [finding(sessionDrifted(log.modVersion))];
+  if (log.componentVersion !== MOD_VERSION) return [finding(sessionDrifted(log.componentVersion))];
   const last = log.records.at(-1);
   const skip = last !== undefined && last.code !== 'RESTARTED' ? [finding(lastSkip(last.code, last.at))] : [];
   return [finding(READY), ...skip];
@@ -54,26 +54,6 @@ async function isInstalled(projectRoot: string): Promise<boolean> {
     return hasModKeys(settings);
   } catch {
     return false;
-  }
-}
-
-async function latestLog(projectRoot: string): Promise<ModLog | null> {
-  const dir = resolve(projectRoot, MOD_LOG_DIR);
-  const names = (await readdir(dir).catch(() => [])).filter((name) => name.endsWith('.json'));
-  const dated = await Promise.all(names.map(async (name) => ({ path: join(dir, name), mtime: (await stat(join(dir, name)).catch(() => null))?.mtimeMs ?? -1 })));
-  for (const entry of dated.sort((a, b) => b.mtime - a.mtime)) {
-    const log = await readLog(entry.path);
-    if (log !== null) return log;
-  }
-  return null;
-}
-
-async function readLog(path: string): Promise<ModLog | null> {
-  try {
-    const parsed = modLogSchema.safeParse(JSON.parse(await readFile(path, 'utf8')));
-    return parsed.success ? parsed.data : null;
-  } catch {
-    return null;
   }
 }
 

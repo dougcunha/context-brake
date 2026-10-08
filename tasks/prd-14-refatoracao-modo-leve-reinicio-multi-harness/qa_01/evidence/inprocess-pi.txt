@@ -1,0 +1,145 @@
+# Built pi extension files installed by init --auto-restart, driven in a child process by a fake host (FR-02, FR-04, FR-07, FR-08, FR-09, FR-12, TC-09)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\inproc-driver.mjs C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\pi-fresh-1lYIFw\repo pi fresh
+exit=0
+--- stdout
+{"seeds":["ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded."],"dispatched":["/context-brake-restart"],"notices":["ContextBrake: restarting the session now (restart signal received)."],"editor":"","boots":[{"message":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261007T233459.809Z.md\" and continue the previous work from it."}],"logs":{"pi-s1.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:34:59.798Z","code":"RESTARTED"}]},"pi-s2.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[]}},"archive":["20261007T233459.809Z.md"]}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\inproc-driver.mjs C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\pi-stale-oPTV1C\repo pi stale
+exit=0
+--- stdout
+{"seeds":[],"dispatched":[],"notices":["ContextBrake: automatic restart skipped: .context-brake/handoff.md was not updated in this turn."],"editor":"","boots":[],"logs":{"pi-s1.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:01.138Z","code":"SKIP_HANDOFF_STALE"}]}},"archive":[]}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\inproc-driver.mjs C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\pi-missing-OELaVa\repo pi missing
+exit=0
+--- stdout
+{"seeds":[],"dispatched":[],"notices":["ContextBrake: automatic restart skipped: no handoff was written to .context-brake/handoff.md."],"editor":"","boots":[],"logs":{"pi-s1.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:02.529Z","code":"SKIP_HANDOFF_MISSING"}]}},"archive":[]}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo env={"CONTEXT_BRAKE_AUTO_RESTART":"0"}) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\inproc-driver.mjs C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\pi-env-RFrmLq\repo pi env
+exit=0
+--- stdout
+{"seeds":[],"dispatched":[],"notices":["ContextBrake: automatic restart skipped: switched off by CONTEXT_BRAKE_AUTO_RESTART=0 or a harness setting."],"editor":"","boots":[],"logs":{"pi-s1.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:03.945Z","code":"SKIP_DISABLED_ENV"}]}},"archive":[]}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\inproc-driver.mjs C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\pi-print-q5yMNC\repo pi print
+exit=0
+--- stdout
+{"seeds":[],"dispatched":[],"notices":["ContextBrake: automatic restart skipped: there is no interactive terminal to continue the session."],"editor":"","boots":[],"logs":{"pi-s1.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:05.342Z","code":"SKIP_NON_INTERACTIVE"}]}},"archive":[]}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\inproc-driver.mjs C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\pi-limit-WU5K8J\repo pi limit
+exit=0
+--- stdout
+{"seeds":["ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.","ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.","ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded."],"dispatched":["/context-brake-restart","/context-brake-restart","/context-brake-restart"],"notices":["ContextBrake: restarting the session now (restart signal received).","ContextBrake: restarting the session now (restart signal received).","ContextBrake: automatic restart skipped: the limit of consecutive restarts was reached. Send a message to resume.","ContextBrake: restarting the session now (restart signal received)."],"editor":"","boots":[{"message":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261007T233507.862Z.md\" and continue the previous work from it."}],"logs":{"pi-s1.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:06.828Z","code":"RESTARTED"}]},"pi-s2.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:07.171Z","code":"RESTARTED"}]},"pi-s3.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[{"at":"2026-10-07T23:35:07.514Z","code":"PAUSED_LOOP_GUARD"},{"at":"2026-10-07T23:35:07.854Z","code":"RESTARTED"}]},"pi-s4.json":{"v":2,"harness":"pi","componentVersion":"1.0.0","harnessVersion":"unknown","records":[]}},"archive":["20261007T233506.837Z.md","20261007T233507.180Z.md","20261007T233507.862Z.md"]}
+--- stderr
+--- end

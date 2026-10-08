@@ -30,6 +30,8 @@ const REQUIRED_FILES: readonly string[] = [
   'dist/assets/runtime/opencode-plugin.js',
   'dist/assets/runtime/pi-extension.js',
   'dist/assets/runtime/omp-extension.js',
+  'dist/assets/runtime/pi-restart.js',
+  'dist/assets/runtime/omp-restart.js',
 ];
 
 const FORBIDDEN_PREFIXES: readonly string[] = ['tests/', '.github/', '.agents/', 'tasks/'];

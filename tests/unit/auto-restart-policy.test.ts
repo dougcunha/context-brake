@@ -5,6 +5,7 @@ import { decideRestart, type RestartFacts } from '../../src/core/services/auto-r
 const READY: RestartFacts = {
   signal: true,
   standDown: { disabledByEnv: false, interactive: true },
+  handoff: { required: false, writtenAt: null, turnStartedAt: undefined },
   guards: { consecutive: 0, maxConsecutive: 2, toolCallsSinceSeed: undefined },
 };
 const RESTART = { kind: 'restart' } as const;
@@ -59,5 +60,32 @@ describe('stand-down conditions (FR-06, TC-06)', () => {
     expect(skipCode({ ...hostile, standDown: { disabledByEnv: true, interactive: false } })).toBe('SKIP_DISABLED_ENV');
     expect(skipCode({ ...hostile, standDown: { disabledByEnv: false, interactive: false } })).toBe('SKIP_NON_INTERACTIVE');
     expect(skipCode(hostile)).toBe('PAUSED_LOOP_GUARD');
+  });
+});
+
+describe('handoff gate (prd-14 FR-04, DEC-04, TC-04)', () => {
+  const TURN_START = 1000;
+  function withHandoff(writtenAt: number | null, turnStartedAt: number | undefined = TURN_START): RestartFacts {
+    return { ...READY, handoff: { required: true, writtenAt, turnStartedAt } };
+  }
+  it('skips when the handoff is missing', () => {
+    expect(skipCode(withHandoff(null))).toBe('SKIP_HANDOFF_MISSING');
+  });
+  it('skips when the handoff predates the turn that asked for it', () => {
+    expect(skipCode(withHandoff(TURN_START - 1))).toBe('SKIP_HANDOFF_STALE');
+  });
+  it('restarts with a handoff written during the turn', () => {
+    expect(decideRestart(withHandoff(TURN_START))).toEqual(RESTART);
+    expect(decideRestart(withHandoff(TURN_START + 5))).toEqual(RESTART);
+  });
+  it('skips as stale when the turn start is unknown, since freshness cannot be proven (codereview_01 CR-01)', () => {
+    expect(skipCode({ ...READY, handoff: { required: true, writtenAt: 1, turnStartedAt: undefined } })).toBe('SKIP_HANDOFF_STALE');
+  });
+  it('ignores the handoff in snapshot mode (prd-12 FR-10)', () => {
+    expect(decideRestart({ ...READY, handoff: { required: false, writtenAt: null, turnStartedAt: TURN_START } })).toEqual(RESTART);
+  });
+  it('orders the handoff gate after the stand-down reasons and before the guards', () => {
+    expect(skipCode({ ...withHandoff(null), standDown: { disabledByEnv: true, interactive: true } })).toBe('SKIP_DISABLED_ENV');
+    expect(skipCode({ ...withHandoff(null), guards: { consecutive: 5, maxConsecutive: 2, toolCallsSinceSeed: 0 } })).toBe('SKIP_HANDOFF_MISSING');
   });
 });

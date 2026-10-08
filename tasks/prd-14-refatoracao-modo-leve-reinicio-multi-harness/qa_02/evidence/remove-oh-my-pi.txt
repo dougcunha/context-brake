@@ -1,0 +1,59 @@
+# remove --yes on a oh-my-pi fixture with a pending handoff and an archive (TC-14, FR-13, DEC-14)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - oh-my-pi: full support (planned)
+    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .omp/extensions/context-brake-restart.js (runtime_asset)
+    [create] .omp/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi.
+    Impact: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js remove --yes --dry-run
+exit=0
+--- stdout
+[OK] ContextBrake remove (dry_run)
+  - oh-my-pi: full support (planned)
+    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  Planned changes:
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [delete] .context-brake/manifest.json (manifest)
+    [delete] .context-brake/runtime/restart/oh-my-pi/qa.json (runtime_state)
+    [delete] .context-brake/runtime/sessions/oh-my-pi/qa-ledger.jsonl (runtime_state)
+    [delete] .omp/extensions/context-brake-restart.js (runtime_asset)
+    [delete] .omp/extensions/context-brake.js (runtime_asset)
+    [delete] context-brake.config.json (runtime_asset)
+  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.
+    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js remove --yes
+exit=0
+--- stdout
+[OK] ContextBrake remove (applied)
+  - oh-my-pi: full support (planned)
+    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  Planned changes:
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [delete] .context-brake/manifest.json (manifest)
+    [delete] .context-brake/runtime/restart/oh-my-pi/qa.json (runtime_state)
+    [delete] .context-brake/runtime/sessions/oh-my-pi/qa-ledger.jsonl (runtime_state)
+    [delete] .omp/extensions/context-brake-restart.js (runtime_asset)
+    [delete] .omp/extensions/context-brake.js (runtime_asset)
+    [delete] context-brake.config.json (runtime_asset)
+  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.
+    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.
+--- stderr
+--- end
+
+# tree after: .context-brake/handoff.md, .context-brake/handoffs/20260101T000000.000Z.md, .context-brake/handoffs/20260101T000001.000Z.md, .context-brake/handoffs/20260101T000002.000Z.md, .context-brake/handoffs/20260101T000003.000Z.md, .context-brake/handoffs/20260101T000004.000Z.md, .context-brake/handoffs/20260101T000005.000Z.md, .context-brake/handoffs/20260101T000006.000Z.md, .context-brake/handoffs/20260101T000007.000Z.md, .context-brake/handoffs/20260101T000008.000Z.md, .context-brake/handoffs/20260101T000009.000Z.md, .omp/config.yml

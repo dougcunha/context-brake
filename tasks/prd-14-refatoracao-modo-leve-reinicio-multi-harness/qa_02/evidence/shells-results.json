@@ -1,0 +1,38 @@
+[
+ {
+  "scenario": "shell-pwsh",
+  "name": "init --auto-restart exit 0, restart file installed, text names pi",
+  "ok": false,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "shell-pwsh",
+  "name": "remove exit 0 and restart file gone",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "shell-powershell-5.1",
+  "name": "init --auto-restart exit 0, restart file installed, text names pi",
+  "ok": false,
+  "detail": "exit=0  "
+ },
+ {
+  "scenario": "shell-powershell-5.1",
+  "name": "remove exit 0 and restart file gone",
+  "ok": true,
+  "detail": "exit=0 "
+ },
+ {
+  "scenario": "shell-git-bash",
+  "name": "init --auto-restart exit 0, restart file installed, text names pi",
+  "ok": true,
+  "detail": "exit=0 [OK] ContextBrake init (applied)\n  - codex-cli: full support (planned)\n    * context_usage: Context usage is not exposed to Codex CLI hooks.\n    * auto_restart: Semi-automatic restart: run /new; the n "
+ },
+ {
+  "scenario": "shell-git-bash",
+  "name": "remove exit 0 and restart file gone",
+  "ok": true,
+  "detail": "exit=0 "
+ }
+]

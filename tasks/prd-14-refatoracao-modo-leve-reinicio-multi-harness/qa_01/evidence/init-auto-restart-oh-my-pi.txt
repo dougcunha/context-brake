@@ -1,0 +1,242 @@
+# init --auto-restart on a oh-my-pi-only fixture (TC-13, FR-07, FR-08, FR-10, DEC-11, DEC-12)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart --dry-run
+exit=0
+--- stdout
+[OK] ContextBrake init (dry_run)
+  - oh-my-pi: full support (planned)
+    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .omp/extensions/context-brake-restart.js (runtime_asset)
+    [create] .omp/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on this harness.
+    Impact: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart
+exit=0
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "oh-my-pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".omp/config.yml"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".omp"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\\scratchpad\\qa\\runs\\init-oh-my-pi-MJmxab\\repo",
+    "changes": [
+      {
+        "path": ".context-brake/.gitignore",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-oh-my-pi-MJmxab/repo/.context-brake/.gitignore",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "9f27a3dfa624c731d12e6ed820923ad477400dee282a2b9c08f31584011df6c4",
+        "preview": {
+          "summary": "Keep the session handoffs out of Git"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-oh-my-pi-MJmxab/repo/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "6afb04593b1b5efe062271d57d0de7e81994a3b8db2232aa9176b8ab6871ac31",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".omp/extensions/context-brake-restart.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-oh-my-pi-MJmxab/repo/.omp/extensions/context-brake-restart.js",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "314a2e326b7d60b18db83d0e1d0370cf8580e4bc1cd960f0812ce2937e828065",
+        "preview": {
+          "summary": "Install the automatic restart module"
+        }
+      },
+      {
+        "path": ".omp/extensions/context-brake.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-oh-my-pi-MJmxab/repo/.omp/extensions/context-brake.js",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "f3b3ed376461d7f1cfe307f88a35f405989f3ed24d5ead59c7635ec2a0add225",
+        "preview": {
+          "summary": "Install Oh-My-Pi extension"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-oh-my-pi-MJmxab/repo/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "2424f18454bdcf4c60f40d5a44a237199dd7647d9f81af17e8332842e1245607",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "oh-my-pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".context-brake/.gitignore",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".omp/extensions/context-brake-restart.js",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".omp/extensions/context-brake.js",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "oh-my-pi",
+      "path": null,
+      "message": "Restart is semi-automatic on this harness.",
+      "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart
+exit=0
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "oh-my-pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".omp/config.yml"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".omp/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".omp"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\\scratchpad\\qa\\runs\\init-oh-my-pi-MJmxab\\repo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "oh-my-pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "oh-my-pi",
+      "path": null,
+      "message": "Restart is semi-automatic on this harness.",
+      "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr
+--- end
+
+# tree after init: .context-brake/.gitignore, .context-brake/manifest.json, .omp/config.yml, .omp/extensions/context-brake-restart.js, .omp/extensions/context-brake.js, context-brake.config.json

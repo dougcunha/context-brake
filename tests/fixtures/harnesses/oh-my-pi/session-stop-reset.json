@@ -1,0 +1,16 @@
+{
+  "type": "session_stop",
+  "turn_id": 0,
+  "session_id": "01a11785-869a-708c-8db4-b6844e96fd6d",
+  "stop_hook_active": false,
+  "last_assistant_message": {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "READY\n[REQUEST_SESSION_RESET]"
+      }
+    ]
+  },
+  "messages": []
+}

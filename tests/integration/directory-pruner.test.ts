@@ -50,3 +50,36 @@ describe('empty runtime-state directory pruning (FR-09, TC-05)', () => {
     }
   });
 });
+
+async function restartLogPlan(dir: string): Promise<ReturnType<typeof createChangePlan>> {
+  const logPath = join(dir, '.context-brake/runtime/restart/pi/s1.json');
+  await mkdir(join(dir, '.context-brake/runtime/restart/pi'), { recursive: true });
+  await writeFile(logPath, '{}', 'utf8');
+  await writeFile(join(dir, '.context-brake/runtime/keep.json'), '{}', 'utf8');
+  const snapshots = await snapshotFiles(dir, ['.context-brake/runtime/restart/pi/s1.json']);
+  return createChangePlan({ projectRoot: dir, plannedChanges: [{ path: '.context-brake/runtime/restart/pi/s1.json', realPath: logPath, kind: 'delete', owner: 'runtime_state', content: null, preview: { summary: 'Delete s1.json' } }], snapshots });
+}
+
+describe('non-empty directory reporting follows the caller (prd-14 FR-13, DEC-14, qa_01 BUG-02, codereview_08)', () => {
+  it('reports the runtime directory left non-empty when remove prunes the runtime', async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'cb-prune-remove-')));
+    try {
+      const report = await new NodeChangeApplier({ pruneRuntime: true }).apply(await restartLogPlan(dir));
+      expect(report.outcomes).toContainEqual({ path: '.context-brake/runtime', status: 'skipped', detail: 'Directory is not empty: 1 remaining entry ContextBrake did not delete.' });
+    } finally {
+      await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    }
+  });
+  it('prunes the emptied restart folders silently when another caller deletes a restart log', async () => {
+    const dir = await realpath(await mkdtemp(join(tmpdir(), 'cb-prune-init-')));
+    try {
+      const report = await new NodeChangeApplier().apply(await restartLogPlan(dir));
+      expect(report.status).toBe('success');
+      expect(report.outcomes.filter((outcome) => outcome.status === 'skipped')).toEqual([]);
+      expect(await stat(join(dir, '.context-brake/runtime/restart')).then(() => true).catch(() => false)).toBe(false);
+      expect(await readFile(join(dir, '.context-brake/runtime/keep.json'), 'utf8')).toBe('{}');
+    } finally {
+      await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+    }
+  });
+});

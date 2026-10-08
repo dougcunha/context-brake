@@ -45,12 +45,26 @@ describe('hook deadline selection (FR-10, DEC-11, TC-15)', () => {
   });
 });
 
+describe('hook deadline commit (prd-14 FR-03, codereview_05 CR-01)', () => {
+  it('lets committed work finish past the deadline', async () => {
+    const deadline = new HookDeadline(20, 'engine');
+    expect(deadline.commit()).toBe(true);
+    await expect(deadline.run(sleep(60).then(() => 'done'))).resolves.toBe('done');
+    expect(deadline.isExpired()).toBe(false);
+  });
+  it('refuses to commit once the deadline has answered', async () => {
+    const deadline = new HookDeadline(10, 'engine');
+    await expect(deadline.run(sleep(40))).rejects.toBeInstanceOf(DeadlineExceededError);
+    expect(deadline.commit()).toBe(false);
+  });
+});
+
 describe('session reset phases (FR-11, DEC-12, TC-16)', () => {
   it('reports the prune step when the deadline elapses there', async () => {
     const deadline = new HookDeadline(80, 'engine');
     const phases: HookPhase[] = [];
     const options = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG, ledger: recordingLedger(phases, deadline.mark) };
-    const error: unknown = await deadline.run(handleSessionReset(options, { kind: 'session_reset', session: KEY, reason: 'new' }, deadline.mark)).catch((caught: unknown) => caught);
+    const error: unknown = await deadline.run(handleSessionReset(options, { kind: 'session_reset', session: KEY, reason: 'new' }, { onPhase: deadline.mark })).catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(DeadlineExceededError);
     expect(deadlineTiming(error)).toMatchObject({ phase: 'prune' });
     expect(deadlineTiming(error)?.elapsedMs).toBeGreaterThanOrEqual(75);

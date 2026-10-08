@@ -60,9 +60,9 @@ Support levels come from each vendor's documentation, checked in September 2026.
 | Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Full | Context usage is not exposed to hooks, so ContextBrake estimates it |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | Context usage is not exposed to hooks, so ContextBrake estimates it |
-| OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Post-tool output visibility and session-start injection are unconfirmed |
-| Pi (`pi`) | Extensions in `.pi/extensions/` | Full | Automatic restart exists only for Claude Code |
-| Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Automatic restart exists only for Claude Code |
+| OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Post-tool output visibility and session-start injection are unconfirmed; OpenCode 2.x does not load this plugin format yet |
+| Pi (`pi`) | Extensions in `.pi/extensions/` | Full | Automatic restart runs through an extension command |
+| Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Restart takes one Enter on the prefilled `/context-brake-restart` |
 | Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Partial | Telemetry is injected through `PreInvocation`, and `PostToolUse` accepts only empty output |
 
 Aider is not supported because it has no hook mechanism. The full capability matrix and its sources are in the [installation PRD](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md).
@@ -226,7 +226,7 @@ The bridge records only the window, the input tokens, the used percentage, the m
 
 ### Automatic Restart in Claude Code
 
-When the agent ends a reply with `[REQUEST_SESSION_RESET]`, interactive Claude Code can clear the session and resume by itself, with no keystroke. The feature is off by default and only exists for Claude Code:
+When the agent ends a reply with `[REQUEST_SESSION_RESET]`, interactive Claude Code can clear the session and resume by itself, with no keystroke. The feature is off by default; the next section covers the other harnesses:
 
 ```bash
 npx context-brake init --auto-restart      # turn it on
@@ -237,9 +237,25 @@ npx context-brake init --no-auto-restart   # turn it off and remove its files
 - **Resume text:** the mod trusts the signal and reads no state file. With `snapshot.resumeCommand` set, the new session also receives the resume text from the session start hook.
 - **Loop guards and kill switches:** at most `autoRestart.maxConsecutiveRestarts` restarts (default 2) without a prompt you typed, and none when no tool call happened since the last seed. `CONTEXT_BRAKE_AUTO_RESTART=0` stands it down for one session; `claude -p` sessions and sessions with `DISABLE_AUTO_COMPACT` set are skipped.
 - **Requirements:** Claude Code 2.1.287 or later, where mods are on by default (verified on 2.1.289, 4 October 2026). Mods stay off under `disableAllHooks`, `--safe-mode`, `--bare`, an organization managed policy, and in Desktop WSL sessions. The first interactive launch asks you to trust the folder.
-- **`doctor`:** reports `AUTO_RESTART_OFF` or `AUTO_RESTART_READY` without a warning, and warns with `AUTO_RESTART_NOT_LOADED` (no session loaded the mod yet, with the causes above), `AUTO_RESTART_OUTDATED_MOD`, or `AUTO_RESTART_CLAUDE_TOO_OLD`. `AUTO_RESTART_LAST_SKIP` names the reason code of the last request that did not restart. The mod records only reason codes and versions, per session, in `.context-brake/runtime/claude-mod/`; never prompt, reply, or tool text.
+- **`doctor`:** reports `AUTO_RESTART_OFF` or `AUTO_RESTART_READY` without a warning, and warns with `AUTO_RESTART_NOT_LOADED` (no session loaded the mod yet, with the causes above), `AUTO_RESTART_OUTDATED_MOD`, or `AUTO_RESTART_CLAUDE_TOO_OLD`. `AUTO_RESTART_LAST_SKIP` names the reason code of the last request that did not restart. The mod records only reason codes and versions, per session, in `.context-brake/runtime/restart/claude-code/`; never prompt, reply, or tool text.
 
 `context-brake remove` deletes the mod files, the two settings keys, and the config block; a file you edited inside the mod folder is reported, not deleted.
+
+### Restart on Other Harnesses and the Markdown Handoff
+
+`init --auto-restart` also sets up every other active harness that can resume:
+
+| Harness | Restart |
+| :--- | :--- |
+| Pi | Automatic: an extension opens the new session and seeds it |
+| Oh-My-Pi | One Enter: the editor is prefilled with `/context-brake-restart` |
+| Codex CLI | Semi-automatic: a notice asks for `/new`; the new session resumes by itself |
+| Cursor, GitHub Copilot CLI | Semi-automatic: start a new session; it resumes by itself |
+| OpenCode, Antigravity CLI | Not available: they cannot inject the resume instruction |
+
+`init` reports the mode per harness with `AUTO_RESTART_MODE`.
+
+Without a snapshot command, automatic restart uses a markdown handoff. From the trigger zone, the action asks the agent to save a handoff to `.context-brake/handoff.md` and end its reply with `[REQUEST_SESSION_RESET]`. An automatic restart needs a handoff written during that turn. The next session start moves it to `.context-brake/handoffs/` (the last 10 are kept) and tells the agent to read it and continue. `init` adds `.context-brake/.gitignore` so handoffs stay out of Git; `remove` keeps them.
 
 ### Hook Timeouts
 
@@ -277,7 +293,7 @@ Each hook call has an internal deadline of 1.5 seconds; the session start event 
 | [Automatic restart in Claude Code](./tasks/prd-11-reinicio-automatico-no-claude-code/prd.md) | Claude Code mod that clears and resumes the session | Implemented |
 | [Single mode](./tasks/prd-12-refatoracao-modo-leve-modo-unico/prd.md) | One mode with optional snapshot and resume commands, advisory brake | In progress |
 | [Fast test suite](./tasks/prd-13-refatoracao-modo-leve-testes-rapidos/prd.md) | Test budget | Planned |
-| [Restart and handoff across harnesses](./tasks/prd-14-refatoracao-modo-leve-reinicio-multi-harness/prd.md) | Automatic restart and markdown handoff beyond Claude Code | Planned |
+| [Restart and handoff across harnesses](./tasks/prd-14-refatoracao-modo-leve-reinicio-multi-harness/prd.md) | Automatic restart and markdown handoff beyond Claude Code | In progress |
 
 The PRDs are written in Portuguese, except the later ones.
 

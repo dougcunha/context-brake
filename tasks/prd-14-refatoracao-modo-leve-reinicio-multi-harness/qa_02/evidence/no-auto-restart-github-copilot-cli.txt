@@ -1,0 +1,58 @@
+# init --yes --no-auto-restart on a github-copilot-cli fixture with a pending handoff and an archive (TC-14, FR-13, DEC-14)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .github/hooks/context-brake.json (harness_entry)
+    [create] .github/hooks/context-brake.mjs (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --no-auto-restart --dry-run
+exit=0
+--- stdout
+[OK] ContextBrake init (dry_run)
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  Planned changes:
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [update] .context-brake/manifest.json (manifest)
+    [delete] .context-brake/runtime/restart/github-copilot-cli/qa.json (runtime_state)
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart
+  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.
+    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --no-auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  Planned changes:
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [update] .context-brake/manifest.json (manifest)
+    [delete] .context-brake/runtime/restart/github-copilot-cli/qa.json (runtime_state)
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn off the automatic restart
+  [OK] AUTO_RESTART_HANDOFF_KEPT: Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.
+    Remediation: Delete .context-brake/handoff.md and .context-brake/handoffs/ yourself if you no longer need them.
+--- stderr
+--- end
+
+# tree after: .context-brake/handoff.md, .context-brake/handoffs/20260101T000000.000Z.md, .context-brake/handoffs/20260101T000001.000Z.md, .context-brake/handoffs/20260101T000002.000Z.md, .context-brake/handoffs/20260101T000003.000Z.md, .context-brake/handoffs/20260101T000004.000Z.md, .context-brake/handoffs/20260101T000005.000Z.md, .context-brake/handoffs/20260101T000006.000Z.md, .context-brake/handoffs/20260101T000007.000Z.md, .context-brake/handoffs/20260101T000008.000Z.md, .context-brake/handoffs/20260101T000009.000Z.md, .context-brake/manifest.json, .context-brake/runtime/sessions/github-copilot-cli/qa-ledger.jsonl, .github/copilot/settings.json, .github/hooks/context-brake.json, .github/hooks/context-brake.mjs, context-brake.config.json

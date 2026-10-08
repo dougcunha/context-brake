@@ -1,6 +1,7 @@
 import type { ModHost, PromptSubmitEvent, TurnCompleteEvent } from './host.js';
 import { PERSON_PROMPT_ORIGINS } from './mod-info.js';
-import { resetConsecutive } from './mod-guards.js';
+import { resetConsecutive } from '../../../../core/services/restart-guards.js';
+import { modGuardStore } from './mod-guards.js';
 import { recordLoaded } from './mod-log.js';
 import { handleTurnComplete, reportSafely } from './restart-flow.js';
 import { countToolCall, startTurn } from './turn-state.js';
@@ -36,7 +37,7 @@ export async function onTurnComplete($: ModHost, event: TurnCompleteEvent): Prom
 export async function onPromptSubmit($: ModHost, event: PromptSubmitEvent): Promise<void> {
   try {
     const kind = event.origin?.kind;
-    if (kind !== undefined && PERSON_PROMPT_ORIGINS.includes(kind)) await resetConsecutive($, await $.session.root());
+    if (kind !== undefined && PERSON_PROMPT_ORIGINS.includes(kind)) await resetConsecutive(modGuardStore($, await $.session.root()));
   } catch {
     await reportSafely($, 'ERROR_INTERNAL');
   }

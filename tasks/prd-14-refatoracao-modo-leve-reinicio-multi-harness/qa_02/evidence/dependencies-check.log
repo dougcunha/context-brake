@@ -1,0 +1,5 @@
+
+> context-brake@1.0.0 dependencies:check
+> tsx scripts/check-install-scripts.ts
+
+Checked 3 runtime dependency package(s); no install scripts found.

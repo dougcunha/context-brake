@@ -12,6 +12,8 @@ import { planConfigChange, planManifestChange } from './installation-builder.js'
 import type { SnapshotUpdate } from './snapshot-merge.js';
 import type { AutoRestartUpdate } from './auto-restart-merge.js';
 import type { DebugModeUpdate } from './debug-mode-merge.js';
+import { HANDOFF_IGNORE_PATH, planRestartExtras } from './restart-install-extras.js';
+import { RESTART_LOG_RELATIVE_DIR } from '../contracts/restart-log.js';
 
 export type InstallationInput = {
   projectRoot: string;
@@ -73,15 +75,16 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const activeIds: HarnessId[] = active.map((d) => d.harness);
   const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), snapshotUpdate: input.snapshotUpdate, debug: input.debug, autoRestart: input.autoRestart });
   const ap = await planAdapters(input.adapters, active, input.context);
+  const extras = planRestartExtras({ wanted: input.context.autoRestart === true, adapters: input.adapters, active, snapshot: input.allSnapshots.find((s) => s.path === HANDOFF_IGNORE_PATH), logs: input.allSnapshots.filter((s) => s.path.startsWith(`${RESTART_LOG_RELATIVE_DIR}/`)), previousManifest: input.previousManifest ?? null });
   const protection = protectModifiedAssets(ap.changes, input.previousManifest ?? null, input.allSnapshots);
   const modifiedPaths = new Set(protection.conflicts.map((c) => c.path));
   const preservedAssets = (input.previousManifest?.assets ?? []).filter((a) => modifiedPaths.has(a.path));
-  const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets];
+  const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets, ...extras.assets];
   const allAssets = buildManagedAssets(cfg.change.content ?? '', adapterAssets);
   const manifestChange = planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) });
-  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...protection.changes];
+  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...protection.changes, ...extras.changes];
   const conflicts = [...ap.conflicts, ...protection.conflicts];
-  const findings: DiagnosticFinding[] = [...conflictFindings(conflicts), ...ap.findings];
+  const findings: DiagnosticFinding[] = [...conflictFindings(conflicts), ...ap.findings, ...extras.findings];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: ap.harnesses });
   return { detections, plan, findings };
 }

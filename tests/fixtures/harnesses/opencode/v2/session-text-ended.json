@@ -1,0 +1,19 @@
+{
+  "id": "evt_1179dce150019MmDAirZ8g5Try",
+  "created": 1791397580309,
+  "type": "session.text.ended",
+  "durable": {
+    "aggregateID": "ses_ee8638753ffeQa6NIK0nsEBB6V",
+    "seq": 19,
+    "version": 1
+  },
+  "location": {
+    "directory": "<project>"
+  },
+  "data": {
+    "sessionID": "ses_ee8638753ffeQa6NIK0nsEBB6V",
+    "assistantMessageID": "msg_1179dc68f001Qq9Cp1O51Ltpho",
+    "ordinal": 0,
+    "text": "READY\n[REQUEST_SESSION_RESET]"
+  }
+}

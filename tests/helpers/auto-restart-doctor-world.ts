@@ -25,5 +25,5 @@ export async function writeModLog(root: string, name: string, log: unknown): Pro
 }
 
 export function modLog(records: readonly { at: string; code: string }[], modVersion = MOD_VERSION): unknown {
-  return { v: 1, modVersion, claudeVersion: CURRENT_CLAUDE, records };
+  return { v: 2, harness: 'claude-code', componentVersion: modVersion, harnessVersion: CURRENT_CLAUDE, records };
 }

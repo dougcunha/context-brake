@@ -1,0 +1,490 @@
+# init --auto-restart on a fixture with all eight harnesses (TC-13, UX, NFR-04)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - antigravity-cli: partial support (planned)
+    * post_tool_telemetry: Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation.
+    * session_boot: Session boot is indirect via PreInvocation.
+    * context_usage: Context usage is not exposed to Antigravity CLI hooks.
+    * auto_restart: No restart: this harness cannot inject the resume instruction.
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - cursor: full support (planned)
+    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  - oh-my-pi: full support (planned)
+    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  - opencode: partial support (planned)
+    * post_tool_telemetry: Model visibility of post-tool output modification is unconfirmed in OpenCode.
+    * session_boot: Stable boot injection is experimental in OpenCode.
+    * context_usage: No documented API exposes context usage to OpenCode plugins.
+    * auto_restart: No restart: this harness cannot inject the resume instruction.
+  - pi: full support (planned)
+  Planned changes:
+    [update] .agents/hooks.json (harness_entry)
+    [create] .agents/hooks/context-brake.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [update] .cursor/hooks.json (harness_entry)
+    [create] .cursor/hooks/context-brake.mjs (runtime_asset)
+    [create] .github/hooks/context-brake.json (harness_entry)
+    [create] .github/hooks/context-brake.mjs (runtime_asset)
+    [create] .omp/extensions/context-brake-restart.js (runtime_asset)
+    [create] .omp/extensions/context-brake.js (runtime_asset)
+    [create] .opencode/plugins/context-brake.js (runtime_asset)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on cursor.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+  [OK] AUTO_RESTART_MODE: Restart is not available on opencode.
+    Impact: No restart: this harness cannot inject the resume instruction.
+  [OK] AUTO_RESTART_MODE: Restart is automatic on pi.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on oh-my-pi.
+    Impact: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  [OK] AUTO_RESTART_MODE: Restart is not available on antigravity-cli.
+    Impact: No restart: this harness cannot inject the resume instruction.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart --dry-run
+exit=0
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "cursor",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".cursor/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".cursor"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/copilot/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/hooks/context-brake.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/copilot"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/hooks"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "opencode.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".opencode"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".omp/config.yml"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".omp/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".omp"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".agents/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\\scratchpad\\qa2\\runs\\init-all-jUCYJI\\repo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "antigravity-cli",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Session boot is indirect via PreInvocation."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Antigravity CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      },
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "github-copilot-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to GitHub Copilot CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "oh-my-pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "opencode",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Model visibility of post-tool output modification is unconfirmed in OpenCode."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Stable boot injection is experimental in OpenCode."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "No documented API exposes context usage to OpenCode plugins."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      },
+      {
+        "harness": "pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": []
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "Restart is automatic on claude-code.",
+      "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "codex-cli",
+      "path": null,
+      "message": "Restart is semi-automatic on codex-cli.",
+      "impact": "Semi-automatic restart: run /new; the new session resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "cursor",
+      "path": null,
+      "message": "Restart is semi-automatic on cursor.",
+      "impact": "Semi-automatic restart: start a new session; it resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "Restart is semi-automatic on github-copilot-cli.",
+      "impact": "Semi-automatic restart: start a new session; it resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "opencode",
+      "path": null,
+      "message": "Restart is not available on opencode.",
+      "impact": "No restart: this harness cannot inject the resume instruction.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "Restart is automatic on pi.",
+      "impact": "Automatic restart: a valid reset signal opens a new session by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "oh-my-pi",
+      "path": null,
+      "message": "Restart is semi-automatic on oh-my-pi.",
+      "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "antigravity-cli",
+      "path": null,
+      "message": "Restart is not available on antigravity-cli.",
+      "impact": "No restart: this harness cannot inject the resume instruction.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr
+--- end
+
+# config preview summary:       Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+
+$ (cwd=repo) git status --porcelain --ignored -- .context-brake
+exit=0
+--- stdout
+?? .context-brake/
+!! .context-brake/handoff.md
+!! .context-brake/handoffs/
+--- stderr
+--- end

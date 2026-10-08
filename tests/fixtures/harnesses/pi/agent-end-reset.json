@@ -1,0 +1,23 @@
+{
+  "type": "agent_end",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "Reply with exactly two lines: first the word READY, then [REQUEST_SESSION_RESET]"
+        }
+      ]
+    },
+    {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "READY\n[REQUEST_SESSION_RESET]"
+        }
+      ]
+    }
+  ]
+}

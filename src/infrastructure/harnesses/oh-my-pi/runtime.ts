@@ -75,6 +75,7 @@ export function createOmpExtension(api: OmpApi): void {
   const pendingBoots = new Map<string, string>();
   api.on?.('tool_result', (payload, context) => handleToolResult(payload, context, resolver));
   api.on?.('session_start', (payload, context) => recordBoot(eventOf('session_start', payload, context), context, { resolver, pendingBoots }));
+  api.on?.('session_switch', (payload, context) => recordBoot(eventOf('session_switch', payload, context), context, { resolver, pendingBoots }));
   api.on?.('session_compact', (payload, context) => recordBoot(eventOf('session_compact', payload, context), context, { resolver, pendingBoots }));
   api.on?.('auto_compaction_end', (payload, context) => recordBoot(eventOf('auto_compaction_end', payload, context), context, { resolver, pendingBoots }));
   api.on?.('before_agent_start', (_payload, context) => handleBeforeAgentStart(context, pendingBoots));

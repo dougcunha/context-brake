@@ -1,0 +1,231 @@
+# init --auto-restart on a pi-only fixture (TC-13, FR-07, FR-08, FR-10, DEC-11, DEC-12)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart --dry-run
+exit=0
+--- stdout
+[OK] ContextBrake init (dry_run)
+  - pi: full support (planned)
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .pi/extensions/context-brake-restart.js (runtime_asset)
+    [create] .pi/extensions/context-brake.js (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on this harness.
+    Impact: Automatic restart: a valid reset signal opens a new session by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart
+exit=0
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\\scratchpad\\qa\\runs\\init-pi-u5aXDJ\\repo",
+    "changes": [
+      {
+        "path": ".context-brake/.gitignore",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-u5aXDJ/repo/.context-brake/.gitignore",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "9f27a3dfa624c731d12e6ed820923ad477400dee282a2b9c08f31584011df6c4",
+        "preview": {
+          "summary": "Keep the session handoffs out of Git"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-u5aXDJ/repo/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "3981302ec93eca94757c1700481f01250bb67a0fb956e12f9594ba63d9aa20a7",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".pi/extensions/context-brake-restart.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-u5aXDJ/repo/.pi/extensions/context-brake-restart.js",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "708bd34795d3de01633a6f5befb538129de347c4908547134739ea3c40b59319",
+        "preview": {
+          "summary": "Install the automatic restart module"
+        }
+      },
+      {
+        "path": ".pi/extensions/context-brake.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-u5aXDJ/repo/.pi/extensions/context-brake.js",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a802f2d57ce2f9d566dc41813ac56b83e7e5fddfebf0af0e2e3f7c1244b57779",
+        "preview": {
+          "summary": "Install Pi extension"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28/scratchpad/qa/runs/init-pi-u5aXDJ/repo/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "ab6bc2012afd1a6153affb0d5effcd2c1343643777ea13dbc06a24bf6636162e",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": []
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".context-brake/.gitignore",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".pi/extensions/context-brake-restart.js",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".pi/extensions/context-brake.js",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "Restart is automatic on this harness.",
+      "impact": "Automatic restart: a valid reset signal opens a new session by itself.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --json --auto-restart
+exit=0
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "pi",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".pi/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi/extensions"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".pi"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\\scratchpad\\qa\\runs\\init-pi-u5aXDJ\\repo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": []
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "pi",
+      "path": null,
+      "message": "Restart is automatic on this harness.",
+      "impact": "Automatic restart: a valid reset signal opens a new session by itself.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr
+--- end
+
+# tree after init: .context-brake/.gitignore, .context-brake/manifest.json, .pi/extensions/context-brake-restart.js, .pi/extensions/context-brake.js, .pi/settings.json, context-brake.config.json

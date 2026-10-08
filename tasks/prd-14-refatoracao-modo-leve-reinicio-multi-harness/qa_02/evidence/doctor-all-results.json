@@ -1,0 +1,14 @@
+[
+ {
+  "scenario": "doctor-all",
+  "name": "init exit 0",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "doctor-all",
+  "name": "three semi-automatic READY lines (codex-cli, cursor, github-copilot-cli), each naming a distinct harness id",
+  "ok": true,
+  "detail": "  [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on codex-cli. |   [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on cursor. |   [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on github-copilot-cli."
+ }
+]

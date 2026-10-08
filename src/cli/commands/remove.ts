@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { keptHandoffFindings } from '../handoff-findings.js';
 import type { ParsedRemoveArgs } from '../argument-parser.js';
 import type { CommandEnv } from './init.js';
 import type { InstallReport } from '../../core/contracts/diagnostics.js';
@@ -50,13 +51,13 @@ export async function runRemove(args: ParsedRemoveArgs, env: CommandEnv): Promis
     allSnapshots: [...allSnapshots, ...runtimeStateSnapshots], manifest, runtimeStateSnapshots,
   });
   if (args.dryRun) {
-    const report = buildInstallReport({ command: 'remove', mode: 'dry_run', detections: [], plan: result.plan, outcomes: [], findings: result.findings });
+    const report = buildInstallReport({ command: 'remove', mode: 'dry_run', detections: [], plan: result.plan, outcomes: [], findings: [...result.findings, ...await keptHandoffFindings(env.projectRoot)] });
     return outputReport(report, args.json);
   }
   const confirmed = await authorizeWrite(args.yes, result.plan.requiresConfirmation, 'Apply ContextBrake removal plan?');
   if (!confirmed) return 0;
   const applier = new NodeChangeApplier({ pruneRuntime: true });
   const applyReport = await applier.apply(result.plan);
-  const report = buildInstallReport({ command: 'remove', mode: 'applied', detections: [], plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
+  const report = buildInstallReport({ command: 'remove', mode: 'applied', detections: [], plan: result.plan, outcomes: applyReport.outcomes, findings: [...result.findings, ...await keptHandoffFindings(env.projectRoot)] });
   return outputReport(report, args.json);
 }

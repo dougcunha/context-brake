@@ -1,0 +1,50 @@
+# Restart off: pending handoff is neither claimed nor injected (NFR-05, TC-02)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-restart-off-claude-code-ypM0KO\repo\.claude\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"session-claude-1","cwd":"/repo","hook_event_name":"SessionStart","source":"clear"}
+exit=0
+--- stdout
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-restart-off-codex-cli-doVUr8\repo\.codex\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"codex-sess-1","hook_event_name":"SessionStart","source":"clear"}
+exit=0
+--- stdout
+--- stderr
+--- end

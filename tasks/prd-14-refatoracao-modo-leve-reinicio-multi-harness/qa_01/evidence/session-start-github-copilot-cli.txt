@@ -1,0 +1,36 @@
+# Built github-copilot-cli session-start hook with a pending handoff (FR-02, FR-03, FR-08, NFR-05, TC-02, TC-10)
+
+# scenario start-github-copilot-cli-startup
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .github/hooks/context-brake.json (harness_entry)
+    [create] .github/hooks/context-brake.mjs (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on this harness.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\start-github-copilot-cli-startup-4JZp9m\repo\.github\hooks\context-brake.mjs sessionStart
+< stdin: {"sessionId":"copilot-s-1","timestamp":1757937600000,"cwd":"/repo","source":"new","initialPrompt":"Show the working tree status."}
+exit=0
+--- stdout
+{"additionalContext":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261007T233321.470Z.md\" and continue the previous work from it."}--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa\runs\start-github-copilot-cli-startup-4JZp9m\repo\.github\hooks\context-brake.mjs sessionStart
+< stdin: {"sessionId":"copilot-s-1","timestamp":1757937600000,"cwd":"/repo","source":"new","initialPrompt":"Show the working tree status."}
+exit=0
+--- stdout
+--- stderr
+--- end

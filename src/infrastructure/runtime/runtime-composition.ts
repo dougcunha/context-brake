@@ -6,6 +6,7 @@ import type { RuntimeDescriptor } from '../../core/contracts/runtime.js';
 import type { Clock, RuntimeErrorLog, SessionLedger } from '../../core/contracts/session-ledger.js';
 import { createBrakeEngine, type BrakeEngine } from '../../core/services/brake-engine.js';
 import { invalidSyntaxError, parseConfiguration } from '../../core/validation/configuration-validator.js';
+import { NodeHandoffStore } from '../storage/node-handoff-store.js';
 import { NodeRuntimeErrorLog } from './node-runtime-logs.js';
 import { NodeSessionLedger } from './node-session-ledger.js';
 import { isMissingFileError } from './runtime-paths.js';
@@ -50,6 +51,7 @@ export function createRuntimePorts(input: RuntimePortsInput): RuntimePorts {
 }
 export function composeRuntime(input: RuntimeCompositionInput): RuntimeServices {
   const ports = createRuntimePorts({ ...input, harness: input.descriptor.harness });
-  const engine = createBrakeEngine({ descriptor: input.descriptor, config: input.config, ledger: ports.ledger, errors: ports.errors });
+  const handoff = new NodeHandoffStore(input.projectRoot, input.clock);
+  const engine = createBrakeEngine({ descriptor: input.descriptor, config: input.config, ledger: ports.ledger, errors: ports.errors, handoff });
   return { ...ports, engine, config: input.config };
 }

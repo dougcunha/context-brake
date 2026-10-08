@@ -1,0 +1,254 @@
+[
+ {
+  "scenario": "start-claude-code-startup",
+  "name": "first start injects the resume instruction with the archived path",
+  "ok": true,
+  "detail": "exit=0 {\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125346.390Z.md\\\" and continue the previous work from it.\"}} "
+ },
+ {
+  "scenario": "start-claude-code-startup",
+  "name": "handoff.md moved to the named archive file with its content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-claude-code-startup",
+  "name": "second start injects no resume instruction (one delivery)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-claude-code-clear",
+  "name": "first start injects the resume instruction with the archived path",
+  "ok": true,
+  "detail": "exit=0 {\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125347.372Z.md\\\" and continue the previous work from it.\"}} "
+ },
+ {
+  "scenario": "start-claude-code-clear",
+  "name": "handoff.md moved to the named archive file with its content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-claude-code-clear",
+  "name": "second start injects no resume instruction (one delivery)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-claude-code-compact",
+  "name": "compact neither claims nor injects",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-codex-cli-startup",
+  "name": "first start injects the resume instruction with the archived path",
+  "ok": true,
+  "detail": "exit=0 {\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125349.046Z.md\\\" and continue the previous work from it.\"}} "
+ },
+ {
+  "scenario": "start-codex-cli-startup",
+  "name": "handoff.md moved to the named archive file with its content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-codex-cli-startup",
+  "name": "second start injects no resume instruction (one delivery)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-codex-cli-clear",
+  "name": "first start injects the resume instruction with the archived path",
+  "ok": true,
+  "detail": "exit=0 {\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125350.001Z.md\\\" and continue the previous work from it.\"}} "
+ },
+ {
+  "scenario": "start-codex-cli-clear",
+  "name": "handoff.md moved to the named archive file with its content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-codex-cli-clear",
+  "name": "second start injects no resume instruction (one delivery)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-codex-cli-compact",
+  "name": "compact neither claims nor injects",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-cursor-startup",
+  "name": "first start injects the resume instruction with the archived path",
+  "ok": true,
+  "detail": "exit=0 {\"additional_context\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125351.435Z.md\\\" and continue the previous work from it.\"} "
+ },
+ {
+  "scenario": "start-cursor-startup",
+  "name": "handoff.md moved to the named archive file with its content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-cursor-startup",
+  "name": "second start injects no resume instruction (one delivery)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-github-copilot-cli-startup",
+  "name": "first start injects the resume instruction with the archived path",
+  "ok": true,
+  "detail": "exit=0 {\"additionalContext\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125352.358Z.md\\\" and continue the previous work from it.\"} "
+ },
+ {
+  "scenario": "start-github-copilot-cli-startup",
+  "name": "handoff.md moved to the named archive file with its content",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-github-copilot-cli-startup",
+  "name": "second start injects no resume instruction (one delivery)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "archive-limit",
+  "name": "round 1: archive holds 10 files, the delivered one included, oldest pruned",
+  "ok": true,
+  "detail": "[\".context-brake/handoffs/20260101T000001.000Z.md\",\".context-brake/handoffs/20260101T000002.000Z.md\",\".context-brake/handoffs/20260101T000003.000Z.md\",\".context-brake/handoffs/20260101T000004.000Z.md\",\".context-brake/handoffs/20260101T000005.000Z.md\",\".context-brake/handoffs/20260101T000006.000Z.md\",\".context-brake/handoffs/20260101T000007.000Z.md\",\".context-brake/handoffs/20260101T000008.000Z.md\",\".context-brake/handoffs/20260101T000009.000Z.md\",\".context-brake/handoffs/20261008T125353.465Z.md\"]"
+ },
+ {
+  "scenario": "archive-limit",
+  "name": "round 2: archive holds 10 files, the delivered one included, oldest pruned",
+  "ok": true,
+  "detail": "[\".context-brake/handoffs/20260101T000002.000Z.md\",\".context-brake/handoffs/20260101T000003.000Z.md\",\".context-brake/handoffs/20260101T000004.000Z.md\",\".context-brake/handoffs/20260101T000005.000Z.md\",\".context-brake/handoffs/20260101T000006.000Z.md\",\".context-brake/handoffs/20260101T000007.000Z.md\",\".context-brake/handoffs/20260101T000008.000Z.md\",\".context-brake/handoffs/20260101T000009.000Z.md\",\".context-brake/handoffs/20261008T125353.465Z.md\",\".context-brake/handoffs/20261008T125353.674Z.md\"]"
+ },
+ {
+  "scenario": "start-restart-off-claude-code",
+  "name": "no resume, handoff stays pending",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "start-restart-off-codex-cli",
+  "name": "no resume, handoff stays pending",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "telemetry",
+  "name": "handoff mode RED and CRITICAL carry the handoff path and the marker",
+  "ok": true,
+  "detail": "{\"GREEN\":\"[ContextBrake v3] turn=1/3 usage=11% tokens=15170/128000 source=estimated window=config zone=GREEN action=work normally\",\"YELLOW\":\"[ContextBrake v3] turn=2/3 usage=11% tokens=15339/128000 source=estimated window=config zone=YELLOW action=keep working; finish the current unit before large new explorations\",\"RED\":\"[ContextBrake v3] turn=6/3 usage=12% tokens=16016/128000 source=estimated window=config zone=RED action=save handoff to .context-brake/handoff.md, end reply with [REQUEST_SESSION_RESET]\",\"CRITICAL\":\"[ContextBrake v3] turn=7/3 usage=89% tokens=16185/18000 source=estimated window=config zone=CRITICAL action=save handoff to .context-brake/handoff.md, end reply with [REQUEST_SESSION_RESET]\"}"
+ },
+ {
+  "scenario": "telemetry",
+  "name": "handoff mode YELLOW keeps the generic action",
+  "ok": true,
+  "detail": "[ContextBrake v3] turn=2/3 usage=11% tokens=15339/128000 source=estimated window=config zone=YELLOW action=keep working; finish the current unit before large new explorations"
+ },
+ {
+  "scenario": "telemetry",
+  "name": "restart off: RED and CRITICAL contain neither handoff path nor marker",
+  "ok": true,
+  "detail": "{\"GREEN\":\"[ContextBrake v3] turn=1/3 usage=11% tokens=15170/128000 source=estimated window=config zone=GREEN action=work normally\",\"YELLOW\":\"[ContextBrake v3] turn=2/3 usage=11% tokens=15339/128000 source=estimated window=config zone=YELLOW action=keep working; finish the current unit before large new explorations\",\"RED\":\"[ContextBrake v3] turn=6/3 usage=12% tokens=16016/128000 source=estimated window=config zone=RED action=finish or pause the current unit and tell the user what remains\",\"CRITICAL\":\"[ContextBrake v3] turn=7/3 usage=89% tokens=16185/18000 source=estimated window=config zone=CRITICAL action=stop starting new work; tell the user what remains\"}"
+ },
+ {
+  "scenario": "telemetry",
+  "name": "snapshot mode RED names the skill, not the handoff",
+  "ok": true,
+  "detail": "{\"GREEN\":\"[ContextBrake v3] turn=1/3 usage=11% tokens=15170/128000 source=estimated window=config zone=GREEN action=work normally\",\"YELLOW\":\"[ContextBrake v3] turn=2/3 usage=11% tokens=15339/128000 source=estimated window=config zone=YELLOW action=keep working; finish the current unit before large new explorations\",\"RED\":\"[ContextBrake v3] turn=6/3 usage=12% tokens=16016/128000 source=estimated window=config zone=RED action=run \\\"/sdd-snapshot\\\", then end reply with [REQUEST_SESSION_RESET]\",\"CRITICAL\":\"[ContextBrake v3] turn=7/3 usage=89% tokens=16185/18000 source=estimated window=config zone=CRITICAL action=run \\\"/sdd-snapshot\\\" now, then end reply with [REQUEST_SESSION_RESET]\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "alone: notice fires",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "alone: notice names /new with the resume suffix",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "own-line: notice fires",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "own-line: notice names /new with the resume suffix",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "same-line: notice fires",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "same-line: notice names /new with the resume suffix",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\"}"
+ },
+ {
+  "scenario": "stop-on",
+  "name": "mid-reply: notice does not fire",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "stop-off",
+  "name": "alone: notice fires",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session.\"}"
+ },
+ {
+  "scenario": "stop-off",
+  "name": "alone: notice keeps the restart-off text",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session.\"}"
+ },
+ {
+  "scenario": "stop-off",
+  "name": "own-line: notice fires",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session.\"}"
+ },
+ {
+  "scenario": "stop-off",
+  "name": "own-line: notice keeps the restart-off text",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session.\"}"
+ },
+ {
+  "scenario": "stop-off",
+  "name": "same-line: notice fires",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session.\"}"
+ },
+ {
+  "scenario": "stop-off",
+  "name": "same-line: notice keeps the restart-off text",
+  "ok": true,
+  "detail": "{\"systemMessage\":\"ContextBrake: the agent requested a session reset. Run /new to start a new session.\"}"
+ },
+ {
+  "scenario": "stop-off",
+  "name": "mid-reply: notice does not fire",
+  "ok": true,
+  "detail": ""
+ }
+]

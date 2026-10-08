@@ -1,0 +1,99 @@
+# Built codex-cli session-start hook with a pending handoff (FR-02, FR-03, FR-08, NFR-05, TC-02, TC-10)
+
+# scenario start-codex-cli-startup
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-codex-cli-startup-ZSDo8e\repo\.codex\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"codex-sess-1","hook_event_name":"SessionStart","source":"startup"}
+exit=0
+--- stdout
+{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261008T125349.046Z.md\" and continue the previous work from it."}}--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-codex-cli-startup-ZSDo8e\repo\.codex\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"codex-sess-1","hook_event_name":"SessionStart","source":"startup"}
+exit=0
+--- stdout
+--- stderr
+--- end
+
+# scenario start-codex-cli-clear
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-codex-cli-clear-fm7zBm\repo\.codex\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"codex-sess-1","hook_event_name":"SessionStart","source":"clear"}
+exit=0
+--- stdout
+{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"[ContextBrake resume v1] Read \".context-brake/handoffs/20261008T125350.001Z.md\" and continue the previous work from it."}}--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-codex-cli-clear-fm7zBm\repo\.codex\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"codex-sess-1","hook_event_name":"SessionStart","source":"clear"}
+exit=0
+--- stdout
+--- stderr
+--- end
+
+# scenario start-codex-cli-compact
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\64f4bd2d-a5cb-4b5c-ba0a-6ee780da4b28\scratchpad\qa2\runs\start-codex-cli-compact-BDfxD7\repo\.codex\hooks\context-brake.mjs SessionStart
+< stdin: {"session_id":"codex-sess-1","hook_event_name":"SessionStart","source":"compact"}
+exit=0
+--- stdout
+--- stderr
+--- end

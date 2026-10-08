@@ -1,0 +1,5 @@
+{
+  "type": "session_start",
+  "reason": "new",
+  "previousSessionFile": "<home>/.pi/agent/sessions/previous.jsonl"
+}

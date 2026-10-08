@@ -6,7 +6,6 @@ type Expectation = { level: SupportLevel; states: string; limitations: readonly 
 
 const STATES: Readonly<Record<string, 'supported' | 'unsupported' | 'unknown'>> = { S: 'supported', U: 'unsupported', '?': 'unknown' };
 
-const OTHER_AUTO_RESTART = ['auto_restart', 'Automatic restart in an interactive session exists only for Claude Code; after the restart signal, start the new session yourself.'] as const;
 
 const VERSION: VersionProbe = { status: 'resolved', display: '1.0.0', normalized: '1.0.0', source: 'executable', minimumVersion: '1.0.0' };
 
@@ -17,33 +16,31 @@ const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
   ] },
   'codex-cli': { level: 'full', states: 'SSUU', limitations: [
     ['context_usage', 'Context usage is not exposed to Codex CLI hooks.'],
-    OTHER_AUTO_RESTART,
+    ['auto_restart', 'Semi-automatic restart: run /new; the new session resumes by itself.'],
   ] },
   cursor: { level: 'full', states: 'SSUU', limitations: [
     ['context_usage', 'Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.'],
-    OTHER_AUTO_RESTART,
+    ['auto_restart', 'Semi-automatic restart: start a new session; it resumes by itself.'],
   ] },
   'github-copilot-cli': { level: 'full', states: 'SSUU', limitations: [
     ['context_usage', 'Context usage is not exposed to GitHub Copilot CLI hooks.'],
-    OTHER_AUTO_RESTART,
+    ['auto_restart', 'Semi-automatic restart: start a new session; it resumes by itself.'],
   ] },
   opencode: { level: 'partial', states: 'UUUU', limitations: [
     ['post_tool_telemetry', 'Model visibility of post-tool output modification is unconfirmed in OpenCode.'],
     ['session_boot', 'Stable boot injection is experimental in OpenCode.'],
     ['context_usage', 'No documented API exposes context usage to OpenCode plugins.'],
-    OTHER_AUTO_RESTART,
+    ['auto_restart', 'No restart: this harness cannot inject the resume instruction.'],
   ] },
-  pi: { level: 'full', states: 'SSSU', limitations: [
-    OTHER_AUTO_RESTART,
-  ] },
+  pi: { level: 'full', states: 'SSSS', limitations: [] },
   'oh-my-pi': { level: 'full', states: 'SSSU', limitations: [
-    OTHER_AUTO_RESTART,
+    ['auto_restart', 'Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.'],
   ] },
   'antigravity-cli': { level: 'partial', states: 'UUUU', limitations: [
     ['post_tool_telemetry', 'Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation.'],
     ['session_boot', 'Session boot is indirect via PreInvocation.'],
     ['context_usage', 'Context usage is not exposed to Antigravity CLI hooks.'],
-    OTHER_AUTO_RESTART,
+    ['auto_restart', 'No restart: this harness cannot inject the resume instruction.'],
   ] },
 };
 

@@ -1,0 +1,98 @@
+[
+ {
+  "scenario": "inproc-pi",
+  "name": "fresh handoff + marker: one restart, one seed",
+  "ok": true,
+  "detail": "{\"seeds\":[\"ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.\"],\"dispatched\":[\"/context-brake-restart\"],\"notices\":[\"ContextBrake: restarting the session now (restart signal received).\"],\"editor\":\"\",\"boots\":[{\"message\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125404.806Z.md\\\" and continue the previous work from it.\"}],\"logs\":{\"pi-s1.json\":{\"v\":2,\"harness\":\"pi\",\"componentVersion\":\"1.0.0\",\"harnessVersion\":\"unknown\",\"records\":[{\"at\":\"2026-10-08T12:54:04.798Z\",\"code\":\"RESTARTED\"}]},\"pi-s2.json\":{\"v\":2,\"harness\":\"pi"
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "restart dispatched through /context-brake-restart with no keystroke",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "new session start delivers the resume instruction naming the archived handoff",
+  "ok": true,
+  "detail": "[ContextBrake resume v1] Read \".context-brake/handoffs/20261008T125404.806Z.md\" and continue the previous work from it."
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "stale handoff: SKIP_HANDOFF_STALE, no seed",
+  "ok": true,
+  "detail": "[\"SKIP_HANDOFF_STALE\"]"
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "missing handoff: SKIP_HANDOFF_MISSING, no seed",
+  "ok": true,
+  "detail": "[\"SKIP_HANDOFF_MISSING\"]"
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "CONTEXT_BRAKE_AUTO_RESTART=0: SKIP_DISABLED_ENV",
+  "ok": true,
+  "detail": "[\"SKIP_DISABLED_ENV\"]"
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "non-interactive: SKIP_NON_INTERACTIVE",
+  "ok": true,
+  "detail": "[\"SKIP_NON_INTERACTIVE\"]"
+ },
+ {
+  "scenario": "inproc-pi",
+  "name": "consecutive limit pauses, a typed prompt resets it",
+  "ok": true,
+  "detail": "[\"RESTARTED\",\"RESTARTED\",\"PAUSED_LOOP_GUARD\",\"RESTARTED\"]"
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "fresh handoff + marker: one restart, one seed",
+  "ok": true,
+  "detail": "{\"seeds\":[\"ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.\"],\"dispatched\":[\"ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.\"],\"notices\":[\"ContextBrake: the agent requested a session reset. Run /new to start a new session; it resumes by itself.\",\"ContextBrake: restarting the session now (restart signal received).\"],\"editor\":\"\",\"boots\":[{\"message\":\"[ContextBrake resume v1] Read \\\".context-brake/handoffs/20261008T125414.958Z.md\\\" and continue the previous work from it.\"}],"
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "editor prefilled with /context-brake-restart (one Enter, DEC-19)",
+  "ok": true,
+  "detail": ""
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "new session start delivers the resume instruction naming the archived handoff",
+  "ok": true,
+  "detail": "[ContextBrake resume v1] Read \".context-brake/handoffs/20261008T125414.958Z.md\" and continue the previous work from it."
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "stale handoff: SKIP_HANDOFF_STALE, no seed",
+  "ok": true,
+  "detail": "[\"SKIP_HANDOFF_STALE\"]"
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "missing handoff: SKIP_HANDOFF_MISSING, no seed",
+  "ok": true,
+  "detail": "[\"SKIP_HANDOFF_MISSING\"]"
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "CONTEXT_BRAKE_AUTO_RESTART=0: SKIP_DISABLED_ENV",
+  "ok": true,
+  "detail": "[\"SKIP_DISABLED_ENV\"]"
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "non-interactive: SKIP_NON_INTERACTIVE",
+  "ok": true,
+  "detail": "[\"SKIP_NON_INTERACTIVE\"]"
+ },
+ {
+  "scenario": "inproc-oh-my-pi",
+  "name": "consecutive limit pauses, a typed prompt resets it",
+  "ok": true,
+  "detail": "[\"RESTARTED\",\"RESTARTED\",\"PAUSED_LOOP_GUARD\",\"RESTARTED\"]"
+ }
+]

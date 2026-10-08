@@ -1,0 +1,18 @@
+PASS [inproc-pi] fresh handoff + marker: one restart, one seed
+PASS [inproc-pi] restart dispatched through /context-brake-restart with no keystroke
+PASS [inproc-pi] new session start delivers the resume instruction naming the archived handoff
+PASS [inproc-pi] stale handoff: SKIP_HANDOFF_STALE, no seed
+PASS [inproc-pi] missing handoff: SKIP_HANDOFF_MISSING, no seed
+PASS [inproc-pi] CONTEXT_BRAKE_AUTO_RESTART=0: SKIP_DISABLED_ENV
+PASS [inproc-pi] non-interactive: SKIP_NON_INTERACTIVE
+PASS [inproc-pi] consecutive limit pauses, a typed prompt resets it
+PASS [inproc-oh-my-pi] fresh handoff + marker: one restart, one seed
+PASS [inproc-oh-my-pi] editor prefilled with /context-brake-restart (one Enter, DEC-19)
+PASS [inproc-oh-my-pi] new session start delivers the resume instruction naming the archived handoff
+PASS [inproc-oh-my-pi] stale handoff: SKIP_HANDOFF_STALE, no seed
+PASS [inproc-oh-my-pi] missing handoff: SKIP_HANDOFF_MISSING, no seed
+PASS [inproc-oh-my-pi] CONTEXT_BRAKE_AUTO_RESTART=0: SKIP_DISABLED_ENV
+PASS [inproc-oh-my-pi] non-interactive: SKIP_NON_INTERACTIVE
+PASS [inproc-oh-my-pi] consecutive limit pauses, a typed prompt resets it
+
+TOTAL 16 checks, 0 failed

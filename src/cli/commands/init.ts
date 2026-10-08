@@ -1,4 +1,5 @@
 import { resolve } from 'node:path';
+import { keptHandoffFindings } from '../handoff-findings.js';
 import { isAutoRestartWanted } from '../../core/services/auto-restart-merge.js';
 import { assertAutoRestartTarget, assertStatuslineBridgeTarget, harnessSelection, type ParsedInitArgs } from '../init-arguments.js';
 import type { ProcessRunner } from '../../core/contracts/processes.js';
@@ -12,7 +13,7 @@ import { planInstallation } from '../../core/services/installation-service.js';
 import { buildInstallReport } from '../../core/services/report-service.js';
 import { renderJsonOutput } from '../output/json.js';
 import { renderInstallText } from '../output/text.js';
-import { collectProjectSnapshots } from '../snapshot-helper.js';
+import { collectProjectSnapshots, collectRestartLogSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from '../detection-collector.js';
 import { authorizeWrite } from '../confirmation.js';
 import { planConfigUpdates } from '../init-config-updates.js';
@@ -40,7 +41,7 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
   const config = await loadExistingConfig(env.projectRoot);
   const updates = planConfigUpdates(config, args);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
-  const allSnapshots = await collectProjectSnapshots(env.projectRoot);
+  const allSnapshots = [...await collectProjectSnapshots(env.projectRoot), ...(args.noAutoRestart ? await collectRestartLogSnapshots(env.projectRoot) : [])];
   const adapters = getAllAdapters();
   const ctx = buildHarnessContext(env, manifest, { statuslineBridge: args.statuslineBridge ?? 'default', autoRestart: isAutoRestartWanted(config?.autoRestart, updates.autoRestart) });
   const sources = await collectHarnessSources(adapters, ctx);
@@ -50,15 +51,16 @@ export async function runInit(args: ParsedInitArgs, env: CommandEnv): Promise<nu
     packageVersion: await readPackageVersion(), snapshotUpdate: updates.snapshot, debug: updates.debug, autoRestart: updates.autoRestart,
   });
   assertStatuslineBridgeTarget(args.statuslineBridge, result.detections);
-  assertAutoRestartTarget(args, result.detections);
+  assertAutoRestartTarget(args, result.detections, adapters);
+  const kept = args.noAutoRestart ? await keptHandoffFindings(env.projectRoot) : [];
   if (args.dryRun) {
-    const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: result.findings });
+    const report = buildInstallReport({ command: 'init', mode: 'dry_run', detections: result.detections, plan: result.plan, outcomes: [], findings: [...result.findings, ...kept] });
     return outputReport(report, args.json);
   }
   const confirmed = await authorizeWrite(args.yes, result.plan.requiresConfirmation, 'Apply ContextBrake installation plan?');
   if (!confirmed) return 0;
   const applier = new NodeChangeApplier();
   const applyReport = await applier.apply(result.plan);
-  const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: result.findings });
+  const report = buildInstallReport({ command: 'init', mode: 'applied', detections: result.detections, plan: result.plan, outcomes: applyReport.outcomes, findings: [...result.findings, ...kept] });
   return outputReport(report, args.json);
 }

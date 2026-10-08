@@ -1,6 +1,7 @@
 import { parseArgs } from 'node:util';
-import type { StatuslineBridgeRequest } from '../core/contracts/adapter.js';
+import type { HarnessAdapter, StatuslineBridgeRequest } from '../core/contracts/adapter.js';
 import type { HarnessDetection, HarnessId } from '../core/contracts/harness.js';
+import { hasRestartMode } from '../core/services/restart-install-extras.js';
 import type { SnapshotFlags } from '../core/services/snapshot-merge.js';
 import { CliArgumentError, validateHarnessIds, validateInclusionExclusion } from './argument-validator.js';
 
@@ -30,7 +31,6 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
   const harness = validateHarnessIds(values.harness);
   const excludeHarness = validateHarnessIds(values['exclude-harness']);
   validateInclusionExclusion(harness, excludeHarness);
-  assertAutoRestartHarnesses(values, { harness, excludeHarness });
   return {
     command: 'init', dryRun: values['dry-run'], yes: values.yes, json: values.json,
     harness, excludeHarness,
@@ -58,15 +58,10 @@ function statuslineBridgeRequest(values: InitValues, targets: HarnessTargets): S
   if (isClaudeExcluded) throw new CliArgumentError(STATUSLINE_TARGET_ERROR);
   return install ? 'install' : 'remove';
 }
-const AUTO_RESTART_TARGET_ERROR = '--auto-restart and --no-auto-restart require claude-code among the target harnesses.';
-function assertAutoRestartHarnesses(values: InitValues, targets: HarnessTargets): void {
-  if (!values['auto-restart'] && !values['no-auto-restart']) return;
-  const isClaudeExcluded = targets.excludeHarness.includes('claude-code') || (targets.harness.length > 0 && !targets.harness.includes('claude-code'));
-  if (isClaudeExcluded) throw new CliArgumentError(AUTO_RESTART_TARGET_ERROR);
-}
-export function assertAutoRestartTarget(args: ParsedInitArgs, detections: readonly HarnessDetection[]): void {
-  if (!args.autoRestart && !args.noAutoRestart) return;
-  if (detections.some((detection) => detection.harness === 'claude-code' && detection.state === 'project')) return;
+const AUTO_RESTART_TARGET_ERROR = '--auto-restart needs at least one active harness with a restart mode (Claude Code, Pi, Oh-My-Pi, Codex CLI, Cursor, or GitHub Copilot CLI). Select one with --harness, or run init where one of them is configured.';
+export function assertAutoRestartTarget(args: ParsedInitArgs, detections: readonly HarnessDetection[], adapters: readonly HarnessAdapter[]): void {
+  if (!args.autoRestart) return;
+  if (hasRestartMode(adapters, detections.filter((detection) => detection.state === 'project'))) return;
   throw new CliArgumentError(AUTO_RESTART_TARGET_ERROR);
 }
 export function assertStatuslineBridgeTarget(request: StatuslineBridgeRequest | undefined, detections: readonly HarnessDetection[]): void {

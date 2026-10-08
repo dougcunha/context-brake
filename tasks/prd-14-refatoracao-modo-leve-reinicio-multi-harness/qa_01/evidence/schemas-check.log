@@ -1,0 +1,5 @@
+
+> context-brake@1.0.0 schemas:check
+> tsx scripts/check-schemas.ts
+
+exit=0

@@ -1,0 +1,452 @@
+# doctor on a github-copilot-cli-only fixture with restart on (TC-12, FR-10, FR-11)
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  Planned changes:
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [create] .github/hooks/context-brake.json (harness_entry)
+    [create] .github/hooks/context-brake.mjs (runtime_asset)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor
+exit=1
+--- stdout
+[WARN] ContextBrake doctor: warnings
+  - github-copilot-cli: installed (support: full, overhead: 206.3ms/100ms (fail))
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+    * post_tool_telemetry: The minimum harness version is unverified, so version compatibility cannot be claimed.
+  - snapshot: not configured (zone headers only, trigger: RED)
+  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for github-copilot-cli is unknown, so version compatibility cannot be verified.
+    Impact: ContextBrake cannot guarantee that the detected github-copilot-cli version supports the registered integration mechanisms.
+    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.
+  [OK] AUTO_RESTART_READY: Semi-automatic restart is ready on github-copilot-cli.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+  [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "github-copilot-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/copilot/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/hooks/context-brake.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/copilot"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/hooks"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "github-copilot-cli",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "github-copilot-cli",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unsupported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unsupported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to GitHub Copilot CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "github-copilot-cli",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 183.9,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "The minimum verified version for github-copilot-cli is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected github-copilot-cli version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_READY",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "Semi-automatic restart is ready on github-copilot-cli.",
+      "impact": "Semi-automatic restart: start a new session; it resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+# AUTO_RESTART findings: [["AUTO_RESTART_READY","github-copilot-cli","Semi-automatic restart is ready on github-copilot-cli.","Semi-automatic restart: start a new session; it resumes by itself."],["AUTO_RESTART_HANDOFF",null,"Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",null]]
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "github-copilot-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/copilot/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/hooks/context-brake.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/copilot"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/hooks"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "github-copilot-cli",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "github-copilot-cli",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unsupported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unsupported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to GitHub Copilot CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "github-copilot-cli",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 134.9,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "The minimum verified version for github-copilot-cli is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected github-copilot-cli version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_READY",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "Semi-automatic restart is ready on github-copilot-cli.",
+      "impact": "Semi-automatic restart: start a new session; it resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/handoff.md",
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. A handoff is pending for the next session.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js init --yes --snapshot-command /sdd-snapshot
+exit=0
+--- stdout
+[OK] ContextBrake init (applied)
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /sdd-snapshot at RED
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on github-copilot-cli.
+    Impact: Semi-automatic restart: start a new session; it resumes by itself.
+--- stderr
+--- end
+
+$ (cwd=repo) node <repo>/dist/src/cli/main.js doctor --json
+exit=1
+--- stdout
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "github-copilot-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/copilot/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".github/hooks/context-brake.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/copilot"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".github/hooks"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "github-copilot-cli",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "github-copilot-cli",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unsupported"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unsupported"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to GitHub Copilot CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "github-copilot-cli",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 188.7,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "The minimum verified version for github-copilot-cli is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected github-copilot-cli version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_READY",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "github-copilot-cli",
+      "path": null,
+      "message": "Semi-automatic restart is ready on github-copilot-cli.",
+      "impact": "Semi-automatic restart: start a new session; it resumes by itself.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".context-brake/handoff.md",
+      "message": "Restart carries the work forward through the snapshot command \"/sdd-snapshot\". A handoff is pending for the next session.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": "/sdd-snapshot",
+    "resumeCommand": null
+  }
+}
+--- stderr
+--- end

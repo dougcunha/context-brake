@@ -1,0 +1,20 @@
+PASS [warn3-claude-code-plain] exit 0 and status success
+PASS [warn3-claude-code-plain] no skipped outcome (no "Directory is not empty" for .context-brake/runtime)
+PASS [warn3-claude-code-plain] runtime/restart/ gone
+PASS [warn3-pi-ledger] exit 0 and status success
+PASS [warn3-pi-ledger] no skipped outcome (no "Directory is not empty" for .context-brake/runtime)
+PASS [warn3-pi-ledger] runtime/restart/ gone
+PASS [warn3-pi-ledger] other runtime entry kept
+PASS [warn3-codex-cli-ledger] exit 0 and status success
+PASS [warn3-codex-cli-ledger] no skipped outcome (no "Directory is not empty" for .context-brake/runtime)
+PASS [warn3-codex-cli-ledger] runtime/restart/ gone
+PASS [warn3-codex-cli-ledger] other runtime entry kept
+PASS [warn3-oh-my-pi-ledger] exit 0 and status success
+PASS [warn3-oh-my-pi-ledger] no skipped outcome (no "Directory is not empty" for .context-brake/runtime)
+PASS [warn3-oh-my-pi-ledger] runtime/restart/ gone
+PASS [warn3-oh-my-pi-ledger] other runtime entry kept
+PASS [warn3-pi-plain] exit 0 and status success
+PASS [warn3-pi-plain] no skipped outcome (no "Directory is not empty" for .context-brake/runtime)
+PASS [warn3-pi-plain] runtime/restart/ gone
+PASS [warn3-text-pi] text exit 0, header [OK], no [WARN]
+TOTAL 19, failed 0

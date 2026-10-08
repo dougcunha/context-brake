@@ -10,7 +10,9 @@ import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { detectOmp, OMP_EXECUTABLES } from './detector.js';
 import { OMP_CAPABILITIES } from './capabilities.js';
-import { OMP_EXTENSION_FILE, planOmpInstall, planOmpRemove } from './planner.js';
+import { diagnoseInProcessRestart } from '../common/restart-diagnostics.js';
+import { harnessRestartMode } from '../../../core/services/restart-install-extras.js';
+import { OMP_EXTENSION_FILE, OMP_RESTART_FILE, planOmpInstall, planOmpRemove } from './planner.js';
 
 export class OhMyPiAdapter implements HarnessAdapter {
   readonly id = 'oh-my-pi';
@@ -29,11 +31,11 @@ export class OhMyPiAdapter implements HarnessAdapter {
   }
 
   planInstall(context: HarnessContext) {
-    return planOmpInstall(context.projectRoot);
+    return planOmpInstall(context);
   }
 
   planRemove(context: HarnessContext) {
-    return planOmpRemove(context.projectRoot);
+    return planOmpRemove(context);
   }
 
   async diagnose(context: HarnessContext): Promise<readonly DiagnosticFinding[]> {
@@ -55,6 +57,7 @@ export class OhMyPiAdapter implements HarnessAdapter {
         findings.push(createInvalidConfigFinding(this.id, '.omp/settings.json', msg));
       }
     }
+    findings.push(...await diagnoseInProcessRestart(context, { harness: this.id, label: 'Oh-My-Pi', restartFile: OMP_RESTART_FILE, modeText: harnessRestartMode(this.capabilityProfile()).reason }));
     return findings;
   }
 

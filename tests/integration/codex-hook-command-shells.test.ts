@@ -4,35 +4,47 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { CODEX_CONFIG_FILE, CODEX_HOOK_FILE, planCodexInstall } from '../../src/infrastructure/harnesses/codex-cli/planner.js';
-import { attemptGitProcess, attemptShellProcess, requireProcess } from '../helpers/process-capability.js';
+import { attemptExecutable, attemptGitProcess, requireProcess } from '../helpers/process-capability.js';
 
 const IS_WINDOWS = process.platform === 'win32';
 const HOOK_ASSET = 'dist/assets/runtime/codex-cli-hook.mjs';
 const EXEC_TIMEOUT_MS = 15000;
-const EVENTS = ['PreToolUse', 'Stop'] as const;
+const EVENTS = ['PostToolUse', 'SessionStart', 'Stop'] as const;
+const HOOK_RAN_MARKER = 'ContextBrake: PAYLOAD_INVALID';
 type ShellResult = { readonly code: number | null; readonly stdout: string; readonly stderr: string };
-type SkipContext = { skip: (note?: string) => never };
+type Shell = { readonly file: string; readonly probe: string[]; readonly build: (command: string) => string[]; readonly verbatim?: boolean };
 type CodexHook = { command?: string; commandWindows?: string };
 type CodexConfig = { hooks?: Record<string, { hooks?: CodexHook[] }[]> };
+const WINDOWS_SHELLS: Record<string, Shell> = {
+  'cmd.exe /C (Codex default)': { file: process.env.COMSPEC ?? 'cmd.exe', probe: ['/C', 'exit 0'], build: (command) => ['/C', `"${command}"`], verbatim: true },
+  'pwsh -Command': { file: 'pwsh', probe: powershellArguments('exit 0'), build: powershellArguments },
+  'powershell.exe -Command': { file: 'powershell.exe', probe: powershellArguments('exit 0'), build: powershellArguments },
+};
+const POSIX_SHELLS: Record<string, Shell> = {
+  'sh -lc': { file: 'sh', probe: ['-c', 'exit 0'], build: (command) => ['-lc', command] },
+  'bash -lc': { file: 'bash', probe: ['-c', 'exit 0'], build: (command) => ['-lc', command] },
+};
+const SHELLS = IS_WINDOWS ? WINDOWS_SHELLS : POSIX_SHELLS;
 let repoRoot = '';
 let repoSubDir = '';
 
-function execShell(cmd: string, args: string[], cwd: string): Promise<ShellResult> {
+function powershellArguments(command: string): string[] {
+  return ['-NoProfile', '-Command', command];
+}
+function execShell(shell: Shell, command: string, cwd: string): Promise<ShellResult> {
   return new Promise((resolve) => {
-    const isWin = process.platform === 'win32';
-    const finalArgs = isWin && args.length === 2 ? [args[0]!, `"${args[1]!}"`] : args;
-    const child = spawn(cmd, finalArgs, { cwd, windowsVerbatimArguments: isWin, stdio: ['pipe', 'pipe', 'pipe'] });
+    const child = spawn(shell.file, shell.build(command), { cwd, windowsVerbatimArguments: shell.verbatim === true, stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => { child.kill(); }, EXEC_TIMEOUT_MS);
-    child.stdout?.on('data', (d) => { stdout += d.toString(); });
-    child.stderr?.on('data', (d) => { stderr += d.toString(); });
+    child.stdout?.on('data', (data) => { stdout += data.toString(); });
+    child.stderr?.on('data', (data) => { stderr += data.toString(); });
     child.stdin?.end();
     child.on('error', (error) => { clearTimeout(timer); resolve({ code: null, stdout, stderr: error.message }); });
     child.on('close', (code) => { clearTimeout(timer); resolve({ code, stdout, stderr }); });
   });
 }
-function tryGitInit(cwd: string): Promise<void> {
+function gitInit(cwd: string): Promise<void> {
   return new Promise((resolve) => {
     const child = spawn('git', ['init'], { cwd, stdio: 'ignore' });
     child.on('error', () => resolve());
@@ -45,50 +57,35 @@ async function createRepo(): Promise<void> {
   await mkdir(join(repoRoot, '.codex/hooks'), { recursive: true });
   await copyFile(HOOK_ASSET, join(repoRoot, CODEX_HOOK_FILE));
   await mkdir(repoSubDir, { recursive: true });
-  await tryGitInit(repoRoot);
+  await gitInit(repoRoot);
 }
 async function removeRepo(): Promise<void> {
   if (repoRoot) await rm(repoRoot, { recursive: true, force: true });
   repoRoot = '';
   repoSubDir = '';
 }
-async function registeredCommands(event: string): Promise<{ posix: string; windows: string }> {
+async function registeredHook(event: string): Promise<CodexHook> {
   const plan = await planCodexInstall(repoRoot);
-  const change = plan.changes.find((item) => item.path === CODEX_CONFIG_FILE);
-  const config = JSON.parse(change?.content ?? '{}') as CodexConfig;
-  const hook = config.hooks?.[event]?.[0]?.hooks?.[0];
-  return { posix: hook?.command ?? '', windows: hook?.commandWindows ?? '' };
+  const config = JSON.parse(plan.changes.find((item) => item.path === CODEX_CONFIG_FILE)?.content ?? '{}') as CodexConfig;
+  return config.hooks?.[event]?.[0]?.hooks?.[0] ?? {};
 }
-async function runRegisteredShell(ctx: SkipContext, shell: string): Promise<void> {
-  await requireProcess(ctx, await attemptGitProcess());
-  await requireProcess(ctx, await attemptShellProcess(shell));
-  for (const event of EVENTS) {
-    const commands = await registeredCommands(event);
-    const result = await execShell(shell, ['-lc', commands.posix], repoSubDir);
-    expect(result.code, event).toBe(0);
-    expect(result.stdout, event).toBe('');
-  }
-}
+
 describe('Codex hook command shell execution (CA-20, DEC-04, CR-06)', () => {
   beforeEach(createRepo);
   afterEach(removeRepo);
 
-  if (IS_WINDOWS) {
-    it('runs the registered commandWindows under cmd.exe /C', async (ctx) => {
+  for (const [name, shell] of Object.entries(SHELLS)) {
+    it(`runs every registered command from a subdirectory under ${name}`, async (ctx) => {
       await requireProcess(ctx, await attemptGitProcess());
+      await requireProcess(ctx, await attemptExecutable(shell.file, shell.probe));
       for (const event of EVENTS) {
-        const commands = await registeredCommands(event);
-        const result = await execShell('cmd.exe', ['/c', commands.windows], repoSubDir);
+        const hook = await registeredHook(event);
+        expect(hook.commandWindows, event).toBeUndefined();
+        const result = await execShell(shell, hook.command ?? '', repoSubDir);
+        expect(result.stderr, event).toContain(HOOK_RAN_MARKER);
         expect(result.code, event).toBe(0);
         expect(result.stdout, event).toBe('');
       }
-    });
-  } else {
-    it('runs the registered command under sh -lc', async (ctx) => {
-      await runRegisteredShell(ctx, 'sh');
-    });
-    it('runs the registered command under bash -lc', async (ctx) => {
-      await runRegisteredShell(ctx, 'bash');
     });
   }
 });

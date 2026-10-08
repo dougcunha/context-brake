@@ -10,20 +10,14 @@ import { updateCodexHooks } from '../common/codex-hooks-updater.js';
 
 export const CODEX_CONFIG_FILE = '.codex/hooks.json';
 export const CODEX_HOOK_FILE = '.codex/hooks/context-brake.mjs';
-const GIT_ROOT_EXPANSION = '$(git rev-parse --show-toplevel)';
-const CMD_GIT_ROOT = 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i';
+const GIT_ALIAS_NAME = 'contextbrake';
+const GIT_ALIAS_DEFINITION = `alias.${GIT_ALIAS_NAME}=!node ${CODEX_HOOK_FILE}`;
 
 function buildHookGroup(event: string) {
   const matcher = event === 'SessionStart' ? 'startup|resume|clear|compact' : '*';
   return {
     matcher,
-    hooks: [
-      {
-        type: 'command',
-        command: `node "${GIT_ROOT_EXPANSION}/${CODEX_HOOK_FILE}" ${event}`,
-        commandWindows: `${CMD_GIT_ROOT}/${CODEX_HOOK_FILE}" ${event}`,
-      },
-    ],
+    hooks: [{ type: 'command', command: `git -c "${GIT_ALIAS_DEFINITION}" ${GIT_ALIAS_NAME} ${event}` }],
   };
 }
 

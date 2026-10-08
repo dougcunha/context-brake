@@ -40,12 +40,11 @@ describe('Claude Code hook commands do not depend on the session directory (RF5)
 });
 
 describe('process hook commands locate the script from the project root (RF5)', () => {
-  it('resolves the Codex hook script from the git root', async () => {
+  it('resolves the Codex hook script from the git root through a git alias that every shell runs the same way', async () => {
     const config = await planConfig('codex-cli', root, '.codex/hooks.json');
     const entry = {
       type: 'command',
-      command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" PostToolUse',
-      commandWindows: 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i/.codex/hooks/context-brake.mjs" PostToolUse',
+      command: 'git -c "alias.contextbrake=!node .codex/hooks/context-brake.mjs" contextbrake PostToolUse',
     };
     expect(config.hooks.PostToolUse).toEqual([{ matcher: '*', hooks: [entry] }]);
   });
@@ -69,12 +68,11 @@ describe('new event registrations keep each harness command form (DEC-12, DEC-13
     expect(config.hooks.Stop).toEqual([{ matcher: '*', hooks: [entry] }]);
   });
 
-  it('registers the Codex Stop group with both command forms', async () => {
+  it('registers the Codex Stop group with one shell-neutral command and no commandWindows', async () => {
     const config = await planConfig('codex-cli', root, '.codex/hooks.json');
     const entry = {
       type: 'command',
-      command: 'node "$(git rev-parse --show-toplevel)/.codex/hooks/context-brake.mjs" Stop',
-      commandWindows: 'for /f "delims=" %i in (\'git rev-parse --show-toplevel\') do @node "%i/.codex/hooks/context-brake.mjs" Stop',
+      command: 'git -c "alias.contextbrake=!node .codex/hooks/context-brake.mjs" contextbrake Stop',
     };
     expect(config.hooks.Stop).toEqual([{ matcher: '*', hooks: [entry] }]);
   });

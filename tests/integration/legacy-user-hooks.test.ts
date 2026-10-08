@@ -15,7 +15,7 @@ describe('Legacy entries and CRLF formatting (CR-01)', () => {
     await mkdir(join(root, '.codex'), { recursive: true });
     await copyFile('tests/fixtures/harnesses/codex-cli/legacy-hooks.json', codex);
     const p1 = await planCodexInstall(root);
-    expect(p1.changes.find((c) => c.path === CODEX_CONFIG_FILE)?.content).toContain('$(git rev-parse --show-toplevel)');
+    expect(p1.changes.find((c) => c.path === CODEX_CONFIG_FILE)?.content).toContain('alias.contextbrake=!node .codex/hooks/context-brake.mjs');
 
     const cursor = join(root, CURSOR_CONFIG_FILE);
     await mkdir(join(root, '.cursor'), { recursive: true });

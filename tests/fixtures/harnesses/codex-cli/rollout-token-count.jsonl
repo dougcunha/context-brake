@@ -1,0 +1,7 @@
+{"timestamp":"2026-10-08T15:40:00.000Z","type":"session_meta","payload":{"id":"codex-sess-1","cwd":"/repo","cli_version":"0.161.0"}}
+{"timestamp":"2026-10-08T15:40:01.000Z","type":"event_msg","payload":{"type":"token_count","info":null}}
+{"timestamp":"2026-10-08T15:40:05.000Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":21000,"cached_input_tokens":0,"output_tokens":800,"reasoning_output_tokens":0,"total_tokens":21800},"last_token_usage":{"input_tokens":21000,"cached_input_tokens":0,"output_tokens":800,"reasoning_output_tokens":0,"total_tokens":21800},"model_context_window":258400}}}
+{"timestamp":"2026-10-08T15:40:06.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call-1","output":"Synthetic output."}}
+{"timestamp":"2026-10-08T16:31:34.239Z","type":"event_msg","payload":{"type":"token_count","info":{"total_token_usage":{"input_tokens":682657,"cached_input_tokens":614272,"output_tokens":6292,"reasoning_output_tokens":1111,"total_tokens":688949},"last_token_usage":{"input_tokens":78170,"cached_input_tokens":76032,"output_tokens":90,"reasoning_output_tokens":0,"total_tokens":78260},"model_context_window":258400}}}
+{"timestamp":"2026-10-08T16:31:35.000Z","type":"event_msg","payload":{"type":"token_count","info":null}}
+{"timestamp":"2026-10-08T16:31:36.000Z","type":"response_item","payload":{"type":"function_call_output","call_id":"call-2","output":"Synthetic output."}}

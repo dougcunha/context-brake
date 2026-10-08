@@ -17,11 +17,11 @@ The telemetry block is a single-line ASCII string appended or injected into tool
 3. **`usage=<p>%`**: context usage as an integer percentage, computed as `floor(usedTokens * 100 / windowTokens)`.
 4. **`tokens=<used>/<window>`**: tokens currently used and the active context window. When the harness reports no window, the window is `contextWindowCeiling`, the session's context budget. If measured usage is unavailable, estimated tokens are shown over the same window: the harness-reported window first, then the Claude Code status line window, then `contextWindowCeiling`. A reset drops the measured tokens but keeps the window.
 5. **`source=<measured|estimated>`**:
-   - `measured`: token count reported by the harness (Pi and Oh-My-Pi extension APIs) or read from the `usage` of the latest main-thread assistant message in the Claude Code session transcript, whose format is undocumented.
+   - `measured`: token count reported by the harness (Pi and Oh-My-Pi extension APIs) or read from the `usage` of the latest main-thread assistant message in the Claude Code session transcript, or from the latest `token_count` event in the Codex CLI session rollout; neither format is documented.
    - `estimated`: token count estimated from observed tool inputs, outputs, baseline tokens, and turns.
 6. **`window=<harness|declared|config>`**: where the window in `tokens=` came from. `source=` describes only the used tokens.
-   - `harness`: reported by the harness for this session (Pi and Oh-My-Pi extension APIs, or the Claude Code status line bridge).
-   - `declared`: `telemetry.declaredContextWindow`, honored only by harnesses that report no window (Codex, Cursor, GitHub Copilot, Antigravity, OpenCode).
+   - `harness`: reported by the harness for this session (Pi and Oh-My-Pi extension APIs, the Codex CLI session rollout, or the Claude Code status line bridge).
+   - `declared`: `telemetry.declaredContextWindow`, honored only by harnesses that report no window (Cursor, GitHub Copilot, Antigravity, OpenCode).
    - `config`: the `contextWindowCeiling` fallback, the least accurate origin; `doctor` explains how to get a better one.
 7. **`zone=<GREEN|YELLOW|RED|CRITICAL>`**: session classification. `CRITICAL` depends only on context usage; optional turn limits can raise a session up to `RED`.
 8. **`action=<action_text>`**: what the agent should do in the current zone. The text depends on the `snapshot` section of `context-brake.config.json`.

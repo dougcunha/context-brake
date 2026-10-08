@@ -17,6 +17,7 @@ export const codexHooksFileSchema = z.looseObject({
 
 export const codexPayloadSchema = z.looseObject({
   session_id: z.optional(z.string()),
+  transcript_path: z.optional(z.nullable(z.string())),
   agent_id: z.optional(z.string()),
   source: z.optional(z.string()),
   tool_name: z.optional(z.string()),

@@ -57,7 +57,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
 | Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; the context window comes from the status line bridge, which `init` installs by default |
-| Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Full | Context usage is not exposed to hooks, so ContextBrake estimates it |
+| Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Full | Context usage and window are read from the session rollout file, whose format is undocumented; falls back to an estimate |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | Context usage is not exposed to hooks, so ContextBrake estimates it |
 | OpenCode (`opencode`) | Plugins in `.opencode/plugins/` | Partial | Post-tool output visibility and session-start injection are unconfirmed; OpenCode 2.x does not load this plugin format yet |
@@ -160,7 +160,7 @@ It does not touch instruction files such as `CLAUDE.md` and `AGENTS.md`, and it 
 }
 ```
 
-`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it, and the telemetry block shows `window=config`. A more accurate window comes from the harness (`window=harness`: Pi and Oh-My-Pi, and Claude Code through the [status line bridge](#claude-code-status-line-bridge), which `init` installs by default) or, for the harnesses that report none (Codex, Cursor, GitHub Copilot, Antigravity, OpenCode), from a window you declare in `telemetry.declaredContextWindow` (`window=declared`). A declared window is ignored by Claude Code, Pi, and Oh-My-Pi, whose window comes from the harness. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns.
+`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it, and the telemetry block shows `window=config`. A more accurate window comes from the harness (`window=harness`: Pi and Oh-My-Pi, Codex through the session rollout file, and Claude Code through the [status line bridge](#claude-code-status-line-bridge), which `init` installs by default) or, for the harnesses that report none (Cursor, GitHub Copilot, Antigravity, OpenCode), from a window you declare in `telemetry.declaredContextWindow` (`window=declared`). A declared window is ignored by Claude Code, Codex, Pi, and Oh-My-Pi, whose window comes from the harness. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns.
 
 ### Excluding a Harness
 

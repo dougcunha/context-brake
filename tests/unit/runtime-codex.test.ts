@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { RuntimeEvent } from '../../src/core/contracts/runtime.js';
+import type { RuntimeErrorLog } from '../../src/core/contracts/session-ledger.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
 import { mapCodexEvent, mapCodexInput, renderCodexDecision } from '../../src/infrastructure/harnesses/codex-cli/runtime.js';
 
 const SESSION = { harness: 'codex-cli', sessionId: 'codex-sess-1', agentId: null };
+const NO_ERRORS: RuntimeErrorLog = { append: async () => undefined };
 
 function toolOf(event: RuntimeEvent | null): unknown {
   return event !== null && 'tool' in event ? event.tool : null;
@@ -39,8 +41,8 @@ describe('Codex CLI runtime event mapping (RF1, RF12, DEC-12, TC-33)', () => {
   it('counts the documented tool input and output characters', async () => {
     const payload = await loadHarnessPayload('codex-cli', 'post-tool-use.json');
     const fixture = payload as { tool_input: unknown; tool_response: string };
-    expect(mapCodexInput('PostToolUse', payload).observedCharacters).toBe(JSON.stringify(fixture.tool_input).length + fixture.tool_response.length);
-    expect(mapCodexInput('PreToolUse', payload).observedCharacters).toBeUndefined();
+    expect((await mapCodexInput('PostToolUse', payload, NO_ERRORS)).observedCharacters).toBe(JSON.stringify(fixture.tool_input).length + fixture.tool_response.length);
+    expect((await mapCodexInput('PreToolUse', payload, NO_ERRORS)).observedCharacters).toBeUndefined();
   });
 });
 

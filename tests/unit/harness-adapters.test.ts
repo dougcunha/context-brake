@@ -14,8 +14,8 @@ const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
     ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.'],
     ['auto_restart', 'Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.'],
   ] },
-  'codex-cli': { level: 'full', states: 'SSUU', limitations: [
-    ['context_usage', 'Context usage is not exposed to Codex CLI hooks.'],
+  'codex-cli': { level: 'full', states: 'SS?U', limitations: [
+    ['context_usage', 'Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling.'],
     ['auto_restart', 'Semi-automatic restart: run /new; the new session resumes by itself.'],
   ] },
   cursor: { level: 'full', states: 'SSUU', limitations: [

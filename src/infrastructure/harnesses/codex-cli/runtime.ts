@@ -1,8 +1,11 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
-import type { RuntimeInput } from '../../../core/services/brake-engine.js';
+import type { RuntimeErrorLog } from '../../../core/contracts/session-ledger.js';
+import type { MeasuredUsage, RuntimeInput } from '../../../core/services/brake-engine.js';
+import { failureDetail, recordRuntimeFailure } from '../../../core/services/failure-policy.js';
 import { asRecord, assetProjectRoot, characterLength, parsePayload, requireIdentifier, textValue } from '../common/runtime-support.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../runtime/process-hook-host.js';
 import { CODEX_CAPABILITIES } from './capabilities.js';
+import { readRolloutUsage } from './rollout-usage.js';
 import { codexPayloadSchema, type CodexPayload } from './schemas.js';
 
 const HARNESS = 'codex-cli';
@@ -52,10 +55,23 @@ export function mapCodexEvent(eventName: string, payload: unknown): RuntimeEvent
   }
 }
 
-export function mapCodexInput(eventName: string, payload: unknown): RuntimeInput {
+export async function mapCodexInput(eventName: string, payload: unknown, errors: RuntimeErrorLog): Promise<RuntimeInput> {
   if (eventName !== 'PostToolUse') return {};
   const data = parsePayload(codexPayloadSchema, payload);
-  return { observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
+  const measured = data.agent_id === undefined ? await measuredUsage({ path: data.transcript_path ?? undefined, eventName, errors }) : undefined;
+  const usage = measured === undefined ? {} : { measured };
+  return { ...usage, observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
+}
+
+type RolloutRead = { readonly path: string | undefined; readonly eventName: string; readonly errors: RuntimeErrorLog };
+async function measuredUsage(input: RolloutRead): Promise<MeasuredUsage | undefined> {
+  try {
+    const usage = await readRolloutUsage(input.path);
+    return usage === null ? undefined : { tokens: usage.tokens, contextWindow: usage.contextWindow, at: usage.at };
+  } catch (error) {
+    await recordRuntimeFailure(input.errors, { harness: HARNESS, event: input.eventName, code: 'UNEXPECTED', detail: failureDetail(error) });
+    return undefined;
+  }
 }
 
 export function renderCodexDecision(decision: RuntimeDecision, eventName: string): string | null {

@@ -14,3 +14,9 @@ coverage/
 
 # Claude Code local settings, reached through the /.claude link (status line bridge, automatic restart)
 .agents/settings.local.json
+
+# ContextBrake's own installation in this repository (written by `context-brake init`, regenerable): never versioned
+/context-brake.config.json
+/.context-brake/
+/.agents/hooks/context-brake*.mjs
+/.agents/settings.json

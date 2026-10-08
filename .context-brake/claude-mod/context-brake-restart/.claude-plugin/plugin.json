@@ -1,8 +1,0 @@
-{
-  "name": "context-brake-restart",
-  "version": "1.0.0",
-  "description": "Restarts the Claude Code session when ContextBrake asks for a reset.",
-  "author": {
-    "name": "ContextBrake"
-  }
-}

@@ -1,0 +1,16 @@
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\max-wRDgHO) node dist/src/cli/main.js init --max-restarts 11 --json --yes   [stdin: closed pipe, not a TTY]
+exit: 64
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "INVALID_ARGUMENTS",
+    "message": "--max-restarts must be an integer from 1 to 10."
+  },
+  "exitCode": 64
+}
+
+--- stderr ---
+

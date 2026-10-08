@@ -1,0 +1,7 @@
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\max-wRDgHO) node dist/src/cli/main.js init --no-auto-restart --max-restarts 3 --yes   [stdin: closed pipe, not a TTY]
+exit: 64
+--- stdout ---
+
+--- stderr ---
+[ERROR] INVALID_ARGUMENTS: --max-restarts cannot be combined with --no-auto-restart.
+

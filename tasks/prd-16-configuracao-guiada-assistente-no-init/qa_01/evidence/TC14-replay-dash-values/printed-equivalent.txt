@@ -1,0 +1,3 @@
+{
+  "single": "context-brake init --harness claude-code --harness codex-cli --snapshot-command=-x --resume-command=-y"
+}

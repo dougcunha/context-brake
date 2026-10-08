@@ -1,0 +1,28 @@
+$ [bash] context-brake init --harness claude-code --harness codex-cli --snapshot-command=-x --resume-command=-y --yes   (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\rep-bash-phfEMd)
+--- script ---
+context-brake() { node "$CLI" "$@"; }
+context-brake init --harness claude-code --harness codex-cli --snapshot-command=-x --resume-command=-y --yes
+
+exit: 0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command -x at RED, resume command -y
+
+--- stderr ---
+

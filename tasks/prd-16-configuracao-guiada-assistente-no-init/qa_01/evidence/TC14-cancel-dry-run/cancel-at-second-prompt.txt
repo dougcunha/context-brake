@@ -1,0 +1,7 @@
+$ driver answers ["", null] (null = end of input / Ctrl+C)
+exit: 0
+--- stdout ---
+Nothing was written.
+
+--- stderr ---
+

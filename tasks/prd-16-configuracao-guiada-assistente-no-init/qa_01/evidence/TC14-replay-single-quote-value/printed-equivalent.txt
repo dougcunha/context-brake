@@ -1,0 +1,6 @@
+{
+  "labeled": [
+    "context-brake init --harness claude-code --harness codex-cli --snapshot-command '/it'\\''s'",
+    "context-brake init --harness claude-code --harness codex-cli --snapshot-command '/it''s'"
+  ]
+}

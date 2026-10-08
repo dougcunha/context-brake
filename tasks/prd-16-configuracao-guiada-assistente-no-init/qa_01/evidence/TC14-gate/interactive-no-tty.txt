@@ -1,0 +1,7 @@
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\gate-KdLVet) node dist/src/cli/main.js init --interactive   [stdin: closed pipe, not a TTY]
+exit: 64
+--- stdout ---
+
+--- stderr ---
+[ERROR] INVALID_ARGUMENTS: The terminal is not interactive (stdin or stdout is not a TTY). Use flags such as --harness, --snapshot-command, --auto-restart, --max-restarts, or --yes.
+

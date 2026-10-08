@@ -1,0 +1,578 @@
+{
+  "node": "v24.20.0",
+  "platform": "win32",
+  "base": "C:/Users/Admin/AppData/Local/Temp/cb-qa16-FgzxTj",
+  "results": [
+    {
+      "id": "TC14-gate",
+      "title": "non-TTY gate (FR-01, FR-08, FR-10)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "plain init (no --yes, non-TTY) exits 2",
+          "ok": true
+        },
+        {
+          "name": "plain init mentions CONFIRMATION_REQUIRED",
+          "ok": true
+        },
+        {
+          "name": "init --json (no --yes) exits 2 with CONFIRMATION_REQUIRED JSON",
+          "ok": true
+        },
+        {
+          "name": "no file written by either run",
+          "ok": true
+        },
+        {
+          "name": "init --interactive without TTY exits 64",
+          "ok": true
+        },
+        {
+          "name": "stderr carries the not-interactive message verbatim",
+          "ok": true
+        },
+        {
+          "name": "names the flags to use (--harness, --max-restarts, --yes)",
+          "ok": true
+        },
+        {
+          "name": "init --interactive --dry-run without TTY exits 64",
+          "ok": true
+        },
+        {
+          "name": "--interactive --yes exits 64 naming both flags",
+          "ok": true
+        },
+        {
+          "name": "--interactive --json exits 64 with a JSON error document naming both flags",
+          "ok": true
+        },
+        {
+          "name": "still no file written",
+          "ok": true
+        },
+        {
+          "name": "non-TTY init --yes still installs (exit 0) with no assistant prompt",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-gate/plain-init-no-yes.txt",
+        "TC14-gate/plain-init-json-no-yes.txt",
+        "TC14-gate/interactive-no-tty.txt",
+        "TC14-gate/interactive-no-tty-dry-run.txt",
+        "TC14-gate/interactive-with-yes.txt",
+        "TC14-gate/interactive-with-json.txt",
+        "TC14-gate/yes-still-works.txt"
+      ]
+    },
+    {
+      "id": "TC14-max-restarts",
+      "title": "--max-restarts writes and validates the limit (FR-09, OBJ-04)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "--auto-restart --max-restarts 3 --yes exits 0 and writes 3",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts 5 --yes exits 0 and replaces the stored value with 5",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts=11 exits 64 and names the 1..10 rule",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts=0 exits 64 and names the 1..10 rule",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts=abc exits 64 and names the 1..10 rule",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts=2.5 exits 64 and names the 1..10 rule",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts=-1 exits 64 and names the 1..10 rule",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts 11 --yes exits 64",
+          "ok": true
+        },
+        {
+          "name": "--max-restarts 11 --json exits 64 with a JSON error document",
+          "ok": true
+        },
+        {
+          "name": "rejected runs leave the tree untouched (limit still 5)",
+          "ok": true
+        },
+        {
+          "name": "--no-auto-restart with --max-restarts exits 64",
+          "ok": true
+        },
+        {
+          "name": "restart off in config and no --auto-restart: --max-restarts exits 64 and writes nothing",
+          "ok": true
+        },
+        {
+          "name": "boundary values 1 and 10 are written",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-max-restarts/01-auto-restart-max-3.txt",
+        "TC14-max-restarts/02-max-5.txt",
+        "TC14-max-restarts/03-reject-11.txt",
+        "TC14-max-restarts/03-reject-0.txt",
+        "TC14-max-restarts/03-reject-abc.txt",
+        "TC14-max-restarts/03-reject-2dot5.txt",
+        "TC14-max-restarts/03-reject--1.txt",
+        "TC14-max-restarts/03-reject-11-spaced.txt",
+        "TC14-max-restarts/03-reject-11-json.txt",
+        "TC14-max-restarts/04-no-auto-restart-conflict.txt",
+        "TC14-max-restarts/05-restart-off-no-flag.txt",
+        "TC14-max-restarts/06-bound-1.txt",
+        "TC14-max-restarts/06-bound-10.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-every-default",
+      "title": "printed command replays to the same bytes (bash) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        },
+        {
+          "name": "user hook preserved in .codex/hooks.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-every-default/assisted-session.txt",
+        "TC14-replay-every-default/replay-bash.txt",
+        "TC14-replay-every-default/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-snapshot-space-restart-3",
+      "title": "printed command replays to the same bytes (bash+pwsh+powershell) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "printed command contains the expected tokens",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[powershell] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[powershell] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        },
+        {
+          "name": "user hook preserved in .codex/hooks.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-snapshot-space-restart-3/assisted-session.txt",
+        "TC14-replay-snapshot-space-restart-3/replay-bash.txt",
+        "TC14-replay-snapshot-space-restart-3/replay-pwsh.txt",
+        "TC14-replay-snapshot-space-restart-3/replay-powershell.txt",
+        "TC14-replay-snapshot-space-restart-3/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-yellow-resume-debug",
+      "title": "printed command replays to the same bytes (bash+pwsh) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "printed command contains the expected tokens",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        },
+        {
+          "name": "user hook preserved in .codex/hooks.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-yellow-resume-debug/assisted-session.txt",
+        "TC14-replay-yellow-resume-debug/replay-bash.txt",
+        "TC14-replay-yellow-resume-debug/replay-pwsh.txt",
+        "TC14-replay-yellow-resume-debug/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-dash-values",
+      "title": "printed command replays to the same bytes (bash+pwsh) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "printed command contains the expected tokens",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        },
+        {
+          "name": "user hook preserved in .codex/hooks.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-dash-values/assisted-session.txt",
+        "TC14-replay-dash-values/replay-bash.txt",
+        "TC14-replay-dash-values/replay-pwsh.txt",
+        "TC14-replay-dash-values/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-deselect-codex-restart-on",
+      "title": "printed command replays to the same bytes (bash+pwsh) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "printed command contains the expected tokens",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-deselect-codex-restart-on/assisted-session.txt",
+        "TC14-replay-deselect-codex-restart-on/replay-bash.txt",
+        "TC14-replay-deselect-codex-restart-on/replay-pwsh.txt",
+        "TC14-replay-deselect-codex-restart-on/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-bridge-off-debug-on",
+      "title": "printed command replays to the same bytes (bash) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "printed command contains the expected tokens",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        },
+        {
+          "name": "user hook preserved in .codex/hooks.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-bridge-off-debug-on/assisted-session.txt",
+        "TC14-replay-bridge-off-debug-on/replay-bash.txt",
+        "TC14-replay-bridge-off-debug-on/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-replay-single-quote-value",
+      "title": "printed command replays to the same bytes (bash+pwsh+powershell) (OBJ-02, FR-06)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "assisted session exits 0 and applies",
+          "ok": true
+        },
+        {
+          "name": "summary printed in text mode",
+          "ok": true
+        },
+        {
+          "name": "equivalent command printed",
+          "ok": true
+        },
+        {
+          "name": "single-quote case prints two labeled lines",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[bash] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[pwsh] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "[powershell] replay of the printed command exits 0",
+          "ok": true
+        },
+        {
+          "name": "[powershell] replay produces a byte-identical tree (config, hooks, manifest, user files)",
+          "ok": true
+        },
+        {
+          "name": "replayed dry run on the assisted copy plans no change",
+          "ok": true
+        },
+        {
+          "name": "user PreToolUse hook preserved in .claude/settings.json",
+          "ok": true
+        },
+        {
+          "name": "user hook preserved in .codex/hooks.json",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-replay-single-quote-value/assisted-session.txt",
+        "TC14-replay-single-quote-value/replay-bash.txt",
+        "TC14-replay-single-quote-value/replay-pwsh.txt",
+        "TC14-replay-single-quote-value/replay-powershell.txt",
+        "TC14-replay-single-quote-value/dry-run-on-assisted.txt"
+      ]
+    },
+    {
+      "id": "TC14-obs-msys-pathconv",
+      "title": "OBSERVATION (not a pass/fail item): slash-leading values under MSYS Git Bash",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "default-git-bash: stored snapshot command = C:/Users/Admin/scoop/apps/git/2.56.0.2/sdd-snapshot",
+          "ok": true
+        },
+        {
+          "name": "MSYS_NO_PATHCONV=1: stored snapshot command = /sdd-snapshot",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-obs-msys-pathconv/typed-flag-defaultgitbash.txt",
+        "TC14-obs-msys-pathconv/typed-flag-MSYSNOPATHCONV1.txt"
+      ]
+    },
+    {
+      "id": "TC14-cancel-dry-run",
+      "title": "cancel and dry run through the built assistant (FR-07)",
+      "status": "PASSED",
+      "checks": [
+        {
+          "name": "cancel prints Nothing was written. and exits 0",
+          "ok": true
+        },
+        {
+          "name": "cancel wrote nothing",
+          "ok": true
+        },
+        {
+          "name": "assistant --dry-run shows the plan and writes nothing",
+          "ok": true
+        }
+      ],
+      "evidence": [
+        "TC14-cancel-dry-run/cancel-at-second-prompt.txt",
+        "TC14-cancel-dry-run/assistant-dry-run.txt"
+      ]
+    }
+  ]
+}

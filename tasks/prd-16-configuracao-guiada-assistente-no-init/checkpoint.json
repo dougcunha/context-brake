@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generation": 2,
+  "generation": 20,
   "feature": "prd-16-configuracao-guiada-assistente-no-init",
   "workspace": "D:/MyProjects/ContextBrake",
-  "phase": "plan-project",
-  "status": "paused",
+  "phase": "completed",
+  "status": "completed",
   "safe_to_stop": true,
   "owner_session": null,
   "objective": "Interactive init assistant with equivalent command, TTY or --interactive trigger, Git Bash TTY probe, and --max-restarts.",
@@ -15,39 +15,46 @@
   "sources": {
     "workflow": "workflow.md",
     "prd": "prd.md",
-    "techspec": null,
-    "tasks": null,
-    "review": null,
-    "qa": null,
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": "qa_01/qa.md",
     "snapshot": "context-snapshot.md"
   },
-  "review_status": null,
-  "qa_status": null,
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "APPROVED",
   "approved_sources": [
     {
       "path": "prd.md",
       "sha256": "e4eceeca441cb16074fcdd60e553b43baff329cccf7e32d8b0fb9446c7126975",
       "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "409bc9a3e2533ade37fd6f6b240bce9f8b961e33138cc2ef499a083d508612f1",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "645ee31538c3a0fad36cd9e778299532bb6d3443bda6651ea19f21c44892a9cc",
+      "decision_id": "DEC-HIL-02"
     }
   ],
   "decisions_to_read": [
-    "DEC-HIL-01"
+    "DEC-HIL-01",
+    "DEC-HIL-02",
+    "DEC-HIL-03"
   ],
-  "git_base": "c0c48bb",
+  "git_base": "b216aba",
   "worktree_evidence": "workflow.md#Milestones (foreign untracked .agents/skills/chat-clean/ and tasks/prd-11-…/rtk/)",
   "active_work": [],
   "pending_hil": null,
   "blockers": [],
-  "correction_round": 0,
+  "correction_round": 1,
   "rounds_without_progress": 0,
   "next_action": {
-    "kind": "run",
-    "instruction": "After prd-15 completes, write the TechSpec with sdd-create-techspec.",
-    "read": [
-      {
-        "path": "tasks/prd-16-configuracao-guiada-assistente-no-init/prd.md",
-        "section": "all"
-      }
-    ]
+    "kind": "close",
+    "instruction": "prd-16 accepted at HIL 3 (DEC-HIL-04). Nothing committed or pushed; the real-terminal probe (TC-15, OBJ-05) remains an open limitation.",
+    "read": []
   }
 }

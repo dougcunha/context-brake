@@ -1,0 +1,16 @@
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\gate-KdLVet) node dist/src/cli/main.js init --json   [stdin: closed pipe, not a TTY]
+exit: 2
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "CONFIRMATION_REQUIRED",
+    "message": "Confirmation required for write operations. Use --yes in non-interactive environments."
+  },
+  "exitCode": 2
+}
+
+--- stderr ---
+

@@ -1,0 +1,103 @@
+$ [bash] context-brake init --harness claude-code --harness codex-cli --snapshot-command=-x --resume-command=-y --dry-run --json   (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\asst-ZxEHh3)
+--- script ---
+context-brake() { node "$CLI" "$@"; }
+context-brake init --harness claude-code --harness codex-cli --snapshot-command=-x --resume-command=-y --dry-run --json
+
+exit: 0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa16-FgzxTj\\asst-ZxEHh3",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": []
+}
+
+--- stderr ---
+

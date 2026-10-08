@@ -1,0 +1,16 @@
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\gate-KdLVet) node dist/src/cli/main.js init --interactive --json   [stdin: closed pipe, not a TTY]
+exit: 64
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "INVALID_ARGUMENTS",
+    "message": "--interactive cannot be combined with --json."
+  },
+  "exitCode": 64
+}
+
+--- stderr ---
+

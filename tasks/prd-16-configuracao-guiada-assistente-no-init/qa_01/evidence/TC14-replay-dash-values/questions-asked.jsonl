@@ -1,0 +1,8 @@
+"Harnesses to configure:\n  1) [x] claude-code (detected, full support)\n  2) [x] codex-cli (detected, full support)\n  3) [ ] cursor (full support)\n  4) [ ] github-copilot-cli (full support)\n  5) [ ] opencode (partial support)\n  6) [ ] pi (full support)\n  7) [ ] oh-my-pi (full support)\n  8) [ ] antigravity-cli (partial support)\nNumbers separated by spaces, Enter to keep the marked ones, or none: "
+"Snapshot command (Enter keeps [none], type none for no command): "
+"Snapshot trigger YELLOW or RED [RED]: "
+"Resume command (Enter keeps [none]): "
+"Restart behavior of the selected harnesses:\n  claude-code: automatic - Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.\n  codex-cli: semi-automatic - Semi-automatic restart: run /new; the new session resumes by itself.\nThe reset resumes through your snapshot command.\nRestart sessions automatically? [y/N]: "
+"Install the Claude Code status line bridge? [Y/n]: "
+"Print context usage to the agent (debug mode)? [y/N]: "
+"Apply ContextBrake installation plan? [y/N] "

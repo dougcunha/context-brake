@@ -1,0 +1,7 @@
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\cb-qa16-FgzxTj\gate-KdLVet) node dist/src/cli/main.js init   [stdin: closed pipe, not a TTY]
+exit: 2
+--- stdout ---
+
+--- stderr ---
+[ERROR] CONFIRMATION_REQUIRED: Confirmation required for write operations. Use --yes in non-interactive environments.
+

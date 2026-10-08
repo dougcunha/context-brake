@@ -1,0 +1,40 @@
+   ✓ FR-03 and FR-04 retired events for 'Antigravity CLI' (prd-15, TC-07, TC-08) > init removes the owned entries and keeps the foreign ones (FR-03, TC-07)  388ms
+   ✓ FR-03 and FR-04 retired events for 'Antigravity CLI' (prd-15, TC-07, TC-08) > a second init plans no change to the harness file (FR-03, NFR-01, TC-07)  897ms
+   ✓ FR-03 and FR-04 retired events for 'Antigravity CLI' (prd-15, TC-07, TC-08) > init then remove restores the foreign content byte for byte (FR-04, NFR-01, TC-07)  742ms
+ ✓  parallel  tests/integration/doctor-exclusion.test.ts (4 tests) 5236ms
+   ✓ FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC-16) > doctor reports the harness as excluded, never as missing (FR-06, NFR-04, TC-16)  1098ms
+   ✓ FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC-16) > doctor and init text show the excluded line (FR-06, NFR-04, TC-13, TC-16)  1695ms
+   ✓ FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC-16) > remove deletes the configuration, exclusion included, and leaves no artifact (FR-08, TC-16)  2172ms
+ ✓  parallel  tests/integration/retired-hook-events.test.ts (9 tests) 5417ms
+   ✓ FR-03 init on retired Claude Code events with LF endings (prd-15, TC-06) > removes owned entries outside the current events and keeps foreign ones (FR-03, TC-06)  400ms
+   ✓ FR-03 init on retired Claude Code events with LF endings (prd-15, TC-06) > a second init plans no change to the settings file (FR-03, NFR-01, TC-06)  609ms
+   ✓ FR-03 init on retired Claude Code events with CRLF endings (prd-15, TC-06) > removes owned entries outside the current events and keeps foreign ones (FR-03, TC-06)  469ms
+   ✓ FR-03 init on retired Claude Code events with CRLF endings (prd-15, TC-06) > a second init plans no change to the settings file (FR-03, NFR-01, TC-06)  692ms
+   ✓ FR-04 remove on retired Claude Code events with LF endings (prd-15, TC-06) > init then remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06)  985ms
+   ✓ FR-04 remove on retired Claude Code events with LF endings (prd-15, TC-06) > remove alone deletes owned entries under any event (FR-04, TC-06)  709ms
+   ✓ FR-04 remove on retired Claude Code events with CRLF endings (prd-15, TC-06) > init then remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06)  881ms
+   ✓ FR-04 remove on retired Claude Code events with CRLF endings (prd-15, TC-06) > remove alone deletes owned entries under any event (FR-04, TC-06)  382ms
+ ✓  parallel  tests/integration/init-exclusion.test.ts (4 tests) 2480ms
+   ✓ FR-05, FR-06, FR-07 persistent harness exclusion (prd-15) > persists the exclusion and does not install the harness (FR-05, TC-13)  529ms
+   ✓ FR-05, FR-06, FR-07 persistent harness exclusion (prd-15) > a plain init keeps the harness off and plans nothing, twice (FR-06, NFR-01, TC-13)  1152ms
+   ✓ FR-07 including an excluded harness again (prd-15) > --harness clears the exclusion and installs the harness (FR-07, TC-14)  774ms
+ ✓  parallel  tests/unit/hook-event-cleanup.test.ts (7 tests) 22ms
+ ✓  parallel  tests/unit/configuration-snapshot.test.ts (10 tests) 23ms
+ ✓  parallel  tests/integration/retired-hook-events-copilot.test.ts (1 test) 539ms
+   ✓ FR-03 and FR-04 retired events for GitHub Copilot CLI (prd-15, TC-08) > init rewrites the file without the retired event and remove deletes it (FR-03, FR-04, TC-08)  536ms
+ ✓  parallel  tests/integration/init-config-repair.test.ts (4 tests) 1983ms
+   ✓ FR-02 init repairs a configuration with unrecognized keys (prd-15) > previews every key to drop and writes nothing on a dry run (FR-02, TC-04)  469ms
+   ✓ FR-02 init repairs a configuration with unrecognized keys (prd-15) > rewrites a valid file that keeps the recognized values, then plans no configuration change (FR-02, NFR-01, TC-04)  537ms
+   ✓ FR-02 init confirmation and refusal (prd-15) > asks for confirmation like any other write when stdin is not a terminal (FR-02, TC-05)  952ms
+ ✓  parallel  tests/unit/configuration.test.ts (9 tests) 23ms
+ ✓  parallel  tests/unit/configuration-validator.test.ts (4 tests) 17ms
+ ✓  parallel  tests/unit/configuration-sanitizer.test.ts (4 tests) 21ms
+ ✓  parallel  tests/unit/harness-exclusion.test.ts (6 tests) 16ms
+ ✓  parallel  tests/integration/init-exclusion-edges.test.ts (2 tests) 919ms
+   ✓ FR-05 exclusion edges (prd-15, TC-15) > still writes nothing else when nothing changes on the next plain run (FR-06, NFR-01, TC-15)  671ms
+
+ Test Files  16 passed (16)
+      Tests  83 passed (83)
+   Start at  13:37:33
+   Duration  11.38s (transform 1.89s, setup 0ms, collect 23.01s, tests 30.23s, environment 11ms, prepare 4.01s)
+

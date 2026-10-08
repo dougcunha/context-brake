@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "generation": 21,
+  "feature": "prd-15-configuracao-guiada-higiene-e-exclusao",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "objective": "Repair configs left by earlier builds (actionable error, init drops unrecognized keys), remove ContextBrake hooks for retired events on init and remove, and make harness exclusion persistent.",
+  "constraints": [
+    "Starts before prd-16",
+    "prd-12 DEC-PD-03: no migration or backward compatibility"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_01/codereview.md",
+    "qa": "qa_01/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "cb5123fc572b5fae1f8e2c34751293fcaa978d170444838d0967abc6e4c911f8",
+      "decision_id": "DEC-HIL-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "150acadcb0eee149c60c4c7eace1bbe65f4e9521c5dc59509c68d294feb23258",
+      "decision_id": "DEC-HIL-02"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "1ff542c4467c178d960c7438b08fc246596c2d117a1a6cd8d38ca5e49ffb18c7",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-01",
+    "DEC-HIL-02",
+    "DEC-HIL-03",
+    "DEC-SLICE-01"
+  ],
+  "git_base": "c845728",
+  "worktree_evidence": "workflow.md#Milestones (foreign untracked .agents/skills/chat-clean/ and tasks/prd-11-…/rtk/)",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the current delivery of prd-15 (review APPROVED WITH RESERVATIONS accepted, QA APPROVED).",
+    "affected": [
+      "codereview_01/codereview.md",
+      "qa_01/qa.md"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "HIL 3: on acceptance record DEC-HIL-04, mark checkpoint completed and the snapshot closed; commit/push only if requested.",
+    "read": [
+      {
+        "path": "tasks/prd-15-configuracao-guiada-higiene-e-exclusao/qa_01/qa.md",
+        "section": "Status, Limitations"
+      }
+    ]
+  }
+}

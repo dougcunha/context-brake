@@ -1,0 +1,259 @@
+$ node dist/src/cli/main.js init --yes --json
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "cursor",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".cursor/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".cursor"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "opencode.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".opencode"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa01-Tepvoy\\A",
+    "changes": [
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/.agents/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "0657254cfbf90f7e76326584c80b77bc6f9d81534341ead8c7c90481adbbe076",
+        "afterSha256": "5621dafd9bd1e1d769236583382234c2f1614f29e5308b5d9a4ced8c365ad9bf",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".codex/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/.codex/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "21b3350a800f8609d449274bd85c009fb401bbcf69ef7294577e98c3744bdf0c",
+        "afterSha256": "edf3de69a2ba096cafc56f4f4543c22a7768a43b41979356b46286eb2f370db2",
+        "preview": {
+          "summary": "Register Codex hooks"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/.context-brake/manifest.json",
+        "kind": "update",
+        "owner": "manifest",
+        "beforeSha256": "1a15fe22fa0fb6d163f7b3a8fd9bf8a514a30a40f07df732bf920504edef7667",
+        "afterSha256": "2d1e06297ced2cb8ffe877693427be5c6c94dbb81b0ca234c3b259690301a5cb",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".cursor/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/.cursor/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "7282b08f2815fd86e7741082496f97343b3be3b9cf2d9cecda96cf1002a14b76",
+        "afterSha256": "bec2ec2cba73f33e98803f7734b67572611483dd7e11936d56b8d605733f78bb",
+        "preview": {
+          "summary": "Register Cursor hooks"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/context-brake.config.json",
+        "kind": "update",
+        "owner": "config",
+        "beforeSha256": "5643c283e38b81a155426a19a1ac3023255d6121cade4105b572851d04a72995",
+        "afterSha256": "ca9a7bbd10dc4f8f49265f682e18b91554f3e5d17d3938dbb76d9d08f19cd682",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); drop unrecognized keys: telemetry.zones.legacy, stateStorage, instructionFiles, brake, lightMode, runner"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "opencode",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Model visibility of post-tool output modification is unconfirmed in OpenCode."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Stable boot injection is experimental in OpenCode."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "No documented API exposes context usage to OpenCode plugins."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".codex/hooks.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".cursor/hooks.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": []
+}
+
+--- stderr ---
+

@@ -1,4 +1,5 @@
 import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
+import { removeOwnedFromOtherEvents } from './hook-event-cleanup.js';
 import { appendJsonArrayItem, parseAndValidateJson, removeJsonArrayItem, removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 
 export const CODEX_HOOK_FILE = '.codex/hooks/context-brake.mjs';
@@ -75,5 +76,5 @@ export function updateCodexHooks(content: string, clear: boolean, buildGroup: (e
       text = appendJsonArrayItem(text, ['hooks', event], desired);
     }
   }
-  return text;
+  return removeOwnedFromOtherEvents(text, CODEX_EVENTS, isCodexOwnedHandler);
 }

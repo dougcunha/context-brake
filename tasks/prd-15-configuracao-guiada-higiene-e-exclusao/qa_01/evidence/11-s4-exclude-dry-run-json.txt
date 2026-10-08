@@ -1,0 +1,211 @@
+$ node dist/src/cli/main.js init --exclude-harness opencode --dry-run --json
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "cursor",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".cursor/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".cursor"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "excluded",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "opencode.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".opencode"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa01-Tepvoy\\A",
+    "changes": [
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/.context-brake/manifest.json",
+        "kind": "update",
+        "owner": "manifest",
+        "beforeSha256": "2d1e06297ced2cb8ffe877693427be5c6c94dbb81b0ca234c3b259690301a5cb",
+        "afterSha256": "d202bfcd88938bf3397d9d0c679265795afddb6e6ff185469722305da0e133fe",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".opencode/plugins/context-brake.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/.opencode/plugins/context-brake.js",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "1c884ca3af74882538f60ab19972033a27270e69daefd90c204c618c1dd17384",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete OpenCode plugin"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/A/context-brake.config.json",
+        "kind": "update",
+        "owner": "config",
+        "beforeSha256": "ca9a7bbd10dc4f8f49265f682e18b91554f3e5d17d3938dbb76d9d08f19cd682",
+        "afterSha256": "667a02a9993f3f20335b78bf0603d1d675183528dde76691350ae1216284d310",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "opencode",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Model visibility of post-tool output modification is unconfirmed in OpenCode."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Stable boot injection is experimental in OpenCode."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "No documented API exposes context usage to OpenCode plugins."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [],
+  "findings": []
+}
+
+--- stderr ---
+

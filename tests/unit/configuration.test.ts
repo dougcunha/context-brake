@@ -45,3 +45,16 @@ describe('legacy telemetry configuration (FR-09, TC-03)', () => {
   });
 });
 
+describe('excludedHarnesses (prd-15 FR-05, TC-12)', () => {
+  it('accepts a unique list of known harness ids (FR-05, TC-12)', () => {
+    expect(parseConfiguration({ ...DEFAULT_CONFIG, excludedHarnesses: ['opencode'] }).excludedHarnesses).toEqual(['opencode']);
+  });
+  it('rejects duplicates and names the path (FR-05, TC-12)', () => {
+    const issues = configurationIssues({ ...DEFAULT_CONFIG, excludedHarnesses: ['opencode', 'opencode'] });
+    expect(issues).toContainEqual(expect.objectContaining({ path: 'excludedHarnesses', rule: 'must not contain duplicates' }));
+  });
+  it('rejects an unknown harness id (FR-05, TC-12)', () => {
+    expect(configurationIssues({ ...DEFAULT_CONFIG, excludedHarnesses: ['nope'] })).not.toEqual([]);
+  });
+});
+

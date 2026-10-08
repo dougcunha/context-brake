@@ -15,6 +15,11 @@ function hookInvocation(entry: Record<string, unknown>): string {
   return parts.filter((part): part is string => typeof part === 'string').join(' ');
 }
 
+export function isClaudeOwnedHandler(entry: unknown): boolean {
+  if (!entry || typeof entry !== 'object') return false;
+  return hookInvocation(entry as Record<string, unknown>).includes(CLAUDE_HOOK_FILE);
+}
+
 export function isTargetHook(entry: unknown, event: string): boolean {
   if (!entry || typeof entry !== 'object') return false;
   const invocation = hookInvocation(entry as Record<string, unknown>);

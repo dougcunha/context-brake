@@ -1,0 +1,18 @@
+$ node dist/src/cli/main.js init --harness opencode --exclude-harness opencode --yes --json
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 64
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "INVALID_ARGUMENTS",
+    "message": "Harness 'opencode' cannot be both included and excluded."
+  },
+  "exitCode": 64
+}
+
+--- stderr ---
+

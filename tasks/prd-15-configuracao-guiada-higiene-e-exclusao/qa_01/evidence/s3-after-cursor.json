@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "echo foreign-cursor",
+        "timeout": 5
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "node .cursor/hooks/context-brake.mjs postToolUse"
+      }
+    ],
+    "sessionStart": [
+      {
+        "command": "node .cursor/hooks/context-brake.mjs sessionStart"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "node .cursor/hooks/context-brake.mjs preCompact"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "echo foreign-after-edit"
+      }
+    ]
+  }
+}

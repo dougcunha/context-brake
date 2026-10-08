@@ -43,7 +43,7 @@ function checkTurnPair(ctx: z.core.ParsePayload, zones: { greenMaxTurn?: number 
   if (zones.greenMaxTurn !== undefined && zones.yellowMaxTurn !== undefined && zones.greenMaxTurn >= zones.yellowMaxTurn) addIssue(ctx, { code: 'custom', path: ['greenMaxTurn'], input: zones.greenMaxTurn, message: 'must be less than yellowMaxTurn' });
 }
 const telemetrySchema = z.strictObject({ injectionMode: z.enum(INJECTION_MODES), activationThresholdPercentage: percentage, contextWindowCeiling: positiveInt, declaredContextWindow: optionalPositiveInt, turnCeiling: optionalPositiveInt, zones: zonesSchema });
-export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), telemetry: telemetrySchema, snapshot: z._default(snapshotSchema, DEFAULT_SNAPSHOT), debug: z.optional(z.boolean()), autoRestart: z.optional(autoRestartSchema) });
+export const configurationSchema = z.strictObject({ $schema: z.optional(z.url()), schemaVersion: z.literal(1), activeHarnesses: z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE)), excludedHarnesses: z.optional(z.array(z.enum(HARNESS_IDS)).check(uniqueCheck(DUPLICATE_ENTRIES_RULE))), telemetry: telemetrySchema, snapshot: z._default(snapshotSchema, DEFAULT_SNAPSHOT), debug: z.optional(z.boolean()), autoRestart: z.optional(autoRestartSchema) });
 export type ContextBrakeConfig = z.infer<typeof configurationSchema>;
 export { HARNESS_IDS } from './harness.js';
 export { SNAPSHOT_TRIGGER_ZONES } from './zones.js';

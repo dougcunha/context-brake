@@ -1,4 +1,5 @@
 import type { CliErrorDocument, DiagnosticFinding, DoctorReport, InstallReport } from '../../core/contracts/diagnostics.js';
+import { excludedDetectionLines } from './detection-text.js';
 import { renderModeLines } from './doctor-mode-text.js';
 import { renderActiveSessionsText } from './doctor-sessions-text.js';
 
@@ -18,6 +19,7 @@ export function renderInstallText(report: InstallReport): void {
     stream.write(`  - ${h.harness}: ${h.supportLevel} support (${h.outcome})\n`);
     for (const lim of h.limitations) stream.write(`    * ${lim.capability}: ${lim.impact}\n`);
   }
+  for (const line of excludedDetectionLines(report.detections)) stream.write(line);
   if (report.plan.changes.length > 0) {
     stream.write('  Planned changes:\n');
     for (const c of report.plan.changes) {
@@ -46,6 +48,7 @@ export function renderDoctorText(report: DoctorReport): void {
     stream.write(`${line}\n`);
     for (const lim of integ.support.limitations) stream.write(`    * ${lim.capability}: ${lim.impact}\n`);
   }
+  for (const line of excludedDetectionLines(report.detections)) stream.write(line);
   const window = report.contextWindow;
   if (window) stream.write(`  - context window: ${window.source} (bridge: ${window.bridge}, last window: ${window.lastWindowTokens ?? 'unknown'})\n`);
   stream.write(renderModeLines(report));

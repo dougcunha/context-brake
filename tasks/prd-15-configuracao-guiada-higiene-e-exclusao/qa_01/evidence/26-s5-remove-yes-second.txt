@@ -1,0 +1,34 @@
+$ node dist/src/cli/main.js remove --yes
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 0
+--- stdout ---
+[OK] ContextBrake remove (applied)
+  - antigravity-cli: partial support (planned)
+    * post_tool_telemetry: Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation.
+    * session_boot: Session boot is indirect via PreInvocation.
+    * context_usage: Context usage is not exposed to Antigravity CLI hooks.
+    * auto_restart: No restart: this harness cannot inject the resume instruction.
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - cursor: full support (planned)
+    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  - github-copilot-cli: full support (planned)
+    * context_usage: Context usage is not exposed to GitHub Copilot CLI hooks.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  - oh-my-pi: full support (planned)
+    * auto_restart: Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself.
+  - opencode: partial support (planned)
+    * post_tool_telemetry: Model visibility of post-tool output modification is unconfirmed in OpenCode.
+    * session_boot: Stable boot injection is experimental in OpenCode.
+    * context_usage: No documented API exposes context usage to OpenCode plugins.
+    * auto_restart: No restart: this harness cannot inject the resume instruction.
+  - pi: full support (planned)
+
+--- stderr ---
+

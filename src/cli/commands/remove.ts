@@ -19,7 +19,7 @@ import { authorizeWrite } from '../confirmation.js';
 
 async function loadExistingConfig(root: string) {
   const store = new ProjectConfigStore(resolve(root, 'context-brake.config.json'));
-  try { return await store.read(); } catch (err) {
+  try { return (await store.readTolerant()).config; } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null;
     throw err;
   }

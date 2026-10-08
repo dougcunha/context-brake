@@ -1,0 +1,260 @@
+$ node dist/src/cli/main.js remove --yes --json
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa01-Tepvoy\\C",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.agents/hooks/context-brake-statusline.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "680bfe64268af1c049ceccd3f48c19b169878add48444157a7e4f4fc4efc8ce9",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.agents/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "d88b4ac3a6a7437777f783b623f82759b063b7d8b321f4bc5ae91130b0b1b227",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.agents/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "5621dafd9bd1e1d769236583382234c2f1614f29e5308b5d9a4ced8c365ad9bf",
+        "afterSha256": "f7a97ab218fa35de2114b8f162ac04703a9da8c372721ec1815c505e3a619462",
+        "preview": {
+          "summary": "Remove Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.agents/settings.local.json",
+        "kind": "delete",
+        "owner": "harness_entry",
+        "beforeSha256": "5877420b622f72bdfbaba1ba2d0511e8f1c2b0bb4397b655aeb3efa7e8ed9c93",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete the local settings the status line bridge created"
+        }
+      },
+      {
+        "path": ".codex/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.codex/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "edf3de69a2ba096cafc56f4f4543c22a7768a43b41979356b46286eb2f370db2",
+        "afterSha256": "a0efc1b8b7d36237fa3ebb2f6ec509a2315f524ba408971cb45394f5b5fb084b",
+        "preview": {
+          "summary": "Remove Codex hooks"
+        }
+      },
+      {
+        "path": ".codex/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.codex/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "1c6cb9c6d30fd664916b5b42f59b6b8f6403fe75d03fc5cca8a0b88b599b49ca",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.context-brake/manifest.json",
+        "kind": "delete",
+        "owner": "manifest",
+        "beforeSha256": "d202bfcd88938bf3397d9d0c679265795afddb6e6ff185469722305da0e133fe",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete manifest"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.context-brake/runtime/claude-statusline.json",
+        "kind": "delete",
+        "owner": "harness_entry",
+        "beforeSha256": "99f5f70da26c05bb66a1d32274b43a0860397e191053ba6b5e13ba6d3cc44604",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete the status line bridge state"
+        }
+      },
+      {
+        "path": ".cursor/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.cursor/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "bec2ec2cba73f33e98803f7734b67572611483dd7e11936d56b8d605733f78bb",
+        "afterSha256": "067335572076d154033f48c43c260e0d32ea321373f2815a6d77250765ac2f14",
+        "preview": {
+          "summary": "Remove Cursor hooks"
+        }
+      },
+      {
+        "path": ".cursor/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/.cursor/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "f0d68576de5ac5fea44dc7631efec9345e3ae403407215e704b62d0bf2463d27",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/C/context-brake.config.json",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "667a02a9993f3f20335b78bf0603d1d675183528dde76691350ae1216284d310",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete context-brake.config.json"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".codex/hooks.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".codex/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/claude-statusline.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".cursor/hooks.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".cursor/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": []
+}
+
+--- stderr ---
+

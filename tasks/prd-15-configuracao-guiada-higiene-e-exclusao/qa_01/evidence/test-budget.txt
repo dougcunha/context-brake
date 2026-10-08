@@ -1,0 +1,21 @@
+
+> context-brake@1.0.0 test:budget
+> tsx scripts/check-test-budget.ts
+
+[ERROR] INVALID_ARGUMENTS: Unknown command 'invalid-cmd'. Allowed commands: init, doctor, remove.
+[ERROR] INVALID_ARGUMENTS: Unknown option '--unknown'
+[ERROR] INVALID_ARGUMENTS: Unknown command 'plan'. Allowed commands: init, doctor, remove.
+[ERROR] INVALID_ARGUMENTS: Unknown command 'run'. Allowed commands: init, doctor, remove.
+[ERROR] INVALID_ARGUMENTS: Unknown command 'wrap'. Allowed commands: init, doctor, remove.
+Test run: 117.0s wall (budget 120s)
+Slowest files:
+  22.5s tests/integration/statusline-shell.test.ts
+  15.3s tests/integration/codex-hook-command-shells.test.ts
+  11.1s tests/e2e/e2e-doctor.test.ts
+  10.6s tests/integration/statusline-bridge-previous.test.ts
+  7.8s tests/integration/doctor-remove-restart.test.ts
+  7.7s tests/integration/auto-restart-user-settings.test.ts
+  7.4s tests/integration/package-contents.test.ts
+  7.3s tests/integration/package-assets.test.ts
+  6.6s tests/integration/simulated-usage.test.ts
+  6.5s tests/integration/init-auto-restart.test.ts

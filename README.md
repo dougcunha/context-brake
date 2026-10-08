@@ -162,6 +162,14 @@ It does not touch instruction files such as `CLAUDE.md` and `AGENTS.md`, and it 
 
 `contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it, and the telemetry block shows `window=config`. A more accurate window comes from the harness (`window=harness`: Pi and Oh-My-Pi, and Claude Code through the [status line bridge](#claude-code-status-line-bridge), which `init` installs by default) or, for the harnesses that report none (Codex, Cursor, GitHub Copilot, Antigravity, OpenCode), from a window you declare in `telemetry.declaredContextWindow` (`window=declared`). A declared window is ignored by Claude Code, Pi, and Oh-My-Pi, whose window comes from the harness. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns.
 
+### Excluding a Harness
+
+`init --exclude-harness <id>` turns a detected harness off for the project: the id moves from `activeHarnesses` to `excludedHarnesses` in `context-brake.config.json`, the harness's hook entries, assets, and manifest entries are deleted, and a later plain `init` keeps it off (`doctor` lists it as `excluded by configuration`). `init --harness <id>` turns it back on. `remove` deletes the configuration, so the exclusion goes with it.
+
+### Upgrading From an Earlier Build
+
+A configuration that still carries keys ContextBrake no longer reads (for example `stateStorage`, `instructionFiles`, `brake`, `lightMode`, or `runner`) is repaired by `init`: the preview lists every key it will drop, and `--yes` applies it. `doctor` names the keys and the fix, and `remove` ignores them. `init` and `remove` also delete ContextBrake hook entries for events it no longer registers, such as `PreToolUse`, and leave every other hook as it was.
+
 ### Snapshot and Resume Commands
 
 If your workflow saves session state with its own skill or command, as the SDD skills in this repository do, name it in the `snapshot` section:
@@ -267,7 +275,7 @@ Each hook call has an internal deadline of 1.5 seconds; the session start event 
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, snapshot settings, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json` | Uninstalls the integrations and deletes the configuration, the manifest, and the runtime files. |
 

@@ -38,12 +38,6 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
     autoRestart: values['auto-restart'], noAutoRestart: values['no-auto-restart'],
   };
 }
-export function harnessSelection(args: ParsedInitArgs) {
-  return {
-    ...(args.harness.length > 0 ? { include: args.harness } : {}),
-    ...(args.excludeHarness.length > 0 ? { exclude: args.excludeHarness } : {}),
-  };
-}
 function snapshotFlags(values: InitValues): SnapshotFlags {
   return { command: values['snapshot-command'], triggerZone: values['snapshot-trigger'], resumeCommand: values['resume-command'], clearCommand: values['no-snapshot-command'] };
 }

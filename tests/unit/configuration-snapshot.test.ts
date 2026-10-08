@@ -18,7 +18,7 @@ describe('single-mode configuration (prd-12 FR-02, FR-04, TC-04)', () => {
     expect(issues).toContainEqual(expect.objectContaining({ path: key, rule: 'is not a recognized key' }));
   });
   it('names every removed key in the error message the CLI prints (prd-12 FR-02, TC-04)', () => {
-    expect(() => parseConfiguration({ ...DEFAULT_CONFIG, stateStorage: {}, runner: {} })).toThrow('Configuration validation failed: stateStorage is not a recognized key; runner is not a recognized key.');
+    expect(() => parseConfiguration({ ...DEFAULT_CONFIG, stateStorage: {}, runner: {} })).toThrow('Configuration validation failed:\n  stateStorage is not a recognized key\n  runner is not a recognized key');
   });
   it('requires a snapshot command for a resume command (prd-12 FR-04, TC-04)', () => {
     const issues = configurationIssues({ ...DEFAULT_CONFIG, snapshot: { triggerZone: 'RED', resumeCommand: '/r' } });

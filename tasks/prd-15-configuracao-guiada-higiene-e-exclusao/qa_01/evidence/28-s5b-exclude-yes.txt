@@ -1,0 +1,32 @@
+$ node dist/src/cli/main.js init --exclude-harness opencode --yes
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Context usage is not exposed to Codex CLI hooks.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - cursor: full support (planned)
+    * context_usage: Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it.
+    * auto_restart: Semi-automatic restart: start a new session; it resumes by itself.
+  - opencode: partial support (planned)
+    * post_tool_telemetry: Model visibility of post-tool output modification is unconfirmed in OpenCode.
+    * session_boot: Stable boot injection is experimental in OpenCode.
+    * context_usage: No documented API exposes context usage to OpenCode plugins.
+    * auto_restart: No restart: this harness cannot inject the resume instruction.
+  - opencode: excluded by configuration
+  Planned changes:
+    [update] .claude/settings.json (harness_entry)
+    [update] .codex/hooks.json (harness_entry)
+    [update] .context-brake/manifest.json (manifest)
+    [update] .cursor/hooks.json (harness_entry)
+    [delete] .opencode/plugins/context-brake.js (runtime_asset)
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); drop unrecognized keys: telemetry.zones.legacy, stateStorage, instructionFiles, brake, lightMode, runner
+
+--- stderr ---
+

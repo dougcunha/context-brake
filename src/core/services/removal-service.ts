@@ -1,10 +1,11 @@
 import { resolve } from 'node:path';
 import type { HarnessAdapter, HarnessContext } from '../contracts/adapter.js';
-import type { ChangePlan, FileSnapshot, HarnessInstallPlan, PlannedChange, PlanConflict } from '../contracts/changes.js';
+import type { ChangePlan, FileSnapshot, PlannedChange, PlanConflict } from '../contracts/changes.js';
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/manifest.js';
 import { createChangePlan } from './change-plan-service.js';
+import { planHarnessRemovals } from './harness-removal.js';
 import { createRemovalFinding, planAssetDeletions, planRuntimeStateDeletions } from './removal-helper.js';
 
 export type RemovalInput = {
@@ -34,31 +35,13 @@ function planCoreDeletions(input: RemovalInput, hasConflicts: boolean): PlannedC
   return changes;
 }
 
-async function planAdapterRemovals(input: RemovalInput) {
-  const changes: PlannedChange[] = [];
-  const conflicts: PlanConflict[] = [];
-  const harnesses: HarnessInstallPlan[] = [];
-  const findings: DiagnosticFinding[] = [];
-  const conflictedAssetPaths = new Set<string>();
+function removalAdapters(input: RemovalInput): readonly HarnessAdapter[] {
   const installed = new Set<string>([...(input.manifest?.entries.map((e) => e.harness) ?? []), ...(input.config?.activeHarnesses ?? [])]);
-  const active = installed.size > 0 ? input.adapters.filter((a) => installed.has(a.id)) : input.adapters;
-  for (const adapter of active) {
-    const aPlan = await adapter.planRemove(input.context);
-    changes.push(...aPlan.changes);
-    conflicts.push(...aPlan.conflicts);
-    if (aPlan.conflicts.length > 0) {
-      for (const p of aPlan.assetPaths ?? []) conflictedAssetPaths.add(p);
-      for (const c of aPlan.conflicts) findings.push(createRemovalFinding(c, adapter.id));
-    }
-    const outcome = aPlan.conflicts.length > 0 ? 'conflict' : 'planned';
-    const profile = adapter.capabilityProfile();
-    harnesses.push({ harness: adapter.id, outcome, supportLevel: profile.supportLevel, limitations: [...profile.limitations] });
-  }
-  return { changes, conflicts, harnesses, findings, conflictedAssetPaths };
+  return installed.size > 0 ? input.adapters.filter((a) => installed.has(a.id)) : input.adapters;
 }
 
 export async function planRemoval(input: RemovalInput): Promise<RemovalResult> {
-  const adapterResult = await planAdapterRemovals(input);
+  const adapterResult = await planHarnessRemovals({ adapters: removalAdapters(input), context: input.context });
   const excludedAssetPaths = new Set(adapterResult.conflictedAssetPaths);
   if (adapterResult.conflicts.length > 0) {
     excludedAssetPaths.add('context-brake.config.json');

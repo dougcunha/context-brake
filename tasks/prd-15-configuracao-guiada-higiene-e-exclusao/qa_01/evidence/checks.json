@@ -1,0 +1,492 @@
+{
+  "meta": {
+    "node": "v24.19.0",
+    "platform": "win32 10.0.26200",
+    "arch": "x64",
+    "root": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa01-Tepvoy"
+  },
+  "symlinkOk": true,
+  "symlinkReason": "",
+  "results": [
+    {
+      "id": "SETUP",
+      "name": "earlier-build fixture A built (init --yes, then config + hooks edited, manifest sha rewritten)",
+      "ok": true,
+      "detail": "symlink=created"
+    },
+    {
+      "id": "SETUP",
+      "name": ".claude is a symbolic link to .agents",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "SETUP",
+      "name": "fixture carries owned retired entries before the run",
+      "ok": true,
+      "detail": "claude:PreToolUse,claude:SubagentStop,codex:PreToolUse,codex:PermissionRequest,cursor:preToolUse,cursor:beforeShellExecution"
+    },
+    {
+      "id": "S1",
+      "name": "doctor text exit code 2 (configuration error code)",
+      "ok": true,
+      "detail": "exit 2"
+    },
+    {
+      "id": "S1",
+      "name": "doctor text names every retired key",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S1",
+      "name": "doctor text carries remediation naming init --yes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S1",
+      "name": "doctor --json exit code 2",
+      "ok": true,
+      "detail": "exit 2"
+    },
+    {
+      "id": "S1",
+      "name": "doctor --json validates (zod from built dist + published JSON Schema via ajv)",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "id": "S1",
+      "name": "JSON finding INVALID_CONTEXTBRAKE_CONFIG severity error, message names all keys",
+      "ok": true,
+      "detail": "{\"code\":\"INVALID_CONTEXTBRAKE_CONFIG\",\"severity\":\"error\",\"scope\":\"project\",\"harness\":null,\"path\":\"context-brake.config.json\",\"message\":\"Configuration validation failed:\\n  telemetry.zones.legacy is not a recognized key\\n  stateStorage is not a recognized key\\n  instructionFiles is not a recognized key\\n  brake is not a recognized key\\n  lightMode is not a recognized key\\n  runner is not a recogniz"
+    },
+    {
+      "id": "S1",
+      "name": "JSON finding remediation names init --yes",
+      "ok": true,
+      "detail": "Run context-brake init --yes to drop them, or remove them from context-brake.config.json."
+    },
+    {
+      "id": "S1",
+      "name": "doctor integrations still diagnosed",
+      "ok": null,
+      "detail": "integrations=claude-code,codex-cli,cursor,opencode"
+    },
+    {
+      "id": "S1",
+      "name": "doctor wrote nothing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S2",
+      "name": "init --dry-run text exit 0",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S2",
+      "name": "init --dry-run --json exit 0",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S2",
+      "name": "init --dry-run --json validates",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "id": "S2",
+      "name": "JSON config change preview names every key to drop",
+      "ok": true,
+      "detail": "{\"summary\":\"Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); drop unrecognized keys: telemetry.zones.legacy, stateStorage, instructionFiles, brake, lightMode, runner\"}"
+    },
+    {
+      "id": "S2",
+      "name": "text preview names every key to drop",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S2",
+      "name": "planned changes",
+      "ok": null,
+      "detail": "update:.claude/settings.json | update:.codex/hooks.json | update:.context-brake/manifest.json | update:.cursor/hooks.json | update:context-brake.config.json"
+    },
+    {
+      "id": "S2",
+      "name": "plan edits the three hook files (retired entries cleanup)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S2",
+      "name": "init --dry-run wrote nothing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S2",
+      "name": "init without --yes in a non-TTY asks for confirmation (exit != 0) and writes nothing",
+      "ok": true,
+      "detail": "exit 2 {\"code\":\"CONFIRMATION_REQUIRED\",\"message\":\"Confirmation required for write operations. Use --yes in non-interactive environments.\"}"
+    },
+    {
+      "id": "S3",
+      "name": "init --yes --json exit 0",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S3",
+      "name": "init --yes --json validates",
+      "ok": true,
+      "detail": "true"
+    },
+    {
+      "id": "S3",
+      "name": "config validates against the strict schema (built dist) and the published JSON Schema",
+      "ok": true,
+      "detail": "null"
+    },
+    {
+      "id": "S3",
+      "name": "retired keys dropped, incl. nested telemetry.zones.legacy",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "recognized values unchanged (deep equal and byte equal to the config installed before the edit)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "no owned retired-event entry remains in Claude, Codex, Cursor files",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "foreign hook entries byte-identical (verbatim blocks present)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "claude hook file equals the expected file byte for byte",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "codex hook file equals the expected file byte for byte",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "cursor hook file equals the expected file byte for byte",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "symlink .claude -> .agents intact and edit landed on the target",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "opencode.json (foreign) untouched",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "second init --yes --dry-run exit 0, plans no change",
+      "ok": true,
+      "detail": "exit 0, changes=0"
+    },
+    {
+      "id": "S3",
+      "name": "second dry run wrote nothing",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S3",
+      "name": "second init --yes applies nothing (tree unchanged)",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S3",
+      "name": "doctor after repair has no INVALID_CONTEXTBRAKE_CONFIG",
+      "ok": true,
+      "detail": "exit 1; codes=STATUSLINE_LOCAL_TRACKED,VERSION_FLOOR_UNVERIFIED,VERSION_FLOOR_UNVERIFIED,VERSION_FLOOR_UNVERIFIED,VERSION_FLOOR_UNVERIFIED,AUTO_RESTART_OFF"
+    },
+    {
+      "id": "S3",
+      "name": "doctor --json after repair validates",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "precondition: OpenCode installed (asset + manifest)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "exclude --dry-run exit 0, JSON validates, writes nothing",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S4",
+      "name": "dry-run changes mentioning opencode",
+      "ok": null,
+      "detail": "delete:.opencode/plugins/context-brake.js"
+    },
+    {
+      "id": "S4",
+      "name": "preview lists OpenCode artifact deletion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "text preview lists the OpenCode deletion",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "init --exclude-harness opencode --yes exit 0 and JSON validates",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S4",
+      "name": "OpenCode artifacts deleted",
+      "ok": true,
+      "detail": ".opencode dir remains: plugins"
+    },
+    {
+      "id": "S4",
+      "name": "activeHarnesses without opencode",
+      "ok": true,
+      "detail": "[\"claude-code\",\"codex-cli\",\"cursor\"]"
+    },
+    {
+      "id": "S4",
+      "name": "excludedHarnesses == [\"opencode\"]",
+      "ok": true,
+      "detail": "[\"opencode\"]"
+    },
+    {
+      "id": "S4",
+      "name": "config validates (strict schema + published JSON Schema)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "manifest without OpenCode asset/entry",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "other harnesses untouched (hook files equal expected, runtime assets present)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "opencode.json (foreign) untouched",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "repeating the exclusion plans nothing (idempotent)",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "plain init --yes exit 0, validates, keeps OpenCode off (tree unchanged, no reinstall)",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S4",
+      "name": "plain init plans no change at all",
+      "ok": true,
+      "detail": "changes=0; harnesses=claude-code,codex-cli,cursor"
+    },
+    {
+      "id": "S4",
+      "name": "JSON detection state for opencode is excluded",
+      "ok": true,
+      "detail": "excluded"
+    },
+    {
+      "id": "S4",
+      "name": "text detection line says excluded by configuration",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "doctor text lists opencode as excluded",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S4",
+      "name": "doctor does not report opencode as missing (no INTEGRATION_MISSING for it)",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "id": "S4",
+      "name": "doctor --json validates and detection state excluded",
+      "ok": true,
+      "detail": "exit 1"
+    },
+    {
+      "id": "S4",
+      "name": "doctor finding codes after exclusion",
+      "ok": null,
+      "detail": "exit 1; STATUSLINE_LOCAL_TRACKED:warning,VERSION_FLOOR_UNVERIFIED:warning,VERSION_FLOOR_UNVERIFIED:warning,VERSION_FLOOR_UNVERIFIED:warning,AUTO_RESTART_OFF:ok"
+    },
+    {
+      "id": "S4",
+      "name": "--harness opencode --exclude-harness opencode exits 64 (text and JSON) and writes nothing",
+      "ok": true,
+      "detail": "exit 64/64"
+    },
+    {
+      "id": "S4",
+      "name": "init --harness opencode --yes exit 0, JSON validates",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S4",
+      "name": "OpenCode back: asset exists, active, exclusion cleared, manifest has it",
+      "ok": true,
+      "detail": "{\"a\":[\"claude-code\",\"codex-cli\",\"cursor\",\"opencode\"]}"
+    },
+    {
+      "id": "S4",
+      "name": "other hook files still equal expected after the whole sequence",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "fresh fixture B still carries retired keys and owned retired entries",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "remove --dry-run exit 0, validates, writes nothing",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S5",
+      "name": "remove --yes --json exit 0 and validates (no INVALID_CONTEXTBRAKE_CONFIG)",
+      "ok": true,
+      "detail": "exit 0; status=success"
+    },
+    {
+      "id": "S5",
+      "name": "config and manifest deleted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "all runtime artifacts deleted",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "no ContextBrake-owned entry remains under any event in hook files",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "foreign hook entries remain verbatim",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "claude hook file equals the foreign-only file byte for byte",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "codex hook file equals the foreign-only file byte for byte",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "cursor hook file equals the foreign-only file byte for byte",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "symlink .claude -> .agents intact",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "opencode.json untouched",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "no ContextBrake path remains in the tree",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "id": "S5",
+      "name": "second remove",
+      "ok": null,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S5b",
+      "name": "exclusion on fixture C (retired keys also repaired) exit 0",
+      "ok": true,
+      "detail": "exit 0"
+    },
+    {
+      "id": "S5b",
+      "name": "remove --yes after exclusion: exit 0, config (exclusion included) and manifest deleted, nothing of ContextBrake remains",
+      "ok": true,
+      "detail": "exit 0"
+    }
+  ]
+}

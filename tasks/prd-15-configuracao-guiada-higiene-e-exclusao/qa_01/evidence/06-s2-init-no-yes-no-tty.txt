@@ -1,0 +1,18 @@
+$ node dist/src/cli/main.js init --json
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 2
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "CONFIRMATION_REQUIRED",
+    "message": "Confirmation required for write operations. Use --yes in non-interactive environments."
+  },
+  "exitCode": 2
+}
+
+--- stderr ---
+

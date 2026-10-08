@@ -1,0 +1,38 @@
+{
+  "$schema": "https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json",
+  "schemaVersion": 1,
+  "activeHarnesses": [
+    "claude-code",
+    "codex-cli",
+    "cursor",
+    "opencode"
+  ],
+  "telemetry": {
+    "injectionMode": "threshold_only",
+    "activationThresholdPercentage": 50,
+    "contextWindowCeiling": 128000,
+    "zones": {
+      "greenMaxPercentage": 49,
+      "yellowMaxPercentage": 65,
+      "criticalPercentage": 75,
+      "legacy": 1
+    }
+  },
+  "snapshot": {
+    "triggerZone": "RED"
+  },
+  "stateStorage": {
+    "path": ".context-brake/state"
+  },
+  "instructionFiles": [
+    "AGENTS.md",
+    "CLAUDE.md"
+  ],
+  "brake": {
+    "enabled": true
+  },
+  "lightMode": true,
+  "runner": {
+    "maxRestarts": 3
+  }
+}

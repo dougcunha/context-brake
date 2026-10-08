@@ -1,14 +1,20 @@
 import type { HarnessAdapter, HarnessContext } from '../contracts/adapter.js';
-import type { ChangePlan, FileSnapshot, HarnessInstallPlan, PlannedChange, PlanConflict } from '../contracts/changes.js';
+import type { ChangePlan, FileSnapshot, PlannedChange } from '../contracts/changes.js';
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import type { DetectionSelection, DetectionSources, HarnessDetection, HarnessId } from '../contracts/harness.js';
-import { MANIFEST_RELATIVE_PATH, type InstallationManifest, type ManagedAsset, type ManagedEntry } from '../contracts/manifest.js';
+import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/manifest.js';
 import { protectModifiedAssets } from './asset-currency.js';
-import { createChangePlan, hashString } from './change-plan-service.js';
+import { createChangePlan } from './change-plan-service.js';
 import { detectHarnesses } from './detection-service.js';
 import { buildManagedAssets, conflictFindings } from './installation-findings.js';
-import { planConfigChange, planManifestChange } from './installation-builder.js';
+import { planConfigChange } from './installation-builder.js';
+import { planAdapters } from './installation-adapters.js';
+import { hasSameHarnesses } from './harness-exclusion.js';
+import { planHarnessRemovals, type HarnessRemovals } from './harness-removal.js';
+import { noProjectHarnessFinding } from './no-harness-finding.js';
+import { planManifestChange } from './manifest-change.js';
+import type { DroppedKey } from '../validation/configuration-sanitizer.js';
 import type { SnapshotUpdate } from './snapshot-merge.js';
 import type { AutoRestartUpdate } from './auto-restart-merge.js';
 import type { DebugModeUpdate } from './debug-mode-merge.js';
@@ -22,12 +28,14 @@ export type InstallationInput = {
   context: HarnessContext;
   sources: Partial<DetectionSources>;
   selection?: DetectionSelection;
+  excluded?: readonly HarnessId[] | undefined;
   allSnapshots: readonly FileSnapshot[];
   previousManifest?: InstallationManifest | null;
   packageVersion: string;
   snapshotUpdate?: SnapshotUpdate | undefined;
   debug?: DebugModeUpdate | undefined;
   autoRestart?: AutoRestartUpdate | undefined;
+  dropped?: readonly DroppedKey[] | undefined;
 };
 
 export type InstallationResult = {
@@ -37,43 +45,27 @@ export type InstallationResult = {
 };
 
 function emptyResult(root: string, detections: readonly HarnessDetection[]): InstallationResult {
-  const finding: DiagnosticFinding = {
-    code: 'NO_PROJECT_HARNESS', severity: 'warning', scope: 'project', harness: null, path: null,
-    message: 'No project harness was detected.', impact: null, remediation: 'Select one with --harness <id>.',
-  };
-  return { detections, plan: { schemaVersion: 1, projectRoot: root, changes: [], conflicts: [], harnesses: [], requiresConfirmation: false }, findings: [finding] };
+  const plan: ChangePlan = { schemaVersion: 1, projectRoot: root, changes: [], conflicts: [], harnesses: [], requiresConfirmation: false };
+  return { detections, plan, findings: [noProjectHarnessFinding(detections)] };
 }
 
-async function planAdapters(adapters: readonly HarnessAdapter[], active: readonly HarnessDetection[], ctx: HarnessContext) {
-  const changes: PlannedChange[] = [];
-  const conflicts: PlanConflict[] = [];
-  const entries: ManagedEntry[] = [];
-  const assets: ManagedAsset[] = [];
-  const harnesses: HarnessInstallPlan[] = [];
-  const findings: DiagnosticFinding[] = [];
-  for (const d of active) {
-    const adapter = adapters.find((a) => a.id === d.harness);
-    if (!adapter) continue;
-    const aPlan = await adapter.planInstall(ctx);
-    changes.push(...aPlan.changes);
-    conflicts.push(...aPlan.conflicts);
-    findings.push(...(aPlan.findings ?? []));
-    entries.push(...aPlan.entries);
-    for (const c of aPlan.changes) if (c.owner === 'runtime_asset' && c.content) assets.push({ path: c.path, kind: 'runtime_asset', sha256: hashString(c.content) });
-    if (aPlan.assets) assets.push(...aPlan.assets);
-    const outcome = aPlan.conflicts.length > 0 ? 'conflict' : aPlan.changes.length > 0 ? 'planned' : 'skipped';
-    const profile = adapter.capabilityProfile();
-    harnesses.push({ harness: d.harness, outcome, supportLevel: profile.supportLevel, limitations: [...profile.limitations] });
-  }
-  return { changes, conflicts, entries, assets, harnesses, findings };
+function hasExclusionChange(input: InstallationInput): boolean {
+  return !hasSameHarnesses(input.excluded ?? [], input.config?.excludedHarnesses ?? []);
+}
+
+async function planExcludedRemovals(input: InstallationInput): Promise<HarnessRemovals> {
+  const installed = new Set<HarnessId>([...(input.config?.activeHarnesses ?? []), ...(input.previousManifest?.entries.map((entry) => entry.harness) ?? [])]);
+  const adapters = input.adapters.filter((adapter) => (input.excluded ?? []).includes(adapter.id) && installed.has(adapter.id));
+  return planHarnessRemovals({ adapters, context: input.context, protection: { manifest: input.previousManifest ?? null, snapshots: input.allSnapshots } });
 }
 
 export async function planInstallation(input: InstallationInput): Promise<InstallationResult> {
   const detections = detectHarnesses(input.sources, input.selection);
   const active = detections.filter((d) => d.state === 'project');
-  if (active.length === 0) return emptyResult(input.projectRoot, detections);
+  const removals = await planExcludedRemovals(input);
+  if (active.length === 0 && !hasExclusionChange(input) && removals.harnesses.length === 0) return emptyResult(input.projectRoot, detections);
   const activeIds: HarnessId[] = active.map((d) => d.harness);
-  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), snapshotUpdate: input.snapshotUpdate, debug: input.debug, autoRestart: input.autoRestart });
+  const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), snapshotUpdate: input.snapshotUpdate, debug: input.debug, autoRestart: input.autoRestart, dropped: input.dropped, excluded: input.excluded, retained: [...removals.conflictedHarnesses] });
   const ap = await planAdapters(input.adapters, active, input.context);
   const extras = planRestartExtras({ wanted: input.context.autoRestart === true, adapters: input.adapters, active, snapshot: input.allSnapshots.find((s) => s.path === HANDOFF_IGNORE_PATH), logs: input.allSnapshots.filter((s) => s.path.startsWith(`${RESTART_LOG_RELATIVE_DIR}/`)), previousManifest: input.previousManifest ?? null });
   const protection = protectModifiedAssets(ap.changes, input.previousManifest ?? null, input.allSnapshots);
@@ -81,10 +73,10 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const preservedAssets = (input.previousManifest?.assets ?? []).filter((a) => modifiedPaths.has(a.path));
   const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets, ...extras.assets];
   const allAssets = buildManagedAssets(cfg.change.content ?? '', adapterAssets);
-  const manifestChange = planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) });
-  const plannedChanges: PlannedChange[] = [cfg.change, manifestChange, ...protection.changes, ...extras.changes];
+  const manifestChanges = active.length === 0 && !input.previousManifest ? [] : [planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) })];
+  const plannedChanges: PlannedChange[] = [cfg.change, ...manifestChanges, ...protection.changes, ...extras.changes, ...removals.changes];
   const conflicts = [...ap.conflicts, ...protection.conflicts];
-  const findings: DiagnosticFinding[] = [...conflictFindings(conflicts), ...ap.findings, ...extras.findings];
-  const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: ap.harnesses });
+  const findings: DiagnosticFinding[] = [...conflictFindings(conflicts), ...ap.findings, ...extras.findings, ...removals.findings];
+  const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts: [...conflicts, ...removals.conflicts], snapshots: input.allSnapshots, harnesses: [...ap.harnesses, ...removals.harnesses] });
   return { detections, plan, findings };
 }

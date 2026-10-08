@@ -1,0 +1,228 @@
+$ node dist/src/cli/main.js remove --dry-run --json
+cwd: <temporary fixture copy outside the worktree>
+env: NO_COLOR=1, HOME/USERPROFILE redirected to an empty temporary directory
+exit: 0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa01-Tepvoy\\B",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.agents/hooks/context-brake-statusline.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "680bfe64268af1c049ceccd3f48c19b169878add48444157a7e4f4fc4efc8ce9",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.agents/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "d88b4ac3a6a7437777f783b623f82759b063b7d8b321f4bc5ae91130b0b1b227",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.agents/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "0657254cfbf90f7e76326584c80b77bc6f9d81534341ead8c7c90481adbbe076",
+        "afterSha256": "f7a97ab218fa35de2114b8f162ac04703a9da8c372721ec1815c505e3a619462",
+        "preview": {
+          "summary": "Remove Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.agents/settings.local.json",
+        "kind": "delete",
+        "owner": "harness_entry",
+        "beforeSha256": "8e11cb340c0662b7106a669ca172f365f2c4c6130a5b6de07f2e6bc35e22abb1",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete the local settings the status line bridge created"
+        }
+      },
+      {
+        "path": ".codex/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.codex/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "21b3350a800f8609d449274bd85c009fb401bbcf69ef7294577e98c3744bdf0c",
+        "afterSha256": "a0efc1b8b7d36237fa3ebb2f6ec509a2315f524ba408971cb45394f5b5fb084b",
+        "preview": {
+          "summary": "Remove Codex hooks"
+        }
+      },
+      {
+        "path": ".codex/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.codex/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "1c6cb9c6d30fd664916b5b42f59b6b8f6403fe75d03fc5cca8a0b88b599b49ca",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.context-brake/manifest.json",
+        "kind": "delete",
+        "owner": "manifest",
+        "beforeSha256": "1a15fe22fa0fb6d163f7b3a8fd9bf8a514a30a40f07df732bf920504edef7667",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete manifest"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.context-brake/runtime/claude-statusline.json",
+        "kind": "delete",
+        "owner": "harness_entry",
+        "beforeSha256": "38ed1691a3cd0dff844bbb7a3d372f08a6dcc8e6b2eb83b39c6da91654b42fa4",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete the status line bridge state"
+        }
+      },
+      {
+        "path": ".cursor/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.cursor/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "7282b08f2815fd86e7741082496f97343b3be3b9cf2d9cecda96cf1002a14b76",
+        "afterSha256": "067335572076d154033f48c43c260e0d32ea321373f2815a6d77250765ac2f14",
+        "preview": {
+          "summary": "Remove Cursor hooks"
+        }
+      },
+      {
+        "path": ".cursor/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.cursor/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "f0d68576de5ac5fea44dc7631efec9345e3ae403407215e704b62d0bf2463d27",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".opencode/plugins/context-brake.js",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/.opencode/plugins/context-brake.js",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "1c884ca3af74882538f60ab19972033a27270e69daefd90c204c618c1dd17384",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete OpenCode plugin"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-qa01-Tepvoy/B/context-brake.config.json",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "5643c283e38b81a155426a19a1ac3023255d6121cade4105b572851d04a72995",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete context-brake.config.json"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Codex CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "opencode",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Model visibility of post-tool output modification is unconfirmed in OpenCode."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Stable boot injection is experimental in OpenCode."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "No documented API exposes context usage to OpenCode plugins."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [],
+  "findings": []
+}
+
+--- stderr ---
+

@@ -8,6 +8,8 @@ import { activeSessions } from './active-sessions.js';
 import { assetCurrencyFindings } from './asset-currency.js';
 import { runtimeErrorFindings, type RuntimeStateReading } from './runtime-error-checks.js';
 import { detectHarnesses } from './detection-service.js';
+import { resolveHarnessExclusion } from './harness-exclusion.js';
+import { noProjectHarnessFinding } from './no-harness-finding.js';
 import { checkConfig } from './doctor-checks.js';
 import { doctorReportExtras } from './doctor-report-extras.js';
 import { buildDoctorReport } from './report-service.js';
@@ -66,17 +68,15 @@ async function diagnoseHarness(adapter: HarnessAdapter, input: DoctorInput): Pro
 export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport> {
   const { effective, findings: cfgFindings } = checkConfig(input.config, input.configError);
   const allFindings: DiagnosticFinding[] = [...cfgFindings];
-  const selection = input.explicitHarnesses ? { include: input.explicitHarnesses } : {};
+  const { excluded, selection } = resolveHarnessExclusion({ configured: input.config?.excludedHarnesses ?? [], include: input.explicitHarnesses ?? [], exclude: [] });
   const detections = detectHarnesses(input.sources, selection);
   const hasProject = detections.some((d) => d.state === 'project');
   if (!hasProject && (!input.explicitHarnesses || input.explicitHarnesses.length === 0)) {
-    allFindings.push({
-      code: 'NO_PROJECT_HARNESS', severity: 'warning', scope: 'project', harness: null, path: null,
-      message: 'No project harness was detected.', impact: null, remediation: 'Select one with --harness <id>.',
-    });
+    allFindings.push(noProjectHarnessFinding(detections));
   }
   const targetIds = new Set<HarnessId>([...(input.config?.activeHarnesses ?? []), ...(input.explicitHarnesses ?? [])]);
   if (targetIds.size === 0) for (const d of detections) if (d.state === 'project') targetIds.add(d.harness);
+  for (const id of excluded) targetIds.delete(id);
   const integrations: HarnessDiagnostic[] = [];
   for (const id of targetIds) {
     const adapter = input.adapters.find((a) => a.id === id);

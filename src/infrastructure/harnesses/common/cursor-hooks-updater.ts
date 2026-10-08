@@ -1,4 +1,5 @@
 import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
+import { removeOwnedFromOtherEvents } from './hook-event-cleanup.js';
 import { appendJsonArrayItem, parseAndValidateJson, removeJsonArrayItem, removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 
 export const CURSOR_HOOK_FILE = '.cursor/hooks/context-brake.mjs';
@@ -62,5 +63,5 @@ export function updateCursorHooks(content: string, clear: boolean): string {
   for (const event of CURSOR_EVENTS) {
     text = updateCursorEvent(text, event, clear);
   }
-  return text;
+  return removeOwnedFromOtherEvents(text, CURSOR_EVENTS, isCursorOwned);
 }

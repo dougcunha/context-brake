@@ -25,7 +25,8 @@ async function readConfigSafely(root: string): Promise<{ config: ContextBrakeCon
     return { config, configError: null };
   } catch (err) {
     if ((err as NodeJS.ErrnoException).code === 'ENOENT') return { config: null, configError: null };
-    return { config: null, configError: err instanceof Error ? err : new Error(String(err)) };
+    const repaired = await store.readTolerant().then((result) => result.config, () => null);
+    return { config: repaired, configError: err instanceof Error ? err : new Error(String(err)) };
   }
 }
 

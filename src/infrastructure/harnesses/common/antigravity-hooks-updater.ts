@@ -21,9 +21,22 @@ function hasMatchingRegistration(content: string): boolean {
   }
 }
 
+function ownedEvents(content: string): string[] {
+  const hooksNode = findNodeAtLocation(parseAndValidateJson(content), ['hooks']);
+  if (!hooksNode || hooksNode.type !== 'object') return [];
+  const hooks = getNodeValue(hooksNode) as Record<string, unknown>;
+  return Object.keys(hooks).filter((event) => typeof hooks[event] === 'object' && hooks[event] !== null && !Array.isArray(hooks[event]) && 'context-brake' in (hooks[event] as object));
+}
+
+function removeOwnedEvent(content: string, event: string): string {
+  const text = removeJsonProperty(content, ['hooks', event, 'context-brake']);
+  const node = findNodeAtLocation(parseAndValidateJson(text), ['hooks', event]);
+  const isEmpty = node !== undefined && Object.keys(getNodeValue(node) as object).length === 0;
+  return isEmpty ? removeJsonProperty(text, ['hooks', event]) : text;
+}
+
 function cleanLegacyHooks(content: string): string {
-  let text = removeJsonProperty(content, ['hooks', 'PreToolUse', 'context-brake']);
-  text = removeJsonProperty(text, ['hooks', 'PreInvocation', 'context-brake']);
+  const text = ownedEvents(content).reduce(removeOwnedEvent, content);
   const tree = parseAndValidateJson(text);
   const hooksNode = findNodeAtLocation(tree, ['hooks']);
   if (!hooksNode || hooksNode.type !== 'object') return text;

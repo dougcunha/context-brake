@@ -1,7 +1,7 @@
 import type { SnapshotConfig } from '../../core/contracts/configuration.js';
-import { SNAPSHOT_TRIGGER_ZONES } from '../../core/contracts/zones.js';
 import { mergeSnapshot, type SnapshotFlags } from '../../core/services/snapshot-merge.js';
 import { askValidated } from './ask.js';
+import { commandSpec, resumeSpec, triggerSpec } from './snapshot-specs.js';
 import type { PromptPort } from './prompt-port.js';
 import type { AssistantContext, Validation } from './types.js';
 
@@ -44,14 +44,14 @@ function valueFlag(name: string, value: string): string[] {
   return value.startsWith('-') ? [`${name}=${value}`] : [name, value];
 }
 
-type CommandOptionsInput ={ readonly current: SnapshotConfig | undefined; readonly command: string };
+type CommandOptionsInput = { readonly current: SnapshotConfig | undefined; readonly command: string };
 
 async function askCommandOptions(input: CommandOptionsInput, prompts: PromptPort): Promise<SnapshotChoice | null> {
   const { current, command } = input;
   const currentZone = current?.triggerZone ?? DEFAULT_ZONE;
-  const zone = await askValidated(prompts, `Snapshot trigger ${SNAPSHOT_TRIGGER_ZONES.join(' or ')} [${currentZone}]: `, validateTrigger(currentZone));
+  const zone = await askValidated(prompts, triggerSpec(currentZone), validateTrigger(currentZone));
   if (zone === null) return null;
-  const resume = await askValidated(prompts, `Resume command (Enter keeps [${current?.resumeCommand ?? NONE_WORD}]): `, validateResume(current?.resumeCommand));
+  const resume = await askValidated(prompts, resumeSpec(current?.resumeCommand), validateResume(current?.resumeCommand));
   if (resume === null) return null;
   const flags = [
     ...(command === current?.command ? [] : valueFlag('--snapshot-command', command)),
@@ -63,8 +63,7 @@ async function askCommandOptions(input: CommandOptionsInput, prompts: PromptPort
 
 export async function askSnapshot(context: AssistantContext, prompts: PromptPort): Promise<SnapshotChoice | null> {
   const current = context.config?.snapshot;
-  const question = `Snapshot command (Enter keeps [${current?.command ?? NONE_WORD}], type none for no command): `;
-  const command = await askValidated(prompts, question, validateCommand(current?.command));
+  const command = await askValidated(prompts, commandSpec(current?.command), validateCommand(current?.command));
   if (command === null) return null;
   if (command.value !== null) return askCommandOptions({ current, command: command.value }, prompts);
   const flags = current?.command === undefined ? [] : ['--no-snapshot-command'];

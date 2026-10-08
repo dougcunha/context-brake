@@ -16,6 +16,7 @@
 | DEC-HIL-02 | 2026-10-08 | HIL 2 (prd-16) | Plan "Approve as drafted (Recommended)": TechSpec DEC-01..10 and tasks T01..T06, CLI QA on the built CLI for non-TTY parts, no preparatory refactoring; implementation and in-contract corrections authorized. OI-01 "Skip it (Recommended)": the restart question is skipped when no selected harness has a restart mode. OI-02 "Leave it not measured": the real-terminal TTY probe (FR-10 measurement, TC-15, OBJ-05) is deferred; the fallback is tested in process. OI-03: follow the 180 s budget rule. Session: continue here. | APPROVED |
 | DEC-HIL-03 | 2026-10-08 | Reservations HIL (codereview_02) | "Finalize, correct none (Recommended)": codereview_02 CR-01 (default harness preselection excludes a harness detected after the first install), CR-02 (--interactive drops typed configuration flags; no-flag printed command restarts the assistant), CR-03 (TechSpec test-file names for TC-01 and TC-03) are accepted open items, plus one QA-06 test-helper hit. Session: continue here. | APPROVED |
 | DEC-HIL-04 | 2026-10-08 | HIL 3 | "Accept (Recommended)": delivery accepted with review codereview_02 (APPROVED WITH RESERVATIONS, DEC-HIL-03), QA qa_01 (APPROVED), and the open limitation that TC-15, FR-10 measurement, and OBJ-05 are not measured. No commit or push requested. | APPROVED |
+| DEC-HIL-05 | 2026-10-08 | Post-acceptance change | "Pode fazer o 1 pelo menos, pra eu ver se é suficiente": rich prompts (`@clack/prompts`) behind the existing prompt port, line prompts kept as fallback. Experiment; review and QA not re-run. | APPROVED |
 
 ## Milestones
 
@@ -29,3 +30,5 @@
 - 2026-10-08: Re-review codereview_02 received: APPROVED WITH RESERVATIONS (no block; CR-01 of codereview_01 resolved; worktree check clean). Reservations HIL opened: CR-01 default harness preselection, CR-02 typed flags dropped with --interactive, CR-03 TechSpec test-file names (plus one QA-06 test-helper hit).
 - 2026-10-08: QA qa_01 received: APPROVED (worktree check clean). HIL 3 opened.
 - 2026-10-08: HIL 3 accepted (DEC-HIL-04); checkpoint completed and snapshot closed.
+- 2026-10-08 (post-acceptance change): the person found the wizard "muito rudimentar" and asked for option 1 (rich prompts on the existing port) "pelo menos pra ver se é suficiente". Authorized as DEC-HIL-05; TechSpec amended with DEC-11 (`@clack/prompts`, escape hatch `CONTEXT_BRAKE_PLAIN_PROMPTS=1`). Implemented as an experiment; review and QA were not re-run for this change.
+- 2026-10-08: the person tried the rich prompts and accepted them ("Ficou otimo, pode fechar assim"); committed with the TechSpec amendment DEC-11. Review and QA were not re-run for this change; TC-15 real-terminal measurement remains open.

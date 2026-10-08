@@ -150,3 +150,13 @@ Measured at HEAD `b216aba` over the existing files the feature modifies. Max par
 
 - Modify: `src/cli/init-arguments.ts`, `src/cli/commands/init.ts`, `src/core/services/auto-restart-merge.ts`, `src/core/services/installation-builder.ts`, `tests/helpers/in-process-cli.ts`, `README.md`, `docs/research/README.md`.
 - Create: `src/cli/terminal.ts`, `src/cli/assistant/prompt-port.ts`, `questions-harness.ts`, `questions-snapshot.ts`, `questions-restart.ts`, `questions-misc.ts`, `equivalent-command.ts`, `summary.ts`, `assistant-session.ts`, `src/cli/init-assertions.ts` (only if `init-arguments.ts` would pass 100 lines), `tests/helpers/scripted-prompts.ts`, the test files in the table, `docs/research/terminal-tty.md`.
+
+## Amendment 2026-10-08 — rich prompts (DEC-HIL-05)
+
+Requested by the person after the first delivery ("o wizard ficou muito rudimentar", option 1 of the proposal: rich prompts on the existing port, as an experiment to judge whether it is enough).
+
+| ID | PRD obligations | Decision | Reason and evidence | Alternatives and trade-offs |
+| --- | --- | --- | --- | --- |
+| DEC-11 | FR-02, FR-03, FR-04, NFR-01 | `PromptPort` gains optional `askUi(prompt, error)` and `begin()`; a question passes a `PromptSpec` (`line` for the line prompts, `ui` for a rich prompt). The rich port returns the same string the line prompt would have received (`1 2`, `none`, `y`/`n`, a zone, a typed value), so every validator, flag, and test of the line mode stays. `ClackPromptPort` (`@clack/prompts` 1.8.1, the only new runtime dependency, no install script) is the production default; `CONTEXT_BRAKE_PLAIN_PROMPTS=1`, `TERM=dumb`, or a failed import select `ReadlinePromptPort`. Ctrl+C maps to `null` (cancel). The summary, equivalent command, and plan stay plain text on stdout so they can be copied | Supersedes the "no prompt library" alternative of DEC-02. `ask`, scripted ports, and every existing test keep working; the library is imported only when the assistant runs | Hand-written raw-mode lists (more code to maintain on Windows); staying line-based (the complaint) |
+
+Open: the real terminals (Git Bash mintty, PowerShell 7, Windows PowerShell 5.1) are still not measured (TC-15); raw mode makes that measurement more important. `CONTEXT_BRAKE_PLAIN_PROMPTS=1` is the escape hatch.

@@ -33,6 +33,7 @@
     "release:check": "npm run schemas:check && npm run dependencies:check && npm run build && npm run typecheck && npm run lint && npm run coverage && npm run test:bench && npm run test:budget && npm run package:smoke"
   },
   "dependencies": {
+    "@clack/prompts": "^1.8.1",
     "jsonc-parser": "^3.3.1",
     "semver": "^7.8.5",
     "zod": "^4.1.5"

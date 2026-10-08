@@ -2,6 +2,7 @@ import { HARNESS_IDS, type HarnessId } from '../../core/contracts/harness.js';
 import { askValidated } from './ask.js';
 import type { PromptPort } from './prompt-port.js';
 import type { AssistantContext, Validation } from './types.js';
+import type { PromptSpec, UiOption } from './ui-prompt.js';
 
 export type HarnessSelection = { readonly selected: readonly HarnessId[]; readonly excluded: readonly HarnessId[]; readonly flags: readonly string[] };
 
@@ -20,6 +21,24 @@ function describeHarness(context: AssistantContext, harness: HarnessId, preselec
   return `  ${HARNESS_IDS.indexOf(harness) + 1}) [${preselected.includes(harness) ? 'x' : ' '}] ${harness} (${detected}${level} support)`;
 }
 
+function harnessNumber(harness: HarnessId): string {
+  return String(HARNESS_IDS.indexOf(harness) + 1);
+}
+
+function uiOption(context: AssistantContext, harness: HarnessId): UiOption {
+  const level = context.adapters.find((adapter) => adapter.id === harness)?.capabilityProfile().supportLevel ?? 'unknown';
+  const detected = detectedIds(context).includes(harness) ? 'detected, ' : '';
+  return { value: harnessNumber(harness), label: harness, hint: `${detected}${level} support` };
+}
+
+function harnessSpec(context: AssistantContext, preselected: readonly HarnessId[]): PromptSpec {
+  const lines = HARNESS_IDS.map((harness) => describeHarness(context, harness, preselected));
+  return {
+    line: `Harnesses to configure:\n${lines.join('\n')}\nNumbers separated by spaces, Enter to keep the marked ones, or none: `,
+    ui: { kind: 'multiselect', message: 'Harnesses to configure', options: HARNESS_IDS.map((harness) => uiOption(context, harness)), initial: preselected.map(harnessNumber) },
+  };
+}
+
 function validateNumbers(preselected: readonly HarnessId[]): (answer: string) => Validation<readonly HarnessId[]> {
   return (answer) => {
     if (answer === '') return { value: preselected };
@@ -33,9 +52,7 @@ function validateNumbers(preselected: readonly HarnessId[]): (answer: string) =>
 
 export async function askHarnesses(context: AssistantContext, prompts: PromptPort): Promise<HarnessSelection | null> {
   const preselected = defaultSelection(context);
-  const lines = HARNESS_IDS.map((harness) => describeHarness(context, harness, preselected));
-  const question = `Harnesses to configure:\n${lines.join('\n')}\nNumbers separated by spaces, Enter to keep the marked ones, or none: `;
-  const answer = await askValidated(prompts, question, validateNumbers(preselected));
+  const answer = await askValidated(prompts, harnessSpec(context, preselected), validateNumbers(preselected));
   if (answer === null) return null;
   const selected = answer.value;
   const excluded = detectedIds(context).filter((harness) => !selected.includes(harness));

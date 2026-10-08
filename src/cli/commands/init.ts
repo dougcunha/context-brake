@@ -17,6 +17,7 @@ import { authorizeWrite } from '../confirmation.js';
 import { planConfigUpdates } from '../init-config-updates.js';
 import { loadInitConfigState } from '../init-config-state.js';
 import { printNothingWritten, resolveAssistedArgs } from '../assistant/assistant-session.js';
+import { createPromptPort } from '../assistant/prompt-factory.js';
 import { confirmWithPort, ReadlinePromptPort, type PromptPort } from '../assistant/prompt-port.js';
 import { assertTerminalForAssistant, detectTerminal, shouldRunAssistant, type TerminalInfo } from '../terminal.js';
 
@@ -68,7 +69,8 @@ async function executeInit(args: ParsedInitArgs, env: CommandEnv, prompts: Promp
 }
 
 async function runAssisted(args: ParsedInitArgs, env: CommandEnv): Promise<number> {
-  const prompts = env.prompts ?? new ReadlinePromptPort();
+  const prompts = env.prompts ?? await createPromptPort();
+  prompts.begin?.();
   try {
     const assisted = await resolveAssistedArgs(args, env, prompts);
     if (assisted === null) {

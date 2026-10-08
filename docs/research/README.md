@@ -11,5 +11,6 @@ Material de referência copiado ou derivado da base de conhecimento do autor (LL
 | [disk-checkpoint-reset-loop.md](./disk-checkpoint-reset-loop.md) | Padrão de checkpoint em disco e sessões efêmeras | Ao implementar plano, checkpoint e boot | Cópia congelada |
 | [long-task-execution.md](./long-task-execution.md) | Síntese sobre delegar, compactar ou reiniciar, com limiares e custo do boot | Ao calibrar valores padrão e ao trabalhar no runner | Cópia congelada |
 | [single-agent-context-management.md](./single-agent-context-management.md) | Scratchpad, poda de saídas de ferramentas e compactação | Ao desenhar o resumo de boot | Cópia congelada |
+| [terminal-tty.md](./terminal-tty.md) | Sonda de TTY do Node no Git Bash (mintty), PowerShell 7 e Windows PowerShell 5.1, e o comportamento do assistente do `init` sem terminal | Ao alterar o gatilho do assistente do `init` ou ao investigar um terminal sem TTY | Mantido aqui; preencher a tabela ao medir um terminal |
 
 As cópias congeladas preservam o texto da data da cópia; links para páginas que não foram copiadas viraram texto simples. Não versione cópias integrais da documentação dos fornecedores de harness neste repositório.

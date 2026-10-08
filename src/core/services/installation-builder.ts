@@ -62,12 +62,16 @@ export function planConfigChange(
 function inSchemaOrder(config: ContextBrakeConfig): ContextBrakeConfig {
   return Object.fromEntries(CONFIG_KEY_ORDER.filter((key) => key in config).map((key) => [key, config[key as keyof ContextBrakeConfig]])) as ContextBrakeConfig;
 }
+function autoRestartSummary(update: Exclude<AutoRestartUpdate, { kind: 'keep' }>): string {
+  if (update.kind === 'set' && update.maxConsecutiveRestarts !== undefined) return `${AUTO_RESTART_SUMMARY.set}, at most ${update.maxConsecutiveRestarts} consecutive restarts`;
+  return AUTO_RESTART_SUMMARY[update.kind];
+}
 type SummaryUpdates = { snapshot: SnapshotConfig; debug: DebugModeUpdate; autoRestart: AutoRestartUpdate; dropped: readonly DroppedKey[] };
 
 function configSummary(updates: SummaryUpdates): string {
   const { snapshot, debug, autoRestart, dropped } = updates;
   const debugPart = debug.kind === 'keep' ? [] : [DEBUG_SUMMARY[debug.kind]];
-  const autoRestartPart = autoRestart.kind === 'keep' ? [] : [AUTO_RESTART_SUMMARY[autoRestart.kind]];
+  const autoRestartPart = autoRestart.kind === 'keep' ? [] : [autoRestartSummary(autoRestart)];
   const droppedPart = dropped.length === 0 ? [] : [`${DROPPED_SUMMARY} ${dropped.map((key) => key.path).join(', ')}`];
   return [CONFIG_SUMMARY, snapshotSummary(snapshot), ...debugPart, ...autoRestartPart, ...droppedPart].join('; ');
 }

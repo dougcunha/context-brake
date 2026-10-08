@@ -124,6 +124,21 @@ npx context-brake init --yes --snapshot-command "/sdd-snapshot" --resume-command
 
 It does not touch instruction files such as `CLAUDE.md` and `AGENTS.md`, and it does not touch `.gitignore`. Runtime state lives in `.context-brake/runtime/`, which carries its own `.gitignore`.
 
+### Interactive Setup
+
+Run `context-brake init` in a terminal with no other option and it asks what to configure instead of requiring flags. `init --interactive` starts the same questions on purpose.
+
+```bash
+npx context-brake init
+npx context-brake init --interactive --dry-run
+```
+
+- **When it starts:** only when both stdin and stdout are terminals and none of `--yes`, `--json`, or a configuration flag (`--harness`, `--exclude-harness`, any snapshot flag, `--debug`, `--statusline-bridge`, `--auto-restart`, `--max-restarts`, and their `--no-` forms) is given. Scripts, CI, and `--json` runs never see a prompt and behave exactly as before. `--interactive` without a terminal exits with code 64 and names the flags to use instead; combined with `--yes` or `--json` it is an argument error.
+- **Questions, in order:** the harnesses to configure (detected ones are marked with their support level; turning off a detected one excludes it, as `--exclude-harness` does), the snapshot command, its trigger zone and resume command (only when a command is set), restart on or off with the restart mode of each selected harness (only when one can restart), the consecutive-restart limit (only when restart is on), the Claude Code status line bridge (only when Claude Code is selected), and debug mode. Enter keeps the value shown in brackets, which is the current configuration or the default. An invalid answer prints its rule and asks again.
+- **Summary and equivalent command:** before the plan, the assistant prints what you chose and the `context-brake init ...` command that reproduces it. Values with spaces or shell characters are single-quoted, and a value that contains a single quote is printed once for POSIX shells and once for PowerShell. Add `--yes` to repeat the setup without prompts; a command with no flags means nothing changes and starts the questions again on a terminal.
+- **Confirming and cancelling:** the assistant shows the usual plan and asks the usual single confirmation. Ctrl+C or the end of input at any prompt prints `Nothing was written.` and exits with code 0, like a declined confirmation. With `--dry-run` it shows the plan and writes nothing. Typed configuration flags passed together with `--interactive` are not used; only `--dry-run` is.
+- **Git Bash on Windows:** Git Bash in mintty can report that stdin or stdout is not a terminal. Then a plain `init` keeps its non-interactive behavior and `--interactive` explains that the terminal is not interactive. [docs/research/terminal-tty.md](./docs/research/terminal-tty.md) holds the probe and the results per terminal.
+
 ### Updating and Removal
 
 - **Updating:** Running `npx context-brake init --yes` is idempotent. Run it again after upgrading ContextBrake to refresh runtime assets without touching your custom settings.
@@ -243,7 +258,7 @@ npx context-brake init --no-auto-restart   # turn it off and remove its files
 
 - **How it works:** `init --auto-restart` writes a Claude Code mod (a plugin of function hooks) under `.context-brake/claude-mod/`, registers it for you in `.claude/settings.local.json` (`extraKnownMarketplaces` and `enabledPlugins`), and adds an `autoRestart` block to `context-brake.config.json`. When a turn ends with the signal, the mod shows a one-line notice, queues `/clear`, and sends the new session one short generic seed prompt to resume. Only the signal triggers it, never a zone alone.
 - **Resume text:** the mod trusts the signal and reads no state file. With `snapshot.resumeCommand` set, the new session also receives the resume text from the session start hook.
-- **Loop guards and kill switches:** at most `autoRestart.maxConsecutiveRestarts` restarts (default 2) without a prompt you typed, and none when no tool call happened since the last seed. `CONTEXT_BRAKE_AUTO_RESTART=0` stands it down for one session; `claude -p` sessions and sessions with `DISABLE_AUTO_COMPACT` set are skipped.
+- **Loop guards and kill switches:** at most `autoRestart.maxConsecutiveRestarts` restarts (default 2; set it with `init --max-restarts <1-10>`, which needs automatic restart on) without a prompt you typed, and none when no tool call happened since the last seed. `CONTEXT_BRAKE_AUTO_RESTART=0` stands it down for one session; `claude -p` sessions and sessions with `DISABLE_AUTO_COMPACT` set are skipped.
 - **Requirements:** Claude Code 2.1.287 or later, where mods are on by default (verified on 2.1.289, 4 October 2026). Mods stay off under `disableAllHooks`, `--safe-mode`, `--bare`, an organization managed policy, and in Desktop WSL sessions. The first interactive launch asks you to trust the folder.
 - **`doctor`:** reports `AUTO_RESTART_OFF` or `AUTO_RESTART_READY` without a warning, and warns with `AUTO_RESTART_NOT_LOADED` (no session loaded the mod yet, with the causes above), `AUTO_RESTART_OUTDATED_MOD`, or `AUTO_RESTART_CLAUDE_TOO_OLD`. `AUTO_RESTART_LAST_SKIP` names the reason code of the last request that did not restart. The mod records only reason codes and versions, per session, in `.context-brake/runtime/restart/claude-code/`; never prompt, reply, or tool text.
 
@@ -275,7 +290,7 @@ Each hook call has an internal deadline of 1.5 seconds; the session start event 
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. In a terminal with no other option, or with `--interactive`, it asks the [setup questions](#interactive-setup). |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, snapshot settings, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json` | Uninstalls the integrations and deletes the configuration, the manifest, and the runtime files. |
 

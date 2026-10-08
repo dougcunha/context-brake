@@ -4,6 +4,7 @@ import type { HarnessDetection, HarnessId } from '../core/contracts/harness.js';
 import { hasRestartMode } from '../core/services/restart-install-extras.js';
 import type { SnapshotFlags } from '../core/services/snapshot-merge.js';
 import { CliArgumentError, validateHarnessIds, validateInclusionExclusion } from './argument-validator.js';
+import { assertInteractiveCompatible, assertMaxRestartsCompatible, parseMaxRestarts } from './init-option-rules.js';
 
 export type ParsedInitArgs = {
   command: 'init'; dryRun: boolean; yes: boolean; json: boolean;
@@ -12,6 +13,7 @@ export type ParsedInitArgs = {
   debug?: boolean | undefined; noDebug?: boolean | undefined;
   statuslineBridge?: StatuslineBridgeRequest | undefined;
   autoRestart?: boolean | undefined; noAutoRestart?: boolean | undefined;
+  maxRestarts?: number | undefined; interactive?: boolean | undefined;
 };
 
 const INIT_OPTIONS = {
@@ -23,6 +25,7 @@ const INIT_OPTIONS = {
   debug: { type: 'boolean', default: false }, 'no-debug': { type: 'boolean', default: false },
   'statusline-bridge': { type: 'boolean', default: false }, 'no-statusline-bridge': { type: 'boolean', default: false },
   'auto-restart': { type: 'boolean', default: false }, 'no-auto-restart': { type: 'boolean', default: false },
+  'max-restarts': { type: 'string' }, interactive: { type: 'boolean', default: false },
 } as const;
 type InitValues = ReturnType<typeof parseArgs<{ args: string[]; options: typeof INIT_OPTIONS; strict: true }>>['values'];
 
@@ -31,12 +34,21 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
   const harness = validateHarnessIds(values.harness);
   const excludeHarness = validateHarnessIds(values['exclude-harness']);
   validateInclusionExclusion(harness, excludeHarness);
+  const maxRestarts = parseMaxRestarts(values['max-restarts']);
+  assertMaxRestartsCompatible(maxRestarts, values['no-auto-restart']);
+  assertInteractiveCompatible({ interactive: values.interactive, yes: values.yes, json: values.json });
   return {
     command: 'init', dryRun: values['dry-run'], yes: values.yes, json: values.json,
     harness, excludeHarness,
     snapshot: snapshotFlags(values), debug: values.debug, noDebug: values['no-debug'], statuslineBridge: statuslineBridgeRequest(values, { harness, excludeHarness }),
-    autoRestart: values['auto-restart'], noAutoRestart: values['no-auto-restart'],
+    autoRestart: values['auto-restart'], noAutoRestart: values['no-auto-restart'], maxRestarts, interactive: values.interactive,
   };
+}
+export function hasConfigurationFlag(args: ParsedInitArgs): boolean {
+  const snapshot = args.snapshot;
+  const hasSnapshotFlag = snapshot !== undefined && (snapshot.clearCommand || [snapshot.command, snapshot.triggerZone, snapshot.resumeCommand].some((value) => value !== undefined));
+  const flags = [args.debug, args.noDebug, args.autoRestart, args.noAutoRestart, hasSnapshotFlag];
+  return args.harness.length > 0 || args.excludeHarness.length > 0 || args.statuslineBridge !== undefined || args.maxRestarts !== undefined || flags.some(Boolean);
 }
 function snapshotFlags(values: InitValues): SnapshotFlags {
   return { command: values['snapshot-command'], triggerZone: values['snapshot-trigger'], resumeCommand: values['resume-command'], clearCommand: values['no-snapshot-command'] };

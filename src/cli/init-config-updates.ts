@@ -13,7 +13,7 @@ export function planConfigUpdates(config: ContextBrakeConfig | null, args: Parse
   return { snapshot: snapshotUpdate(config, args.snapshot), debug: debugUpdate(config, args), autoRestart: autoRestartUpdate(config, args) };
 }
 function autoRestartUpdate(config: ContextBrakeConfig | null, args: ParsedInitArgs): AutoRestartUpdate {
-  const merge = mergeAutoRestart(config?.autoRestart, { autoRestart: args.autoRestart ?? false, noAutoRestart: args.noAutoRestart ?? false });
+  const merge = mergeAutoRestart(config?.autoRestart, { autoRestart: args.autoRestart ?? false, noAutoRestart: args.noAutoRestart ?? false, maxRestarts: args.maxRestarts });
   if ('error' in merge) throw new CliArgumentError(merge.error);
   return merge.update;
 }

@@ -17,7 +17,8 @@ describe('test budget evaluator (prd-13 FR-06, DEC-07, TC-07)', () => {
   it('fails a successful run above the budget with TEST_BUDGET_EXCEEDED', () => {
     const result = evaluateBudget({ report: report(true, [1]), wallSeconds: TEST_BUDGET_SECONDS + 0.5, root: ROOT, vitestExitCode: 0 });
     expect(result.exitCode).toBe(1);
-    expect(result.stderr[0]).toMatch(/^\[ERROR\] TEST_BUDGET_EXCEEDED: the run took 120\.5s/);
+    expect(result.stderr[0]).toMatch(/^\[ERROR\] TEST_BUDGET_EXCEEDED: /);
+    expect(result.stderr[0]).toContain(`the run took ${TEST_BUDGET_SECONDS}.5s`);
   });
   it('accepts a run at exactly the budget', () => {
     expect(evaluateBudget({ report: report(true, [1]), wallSeconds: TEST_BUDGET_SECONDS, root: ROOT, vitestExitCode: 0 }).exitCode).toBe(0);

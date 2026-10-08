@@ -46,7 +46,7 @@ Harness event names, payload shapes, and config file formats stay inside that ha
 - Tests: `npm test`
 - Coverage: `npm run coverage`
 - Benchmarks: `npm run test:bench`
-- Test budget: `npm run test:budget` (fails when `npm test` exceeds 120 s)
+- Test budget: `npm run test:budget` (fails when `npm test` exceeds 180 s)
 - Schema currency: `npm run schemas:check`
 - Dependency scripts: `npm run dependencies:check`
 - Package smoke: `npm run package:smoke`

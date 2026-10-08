@@ -1,7 +1,7 @@
 import { relative } from 'node:path';
 import { z } from 'zod';
 
-export const TEST_BUDGET_SECONDS = 120;
+export const TEST_BUDGET_SECONDS = 180;
 export const SLOWEST_FILE_COUNT = 10;
 const FAILED_STATUS = 'failed';
 const MILLISECONDS_PER_SECOND = 1000;

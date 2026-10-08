@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "generation": 2,
+  "feature": "prd-16-configuracao-guiada-assistente-no-init",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "plan-project",
+  "status": "paused",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "objective": "Interactive init assistant with equivalent command, TTY or --interactive trigger, Git Bash TTY probe, and --max-restarts.",
+  "constraints": [
+    "Depends on prd-15 FR-05..FR-07",
+    "Scripts, CI, and --json unchanged"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": null,
+    "tasks": null,
+    "review": null,
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": null,
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "e4eceeca441cb16074fcdd60e553b43baff329cccf7e32d8b0fb9446c7126975",
+      "decision_id": "DEC-HIL-01"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-HIL-01"
+  ],
+  "git_base": "c0c48bb",
+  "worktree_evidence": "workflow.md#Milestones (foreign untracked .agents/skills/chat-clean/ and tasks/prd-11-…/rtk/)",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 0,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "run",
+    "instruction": "After prd-15 completes, write the TechSpec with sdd-create-techspec.",
+    "read": [
+      {
+        "path": "tasks/prd-16-configuracao-guiada-assistente-no-init/prd.md",
+        "section": "all"
+      }
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+e3763f6a766638f1d34851696e63799948df1f4b88df693ff6b39011807f2a51 *-
+ M .agents/rules/file-changes.md
+ M AGENTS.md
+ M README.md
+ M schemas/context-brake.config.schema.json
+ M schemas/install-report.schema.json
+ M src/cli/assistant/assistant-context.ts
+ M src/cli/assistant/assistant-questions.ts
+ M src/cli/assistant/questions-misc.ts
+ M src/cli/assistant/summary.ts
+ M src/cli/assistant/types.ts
+ M src/cli/commands/init.ts
+ M src/cli/init-arguments.ts
+ M src/cli/init-config-updates.ts
+ M src/cli/init-option-rules.ts
+ M src/cli/output/text.ts
+ M src/cli/snapshot-helper.ts
+ M src/core/contracts/changes.ts
+ M src/core/contracts/configuration.ts
+ M src/core/services/installation-builder.ts
+ M src/core/services/installation-service.ts
+ M src/core/services/removal-service.ts
+ M tasks/prd-12-refatoracao-modo-leve-modo-unico/prd.md
+ M tasks/prd-12-refatoracao-modo-leve-modo-unico/techspec.md
+ M tasks/triage-log.jsonl
+ M tests/helpers/assistant-context.ts
+ M tests/helpers/assistant-world.ts
+ M tests/integration/init-assistant-equivalence.test.ts
+ M tests/integration/statusline-default.test.ts
+ M tests/unit/assistant-output.test.ts
+ M tests/unit/readme-support-table.test.ts
+?? .agents/skills/chat-clean/
+?? src/cli/assistant/questions-gitignore.ts
+?? src/cli/gitignore-findings.ts
+?? src/cli/init-flow.ts
+?? src/core/services/gitignore-block.ts
+?? src/core/services/gitignore-merge.ts
+?? src/core/services/gitignore-plan.ts
+?? src/infrastructure/git/
+?? tasks/prd-11-reinicio-automatico-no-claude-code/rtk/
+?? tasks/prd-17-ignorar-arquivos-do-contextbrake-no-git/
+?? tests/helpers/gitignore-world.ts
+?? tests/integration/init-gitignore-default-runner.test.ts
+?? tests/integration/init-gitignore-lifecycle.test.ts
+?? tests/integration/init-gitignore-tracked.test.ts
+?? tests/integration/init-gitignore.test.ts
+?? tests/integration/remove-gitignore.test.ts
+?? tests/unit/assistant-questions-gitignore.test.ts
+?? tests/unit/gitignore-block.test.ts
+?? tests/unit/gitignore-merge.test.ts
+?? tests/unit/gitignore-plan.test.ts
+?? tests/unit/readme-gitignore.test.ts

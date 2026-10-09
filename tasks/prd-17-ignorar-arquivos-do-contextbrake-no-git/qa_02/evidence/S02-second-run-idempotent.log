@@ -1,0 +1,142 @@
+# S02-second-run-idempotent
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s01-sFPCOo) NO_COLOR=1 node dist/src/cli/main.js init --dry-run --json --auto-restart --statusline-bridge --debug --snapshot-command /qa-snap --harness claude-code --harness codex-cli
+exit=0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".codex/hooks.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".codex"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\c30cb916-4ed9-4032-b3fa-d81dfd756e24\\scratchpad\\qa02-runs\\s01-sFPCOo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "Restart is automatic on claude-code.",
+      "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.",
+      "remediation": null
+    },
+    {
+      "code": "AUTO_RESTART_MODE",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "codex-cli",
+      "path": null,
+      "message": "Restart is semi-automatic on codex-cli.",
+      "impact": "Semi-automatic restart: run /new; the new session resumes by itself.",
+      "remediation": null
+    }
+  ]
+}
+--- stderr ---
+--- end ---
+CHECK PASS S02 dry-run plans no .gitignore change :: []
+CHECK PASS S02 dry-run plans no change at all :: []
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s01-sFPCOo) NO_COLOR=1 node dist/src/cli/main.js init --yes --auto-restart --statusline-bridge --debug --snapshot-command /qa-snap --harness claude-code --harness codex-cli
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+--- stderr ---
+--- end ---
+CHECK PASS S02 exit 0
+CHECK PASS S02 .gitignore byte-identical after second run

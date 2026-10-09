@@ -142,7 +142,7 @@ Flow after the change:
   - A config with a removed key, or `resumeCommand` without `command`, gives `INVALID_CONTEXTBRAKE_CONFIG`. `doctor` reports it, and runtime hooks fall back to the existing invalid-config behavior (neutral).
   - A host receiving an event it no longer maps returns neutral.
 - **User files:**
-  - `init` and `remove` no longer touch instruction files or `.gitignore`.
+  - `init` and `remove` no longer touch instruction files or `.gitignore`. (Superseded for the new, differently marked `.gitignore` block by prd-17.)
   - Previously written ContextBrake blocks in other repositories are not cleaned (DEC-PD-03). This repository is cleaned by hand (DEC-15).
   - `remove` deletes only paths in the manifest and `.context-brake/runtime/`.
 - **Concurrency:** no new shared state. The ledger format changes, with old lines skipped.

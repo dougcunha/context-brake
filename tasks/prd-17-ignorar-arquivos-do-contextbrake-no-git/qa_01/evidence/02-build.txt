@@ -1,0 +1,13 @@
+
+> context-brake@1.0.0 build
+> npm run schemas:generate && npm run assets:build && tsc -p tsconfig.json
+
+
+> context-brake@1.0.0 schemas:generate
+> tsx scripts/generate-schemas.ts
+
+
+> context-brake@1.0.0 assets:build
+> tsx scripts/build-assets.ts
+
+exit=0

@@ -1,0 +1,23 @@
+fixture: C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa-runs/s11-junction-zMe7tX
+$ cmd //c dir /AL
+ Pasta de C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s11-junction-zMe7tX
+09/10/2026  18:14    <JUNCTION>     .claude [C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s11-junction-zMe7tX\.agents]
+$ git status --porcelain -uall
+?? .agents/settings.json
+?? .agents/settings.local.json
+?? .claude/hooks/context-brake-statusline.mjs
+?? .claude/hooks/context-brake.mjs
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .gitignore
+$ git check-ignore -v --no-index .agents/hooks/context-brake.mjs .claude/hooks/context-brake.mjs
+.gitignore:3:/.agents/hooks/context-brake.mjs	.agents/hooks/context-brake.mjs
+exit=0
+$ cat .gitignore
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.agents/hooks/context-brake-statusline.mjs
+/.agents/hooks/context-brake.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-statusline.json
+/context-brake.config.json
+# <<< context-brake <<<

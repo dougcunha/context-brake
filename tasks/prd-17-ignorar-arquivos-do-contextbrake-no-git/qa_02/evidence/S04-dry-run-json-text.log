@@ -1,0 +1,358 @@
+# S04-dry-run-json-text
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s04-M4dLm5 git=true claude=true codex=false gitignore="dist/\n"
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s04-M4dLm5) NO_COLOR=1 node dist/src/cli/main.js init --dry-run --json
+exit=0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\c30cb916-4ed9-4032-b3fa-d81dfd756e24\\scratchpad\\qa02-runs\\s04-M4dLm5",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "78922a784ee78e9e50587e93628cd3b9d4dfbe49087adc4514e6781cea38cbb9",
+        "afterSha256": "f762e52cf3a23c36b168128fc229ecc9ced0b3975468b7daec2f2e7fff2c91fd",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "bb0388c18ba6abe09aa299b875a95edc72c1a4a07055117aeb333f57aa69fb0c",
+        "preview": {
+          "summary": "Install the status line bridge; no previous status line existed"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "97735ed0175dd18cc2d71a6bcb64c4d80e81099fed23d5f6e5fd6b8c959f1241",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.context-brake/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "ae8a3e0cd2e1a2c5413bd8ad297533f425d789a10dbdbd99aa1ff358fd1f1497",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": ".gitignore",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.gitignore",
+        "kind": "update",
+        "owner": "gitignore",
+        "beforeSha256": "ed19d3c9c8a5e34d0179e0b1a9c2907d2e657738733e4a432a8cf81c76ce56f1",
+        "afterSha256": "911bb0aefcd2869f7c6997be13fac2c2c08abd8f045aa857aef0bd4812f8dfc6",
+        "preview": {
+          "summary": "Keep ContextBrake's files out of Git"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "1d047837e0293cd98aa0d5db7fd56a0064233352fdd3e07612be2b86aa158047",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [],
+  "findings": []
+}
+--- stderr ---
+--- end ---
+CHECK PASS S04 json plan has .gitignore change owner gitignore :: [{"path":".gitignore","realPath":"C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04-M4dLm5/.gitignore","kind":"update","owner":"gitignore","beforeSha256":"ed19d3c9c8a5e34d0179e0b1a9c2907d2e657738733e4a432a8cf81c76ce56f1","afterSha256":"911bb0aefcd2869f7c6997be13fac2c2c08abd8f045aa857aef0bd4812f8dfc6","preview":{"summary":"Keep ContextBrake's files out of Git"}}]
+CHECK PASS S04 dry-run wrote nothing
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s04-M4dLm5) NO_COLOR=1 node dist/src/cli/main.js init --dry-run
+exit=0
+--- stdout ---
+[OK] ContextBrake init (dry_run)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr ---
+--- end ---
+CHECK PASS S04 NO_COLOR text shows [update] .gitignore (gitignore)
+CHECK PASS S04 text summary line
+CHECK PASS S04 no ANSI escapes with NO_COLOR
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s04b-ReL7GR git=true claude=true codex=false gitignore=undefined
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s04b-ReL7GR) NO_COLOR=1 node dist/src/cli/main.js init --dry-run --json
+exit=0
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "dry_run",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\claude\\D--MyProjects-ContextBrake\\c30cb916-4ed9-4032-b3fa-d81dfd756e24\\scratchpad\\qa02-runs\\s04b-ReL7GR",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "78922a784ee78e9e50587e93628cd3b9d4dfbe49087adc4514e6781cea38cbb9",
+        "afterSha256": "f762e52cf3a23c36b168128fc229ecc9ced0b3975468b7daec2f2e7fff2c91fd",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "8adca9dbf365b7432e4cd8b30b0108582f9b156aaed1e8d26624ae84f5e7fd11",
+        "preview": {
+          "summary": "Install the status line bridge; no previous status line existed"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "97735ed0175dd18cc2d71a6bcb64c4d80e81099fed23d5f6e5fd6b8c959f1241",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.context-brake/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "d97c5781e8aa9e70ed27740e206898e9d16bf0eef2b5a7c27263f3d93c3db520",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": ".gitignore",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.gitignore",
+        "kind": "create",
+        "owner": "gitignore",
+        "beforeSha256": null,
+        "afterSha256": "4a8b27054b6163cb31c5ea5ed4c44778b739ac99cfeb89970a78d87c7f775386",
+        "preview": {
+          "summary": "Keep ContextBrake's files out of Git"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "1d047837e0293cd98aa0d5db7fd56a0064233352fdd3e07612be2b86aa158047",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [],
+  "findings": []
+}
+--- stderr ---
+--- end ---
+CHECK PASS S04 missing .gitignore planned as create :: [{"path":".gitignore","realPath":"C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/c30cb916-4ed9-4032-b3fa-d81dfd756e24/scratchpad/qa02-runs/s04b-ReL7GR/.gitignore","kind":"create","owner":"gitignore","beforeSha256":null,"afterSha256":"4a8b27054b6163cb31c5ea5ed4c44778b739ac99cfeb89970a78d87c7f775386","preview":{"summary":"Keep ContextBrake's files out of Git"}}]
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s04b-ReL7GR) NO_COLOR=1 node dist/src/cli/main.js init --dry-run
+exit=0
+--- stdout ---
+[OK] ContextBrake init (dry_run)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr ---
+--- end ---
+CHECK PASS S04 text shows [create] .gitignore (gitignore)

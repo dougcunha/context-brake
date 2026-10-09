@@ -1,0 +1,31 @@
+PASS S01 exit 0
+PASS S01 OBJ-01 no ContextBrake-owned file untracked
+PASS S01 OBJ-01 every created file except harness configs is ignored
+PASS S01 FR-01 block equals config+manifest+assets+runtime state
+PASS S01 FR-01 anchored lines
+PASS S01 FR-01 mod files listed
+PASS S01 FR-01 both harness scripts listed
+PASS S01 FR-03 harness config files not listed
+PASS S01 FR-04 user content kept before block
+PASS S01 FR-04 text plan names .gitignore with summary
+PASS S02 dry-run plans no .gitignore change
+PASS S02 dry-run plans no change at all
+PASS S02 exit 0
+PASS S02 .gitignore byte-identical after second run
+PASS S03 exit 0 (--no-auto-restart)
+PASS S03 mod lines removed
+PASS S03 block equals manifest list
+PASS S03 exit 0 (--exclude-harness codex-cli)
+PASS S03 codex script line removed
+PASS S03 block equals manifest list after harness off
+PASS S03 mod lines return with --auto-restart
+PASS S03 no owned file untracked after changes
+PASS S04 json plan has .gitignore change owner gitignore
+PASS S04 dry-run wrote nothing
+PASS S04 NO_COLOR text shows [update] .gitignore (gitignore)
+PASS S04 text summary line
+PASS S04 no ANSI escapes with NO_COLOR
+PASS S04 missing .gitignore planned as create
+PASS S04 text shows [create] .gitignore (gitignore)
+TOTAL 29 FAILED 0
+a exit=0

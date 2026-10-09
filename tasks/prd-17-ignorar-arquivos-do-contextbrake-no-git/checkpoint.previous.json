@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "generation": 35,
+  "feature": "prd-17-ignorar-arquivos-do-contextbrake-no-git",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "objective": "init maintains a managed .gitignore block listing the files ContextBrake owns, one by one; default on; assistant question; --no-gitignore opt-out; remove cleans it.",
+  "constraints": [
+    "Only the managed block of the root .gitignore; Git index untouched",
+    "Harness files ContextBrake only edits are never listed",
+    "prd-16 assistant gets the question"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_05/codereview.md",
+    "qa": "qa_02/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED",
+  "qa_status": "APPROVED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "ddeb93087d0190f3c1d2fb92f0c2df86b772522d398f2491bd14cf7d480ba8d2",
+      "decision_id": "DEC-HIL-06"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "425a75f2a5e0fbf33da4c019840aeac09e622790ca675c635112933cc9e54a9d",
+      "decision_id": "DEC-HIL-06"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "6f1d3e93b235e3ced811f32a5f887b2650db8e9e6e0ccf455583c50665a73e29",
+      "decision_id": "DEC-HIL-02"
+    }
+  ],
+  "decisions_to_read": [
+    "DEC-TRIAGE-01",
+    "DEC-PRODUCT-01",
+    "DEC-HIL-01",
+    "DEC-HIL-02",
+    "DEC-HIL-03",
+    "DEC-HIL-04",
+    "DEC-HIL-05",
+    "DEC-HIL-06"
+  ],
+  "git_base": "5c97f37",
+  "worktree_evidence": "workflow.md (foreign untracked .agents/skills/chat-clean/, tasks/prd-11-…/rtk/; local commit 5c97f37 not pushed)",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the current delivery of prd-17 (codereview_05 APPROVED, qa_02 APPROVED)",
+    "affected": [
+      "prd.md",
+      "techspec.md",
+      "tasks.md"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 4,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "HIL 3. Accepted -> mark checkpoint and snapshot completed/closed. Commit or push only if the person asks.",
+    "read": [
+      {
+        "path": "tasks/prd-17-ignorar-arquivos-do-contextbrake-no-git/qa_02/qa.md",
+        "section": "Summary, Limitations"
+      }
+    ]
+  }
+}

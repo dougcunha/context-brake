@@ -1,0 +1,78 @@
+# S11-symlinked-harness
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s11-junction-zMe7tX git=true claude=false codex=false gitignore=undefined
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s11-junction-zMe7tX) NO_COLOR=1 node dist/src/cli/main.js init --yes
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr ---
+--- end ---
+block (junction): ["/.agents/hooks/context-brake-statusline.mjs","/.agents/hooks/context-brake.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"]
+CHECK PASS S11 junction: hook line names link target /.agents/hooks/context-brake.mjs
+
+$ git status --porcelain -uall
+exit=0
+?? .agents/settings.json
+?? .agents/settings.local.json
+?? .claude/hooks/context-brake-statusline.mjs
+?? .claude/hooks/context-brake.mjs
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .gitignore
+
+CHECK FAIL S11 junction: no owned file untracked :: [".agents/settings.json",".agents/settings.local.json",".claude/hooks/context-brake-statusline.mjs",".claude/hooks/context-brake.mjs",".claude/settings.json",".claude/settings.local.json",".gitignore"]
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s11-dir-X5T19U git=true claude=false codex=false gitignore=undefined
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s11-dir-X5T19U) NO_COLOR=1 node dist/src/cli/main.js init --yes
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr ---
+--- end ---
+block (dir): ["/.agents/hooks/context-brake-statusline.mjs","/.agents/hooks/context-brake.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"]
+CHECK PASS S11 dir: hook line names link target /.agents/hooks/context-brake.mjs
+
+$ git status --porcelain -uall
+exit=0
+?? .agents/settings.json
+?? .agents/settings.local.json
+?? .claude
+?? .gitignore
+
+CHECK PASS S11 dir: no owned file untracked :: [".agents/settings.json",".agents/settings.local.json",".claude",".gitignore"]

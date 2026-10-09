@@ -1,0 +1,3583 @@
+
+> context-brake@1.0.0 coverage
+> vitest run --coverage
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-gitignore-lifecycle.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 5411[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-02 the list follows the options and a second run plans nothing (prd-17, TC-05)[2m > [22mgains and loses the mod lines as automatic restart is turned on and off (FR-02, TC-05) [33m 1231[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01 the runtime state files init writes are listed too (prd-17, CR-02, TC-05)[2m > [22mlists the runtime state files init writes and drops them with the feature (FR-01, OBJ-01, CR-02, TC-05) [33m 876[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-02 harness lines and stability (prd-17, TC-05)[2m > [22mdrops a harness script line when the harness is turned off (FR-02, TC-05) [33m 613[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-02 harness lines and stability (prd-17, TC-05)[2m > [22mplans no change on a second run, with the block or without it (FR-02, NFR-01, TC-05) [33m 739[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 the opt-out is stored and reversible (prd-17, TC-05)[2m > [22mremoves the block, deletes a file that held only it, and a plain init keeps it off (FR-05, TC-05) [33m 811[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 the opt-out is stored and reversible (prd-17, TC-05)[2m > [22mkeeps the user lines when the block goes away and brings it back with --gitignore (FR-05, TC-05) [33m 943[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/auto-restart-user-settings.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 6238[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'an empty object' with the bridge 'on' after 'remove' [33m 1053[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'an empty object' with the bridge 'on' after 'opt-out of both' [33m 778[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'an empty object' with the bridge 'off' after 'remove' [33m 704[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'an empty object' with the bridge 'off' after 'opt-out of both' [33m 640[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'a comment only' with the bridge 'on' after 'remove' [33m 703[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'a comment only' with the bridge 'on' after 'opt-out of both' [33m 760[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'a comment only' with the bridge 'off' after 'remove' [33m 666[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off keeps a local settings file the user created (FR-09, file-changes, codereview_03 CR-01)[2m > [22mkeeps 'a comment only' with the bridge 'off' after 'opt-out of both' [33m 930[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-auto-restart.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 6927[2mms[22m[39m
+   [33m[2m✓[22m[39m init --auto-restart on harnesses without Claude Code (prd-14 FR-07, FR-08, NFR-04, DEC-11, DEC-12, TC-13)[2m > [22mreports the restart mode per harness and installs the restart file and the ignore file [33m 816[2mms[22m[39m
+   [33m[2m✓[22m[39m init --auto-restart on harnesses without Claude Code (prd-14 FR-07, FR-08, NFR-04, DEC-11, DEC-12, TC-13)[2m > [22mchanges nothing on a second run [33m 1315[2mms[22m[39m
+   [33m[2m✓[22m[39m init --auto-restart on harnesses without Claude Code (prd-14 FR-07, FR-08, NFR-04, DEC-11, DEC-12, TC-13)[2m > [22mremoves the restart file and the ignore file with --no-auto-restart [33m 1214[2mms[22m[39m
+   [33m[2m✓[22m[39m init --no-auto-restart keeps the handoffs (prd-14 FR-13, DEC-14, TC-14)[2m > [22mdeletes the restart logs and leaves other runtime state (DEC-14, codereview_03 CR-02) [33m 1613[2mms[22m[39m
+   [33m[2m✓[22m[39m init --no-auto-restart keeps the handoffs (prd-14 FR-13, DEC-14, TC-14)[2m > [22mnames the kept handoffs in the dry run and when applied [33m 1834[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/simulated-usage.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 7002[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated usage accuracy (TC-13, CA-11)[2m > [22mkeeps every pi code reading within 10 points at window 128000 [33m 1096[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated usage accuracy (TC-13, CA-11)[2m > [22mkeeps every pi log reading within 10 points at window 128000 [33m 307[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated usage accuracy (TC-13, CA-11)[2m > [22mkeeps every oh-my-pi code reading within 10 points at window 128000 [33m 986[2mms[22m[39m
+   [33m[2m✓[22m[39m T09 simulated process harness (CA-11 acceptance)[2m > [22mdrives the installed Claude Code hook with estimated readings and identical repeated ledgers [33m 1352[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-remove-restart.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 8009[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor reports restart per harness (prd-14 FR-10, FR-11, DEC-13, TC-12)[2m > [22mreports the automatic harness as not loaded, the semi-automatic one as ready, and a pending handoff [33m 1546[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor reports restart per harness (prd-14 FR-10, FR-11, DEC-13, TC-12)[2m > [22mreports ready and the last skip reason from the Pi restart log [33m 1264[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor reports outdated and adapter-owned restart findings (prd-14 FR-11, TC-12)[2m > [22mreports an outdated running restart module when the Pi log names another component version (TC-12) [33m 1180[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor reports outdated and adapter-owned restart findings (prd-14 FR-11, TC-12)[2m > [22mreports only the adapter finding for Oh-My-Pi, without a semi-automatic ready finding [33m 2415[2mms[22m[39m
+   [33m[2m✓[22m[39m remove keeps the handoffs (prd-14 FR-13, DEC-14, TC-14)[2m > [22mdeletes every restart artifact, keeps the handoffs, and names them [33m 1601[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/auto-restart-lifecycle.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 4250[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E automatic restart install, re-install, doctor and remove (FR-07, FR-08, FR-09, TC-25)[2m > [22minstalls the mod, changes nothing the second time, reports it, and restores the repository [33m 1905[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E automatic restart with the status line opt-out (FR-07, DEC-08, CR-01)[2m > [22mkeeps the loader keys when the opt-out removes the bridge-created local settings, then changes nothing [33m 986[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E automatic restart removal without a prior local settings file (FR-09, codereview_02 CR-01)[2m > [22mrestores the repository, local settings file included, after install and remove [33m 690[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E automatic restart removal keeps a user-created empty local settings file (FR-09, codereview_03 CR-01)[2m > [22mleaves the user file in place after install and remove [33m 664[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/statusline-install.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 4223[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge install and restore (FR-01, FR-02, FR-08, DEC-11, TC-12)[2m > [22mwraps the local status line, stays unchanged on reruns, and restores the file byte for byte [33m 1250[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge removal of a created file (FR-08, TC-13)[2m > [22mwraps the user status line and deletes the created local file and the state on remove [33m 495[2mms[22m[39m
+   [33m[2m✓[22m[39m migration from the PRD-09 pipeline (FR-04, DEC-05, TC-05)[2m > [22mflags the pipeline, rewrites it on init, stays unchanged on a rerun, and restores on remove [33m 1569[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge flag without Claude Code (DEC-08, TC-15, codereview_01/CR-06)[2m > [22mfails with an argument error and writes nothing when claude-code is not detected [33m 360[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/retired-hook-events.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 3738[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 init on retired Claude Code events with LF endings (prd-15, TC-06)[2m > [22mremoves owned entries outside the current events and keeps foreign ones (FR-03, TC-06) [33m 425[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 init on retired Claude Code events with LF endings (prd-15, TC-06)[2m > [22ma second init plans no change to the settings file (FR-03, NFR-01, TC-06) [33m 510[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 init on retired Claude Code events with CRLF endings (prd-15, TC-06)[2m > [22mremoves owned entries outside the current events and keeps foreign ones (FR-03, TC-06) [33m 405[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 init on retired Claude Code events with CRLF endings (prd-15, TC-06)[2m > [22ma second init plans no change to the settings file (FR-03, NFR-01, TC-06) [33m 562[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-04 remove on retired Claude Code events with LF endings (prd-15, TC-06)[2m > [22minit then remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06) [33m 502[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-04 remove on retired Claude Code events with CRLF endings (prd-15, TC-06)[2m > [22minit then remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06) [33m 540[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 retired Claude Code events through a symbolic link (prd-15, TC-09)[2m > [22medits the link target and keeps the link (NFR-02, TC-09) [33m 338[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/auto-restart-planner.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 5002[2mms[22m[39m
+   [33m[2m✓[22m[39m install through init --auto-restart (FR-07, DEC-08, TC-17)[2m > [22mwrites the marketplace, the plugin files, the two settings keys and the config block [33m 649[2mms[22m[39m
+   [33m[2m✓[22m[39m install through init --auto-restart (FR-07, DEC-08, TC-17)[2m > [22mplans nothing on the second run and keeps the status line bridge [33m 741[2mms[22m[39m
+   [33m[2m✓[22m[39m existing user entries survive (FR-07, TC-20)[2m > [22mkeeps the other marketplaces and plugins through install and removal [33m 996[2mms[22m[39m
+   [33m[2m✓[22m[39m status line opt-out that deletes the bridge-created local settings (FR-07, DEC-08, CR-01)[2m > [22mupdates the file with the two loader keys instead of deleting it, and plans nothing on the next run [33m 914[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off removes the local settings the install created (FR-09, FR-07, codereview_02 CR-01)[2m > [22mleaves no local settings file after remove [33m 660[2mms[22m[39m
+   [33m[2m✓[22m[39m switch-off removes the local settings the install created (FR-09, FR-07, codereview_02 CR-01)[2m > [22mleaves no local settings file after opt-out of both [33m 747[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-snapshot.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 4145[2mms[22m[39m
+   [33m[2m✓[22m[39m init on a fresh repository (prd-12 FR-04, FR-08)[2m > [22mwrites only the config, manifest, hook asset, bridge state, and hook entries [33m 377[2mms[22m[39m
+   [33m[2m✓[22m[39m init on a fresh repository (prd-12 FR-04, FR-08)[2m > [22mchanges nothing on a second run [33m 684[2mms[22m[39m
+   [33m[2m✓[22m[39m snapshot flags (prd-12 FR-04, TC-05)[2m > [22mclears both commands and keeps the trigger zone with --no-snapshot-command [33m 528[2mms[22m[39m
+   [33m[2m✓[22m[39m the status line bridge (FR-09, TC-13)[2m > [22mrestores the previous status line with --no-statusline-bridge [33m 671[2mms[22m[39m
+   [33m[2m✓[22m[39m init next-step hint (codereview_01 CR-02, FR-01)[2m > [22mdoes not suggest creating a plan [33m 441[2mms[22m[39m
+   [33m[2m✓[22m[39m init next-step hint (codereview_01 CR-02, FR-01)[2m > [22msays in the text output that only zone headers will be injected (prd-12 User experience) [33m 353[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/auto-restart-doctor.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 3940[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor automatic-restart findings (FR-08, DEC-10, TC-22)[2m > [22mreports off without a warning when the config has no autoRestart block [33m 539[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor automatic-restart findings (FR-08, DEC-10, TC-22)[2m > [22mreports ready without a warning once a session recorded the loaded header [33m 540[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor automatic-restart findings (FR-08, DEC-10, TC-22)[2m > [22mreports the mod as not loaded, listing the causes that switch mods off [33m 568[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor automatic-restart problems (FR-08, TC-22)[2m > [22mreports drift when the last session loaded another mod version [33m 495[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor automatic-restart problems (FR-08, TC-22)[2m > [22mreports drift when a mod file is missing [33m 453[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor automatic-restart problems (FR-08, TC-22)[2m > [22mreports a Claude Code older than the mods minimum version [33m 383[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor last automatic-restart skip (FR-08, DEC-10, TC-22)[2m > [22madds the last skip code next to ready, as a warning only for errors [33m 393[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor --json with automatic restart (FR-08, TC-23)[2m > [22mvalidates against the doctor report schema and carries an AUTO_RESTART finding [33m 564[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/debug-mode-lifecycle.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1620[2mms[22m[39m
+   [33m[2m✓[22m[39m debug mode with the built CLI and Claude Code hook (TC-11, TC-12, FR-03, FR-06, NFR-02)[2m > [22mreports the mode in doctor, injects telemetry at low usage, and leaves no debug line after remove [33m 1616[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/statusline-default.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 2958[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge by default (prd-09 FR-04, DEC-08, TC-09)[2m > [22minstalls the bridge on a plain init and plans no change on the next one [33m 961[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge opt-out memory (prd-09 FR-04, DEC-09, TC-09)[2m > [22mremembers --no-statusline-bridge on later plain inits until --statusline-bridge [33m 826[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge opt-out memory (prd-09 FR-04, DEC-09, TC-09)[2m > [22mforgets the opt-out on remove [33m 381[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/retired-hook-events-harnesses.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 3203[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Codex CLI' (prd-15, TC-07, TC-08)[2m > [22minit removes the owned entries and keeps the foreign ones (FR-03, TC-07) [33m 433[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Codex CLI' (prd-15, TC-07, TC-08)[2m > [22ma second init plans no change to the harness file (FR-03, NFR-01, TC-07) [33m 683[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Codex CLI' (prd-15, TC-07, TC-08)[2m > [22minit then remove restores the foreign content byte for byte (FR-04, NFR-01, TC-07) [33m 446[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Cursor' (prd-15, TC-07, TC-08)[2m > [22ma second init plans no change to the harness file (FR-03, NFR-01, TC-07) [33m 356[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Cursor' (prd-15, TC-07, TC-08)[2m > [22minit then remove restores the foreign content byte for byte (FR-04, NFR-01, TC-07) [33m 309[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Antigravity CLI' (prd-15, TC-07, TC-08)[2m > [22ma second init plans no change to the harness file (FR-03, NFR-01, TC-07) [33m 317[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for 'Antigravity CLI' (prd-15, TC-07, TC-08)[2m > [22minit then remove restores the foreign content byte for byte (FR-04, NFR-01, TC-07) [33m 301[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-exclusion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 3546[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC-16)[2m > [22mdoctor reports the harness as excluded, never as missing (FR-06, NFR-04, TC-16) [33m 1410[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC-16)[2m > [22mdoctor and init text show the excluded line (FR-06, NFR-04, TC-13, TC-16) [33m 954[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC-16)[2m > [22mremove deletes the configuration, exclusion included, and leaves no artifact (FR-08, TC-16) [33m 891[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-assistant-equivalence.test.ts [2m([22m[2m13 tests[22m[2m)[22m[33m 19029[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'every default': same files as the replayed command and no further change (TC-10) [33m 1466[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'snapshot command with a space and res…': same files as the replayed command and no further change (TC-10) [33m 1412[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'YELLOW trigger, resume command, debug…': same files as the replayed command and no further change (TC-10) [33m 1051[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'command and resume values that start …': same files as the replayed command and no further change (TC-10) [33m 1178[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'bridge off and debug on': same files as the replayed command and no further change (TC-10) [33m 1286[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'Claude Code only with restart on': same files as the replayed command and no further change (TC-10) [33m 1479[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'stored snapshot command cleared and r…': same files as the replayed command and no further change (TC-10) [33m 2349[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'stored restart limit changed': same files as the replayed command and no further change (TC-10) [33m 1994[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'stored status line opt-out reversed': same files as the replayed command and no further change (TC-10) [33m 2047[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'git ignore turned off inside a Git fo…': same files as the replayed command and no further change (TC-10) [33m 1441[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'stored git ignore opt-out turned back…': same files as the replayed command and no further change (TC-10) [33m 1928[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22m'git ignore kept inside a Git folder': same files as the replayed command and no further change (TC-10) [33m 816[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant session (prd-16, TC-10)[2m > [22mprints the same plan the replay computes before it writes (FR-06, TC-10) [33m 576[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-int-link-yttntI\\real-repo",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "f6bd8ca9ff1a896b25903e25d5d70da4f860c5196379a38777ceaa60e8d15741",
+        "afterSha256": "0bdb96c1a26b8371b78649bd63cd6b162581e594c9fb6bba3d209262236f68c6",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "c26704125d51c1785ce43c0e9b443771caa1ac4c58fe462dc1ae6a2186864bee",
+        "preview": {
+          "summary": "Install the status line bridge, preserving the user status line"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "97735ed0175dd18cc2d71a6bcb64c4d80e81099fed23d5f6e5fd6b8c959f1241",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/.context-brake/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "f5485b5d8ec4f2444f283a77642561294f4cfdc1f3f49b2b96942f711f48d84f",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-yttntI/real-repo/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "1d047837e0293cd98aa0d5db7fd56a0064233352fdd3e07612be2b86aa158047",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/claude-statusline.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-int-link-yttntI\\real-repo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-int-link-HGjuoK\\real-repo",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "f6bd8ca9ff1a896b25903e25d5d70da4f860c5196379a38777ceaa60e8d15741",
+        "afterSha256": "0bdb96c1a26b8371b78649bd63cd6b162581e594c9fb6bba3d209262236f68c6",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "f54fc6b1005071731558c92912233aed88f1a33f7cc82a3e3a43ff4a14c55683",
+        "preview": {
+          "summary": "Install the status line bridge, preserving the user status line"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "97735ed0175dd18cc2d71a6bcb64c4d80e81099fed23d5f6e5fd6b8c959f1241",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/.context-brake/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "af8412642f2d35742e84793d8a2593258bc39540f9ec7670f6927b1acb7df0ae",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-HGjuoK/real-repo/real-config.json",
+        "kind": "update",
+        "owner": "config",
+        "beforeSha256": "fbfaaeb11b8fefbb89c934df4d2ce36896ea82d92142539c32498ed62f528486",
+        "afterSha256": "1d047837e0293cd98aa0d5db7fd56a0064233352fdd3e07612be2b86aa158047",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/claude-statusline.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-int-link-HGjuoK\\real-repo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-int-link-ucJggY\\real-repo",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "f6bd8ca9ff1a896b25903e25d5d70da4f860c5196379a38777ceaa60e8d15741",
+        "afterSha256": "0bdb96c1a26b8371b78649bd63cd6b162581e594c9fb6bba3d209262236f68c6",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "304e85991f462bd93ab668ecb40dc5bd55923b16338d96f4cd2bf64b02808269",
+        "preview": {
+          "summary": "Install the status line bridge, preserving the user status line"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/real-cb/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "97735ed0175dd18cc2d71a6bcb64c4d80e81099fed23d5f6e5fd6b8c959f1241",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/real-cb/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "01b4b2e7a420cc9718f1dbcd5b9d8d5f3aac0e25b9998a51fc0c016114be862d",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-int-link-ucJggY/real-repo/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "1d047837e0293cd98aa0d5db7fd56a0064233352fdd3e07612be2b86aa158047",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/claude-statusline.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-remove-footprint.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1499[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-07: init and remove without support files (FR-08, DEC-04, DEC-11, TC-12)[2m > [22minstalls no protocol file, instruction block, or gitignore change [33m 460[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-07: init and remove without support files (FR-08, DEC-04, DEC-11, TC-12)[2m > [22mdeletes the manifest assets, the config, and the owned runtime files [33m 532[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-08: Doctor JSON validates schema (CA-14, CA-15, CA-16, CA-17, CA-18)[2m > [22mvalidates against published schema [33m 491[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-int-link-ucJggY\\real-repo",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/linked-project-root.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1857[2mms[22m[39m
+   [33m[2m✓[22m[39m linked project root installation and idempotency (T11.4)[2m > [22minstalls through linked root with canonical paths and rerun is byte-idempotent [33m 819[2mms[22m[39m
+   [33m[2m✓[22m[39m symlinked config and linked manifest in linked root (T11.4)[2m > [22minstalls with symlinked context-brake.config.json and remains idempotent [33m 489[2mms[22m[39m
+   [33m[2m✓[22m[39m symlinked config and linked manifest in linked root (T11.4)[2m > [22minstalls with linked .context-brake directory and remains idempotent [33m 542[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-light-mode.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1788[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor snapshot report (prd-12 FR-09, TC-13)[2m > [22mreports zone headers only and no removed finding, even with old support files in the project [33m 594[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor snapshot report (prd-12 FR-09, TC-13)[2m > [22mreports the configured snapshot and resume commands [33m 553[2mms[22m[39m
+   [33m[2m✓[22m[39m in-process doctor uses the injected overhead measurer (prd-13 DEC-02, TC-09)[2m > [22mreports the fake measurement instead of sampling hook processes [33m 635[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/pi-restart.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 2478[2mms[22m[39m
+   [33m[2m✓[22m[39m Pi automatic restart (prd-14 FR-07, FR-09, DEC-21, TC-09)[2m > [22mstops at the consecutive limit and resumes after a typed prompt [33m 1014[2mms[22m[39m
+   [33m[2m✓[22m[39m Pi automatic restart (prd-14 FR-07, FR-09, DEC-21, TC-09)[2m > [22mdoes not reset the guard for the seed prompt it sent itself [33m 427[2mms[22m[39m
+   [33m[2m✓[22m[39m Pi automatic restart stand-down and failures (prd-14 FR-09, NFR-01, NFR-05, TC-09)[2m > [22mrolls back and reports when Pi cancels the new session [33m 366[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-exclusion-conflicts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2531[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 exclusion conflicts and edges (prd-15, TC-15)[2m > [22mkeeps the harness active when its file cannot be parsed, then removes it on retry (FR-05, TC-15) [33m 1033[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 exclusion conflicts and edges (prd-15, TC-15)[2m > [22mdoes not delete a runtime asset the user modified and reports it (FR-05, TC-15) [33m 637[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 exclusion conflicts and edges (prd-15, TC-15)[2m > [22mwarns that every detected harness is excluded when nothing else changes (FR-06, TC-15) [33m 858[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/light-mode-lifecycle.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 2641[2mms[22m[39m
+   [33m[2m✓[22m[39m single mode with the built CLI and Claude Code hook (prd-12 TC-08, FR-06, FR-07)[2m > [22minstalls the minimal footprint, injects the generic actions without the marker, never denies, and shows the session in doctor [33m 857[2mms[22m[39m
+   [33m[2m✓[22m[39m single mode with the built CLI and Claude Code hook (prd-12 TC-08, FR-06, FR-07)[2m > [22maccepts --debug and creates no instruction file [33m 558[2mms[22m[39m
+   [33m[2m✓[22m[39m snapshot flags round trip with the built CLI (prd-12 TC-05, TC-07, TC-13, FR-04, FR-05)[2m > [22mnames the command at the trigger zone, resumes after a clear, and clears the commands again [33m 1195[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/user-hook-preservation.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1124[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E user hook preservation (RF6, CA-05, RF19, CA-12)[2m > [22mpreserves trailing comments through three inits and remove [33m 1121[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-exclusion-removal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2989[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 excluding an installed harness deletes its artifacts (prd-15, TC-11)[2m > [22mlists the deletions in a dry run and writes nothing (FR-05, TC-11) [33m 833[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 excluding an installed harness deletes its artifacts (prd-15, TC-11)[2m > [22mapplies the deletions, updates the manifest, and leaves other harnesses alone (FR-05, TC-11) [33m 703[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 excluding an installed harness deletes its artifacts (prd-15, TC-11)[2m > [22mplans nothing for the harness on later runs (FR-06, NFR-01, TC-11) [33m 868[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 excluding an installed harness deletes its artifacts (prd-15, TC-11)[2m > [22ma plain init with no exclusion plans no harness deletion (TC-11) [33m 582[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-exclusion.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1721[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05, FR-06, FR-07 persistent harness exclusion (prd-15)[2m > [22mpersists the exclusion and does not install the harness (FR-05, TC-13) [33m 360[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05, FR-06, FR-07 persistent harness exclusion (prd-15)[2m > [22ma plain init keeps the harness off and plans nothing, twice (FR-06, NFR-01, TC-13) [33m 781[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-07 including an excluded harness again (prd-15)[2m > [22m--harness clears the exclusion and installs the harness (FR-07, TC-14) [33m 565[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/auto-restart-removal.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2871[2mms[22m[39m
+   [33m[2m✓[22m[39m switching off with init --no-auto-restart (FR-07, FR-09, TC-19)[2m > [22mdeletes the files, the settings keys and the config block [33m 999[2mms[22m[39m
+   [33m[2m✓[22m[39m switching off keeps what the user edited (FR-09, TC-19)[2m > [22mleaves an edited mod file in place and says so [33m 624[2mms[22m[39m
+   [33m[2m✓[22m[39m remove (FR-09, TC-19)[2m > [22mtakes the mod files and the settings keys back [33m 690[2mms[22m[39m
+   [33m[2m✓[22m[39m remove (FR-09, TC-19)[2m > [22mkeeps a mod file the user edited and reports it [33m 555[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/remove-gitignore.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 2306[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-05 remove takes the .gitignore block out (prd-17, TC-06)[2m > [22mrestores the original file after init then remove (FR-06, OBJ-05, TC-06) [33m 645[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06, OBJ-05 remove takes the .gitignore block out (prd-17, TC-06)[2m > [22mdeletes a .gitignore that held only the block (FR-06, TC-06) [33m 526[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06 remove dry run and absent block (prd-17, TC-06)[2m > [22mshows the block removal in a dry run and writes nothing (FR-06, TC-06) [33m 437[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-06 remove dry run and absent block (prd-17, TC-06)[2m > [22mplans no .gitignore change when there is no block (FR-06, TC-06) [33m 694[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-active-sessions.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2756[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor lists active sessions with their usage (TC-17, FR-14, OBJ-05)[2m > [22mshows only recent sessions, newest first, in JSON and text [33m 983[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor lists active sessions with their usage (TC-17, FR-14, OBJ-05)[2m > [22mreports unknown usage after a reset with no later reading (codereview_01 OI-03) [33m 781[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor lists active sessions with their usage (TC-17, FR-14, OBJ-05)[2m > [22madds nothing without recent sessions [33m 989[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-bundle-imports.test.ts [2m([22m[2m18 tests[22m[2m)[22m[33m 1983[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/window-trust.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2249[2mms[22m[39m
+   [33m[2m✓[22m[39m declared window acceptance (prd-09 FR-05, prd-12 DEC-09)[2m > [22mcosts at most 10 tokens for the window field (NFR-02) [33m 2241[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-in-process.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2173[2mms[22m[39m
+   [33m[2m✓[22m[39m built in-process extensions and plugin (RF5, RF12, RF17, RF21)[2m > [22mruns the built Pi extension: measured block, append, no deny, and reset [33m 492[2mms[22m[39m
+   [33m[2m✓[22m[39m built in-process extensions and plugin (RF5, RF12, RF17, RF21)[2m > [22mruns the built Oh-My-Pi extension with the session_stop notice [33m 380[2mms[22m[39m
+   [33m[2m✓[22m[39m built in-process extensions and plugin (RF5, RF12, RF17, RF21)[2m > [22mruns the built OpenCode plugin: documented arguments, no deny, and session reset [33m 1296[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/asset-bundler.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2235[2mms[22m[39m
+   [33m[2m✓[22m[39m T18/OBS-02: stale runtime assets are detected without being rebuilt[2m > [22mreports a modified asset and leaves the modification in place [33m 784[2mms[22m[39m
+   [33m[2m✓[22m[39m T18/OBS-02: stale runtime assets are detected without being rebuilt[2m > [22mrejects missing assets with the file names and the corrective command [33m 1413[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-interactive-gate.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 4467[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01 and FR-08 the --interactive gate and the unchanged non-TTY run (prd-16, TC-05)[2m > [22mstill fails with CONFIRMATION_REQUIRED on a non-TTY run without --yes (FR-08, TC-05) [33m 672[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-08, NFR-02 flags keep the assistant away on a terminal (prd-16, TC-12)[2m > [22mnever prompts or prints the summary when ["--yes"] is given (TC-12) [33m 874[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-08, NFR-02 flags keep the assistant away on a terminal (prd-16, TC-12)[2m > [22mnever prompts or prints the summary when ["--dry-run","--json"] is given (TC-12) [33m 1164[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-08, NFR-02 flags keep the assistant away on a terminal (prd-16, TC-12)[2m > [22mnever prompts or prints the summary when ["--dry-run","--debug"] is given (TC-12) [33m 340[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-08, NFR-02 flags keep the assistant away on a terminal (prd-16, TC-12)[2m > [22mnever prompts or prints the summary when ["--dry-run","--harness","claude-code"] is given (TC-12) [33m 521[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-08, NFR-02 flags keep the assistant away on a terminal (prd-16, TC-12)[2m > [22mnever prompts or prints the summary when ["--dry-run","--max-restarts","3","--auto-restart"] is given (TC-12) [33m 698[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/support-limitations.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3598[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E support limitations: Copilot and Cursor (TC-03, FR-03, FR-04)[2m > [22mprints matching limitations in init text and JSON and exits 0 [33m 1808[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E support limitations: Copilot and Cursor (TC-03, FR-03, FR-04)[2m > [22mprints equivalent limitations in doctor text and JSON with no limitation finding [33m 1786[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-debug-mode-disable.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 2671[2mms[22m[39m
+   [33m[2m✓[22m[39m init --no-debug plan (codereview_01/CR-01, FR-06, DEC-07)[2m > [22mpreviews the debug removal only in the configuration and writes nothing [33m 1660[2mms[22m[39m
+   [33m[2m✓[22m[39m init --no-debug plan (codereview_01/CR-01, FR-06, DEC-07)[2m > [22mremoves the debug key without touching the instruction files [33m 1007[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/node-handoff-store-lock.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2754[2mms[22m[39m
+   [33m[2m✓[22m[39m NodeHandoffStore claim lock (prd-14 FR-03, NFR-02, TC-03, codereview_02 CR-01)[2m > [22mdelivers each handoff once across many sequential concurrent claim pairs, to an existing archived file [33m 2681[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-gitignore.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 3462[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-03, FR-04, FR-07 init writes the .gitignore block (prd-17, TC-04)[2m > [22mlists exactly the files ContextBrake owns, anchored, and none of the harness files it edits (FR-01, FR-03, TC-04) [33m 595[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-03, FR-04, FR-07 init writes the .gitignore block (prd-17, TC-04)[2m > [22madds the mod files and the handoff ignore when automatic restart is on (FR-01, TC-04) [33m 669[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01, FR-03, FR-04, FR-07 init writes the .gitignore block (prd-17, TC-04)[2m > [22mkeeps the user lines byte for byte, with CRLF endings used for the block too (FR-04, NFR-01, TC-04) [33m 643[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-04 the block is a planned change (prd-17, TC-04)[2m > [22mshows the block in the plan with owner gitignore and writes nothing on a dry run (FR-04, TC-04) [33m 768[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-07 outside a Git working tree (prd-17, TC-04)[2m > [22mwrites no .gitignore and reports GITIGNORE_NO_GIT (FR-07, TC-04) [33m 514[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host-deadline.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 1545[2mms[22m[39m
+   [33m[2m✓[22m[39m session start deadline (FR-10, DEC-11, TC-15)[2m > [22mlets a session start finish past the event deadline but within its own [33m 302[2mms[22m[39m
+   [33m[2m✓[22m[39m session start deadline (FR-10, DEC-11, TC-15)[2m > [22mrecords DEADLINE_EXCEEDED when a session start passes its own deadline [33m 532[2mms[22m[39m
+   [33m[2m✓[22m[39m deadline phase record (FR-11, DEC-12, TC-16)[2m > [22mnames the running phase and the elapsed milliseconds [33m 528[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-assistant-cancel.test.ts [2m([22m[2m6 tests[22m[2m)[22m[33m 1516[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-07 cancelling the assistant writes nothing (prd-16, TC-11)[2m > [22mending input at the confirmation writes nothing and exits like a declined confirmation (FR-07, TC-11) [33m 329[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-07 cancelling the assistant writes nothing (prd-16, TC-11)[2m > [22mending input at a declined confirmation writes nothing and exits like a declined confirmation (FR-07, TC-11) [33m 303[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-07 one confirmation and dry run (prd-16, TC-11)[2m > [22masks the confirmation exactly once after the summary (FR-07, TC-11) [33m 433[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-07 one confirmation and dry run (prd-16, TC-11)[2m > [22mshows the plan and writes nothing with --dry-run, without asking to confirm (FR-07, TC-11) [33m 322[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-max-restarts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1462[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-09 --max-restarts writes the consecutive-restart limit (prd-16, TC-02)[2m > [22mwrites 3, then replaces it with 5 (FR-09, OBJ-04, TC-02) [33m 857[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-09 --max-restarts writes the consecutive-restart limit (prd-16, TC-02)[2m > [22mkeeps the default of 2 without the flag (FR-09, TC-02) [33m 561[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-assistant-exclusion.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 2461[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 deselecting a detected harness equals --exclude-harness (prd-16, TC-09)[2m > [22mplans the same files as init --exclude-harness on a project that has not installed it (FR-05, TC-09) [33m 764[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 deselecting a detected harness equals --exclude-harness (prd-16, TC-09)[2m > [22mremoves what an installed harness owns exactly as init --exclude-harness does (FR-05, TC-09) [33m 1669[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/antigravity-registration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-debug-mode.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 2527[2mms[22m[39m
+   [33m[2m✓[22m[39m init --debug (FR-06, DEC-07, TC-10)[2m > [22msucceeds, leaves every instruction file untouched, and records the debug mode [33m 521[2mms[22m[39m
+   [33m[2m✓[22m[39m init --debug (FR-06, DEC-07, TC-10)[2m > [22mkeeps the snapshot settings and the debug mode already on [33m 1065[2mms[22m[39m
+   [33m[2m✓[22m[39m init --debug (FR-06, DEC-07, TC-10)[2m > [22mturns the debug mode off with --no-debug [33m 663[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-opencode.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 154[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-legacy-turn-limits.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1796[2mms[22m[39m
+   [33m[2m✓[22m[39m init migrates legacy turn limits (TC-20, FR-09, US-04)[2m > [22mwrites nothing on --dry-run [33m 326[2mms[22m[39m
+   [33m[2m✓[22m[39m init migrates legacy turn limits (TC-20, FR-09, US-04)[2m > [22mremoves the four turn fields and keeps the other keys [33m 304[2mms[22m[39m
+   [33m[2m✓[22m[39m init migrates legacy turn limits (TC-20, FR-09, US-04)[2m > [22mchanges nothing on a second run and doctor reports no legacy finding [33m 1003[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-config-repair.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 1247[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-02 init repairs a configuration with unrecognized keys (prd-15)[2m > [22mpreviews every key to drop and writes nothing on a dry run (FR-02, TC-04) [33m 385[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-02 init repairs a configuration with unrecognized keys (prd-15)[2m > [22mrewrites a valid file that keeps the recognized values, then plans no configuration change (FR-02, NFR-01, TC-04) [33m 646[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/config-repair-errors.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1533[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-01 retired configuration keys (prd-15, TC-02)[2m > [22mremove proceeds past the keys and deletes the installation and the configuration (FR-01, FR-08, TC-02) [33m 1087[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-invalid-config.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 165[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-idempotency.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1598[2mms[22m[39m
+   [33m[2m✓[22m[39m init idempotency and symbolic links in process (CA-05, CA-07, prd-13 DEC-03)[2m > [22mpreserves idempotency over 3 runs (CA-05) [33m 1336[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/linked-project-root-lifecycle.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 1143[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E linked project root lifecycle (T11.4, CR-01)[2m > [22mruns init --yes twice, doctor, and remove --dry-run on linked root fixture [33m 1139[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/pi-restart-handoff.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 894[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-context-window.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 115[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-detection.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 917[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-04: Three consecutive installations are byte-idempotent (CA-05)[2m > [22mpreserves byte idempotency over 3 runs [33m 746[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/brake-lifecycle.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 772[2mms[22m[39m
+   [33m[2m✓[22m[39m advisory brake end to end (prd-12 FR-07, DEC-06)[2m > [22mdrives Claude Code from GREEN to CRITICAL and completes every tool call [33m 769[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/asset-currency-lifecycle.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 769[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E asset currency (FR-08, TC-04)[2m > [22mrewrites an outdated asset and leaves a modified one untouched with MODIFIED_OWNED_ASSET [33m 765[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-install.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 932[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-01: Claude installation (CA-01)[2m > [22minstalls Claude non-interactively [33m 370[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-01: Claude installation (CA-01)[2m > [22mrecords the running package version in the manifest (FR-07, TC-02) [33m 324[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "cursor",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".cursor"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": true,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-asset-currency-JJ3kb9",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake-statusline.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.claude/hooks/context-brake-statusline.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa",
+        "preview": {
+          "summary": "Install the status line bridge script"
+        }
+      },
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.claude/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "893c6d40cbd10a619c5b678a4a2b7b67c52ac4ba2e1a3072fc8ed8d486c19b2b",
+        "preview": {
+          "summary": "Register Claude Code hooks"
+        }
+      },
+      {
+        "path": ".claude/settings.local.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.claude/settings.local.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "e51bfb0f7b84c0a1bdd4c15649b82aed4dd0cf0aebf681901a3ad0e3858dabac",
+        "preview": {
+          "summary": "Install the status line bridge, preserving the user status line"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.context-brake/manifest.json",
+        "kind": "create",
+        "owner": "manifest",
+        "beforeSha256": null,
+        "afterSha256": "b439e58428a45e388a66e2fd88d07c12b07e1d8f5453683ec41c355e3ff5db22",
+        "preview": {
+          "summary": "Record installation manifest with managed assets and entries"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/claude-statusline.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.context-brake/runtime/claude-statusline.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "49592a052efd25c1248d69767f249a119cad63a762039157f0d7f0ea3873c974",
+        "preview": {
+          "summary": "Record the status line bridge state"
+        }
+      },
+      {
+        "path": ".cursor/hooks.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.cursor/hooks.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "6a8e8192af71c12e26d39fd82f162e0d1bfc2a9f675b6ed310ac1fd550f09080",
+        "preview": {
+          "summary": "Register Cursor hooks"
+        }
+      },
+      {
+        "path": ".cursor/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.cursor/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "3d3d93951b6bce6d01c33e7de3b71804398624181d0ceb7561163d5e8f6d8e01",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".github/hooks/context-brake.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.github/hooks/context-brake.json",
+        "kind": "create",
+        "owner": "harness_entry",
+        "beforeSha256": null,
+        "afterSha256": "1aa6261a1b28beb90be48b0f8a37c8b0e7cfb67213438bf0a2d3012a5c44471f",
+        "preview": {
+          "summary": "Create Copilot hooks config"
+        }
+      },
+      {
+        "path": ".github/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/.github/hooks/context-brake.mjs",
+        "kind": "create",
+        "owner": "runtime_asset",
+        "beforeSha256": null,
+        "afterSha256": "2e2af8de41e64d16c1ecfd7ef2068dff14fee29815a414a1f909724b62a14489",
+        "preview": {
+          "summary": "Install ContextBrake hook script"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-asset-currency-JJ3kb9/context-brake.config.json",
+        "kind": "create",
+        "owner": "config",
+        "beforeSha256": null,
+        "afterSha256": "4c0952604eb015af06973d716f918dfa8fc9695ce3a14a409a51cc82a1f3f73c",
+        "preview": {
+          "summary": "Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "github-copilot-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to GitHub Copilot CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.local.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/claude-statusline.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".cursor/hooks.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".cursor/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".github/hooks/context-brake.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".github/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "GITIGNORE_NO_GIT",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": ".gitignore",
+      "message": "This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.",
+      "impact": null,
+      "remediation": "Run git init, then init again, to keep the ContextBrake files out of Git."
+    }
+  ]
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-gitignore-tracked.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 973[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-08 files Git already tracks (prd-17, TC-07)[2m > [22mnames the tracked files and the git rm --cached command without changing the exit code (FR-08, TC-07) [33m 481[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-08 files Git already tracks (prd-17, TC-07)[2m > [22mreports nothing when Git fails or the opt-out is on (FR-08, TC-07) [33m 489[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/minified-config-lifecycle.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 750[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E minified config install (CR-01, RF6)[2m > [22minstalls Claude against a single-line settings file and stays idempotent [33m 746[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-asset-currency.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 999[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor asset currency classification (FR-08, TC-03)[2m > [22mreports current, outdated, and modified assets across three harnesses [33m 997[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-transcript-usage.test.ts [2m([22m[2m15 tests[22m[2m)[22m[33m 857[2mms[22m[39m
+   [33m[2m✓[22m[39m Claude Code transcript usage reader bounds and failures (NFR-01, NFR-06, DEC-07, TC-16)[2m > [22mreads a 20 MB transcript at a path with spaces and accents as fast as its tail alone (TC-16, NFR-01) [33m 687[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-plan.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 894[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-05: Invalid adapter input yields partial installation (CA-06)[2m > [22myields partial installation on invalid adapter input [33m 498[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E-06: Dry-run then confirmed run match (CA-11)[2m > [22mmatches changes between dry-run and applied run [33m 392[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/remove-invalid-config.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 658[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E: Remove with invalid harness config isolates conflict (CR-06)[2m > [22mpreserves conflicted harness while removing valid harness, then succeeds on rerun [33m 655[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-diagnostics.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 282[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/handoff-deadline.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 747[2mms[22m[39m
+   [33m[2m✓[22m[39m session start past its deadline keeps the handoff (prd-14 FR-03, codereview_03 CR-01)[2m > [22mkeeps the handoff pending when a process hook session start expires before the claim [33m 537[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-t04-b-UbCYNB",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-UbCYNB/.claude/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "db2e5be3b6c20b7bf148b544c9565693d05f2d2e2da9715db317f9f617ec1a96",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-UbCYNB/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "aaa1c39e0d9771223cf24682be0b1c0062442266bf567f70fdf26ba2d9d693f1",
+        "afterSha256": "d36ded97aab6e241786ecb9e457e7e33530ab471554c49ca459a4b717988c9e2",
+        "preview": {
+          "summary": "Remove Claude Code hooks"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-UbCYNB/.context-brake/manifest.json",
+        "kind": "delete",
+        "owner": "manifest",
+        "beforeSha256": "2526d18600f1e918ceb4e07b63ce426d0b13cb2f8b31ceae2a7ab0f48aae9b27",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete manifest"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/lock.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-UbCYNB/.context-brake/runtime/lock.json",
+        "kind": "delete",
+        "owner": "runtime_state",
+        "beforeSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete .context-brake/runtime/lock.json"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/sessions/s1.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-UbCYNB/.context-brake/runtime/sessions/s1.json",
+        "kind": "delete",
+        "owner": "runtime_state",
+        "beforeSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete .context-brake/runtime/sessions/s1.json"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-UbCYNB/context-brake.config.json",
+        "kind": "delete",
+        "owner": "config",
+        "beforeSha256": "214cd5fcc758a8e055e79eed403c986d14a512ee5d74fc88446e2b1a3af1e035",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete configuration file"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/lock.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/sessions/s1.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/sessions",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": []
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-guards.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 759[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-t04-b-Lb5TS2",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-Lb5TS2/.claude/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "db2e5be3b6c20b7bf148b544c9565693d05f2d2e2da9715db317f9f617ec1a96",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-Lb5TS2/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "aaa1c39e0d9771223cf24682be0b1c0062442266bf567f70fdf26ba2d9d693f1",
+        "afterSha256": "d36ded97aab6e241786ecb9e457e7e33530ab471554c49ca459a4b717988c9e2",
+        "preview": {
+          "summary": "Remove Claude Code hooks"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-Lb5TS2/.context-brake/manifest.json",
+        "kind": "delete",
+        "owner": "manifest",
+        "beforeSha256": "2526d18600f1e918ceb4e07b63ce426d0b13cb2f8b31ceae2a7ab0f48aae9b27",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete manifest"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-b-Lb5TS2/context-brake.config.json",
+        "kind": "delete",
+        "owner": "config",
+        "beforeSha256": "214cd5fcc758a8e055e79eed403c986d14a512ee5d74fc88446e2b1a3af1e035",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete configuration file"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": []
+}
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-t04-b-Lb5TS2",
+    "changes": [],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "antigravity-cli",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Antigravity CLI PostToolUse accepts only empty output; telemetry is indirect via PreInvocation."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Session boot is indirect via PreInvocation."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to Antigravity CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      },
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      {
+        "harness": "codex-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: run /new; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "cursor",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage reaches Cursor hooks only before compaction, so ContextBrake estimates it."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "github-copilot-cli",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Context usage is not exposed to GitHub Copilot CLI hooks."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: start a new session; it resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "oh-my-pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "auto_restart",
+            "impact": "Semi-automatic restart: press Enter on the prefilled /context-brake-restart; the new session resumes by itself."
+          }
+        ]
+      },
+      {
+        "harness": "opencode",
+        "outcome": "planned",
+        "supportLevel": "partial",
+        "limitations": [
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "Model visibility of post-tool output modification is unconfirmed in OpenCode."
+          },
+          {
+            "capability": "session_boot",
+            "impact": "Stable boot injection is experimental in OpenCode."
+          },
+          {
+            "capability": "context_usage",
+            "impact": "No documented API exposes context usage to OpenCode plugins."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "No restart: this harness cannot inject the resume instruction."
+          }
+        ]
+      },
+      {
+        "harness": "pi",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": []
+      }
+    ],
+    "requiresConfirmation": false
+  },
+  "outcomes": [],
+  "findings": []
+}
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-t04-c-4quHP1",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-c-4quHP1/.claude/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "db2e5be3b6c20b7bf148b544c9565693d05f2d2e2da9715db317f9f617ec1a96",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-c-4quHP1/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "aaa1c39e0d9771223cf24682be0b1c0062442266bf567f70fdf26ba2d9d693f1",
+        "afterSha256": "d36ded97aab6e241786ecb9e457e7e33530ab471554c49ca459a4b717988c9e2",
+        "preview": {
+          "summary": "Remove Claude Code hooks"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-c-4quHP1/.context-brake/manifest.json",
+        "kind": "delete",
+        "owner": "manifest",
+        "beforeSha256": "2526d18600f1e918ceb4e07b63ce426d0b13cb2f8b31ceae2a7ab0f48aae9b27",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete manifest"
+        }
+      },
+      {
+        "path": ".context-brake/runtime/lock.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-c-4quHP1/.context-brake/runtime/lock.json",
+        "kind": "delete",
+        "owner": "runtime_state",
+        "beforeSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete .context-brake/runtime/lock.json"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-t04-c-4quHP1/context-brake.config.json",
+        "kind": "delete",
+        "owner": "config",
+        "beforeSha256": "214cd5fcc758a8e055e79eed403c986d14a512ee5d74fc88446e2b1a3af1e035",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete configuration file"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime/lock.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/runtime",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": []
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-state-removal.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 676[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/antigravity-lifecycle.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 734[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E Antigravity lifecycle (CR-02)[2m > [22minstalls documented hook, diagnoses healthy, and removes cleanly [33m 516[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/symlinked-harness-lifecycle.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 627[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E symlinked harness install and idempotency (T10.5, CR-01)[2m > [22mruns init --yes on junction fixture, succeeds, and second run is byte-identical [33m 572[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-restart.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 788[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/adapter-planners.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 1117[2mms[22m[39m
+   [33m[2m✓[22m[39m harness adapter install and remove planners (RF5, RF6, RF19)[2m > [22mregisters each new event once after three installs (TC-26, DEC-13) [33m 505[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-light-mode.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 824[2mms[22m[39m
+   [33m[2m✓[22m[39m the built OpenCode plugin above the critical ceiling (FR-07, TC-09)[2m > [22mregisters no pre-tool hook and records a post-tool call above the critical ceiling [33m 436[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/statusline-install-invalid.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1098[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge with unparseable settings (DEC-09, TC-14)[2m > [22mreports a conflict and writes nothing when the local settings do not parse [33m 477[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge with unparseable settings (DEC-09, TC-14)[2m > [22minstalls with a warning when the user settings do not parse [33m 325[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-exclusion-edges.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 605[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-05 exclusion edges (prd-15, TC-15)[2m > [22mpersists the exclusion of the only detected harness on a first run (FR-05, TC-15) [33m 301[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/retired-hook-events-copilot.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 497[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-03 and FR-04 retired events for GitHub Copilot CLI (prd-15, TC-08)[2m > [22minit rewrites the file without the retired event and remove deletes it (FR-03, FR-04, TC-08) [33m 494[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/multi-harness-install.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 143[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/codex-rollout-usage.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 155[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/codex-hook-migration.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 215[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/directory-pruner.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 106[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-bundle.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 429[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/detection-cross-signals.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 142[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/semi-auto-restart.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 278[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "mode": "applied",
+  "status": "success",
+  "exitCode": 0,
+  "detections": [],
+  "plan": {
+    "schemaVersion": 1,
+    "projectRoot": "C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-it09-a-jnqPXi",
+    "changes": [
+      {
+        "path": ".claude/hooks/context-brake.mjs",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-it09-a-jnqPXi/.claude/hooks/context-brake.mjs",
+        "kind": "delete",
+        "owner": "runtime_asset",
+        "beforeSha256": "db2e5be3b6c20b7bf148b544c9565693d05f2d2e2da9715db317f9f617ec1a96",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete ContextBrake hook script"
+        }
+      },
+      {
+        "path": ".claude/settings.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-it09-a-jnqPXi/.claude/settings.json",
+        "kind": "update",
+        "owner": "harness_entry",
+        "beforeSha256": "e0db4a16c5ed3c648b5797276d78785cb15e4217179a1e2f650edd27411e9e4b",
+        "afterSha256": "e38b56ad3dad23468ac112e0fcf10c60feae8939eedf28f9c01cc88c66535dc5",
+        "preview": {
+          "summary": "Remove Claude Code hooks"
+        }
+      },
+      {
+        "path": ".context-brake/manifest.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-it09-a-jnqPXi/.context-brake/manifest.json",
+        "kind": "delete",
+        "owner": "manifest",
+        "beforeSha256": "d448be4abe4c465898673bcef965eb3f5fdfcf22bb983a8baf24b10725c3084e",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete manifest"
+        }
+      },
+      {
+        "path": "context-brake.config.json",
+        "realPath": "C:/Users/Admin/AppData/Local/Temp/cb-it09-a-jnqPXi/context-brake.config.json",
+        "kind": "delete",
+        "owner": "config",
+        "beforeSha256": "214cd5fcc758a8e055e79eed403c986d14a512ee5d74fc88446e2b1a3af1e035",
+        "afterSha256": null,
+        "preview": {
+          "summary": "Delete configuration file"
+        }
+      }
+    ],
+    "conflicts": [],
+    "harnesses": [
+      {
+        "harness": "claude-code",
+        "outcome": "planned",
+        "supportLevel": "full",
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      }
+    ],
+    "requiresConfirmation": true
+  },
+  "outcomes": [
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".claude/settings.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake/manifest.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": "context-brake.config.json",
+      "status": "applied",
+      "detail": null
+    },
+    {
+      "path": ".context-brake",
+      "status": "applied",
+      "detail": null
+    }
+  ],
+  "findings": []
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/safe-removal.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 263[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/minified-config.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 188[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/init-gitignore-default-runner.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 370[2mms[22m[39m
+   [33m[2m✓[22m[39m FR-08 the shipped CLI hands a process runner to the Git query (prd-17, CR-01)[2m > [22mpasses a runner even when the caller injected none, and reports the tracked files (FR-08, CR-01) [33m 366[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/symlinked-harness-config.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 331[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-copilot.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 245[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-cursor.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 198[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/package-metadata.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 78[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/hook-registration-paths.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 291[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "errors",
+  "exitCode": 2,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "missing",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": null,
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          },
+          {
+            "capability": "post_tool_telemetry",
+            "impact": "The minimum harness version is unverified, so version compatibility cannot be claimed."
+          }
+        ]
+      },
+      "overhead": null
+    }
+  ],
+  "findings": [
+    {
+      "code": "ASSET_MISSING",
+      "severity": "error",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/hooks/context-brake.mjs",
+      "message": "The runtime asset .claude/hooks/context-brake.mjs for claude-code is missing.",
+      "impact": "The harness cannot execute the ContextBrake hook or plugin.",
+      "remediation": "Run context-brake init --harness claude-code --yes."
+    },
+    {
+      "code": "INTEGRATION_MISSING",
+      "severity": "error",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "message": "The claude-code integration is missing from .claude/settings.json.",
+      "impact": "ContextBrake cannot stop or annotate tool calls in this harness.",
+      "remediation": "Run context-brake init --harness claude-code --yes."
+    },
+    {
+      "code": "LEGACY_TURN_LIMITS",
+      "severity": "warning",
+      "scope": "project",
+      "harness": null,
+      "path": "context-brake.config.json",
+      "message": "Turn limits in context-brake.config.json are the retired defaults (7, 10, 12); zones now follow context usage only.",
+      "impact": null,
+      "remediation": "Run context-brake init --yes."
+    },
+    {
+      "code": "STATUSLINE_BRIDGE_ABSENT",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The Claude Code status line bridge is not installed, so Claude Code telemetry is estimated.",
+      "impact": "The context window falls back to contextWindowCeiling, so zones can differ from the real usage.",
+      "remediation": "Run context-brake init. After --no-statusline-bridge, run context-brake init --statusline-bridge."
+    },
+    {
+      "code": "VERSION_FLOOR_UNVERIFIED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.",
+      "impact": "ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.",
+      "remediation": "Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version."
+    },
+    {
+      "code": "AUTO_RESTART_OFF",
+      "severity": "ok",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "Automatic restart is off.",
+      "impact": null,
+      "remediation": "Run context-brake init --auto-restart to turn it on."
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "absent",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-manual-removal.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 250[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/process-hook-host.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 253[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-codex.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 234[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/adapter-diagnostics.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 111[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/pi-runtime-usage.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 175[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/codex-cursor-user-hooks.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 186[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-context-window-schema.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 253[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/hook-deadline.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 246[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/process-capability.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 155[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-gates.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 184[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-antigravity.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 163[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/in-process-runtime.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/in-process-host.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 225[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-failure-policy.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 226[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-preservation.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 191[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/omp-restart.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 212[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-handoff.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 183[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/omp-runtime-usage.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 195[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "init",
+  "status": "error",
+  "error": {
+    "code": "INVALID_CONTEXTBRAKE_CONFIG",
+    "message": "Configuration validation failed: telemetry.zones.yellowMaxPercentage must be greater than greenMaxPercentage."
+  },
+  "exitCode": 2
+}
+{
+  "schemaVersion": 1,
+  "command": "remove",
+  "status": "error",
+  "error": {
+    "code": "INVALID_CONTEXTBRAKE_CONFIG",
+    "message": "Configuration validation failed: telemetry.zones.yellowMaxPercentage must be greater than greenMaxPercentage."
+  },
+  "exitCode": 2
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/legacy-user-hooks.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 176[2mms[22m[39m
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "errors",
+  "exitCode": 2,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".claude/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "codex-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/config.toml"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".codex/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "github-copilot-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".copilot/settings.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "opencode",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/plugins"
+        },
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".config/opencode/opencode.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".pi/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "oh-my-pi",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".omp/agent/extensions"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    },
+    {
+      "harness": "antigravity-cli",
+      "state": "candidate",
+      "evidence": [
+        {
+          "origin": "machine",
+          "kind": "user_config",
+          "value": ".gemini/config/hooks.json"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [],
+  "findings": [
+    {
+      "code": "INVALID_CONTEXTBRAKE_CONFIG",
+      "severity": "error",
+      "scope": "project",
+      "harness": null,
+      "path": "context-brake.config.json",
+      "message": "Configuration validation failed: telemetry.zones.yellowMaxPercentage must be greater than greenMaxPercentage.",
+      "impact": "Configuration values are invalid and ContextBrake cannot safely operate with them.",
+      "remediation": "Fix syntax or structure in context-brake.config.json."
+    },
+    {
+      "code": "NO_PROJECT_HARNESS",
+      "severity": "warning",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "No project harness was detected.",
+      "impact": null,
+      "remediation": "Select one with --harness <id>."
+    }
+  ]
+}
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/handoff-deadline-hosts.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 195[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/invalid-config.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 210[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/node-handoff-store.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 146[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-diagnostics-symlink.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 156[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/node-handoff-store-expiry.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 208[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-diagnostics-shell.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 224[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/idempotent-adapter-merge.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 161[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/test-lanes.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 130[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/removal-conflicts.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 134[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/change-target.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-session-ledger.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 141[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/omp-restart-handoff.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 142[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/copilot-failure-policy.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/in-process-restart-plan.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 166[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/change-applier.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 93[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-retention.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/path-boundary.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-assets.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 73[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/in-process-sampler.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-runtime-errors.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 72[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-composition.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 67[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/manifest-store.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 43[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/in-process-host-deadline.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 57[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/omp-session-switch.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/project-config-store.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/runtime-statusline-ledger.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 48[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/clack-prompt-port.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 63[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-state-files.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/doctor-context-window.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 60[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/report-service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 52[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/doctor-service.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 47[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-pi.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/check-release-tag.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 58[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/change-plan-service.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/gitignore-merge.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 32[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/assistant-questions-invalid.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-codex-measured.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/schemas.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/removal-service.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 46[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-claude.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/harness-schemas-in-process.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-codex.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block-budget.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/assistant-questions.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/docs-auto-restart.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/init-max-restarts-arguments.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/auto-restart-contract.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/configuration.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/terminal.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/hook-event-cleanup.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/json-document-editor.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/reset-notice.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/failure-policy.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/auto-restart-notices.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 34[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-claude-measured.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 54[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/link-capability.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-omp.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/json-span-safety.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-cursor.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/test-budget.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/auto-restart-arguments.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ContextBrake: Context telemetry and an advisory brake for coding-agent harnesses
+
+Usage:
+  context-brake init [options]
+  context-brake doctor [options]
+  context-brake remove [options]
+
+Commands:
+  init     Detect harnesses, register integrations, and initialize ContextBrake
+  doctor   Diagnose integrations, configurations, versions, and overhead
+  remove   Remove ContextBrake integrations and managed files
+[ERROR] INVALID_ARGUMENTS: Unknown command 'invalid-cmd'. Allowed commands: init, doctor, remove.
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "error",
+  "error": {
+    "code": "INVALID_ARGUMENTS",
+    "message": "Unknown option '--unknown'"
+  },
+  "exitCode": 64
+}
+[ERROR] INVALID_ARGUMENTS: Unknown option '--unknown'
+[ERROR] INVALID_ARGUMENTS: Unknown command 'plan'. Allowed commands: init, doctor, remove.
+[ERROR] INVALID_ARGUMENTS: Unknown command 'run'. Allowed commands: init, doctor, remove.
+[ERROR] INVALID_ARGUMENTS: Unknown command 'wrap'. Allowed commands: init, doctor, remove.
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/main.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/diagnostics.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/configuration-snapshot.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 27[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/changes-schema.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-antigravity.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/init-arguments.test.ts [2m([22m[2m23 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/window-origin.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-line.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 26[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/brake-engine-lifecycle.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/support-service.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-copilot.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/assistant-questions-state.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-planner.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/harness-schemas-process.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/restart-neutrality.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/configuration-sanitizer.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/gitignore-plan.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/assistant-questions-gitignore.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 21[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/zone-classifier.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/configuration-validator.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/active-sessions.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/gitignore-block.test.ts [2m([22m[2m17 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/release-workflow.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 29[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/snapshot-merge.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-error-line.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/git-capability.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/restart-flow.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/usage-resolver.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/telemetry-block.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/readme-config-example.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/harness-registry.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-payload.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/harness-adapters.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/detection-service.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/auto-restart-policy.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/readme-light-example.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/session-reset-handler.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/session-zone.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/session-zone-statusline.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/zone-guidance.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/cli-output-text.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/equivalent-command.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-default.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/debug-mode-merge.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-shell.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/benchmark-fixtures.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/claude-runtime-session-key.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/harness-exclusion.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-error-checks.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runtime-paths.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/session-zone-reset-window.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/config-legacy-checks.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/cli-install-text.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/support-service-version-gating.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/adapter-version-probes.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/statusline-summary.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/exit-codes.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/assistant-output.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/e2e-smoke-set.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/bench-config.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/doctor-mode-text.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/runner-reset-signal.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/doctor-checks.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/session-counters.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/injection-policy.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/overhead-p95.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/brake-engine-debug.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/installation-summary.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/failure-policy-snapshot-reset.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/readme-gitignore.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/asset-currency.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/restart-mode.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/readme-support-table.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/package-contents.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 5372[2mms[22m[39m
+   [33m[2m✓[22m[39m package contents assets and schemas (RF17, CA-19)[2m > [22mincludes all required runtime assets, schemas, and binary, without the protocol doc or removed schemas (prd-12 DEC-15) [33m 5365[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/package-assets.test.ts [2m([22m[2m17 tests[22m[2m)[22m[33m 5867[2mms[22m[39m
+   [33m[2m✓[22m[39m runtime asset existence and execution (RF5, RF22)[2m > [22m'claude-code-hook.mjs' answers 'PreToolUse' with only the fields its harness documents [33m 339[2mms[22m[39m
+   [33m[2m✓[22m[39m runtime asset existence and execution (RF5, RF22)[2m > [22m'cursor-hook.mjs' answers 'preToolUse' with only the fields its harness documents [33m 318[2mms[22m[39m
+   [33m[2m✓[22m[39m runtime asset existence and execution (RF5, RF22)[2m > [22m'github-copilot-cli-hook.mjs' answers 'preToolUse' with only the fields its harness documents [33m 401[2mms[22m[39m
+   [33m[2m✓[22m[39m runtime asset existence and execution (RF5, RF22)[2m > [22m'github-copilot-cli-hook.mjs' answers 'postToolUse' with only the fields its harness documents [33m 337[2mms[22m[39m
+   [33m[2m✓[22m[39m runtime in-process extension loading (RF5)[2m > [22mloads in-process plugins and extensions as callable functions [33m 1697[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-doctor.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 8521[2mms[22m[39m
+   [33m[2m✓[22m[39m built CLI doctor smoke (prd-13 FR-04, DEC-02, DEC-03, TC-09)[2m > [22mreports a schema-valid diagnosis with a measured hook overhead [33m 8519[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/runtime-host-process.test.ts [2m([22m[2m4 tests[22m[2m)[22m[33m 3186[2mms[22m[39m
+   [33m[2m✓[22m[39m process hook host end to end (CMP-17, TC-15, TC-16)[2m > [22mstays neutral on a code read above the ceiling and exits zero (prd-12 FR-07) [33m 888[2mms[22m[39m
+   [33m[2m✓[22m[39m process hook host end to end (CMP-17, TC-15, TC-16)[2m > [22mreturns neutral below the ceiling and appends the tool line [33m 740[2mms[22m[39m
+   [33m[2m✓[22m[39m process hook host end to end events (CMP-17, RF22)[2m > [22manswers unknown events with a neutral response [33m 919[2mms[22m[39m
+   [33m[2m✓[22m[39m process hook host end to end events (CMP-17, RF22)[2m > [22mnotifies the new-session command when the response ends with the signal [33m 635[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/runtime-parallel-turns.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 4411[2mms[22m[39m
+   [33m[2m✓[22m[39m T03 concurrent appends (RF1, RF2, CA-06, TC-08)[2m > [22mkeeps one valid line per concurrent append and reports the fourth turn on the isolated read [33m 484[2mms[22m[39m
+   [33m[2m✓[22m[39m T06 built Claude Code hooks count parallel calls (CA-06, TC-08)[2m > [22mreports four turns on the isolated call after three concurrent hooks [33m 2987[2mms[22m[39m
+   [33m[2m✓[22m[39m T06 built Claude Code hooks count parallel calls (CA-06, TC-08)[2m > [22mkeeps subagent turns in their own ledger [33m 938[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/statusline-bridge-previous.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 10743[2mms[22m[39m
+   [33m[2m✓[22m[39m bridge runs the previous status line (FR-02, DEC-03, DEC-06, TC-04)[2m > [22mprints the previous output and records the shell that ran it [33m 588[2mms[22m[39m
+   [33m[2m✓[22m[39m bridge fallback line (FR-03, DEC-04, TC-04)[2m > [22mprints one line with the reason exit 1 [33m 493[2mms[22m[39m
+   [33m[2m✓[22m[39m bridge fallback line (FR-03, DEC-04, TC-04)[2m > [22mprints one line with the reason no output [33m 778[2mms[22m[39m
+   [33m[2m✓[22m[39m bridge fallback line (FR-03, DEC-04, TC-04)[2m > [22mprints one line with the reason timed out [33m 8127[2mms[22m[39m
+   [33m[2m✓[22m[39m bridge fallback line (FR-03, DEC-04, TC-04)[2m > [22muses the latest reading of ContextBrake when the ledger has one [33m 693[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/cli-shells.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 3582[2mms[22m[39m
+   [33m[2m✓[22m[39m CLI install through each shell [powershell] (CA-20, prd-13 DEC-04 shell quoting)[2m > [22mexecutes Claude installation (CA-01, CA-20) [33m 2149[2mms[22m[39m
+   [33m[2m✓[22m[39m CLI install through each shell [bash] (CA-20, prd-13 DEC-04 shell quoting)[2m > [22mexecutes Claude installation (CA-01, CA-20) [33m 1430[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-remove.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2654[2mms[22m[39m
+   [33m[2m✓[22m[39m built CLI remove smoke (prd-13 FR-04, DEC-03)[2m > [22mdeletes the owned files and restores the harness settings [33m 2652[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-init.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 2674[2mms[22m[39m
+   [33m[2m✓[22m[39m built CLI init smoke (prd-13 FR-04, DEC-03)[2m > [22minstalls Claude Code non-interactively and changes nothing on a second run [33m 2669[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/statusline-bridge.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 3362[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge pass-through (FR-02, OBJ-02, DEC-03, TC-06, TC-07)[2m > [22mpasses stdin to the previous command so its output and exit code are unchanged, and records one line [33m 571[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge resilience (NFR-02, TC-08)[2m > [22mkeeps the output unchanged and records nothing for invalid JSON [33m 471[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge resilience (NFR-02, TC-08)[2m > [22mkeeps the output unchanged and records nothing for a missing session_id [33m 456[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge resilience (NFR-02, TC-08)[2m > [22mkeeps the output unchanged and records nothing for stdin above 1 MiB [33m 568[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge resilience (NFR-02, TC-08)[2m > [22mlogs an unwritable ledger under the StatusLine event and still passes the output through [33m 615[2mms[22m[39m
+   [33m[2m✓[22m[39m status line bridge privacy (NFR-03, TC-09)[2m > [22mstores only the five values and the time, never cost, workspace, or output [33m 385[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/statusline-bridge-lifecycle.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1788[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E status line bridge on a path with spaces and accents (NFR-06, TC-21)[2m > [22minstalls, records a window, reports it in doctor, and restores the local file on remove [33m 1270[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E doctor after a status line run through PowerShell (FR-05, DEC-06, TC-07)[2m > [22mwarns on Windows with the Git Bash remediation, and the report follows the schema [33m 512[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-hook-round-trips.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 1433[2mms[22m[39m
+   [33m[2m✓[22m[39m built process hook round trip per harness (prd-13 FR-04, DEC-03)[2m > [22mcursor: the built hook reads the documented post-tool payload and records the call [33m 309[2mms[22m[39m
+   [33m[2m✓[22m[39m built process hook round trip per harness (prd-13 FR-04, DEC-03)[2m > [22mantigravity-cli: the built hook reads the documented post-tool payload and records the call [33m 302[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/codex-hook-root.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 1322[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E Codex hook execution (CR-07)[2m > [22mruns registered hook command from subdirectory in git repo [33m 1017[2mms[22m[39m
+   [33m[2m✓[22m[39m E2E Codex root warning (CR-07)[2m > [22mwarns when Codex integration is installed outside git repo [33m 302[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/codex-hook-command-shells.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 21456[2mms[22m[39m
+   [33m[2m✓[22m[39m Codex hook command shell execution (CA-20, DEC-04, CR-06)[2m > [22mruns every registered command from a subdirectory under cmd.exe /C (Codex default) [33m 2949[2mms[22m[39m
+   [33m[2m✓[22m[39m Codex hook command shell execution (CA-20, DEC-04, CR-06)[2m > [22mruns every registered command from a subdirectory under pwsh -Command [33m 15329[2mms[22m[39m
+   [33m[2m✓[22m[39m Codex hook command shell execution (CA-20, DEC-04, CR-06)[2m > [22mruns every registered command from a subdirectory under powershell.exe -Command [33m 3175[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/statusline-shell.test.ts [2m([22m[2m5 tests[22m[2m)[22m[33m 36767[2mms[22m[39m
+   [33m[2m✓[22m[39m installed status line command in every shell (FR-01, FR-02, NFR-01, DEC-01, DEC-02, TC-02)[2m > [22mprints the previous status line unchanged through git-bash (C:\Users\Admin\scoop\apps\git\current\bin\bash.exe) [33m 3170[2mms[22m[39m
+   [33m[2m✓[22m[39m installed status line command in every shell (FR-01, FR-02, NFR-01, DEC-01, DEC-02, TC-02)[2m > [22mprints the previous status line unchanged through powershell (pwsh.exe) [33m 19560[2mms[22m[39m
+   [33m[2m✓[22m[39m installed status line command in every shell (FR-01, FR-02, NFR-01, DEC-01, DEC-02, TC-02)[2m > [22mprints the previous status line unchanged through powershell (powershell.exe) [33m 13190[2mms[22m[39m
+   [33m[2m✓[22m[39m installed status line command in every shell (FR-01, FR-02, NFR-01, DEC-01, DEC-02, TC-02)[2m > [22mprints one fallback line and exits 0 when the previous command fails (FR-03, TC-04) [33m 471[2mms[22m[39m
+ [32m✓[39m [30m[45m serial [49m[39m tests/integration/node-process-runner.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 3203[2mms[22m[39m
+   [33m[2m✓[22m[39m Node version process probe execution (IT-13, CA-16)[2m > [22mreturns a bounded timeout state [33m 383[2mms[22m[39m
+   [33m[2m✓[22m[39m Node executable discovery and tree termination (IT-13, CA-16)[2m > [22mstops descendants when the parent times out [33m 2113[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m258 passed[39m[22m[90m (258)[39m
+[2m      Tests [22m [1m[32m1457 passed[39m[22m[90m (1457)[39m
+[2m   Start at [22m 18:45:22
+[2m   Duration [22m 137.41s[2m (transform 12.04s, setup 0ms, collect 167.56s, tests 305.75s, environment 133ms, prepare 62.43s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   94.78 |    91.72 |   95.65 |   94.78 |                   
+ cli               |    95.3 |    94.11 |     100 |    95.3 |                   
+  ...ent-parser.ts |     100 |       96 |     100 |     100 | 48                
+  ...-validator.ts |   91.66 |    88.88 |     100 |   91.66 | 14-15             
+  ...ition-root.ts |   98.21 |    89.65 |     100 |   98.21 | 59                
+  confirmation.ts  |   63.15 |     87.5 |     100 |   63.15 | 14-20             
+  ...-collector.ts |   93.33 |    90.47 |     100 |   93.33 | 17-18             
+  exit-codes.ts    |     100 |      100 |     100 |     100 |                   
+  ...e-findings.ts |     100 |      100 |     100 |     100 |                   
+  ...f-findings.ts |     100 |      100 |     100 |     100 |                   
+  ...-arguments.ts |     100 |      100 |     100 |     100 |                   
+  ...nfig-state.ts |     100 |      100 |     100 |     100 |                   
+  ...ig-updates.ts |     100 |       96 |     100 |     100 | 23                
+  init-flow.ts     |     100 |      100 |     100 |     100 |                   
+  ...tion-rules.ts |     100 |      100 |     100 |     100 |                   
+  main.ts          |   79.62 |    61.11 |     100 |   79.62 | ...44,54-55,59-60 
+  ...hot-helper.ts |     100 |      100 |     100 |     100 |                   
+  terminal.ts      |     100 |      100 |     100 |     100 |                   
+ cli/assistant     |   99.52 |    97.72 |     100 |   99.52 |                   
+  ask.ts           |     100 |    96.87 |     100 |     100 | 13                
+  ...nt-context.ts |     100 |      100 |     100 |     100 |                   
+  ...-questions.ts |     100 |      100 |     100 |     100 |                   
+  ...nt-session.ts |     100 |      100 |     100 |     100 |                   
+  ...rompt-port.ts |     100 |      100 |     100 |     100 |                   
+  ...nt-command.ts |     100 |      100 |     100 |     100 |                   
+  ...pt-factory.ts |   85.71 |    83.33 |     100 |   85.71 | 15-16             
+  prompt-port.ts   |     100 |      100 |     100 |     100 |                   
+  ...-gitignore.ts |     100 |      100 |     100 |     100 |                   
+  ...ns-harness.ts |     100 |    93.33 |     100 |     100 | 19,29,45          
+  ...tions-misc.ts |     100 |      100 |     100 |     100 |                   
+  ...ns-restart.ts |     100 |    97.91 |     100 |     100 | 47                
+  ...s-snapshot.ts |     100 |      100 |     100 |     100 |                   
+  ...shot-specs.ts |     100 |      100 |     100 |     100 |                   
+  summary.ts       |     100 |    93.75 |     100 |     100 | 10,29             
+  types.ts         |       0 |        0 |       0 |       0 |                   
+  ui-prompt.ts     |       0 |        0 |       0 |       0 |                   
+ cli/commands      |   99.24 |    88.88 |     100 |   99.24 |                   
+  doctor.ts        |     100 |     91.3 |     100 |     100 | 29,44             
+  init.ts          |   95.83 |       70 |     100 |   95.83 | 12                
+  remove.ts        |     100 |    95.23 |     100 |     100 | 58                
+ cli/output        |     100 |    97.05 |     100 |     100 |                   
+  ...ction-text.ts |     100 |      100 |     100 |     100 |                   
+  ...-mode-text.ts |     100 |     92.3 |     100 |     100 | 6                 
+  ...sions-text.ts |     100 |    88.88 |     100 |     100 | 15                
+  json.ts          |     100 |      100 |     100 |     100 |                   
+  text.ts          |     100 |      100 |     100 |     100 |                   
+ core/contracts    |     100 |    94.73 |     100 |     100 |                   
+  adapter.ts       |       0 |        0 |       0 |       0 |                   
+  auto-restart.ts  |     100 |      100 |     100 |     100 |                   
+  changes.ts       |     100 |      100 |     100 |     100 |                   
+  configuration.ts |     100 |     90.9 |     100 |     100 | 25,37             
+  ...dow-report.ts |     100 |      100 |     100 |     100 |                   
+  diagnostics.ts   |     100 |      100 |     100 |     100 |                   
+  handoff.ts       |     100 |      100 |     100 |     100 |                   
+  harness.ts       |     100 |      100 |     100 |     100 |                   
+  hook-phase.ts    |     100 |      100 |     100 |     100 |                   
+  manifest.ts      |     100 |      100 |     100 |     100 |                   
+  processes.ts     |       0 |        0 |       0 |       0 |                   
+  restart-host.ts  |     100 |      100 |     100 |     100 |                   
+  restart-log.ts   |     100 |      100 |     100 |     100 |                   
+  runtime.ts       |       0 |        0 |       0 |       0 |                   
+  ...ion-ledger.ts |     100 |      100 |     100 |     100 |                   
+  ...sline-line.ts |     100 |      100 |     100 |     100 |                   
+  zones.ts         |     100 |      100 |     100 |     100 |                   
+ core/services     |   99.46 |    94.77 |     100 |   99.46 |                   
+  ...e-sessions.ts |     100 |      100 |     100 |     100 |                   
+  ...t-currency.ts |     100 |    94.23 |     100 |     100 | 47,53,70          
+  ...tart-merge.ts |     100 |      100 |     100 |     100 |                   
+  ...rt-notices.ts |     100 |      100 |     100 |     100 |                   
+  ...art-policy.ts |     100 |      100 |     100 |     100 |                   
+  brake-engine.ts  |     100 |    97.22 |     100 |     100 | 41                
+  ...an-service.ts |   96.55 |    93.54 |     100 |   96.55 | 41-42             
+  ...acy-checks.ts |     100 |    90.47 |     100 |     100 | 17                
+  ...mode-merge.ts |     100 |      100 |     100 |     100 |                   
+  ...on-service.ts |     100 |      100 |     100 |     100 |                   
+  doctor-checks.ts |     100 |      100 |     100 |     100 |                   
+  ...ort-extras.ts |     100 |      100 |     100 |     100 |                   
+  ...or-service.ts |     100 |    93.33 |     100 |     100 | 34,58,74          
+  ...ure-policy.ts |   95.91 |    90.24 |     100 |   95.91 | 63-64             
+  ...nore-block.ts |     100 |    92.59 |     100 |     100 | 29-30             
+  ...nore-merge.ts |     100 |      100 |     100 |     100 |                   
+  ...gnore-plan.ts |     100 |    96.66 |     100 |     100 | 70,88             
+  ...-exclusion.ts |     100 |      100 |     100 |     100 |                   
+  ...ss-removal.ts |     100 |    94.44 |     100 |     100 | 45                
+  ...ion-policy.ts |     100 |      100 |     100 |     100 |                   
+  ...n-adapters.ts |     100 |       75 |     100 |     100 | 17,24-25          
+  ...on-builder.ts |     100 |       82 |     100 |     100 | 37,46-51,65       
+  ...n-findings.ts |     100 |      100 |     100 |     100 |                   
+  ...on-service.ts |     100 |    90.69 |     100 |     100 | 58,63,80,83       
+  ...est-change.ts |     100 |       75 |     100 |     100 | 18                
+  ...ss-finding.ts |     100 |      100 |     100 |     100 |                   
+  ...val-helper.ts |     100 |      100 |     100 |     100 |                   
+  ...al-service.ts |     100 |      100 |     100 |     100 |                   
+  ...rt-service.ts |     100 |    94.23 |     100 |     100 | 14,94             
+  reset-notice.ts  |     100 |       80 |     100 |     100 | 4                 
+  ...r-findings.ts |     100 |    83.33 |     100 |     100 | 16,21,33          
+  restart-flow.ts  |     100 |    94.44 |     100 |     100 | 18                
+  ...art-guards.ts |     100 |    81.81 |     100 |     100 | 26                
+  ...all-extras.ts |     100 |    97.61 |     100 |     100 | 38                
+  restart-mode.ts  |     100 |      100 |     100 |     100 |                   
+  ...ror-checks.ts |     100 |      100 |     100 |     100 |                   
+  ...n-counters.ts |     100 |      100 |     100 |     100 |                   
+  ...et-handler.ts |     100 |      100 |     100 |     100 |                   
+  session-zone.ts  |     100 |       90 |     100 |     100 | 21,28             
+  ...shot-merge.ts |     100 |       92 |     100 |     100 | 22-23             
+  ...ne-summary.ts |     100 |      100 |     100 |     100 |                   
+  ...rt-service.ts |      96 |    91.11 |     100 |      96 | 26-27             
+  ...etry-block.ts |     100 |      100 |     100 |     100 |                   
+  ...e-resolver.ts |     100 |      100 |     100 |     100 |                   
+  ...on-service.ts |   94.59 |    90.62 |     100 |   94.59 | 16-17             
+  window-trust.ts  |     100 |      100 |     100 |     100 |                   
+  ...classifier.ts |     100 |      100 |     100 |     100 |                   
+  zone-guidance.ts |     100 |      100 |     100 |     100 |                   
+ core/validation   |     100 |    91.48 |     100 |     100 |                   
+  ...-sanitizer.ts |     100 |    94.44 |     100 |     100 | 14                
+  ...-validator.ts |     100 |    89.65 |     100 |     100 | 35-36,39          
+ ...re/diagnostics |   45.66 |    81.25 |   37.93 |   45.66 |                   
+  ...ss-sampler.ts |    93.1 |       88 |    90.9 |    93.1 | 70-71,85-86       
+  ...d-measurer.ts |   36.61 |        0 |       0 |   36.61 | ...51,57-58,60-82 
+  p95.ts           |     100 |       80 |     100 |     100 | 7                 
+  ...ss-sampler.ts |   10.76 |      100 |       0 |   10.76 | 13-74             
+  ...le-failure.ts |   29.41 |        0 |       0 |   29.41 | 18-21,24-28,31-33 
+ ...astructure/git |     100 |      100 |     100 |     100 |                   
+  git-context.ts   |     100 |      100 |     100 |     100 |                   
+ ...ture/harnesses |     100 |      100 |     100 |     100 |                   
+  registry.ts      |     100 |      100 |     100 |     100 |                   
+ ...ntigravity-cli |   91.79 |    84.21 |    91.3 |   91.79 |                   
+  adapter.ts       |    92.3 |       85 |     100 |    92.3 | 23-24,62,67-69    
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |   94.44 |     82.6 |     100 |   94.44 | 36-37,54          
+  planner.ts       |      85 |    76.92 |     100 |      85 | 28-30,33-35,41-43 
+  runtime.ts       |   91.66 |       90 |   71.42 |   91.66 | 21-22,58-59       
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...es/claude-code |    97.8 |     93.2 |   97.65 |    97.8 |                   
+  adapter.ts       |   96.25 |    95.23 |     100 |   96.25 | 62-64             
+  ...iagnostics.ts |   96.15 |    93.75 |     100 |   96.15 | 56-57             
+  ...tart-files.ts |     100 |      100 |     100 |     100 |                   
+  ...-ownership.ts |   94.59 |    89.47 |     100 |   94.59 | 21-22             
+  ...rt-planner.ts |     100 |    95.23 |     100 |     100 | 25,31,65,85       
+  ...t-settings.ts |     100 |     90.9 |     100 |     100 | 17                
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  ...oks-config.ts |    91.3 |     90.9 |     100 |    91.3 | 14-15             
+  claude-merger.ts |     100 |       88 |     100 |     100 | 19,24,30          
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  planner.ts       |   97.05 |    88.23 |     100 |   97.05 | 45-46             
+  runtime.ts       |   94.36 |    92.98 |   77.77 |   94.36 | 31-32,85-86       
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+  ...ine-bridge.ts |    87.5 |    73.33 |    87.5 |    87.5 | ...68,76-77,89-90 
+  ...ext-window.ts |     100 |    93.75 |     100 |     100 | 22,58             
+  ...ne-default.ts |     100 |      100 |     100 |     100 |                   
+  ...iagnostics.ts |     100 |    95.12 |     100 |     100 | 50,71             
+  ...ine-output.ts |     100 |      100 |     100 |     100 |                   
+  ...ne-payload.ts |     100 |      100 |     100 |     100 |                   
+  ...ne-planner.ts |     100 |    91.66 |     100 |     100 | 50,53,58,65,71    
+  ...e-previous.ts |     100 |    94.11 |     100 |     100 | 44                
+  ...ne-restore.ts |     100 |       90 |     100 |     100 | 22-24             
+  ...e-settings.ts |     100 |    95.23 |     100 |     100 | 31-32             
+  ...line-shell.ts |     100 |      100 |     100 |     100 |                   
+  ...line-state.ts |     100 |      100 |     100 |     100 |                   
+  ...ript-usage.ts |     100 |      100 |     100 |     100 |                   
+ ...laude-code/mod |   89.81 |     87.8 |   94.87 |   89.81 |                   
+  hooks.ts         |   71.05 |    77.77 |      80 |   71.05 | 9-15,21-22,42-43  
+  host.ts          |       0 |        0 |       0 |       0 |                   
+  mod-config.ts    |   92.85 |    64.28 |     100 |   92.85 | 25-26             
+  mod-guards.ts    |     100 |      100 |     100 |     100 |                   
+  mod-info.ts      |     100 |      100 |     100 |     100 |                   
+  mod-log.ts       |   78.12 |    77.77 |   83.33 |   78.12 | 21-22,29-33       
+  register.ts      |    91.3 |      100 |     100 |    91.3 | 6-7               
+  restart-facts.ts |     100 |      100 |     100 |     100 |                   
+  restart-flow.ts  |     100 |     90.9 |     100 |     100 | 18                
+  restart-host.ts  |     100 |      100 |     100 |     100 |                   
+  turn-state.ts    |     100 |      100 |     100 |     100 |                   
+ ...sses/codex-cli |   95.69 |    92.03 |    93.1 |   95.69 |                   
+  adapter.ts       |    97.5 |       90 |     100 |    97.5 | 28-29             
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  planner.ts       |   87.67 |    83.33 |     100 |   87.67 | 43-45,48-50,56-58 
+  rollout-usage.ts |     100 |      100 |     100 |     100 |                   
+  runtime.ts       |    97.4 |    94.73 |      80 |    97.4 | 92-93             
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...rnesses/common |   95.89 |    90.28 |   94.18 |   95.89 |                   
+  ...ks-updater.ts |   96.29 |     92.3 |     100 |   96.29 | 20-21             
+  change-target.ts |   94.59 |    84.61 |     100 |   94.59 | 17-18             
+  ...ks-updater.ts |     100 |       80 |     100 |     100 | ...25,31,47-48,69 
+  ...ks-updater.ts |     100 |    87.87 |     100 |     100 | 18,24,31,44       
+  ...ic-helpers.ts |     100 |      100 |     100 |     100 |                   
+  ...nt-cleanup.ts |     100 |    94.73 |     100 |     100 | 7,26              
+  ...estart-log.ts |   85.29 |       70 |   83.33 |   85.29 | 28-29,38-40       
+  ...tart-state.ts |   93.61 |       80 |     100 |   93.61 | 54-56             
+  ...rt-support.ts |   57.14 |      100 |   33.33 |   57.14 | 14-20             
+  ...ss-support.ts |     100 |    94.73 |     100 |     100 | 35                
+  ...ail-reader.ts |   97.01 |    91.66 |     100 |   97.01 | 21-22             
+  path-helpers.ts  |     100 |      100 |     100 |     100 |                   
+  ...-validator.ts |     100 |      100 |     100 |     100 |                   
+  ...asset-plan.ts |     100 |      100 |     100 |     100 |                   
+  ...iagnostics.ts |     100 |    82.14 |     100 |     100 | 26,42-44,49       
+  ...ime-assets.ts |     100 |      100 |     100 |     100 |                   
+  ...me-support.ts |   71.05 |    96.15 |   71.42 |   71.05 | 19-30             
+  ...ion-probes.ts |     100 |      100 |     100 |     100 |                   
+ ...rnesses/cursor |   95.04 |       94 |      90 |   95.04 |                   
+  adapter.ts       |   95.52 |     92.3 |     100 |   95.52 | 53-55             
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  planner.ts       |   90.62 |     87.5 |     100 |   90.62 | 38-40,46-48       
+  runtime.ts       |   95.65 |      100 |   71.42 |   95.65 | 56-57             
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...ub-copilot-cli |   93.64 |    84.61 |    91.3 |   93.64 |                   
+  adapter.ts       |   92.42 |    84.61 |     100 |   92.42 | 50-51,53-55       
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  planner.ts       |   90.76 |       80 |     100 |   90.76 | 48-50,53-55       
+  runtime.ts       |   93.33 |    85.71 |   77.77 |   93.33 | 33-34,72-73       
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...esses/oh-my-pi |   94.37 |    74.03 |     100 |   94.37 |                   
+  adapter.ts       |   82.53 |       90 |     100 |   82.53 | 49-59             
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  events.ts        |   94.44 |    71.42 |     100 |   94.44 | 17-19             
+  planner.ts       |     100 |      100 |     100 |     100 |                   
+  restart.ts       |   97.18 |    70.96 |     100 |   97.18 | 77-78             
+  runtime.ts       |   96.72 |    68.18 |     100 |   96.72 | 39-40             
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...esses/opencode |   92.34 |    78.57 |     100 |   92.34 |                   
+  adapter.ts       |   82.53 |    88.88 |     100 |   82.53 | 47-57             
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  events.ts        |   93.54 |       75 |     100 |   93.54 | 17-18             
+  planner.ts       |     100 |      100 |     100 |     100 |                   
+  runtime.ts       |   91.66 |    73.68 |     100 |   91.66 | 39-40,50-51       
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...e/harnesses/pi |   93.79 |    78.43 |   97.61 |   93.79 |                   
+  adapter.ts       |   92.06 |    83.33 |     100 |   92.06 | 53-54,56-58       
+  capabilities.ts  |     100 |      100 |     100 |     100 |                   
+  detector.ts      |     100 |      100 |     100 |     100 |                   
+  events.ts        |   96.36 |    72.22 |     100 |   96.36 | 18-19             
+  planner.ts       |     100 |      100 |     100 |     100 |                   
+  restart.ts       |   96.72 |    82.75 |     100 |   96.72 | 70-71             
+  runtime.ts       |   83.05 |    73.68 |   88.88 |   83.05 | 39-40,57-64       
+  schemas.ts       |     100 |      100 |     100 |     100 |                   
+ ...ucture/process |   82.95 |     87.5 |    90.9 |   82.95 |                   
+  ...ess-runner.ts |     100 |     92.3 |     100 |     100 | 7,42              
+  process-tree.ts  |    42.3 |    66.66 |   66.66 |    42.3 | 7-9,14-25         
+ ...ucture/runtime |   96.07 |    90.79 |   92.95 |   96.07 |                   
+  hook-deadline.ts |     100 |      100 |   91.66 |     100 |                   
+  hook-failure.ts  |      90 |    83.33 |     100 |      90 | 25-26             
+  ...ocess-host.ts |   92.42 |     90.9 |    92.3 |   92.42 | 43-44,72-74       
+  ...ntime-logs.ts |     100 |      100 |     100 |     100 |                   
+  ...ion-ledger.ts |   94.73 |      100 |     100 |   94.73 | 52-53,57          
+  ...-hook-host.ts |   97.29 |       84 |    62.5 |   97.29 | 95-96             
+  ...omposition.ts |   97.36 |     92.3 |     100 |   97.36 | 35                
+  runtime-paths.ts |     100 |    92.85 |     100 |     100 | 42                
+  ...ate-reader.ts |    94.2 |    81.25 |     100 |    94.2 | 46,54,76-77       
+ ...ucture/storage |   91.25 |    87.04 |   98.73 |   91.25 |                   
+  atomic-writer.ts |   84.37 |    66.66 |     100 |   84.37 | 19-21,32-33       
+  ...ge-applier.ts |   84.41 |    86.04 |     100 |   84.41 | ...42,44-45,50-51 
+  ...ory-pruner.ts |   96.96 |    86.36 |     100 |   96.96 | 70-71             
+  ...claim-lock.ts |   80.76 |    84.61 |     100 |   80.76 | 13-14,28-30       
+  ...ent-editor.ts |     100 |      100 |     100 |     100 |                   
+  ...span-utils.ts |   95.69 |    91.42 |     100 |   95.69 | 95-96,98-99       
+  ...-validator.ts |   80.35 |    81.25 |      80 |   80.35 | ...43,52-54,57-58 
+  ...fest-store.ts |   95.12 |    83.33 |     100 |   95.12 | 22-23             
+  ...ile-system.ts |    90.9 |    88.88 |     100 |    90.9 | 22-24             
+  ...doff-store.ts |    88.6 |    89.36 |     100 |    88.6 | ...65,72-75,83-84 
+  ...e-metadata.ts |   96.36 |    94.44 |     100 |   96.36 | 50-51             
+  path-boundary.ts |   92.42 |    64.28 |     100 |   92.42 | 19-20,58,71-72    
+  ...nfig-store.ts |     100 |      100 |     100 |     100 |                   
+  ...tate-files.ts |      90 |       80 |     100 |      90 | 25-26             
+-------------------|---------|----------|---------|---------|-------------------
+exit=0 wall=139s

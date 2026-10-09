@@ -1,0 +1,110 @@
+# S08-opt-out-opt-in
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08-zceuq2 git=true claude=true codex=false gitignore="node_modules/\n"
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08-zceuq2) NO_COLOR=1 node dist/src/cli/main.js init --yes
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- stderr ---
+--- end ---
+CHECK PASS S08 block present after first init
+CHECK PASS S08 config has no gitIgnore key by default
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08-zceuq2) NO_COLOR=1 node dist/src/cli/main.js init --yes --no-gitignore
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); stop listing ContextBrake files in .gitignore
+--- stderr ---
+--- end ---
+CHECK PASS S08 --no-gitignore exit 0
+CHECK PASS S08 --no-gitignore removes block, user content back :: "node_modules/\n"
+CHECK PASS S08 config stores gitIgnore:false
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08-zceuq2) NO_COLOR=1 node dist/src/cli/main.js init --yes
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr ---
+--- end ---
+CHECK PASS S08 plain init keeps the opt-out
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08-zceuq2) NO_COLOR=1 node dist/src/cli/main.js init --yes --gitignore
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [update] .context-brake/manifest.json (manifest)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); list ContextBrake files in .gitignore
+--- stderr ---
+--- end ---
+CHECK PASS S08 --gitignore returns the block
+CHECK PASS S08 --gitignore drops the key
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08-zceuq2) NO_COLOR=1 node dist/src/cli/main.js init --yes --gitignore --no-gitignore
+exit=64
+--- stdout ---
+--- stderr ---
+[ERROR] INVALID_ARGUMENTS: --gitignore cannot be combined with --no-gitignore.
+--- end ---
+CHECK PASS S08 both flags -> exit 64 with message :: exit=64
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08b-2zaJEg git=true claude=true codex=false gitignore=undefined
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s08b-2zaJEg) NO_COLOR=1 node dist/src/cli/main.js init --yes --no-gitignore
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED); stop listing ContextBrake files in .gitignore
+--- stderr ---
+--- end ---
+CHECK PASS S08b --no-gitignore on fresh repo writes no .gitignore

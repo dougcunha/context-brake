@@ -1,0 +1,21 @@
+$ rg old statements (never edits/touch .gitignore)
+--- flags and block docs
+154:- **What is listed:** the configuration file, the manifest, every asset in the manifest (hook scripts, the Claude Code mod, `.context-brake/.gitignore`), and the state files `init` writes under `.context-brake/runtime/` (`claude-mod-install.json`, `claude-statusline.json`, and `claude-statusline-opt-out.json` when the status line bridge is off). Files `init` only edits, such as `.claude/settin
+156:- **Opting out:** a team that wants to version the configuration and the hooks runs `context-brake init --no-gitignore`. It removes the block, and the choice is stored (`"gitIgnore": false` in the configuration), so a plain `init` keeps it. `init --gitignore` turns it back on. The interactive setup asks the same question.
+312:| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive`, `--gitignore`, `
+AGENTS.md:39:- ContextBrake never edits instruction files. Its only change to the project `.gitignore` is the marked block that lists the files it owns in full, with the `--no-gitignore` opt-out (prd-17, `.agents/rules/file-changes.md`).
+.agents/rules/file-changes.md:9:ContextBrake edits files it does not own: harness configuration files such as `.claude/settings.json` and `.codex/hooks.json`. It never edits instruction files such as `CLAUDE.md` and `AGENTS.md`. The one change it makes to the project `.gitignore` is its own marked b
+.agents/rules/file-changes.md:17:- Change only the entries ContextBrake registered in harness configuration files, the files listed in its manifest, and its own marked block in the project `.gitignore`.
+.agents/rules/file-changes.md:20:- `remove` deletes only what ContextBrake created: its registered entries, its marked block in the project `.gitignore`, the assets in its manifest that were not edited, its configuration, its manifest, and the runtime files under `.context-brake/runtime/`.
+--- prd-12 notes
+tasks/prd-12-refatoracao-modo-leve-modo-unico\techspec.md:145:  - `init` and `remove` no longer touch instruction files or `.gitignore`. (Superseded for the new, differently marked `.gitignore` block by prd-17.)
+tasks/prd-12-refatoracao-modo-leve-modo-unico\prd.md:51:| FR-08 | `init` no longer installs, and `remove` no longer handles, the protocol file, the reference blocks in instruction files, the `.gitignore` block, or the state files. (Superseded for the
+README CR bytes (node byte count, 0x0D): 0 of 34469 bytes
+
+--- repo-wide search for the old statements (excluding node_modules, dist, coverage, prd-17, review and QA folders)
+.\tests\unit\readme-gitignore.test.ts:21:  it('no longer says ContextBrake never touches .gitignore (FR-10, TC-10)', () => {
+.\tests\unit\readme-gitignore.test.ts:22:    expect(readme).not.toContain('it does not touch `.gitignore`');
+.\tasks\prd-12-refatoracao-modo-leve-modo-unico\techspec.md:145:  - `init` and `remove` no longer touch instruction files or `.gitignore`. (Superseded for the new, differently marked `.gitignore` block by prd-17.)
+exit=0
+
+Note: an initial grep -c with a CR pattern reported 362 (the README line count); the CR was lost in the shell pattern, so it matched every line. The node byte count above (0 CR bytes) replaced that line.

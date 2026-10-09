@@ -1,0 +1,80 @@
+=== layout=plain fixture=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\ps-plain-f0b04294 (PowerShell 7.6.6, .gitignore = 'node_modules/\r\n')
+dry-run --json exit=0
+init --yes exit=0
+--- init stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- git status --porcelain -uall ---
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .gitignore
+--- .gitignore ---
+node_modules/
+
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.claude/hooks/context-brake-statusline.mjs
+/.claude/hooks/context-brake.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-statusline.json
+/context-brake.config.json
+# <<< context-brake <<<
+
+block written with CRLF: True
+second run planned changes: 0
+--- remove --yes exit=0 ---
+after remove byte-equal to original: True
+=== layout=junction fixture=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\ps-junction-cb1bebf6 (PowerShell 7.6.6, .gitignore = 'node_modules/\r\n')
+dry-run --json exit=0
+init --yes exit=0
+--- init stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; no snapshot command, so only zone headers will be injected (trigger: RED)
+--- git status --porcelain -uall ---
+?? .agents/settings.json
+?? .agents/settings.local.json
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .gitignore
+--- .gitignore ---
+node_modules/
+
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.agents/hooks/context-brake-statusline.mjs
+/.agents/hooks/context-brake.mjs
+/.claude/hooks/context-brake-statusline.mjs
+/.claude/hooks/context-brake.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-statusline.json
+/context-brake.config.json
+# <<< context-brake <<<
+
+block written with CRLF: True
+second run planned changes: 0
+--- remove --yes exit=0 ---
+after remove byte-equal to original: True

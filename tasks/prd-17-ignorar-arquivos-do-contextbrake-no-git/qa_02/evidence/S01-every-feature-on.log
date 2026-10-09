@@ -1,0 +1,184 @@
+# S01-every-feature-on
+
+$ git init -q -b main
+exit=0
+
+fixture C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s01-sFPCOo git=true claude=true codex=true gitignore="node_modules/\n"
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa02-runs\s01-sFPCOo) NO_COLOR=1 node dist/src/cli/main.js init --yes --auto-restart --statusline-bridge --debug --snapshot-command /qa-snap --harness claude-code --harness codex-cli
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [create] .claude/hooks/context-brake-statusline.mjs (runtime_asset)
+    [create] .claude/hooks/context-brake.mjs (runtime_asset)
+    [update] .claude/settings.json (harness_entry)
+    [create] .claude/settings.local.json (harness_entry)
+    [update] .codex/hooks.json (harness_entry)
+    [create] .codex/hooks/context-brake.mjs (runtime_asset)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [create] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .context-brake/runtime/claude-statusline.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [create] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /qa-snap at RED; set the debug mode (agent prints context usage); turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  [OK] AUTO_RESTART_MODE: Restart is semi-automatic on codex-cli.
+    Impact: Semi-automatic restart: run /new; the new session resumes by itself.
+--- stderr ---
+--- end ---
+CHECK PASS S01 exit 0 :: exit=0
+created files: [
+ ".claude/hooks/context-brake-statusline.mjs",
+ ".claude/hooks/context-brake.mjs",
+ ".claude/settings.local.json",
+ ".codex/hooks/context-brake.mjs",
+ ".codex/hooks.json",
+ ".context-brake/.gitignore",
+ ".context-brake/claude-mod/.claude-plugin/marketplace.json",
+ ".context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json",
+ ".context-brake/claude-mod/context-brake-restart/hooks/hooks.json",
+ ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs",
+ ".context-brake/manifest.json",
+ ".context-brake/runtime/claude-mod-install.json",
+ ".context-brake/runtime/claude-statusline.json",
+ "context-brake.config.json"
+]
+.gitignore:
+node_modules/
+
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.claude/hooks/context-brake-statusline.mjs
+/.claude/hooks/context-brake.mjs
+/.codex/hooks/context-brake.mjs
+/.context-brake/.gitignore
+/.context-brake/claude-mod/.claude-plugin/marketplace.json
+/.context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json
+/.context-brake/claude-mod/context-brake-restart/hooks/hooks.json
+/.context-brake/claude-mod/context-brake-restart/hooks/register.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-mod-install.json
+/.context-brake/runtime/claude-statusline.json
+/context-brake.config.json
+# <<< context-brake <<<
+
+manifest:
+{
+  "schemaVersion": 1,
+  "packageVersion": "1.0.0",
+  "assets": [
+    {
+      "path": "context-brake.config.json",
+      "kind": "config",
+      "sha256": "0a9285e39ae01be3b5863a1116cef6e92fe10fafa87274938ce6689297e287c6"
+    },
+    {
+      "path": ".claude/hooks/context-brake.mjs",
+      "kind": "runtime_asset",
+      "sha256": "0919e350e2541e90c90a130640d52f7d40893cde2da5b6e01f6ea875cf4e1643"
+    },
+    {
+      "path": ".claude/hooks/context-brake-statusline.mjs",
+      "kind": "runtime_asset",
+      "sha256": "a4e86928fa76ca4ac47ef912b3f04c8f3aa984b36a5071f3dbd164b7a37e2afa"
+    },
+    {
+      "path": ".context-brake/claude-mod/.claude-plugin/marketplace.json",
+      "kind": "runtime_asset",
+      "sha256": "e71295f58bf141c4a90e3fe97fcc04a642915f377d37b5bce7792afe878e0d57"
+    },
+    {
+      "path": ".context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json",
+      "kind": "runtime_asset",
+      "sha256": "e5cad4f121bc7ea717f9cab17378383bcf4f165dcd06f1d6673db672a4f73ad8"
+    },
+    {
+      "path": ".context-brake/claude-mod/context-brake-restart/hooks/hooks.json",
+      "kind": "runtime_asset",
+      "sha256": "0dfcd8f97ca4751ac9ecd8a3e962b075b1412af9deb20b43ed72a4f5a8df5ddc"
+    },
+    {
+      "path": ".context-brake/claude-mod/context-brake-restart/hooks/register.mjs",
+      "kind": "runtime_asset",
+      "sha256": "124cb75e4bab0ba96e903e42e92f93973ac869344a8f3cee1dcb8d2b91868802"
+    },
+    {
+      "path": ".codex/hooks/context-brake.mjs",
+      "kind": "runtime_asset",
+      "sha256": "db6c8826314e25616a26b4f72415da1bc80fb8e12c5e107f316f28957a71215a"
+    },
+    {
+      "path": ".context-brake/.gitignore",
+      "kind": "runtime_asset",
+      "sha256": "9f27a3dfa624c731d12e6ed820923ad477400dee282a2b9c08f31584011df6c4"
+    }
+  ],
+  "entries": [
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "PostToolUse|*|.claude/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "SessionStart|startup|resume|clear|compact|.claude/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "identity": "Stop|*|.claude/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "codex-cli",
+      "path": ".codex/hooks.json",
+      "identity": "PostToolUse|*|.codex/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "codex-cli",
+      "path": ".codex/hooks.json",
+      "identity": "SessionStart|startup|resume|clear|compact|.codex/hooks/context-brake.mjs"
+    },
+    {
+      "harness": "codex-cli",
+      "path": ".codex/hooks.json",
+      "identity": "Stop|*|.codex/hooks/context-brake.mjs"
+    }
+  ]
+}
+
+
+$ git status --porcelain -uall
+exit=0
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .codex/hooks.json
+?? .gitignore
+
+git status --porcelain -uall:
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .codex/hooks.json
+?? .gitignore
+CHECK PASS S01 OBJ-01 no ContextBrake-owned file untracked :: []
+CHECK PASS S01 OBJ-01 every created file except harness configs is ignored :: []
+CHECK PASS S01 FR-01 block equals config+manifest+assets+runtime state :: block=["/.claude/hooks/context-brake-statusline.mjs","/.claude/hooks/context-brake.mjs","/.codex/hooks/context-brake.mjs","/.context-brake/.gitignore","/.context-brake/claude-mod/.claude-plugin/marketplace.json","/.context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json","/.context-brake/claude-mod/context-brake-restart/hooks/hooks.json","/.context-brake/claude-mod/context-brake-restart/hooks/register.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-mod-install.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"] expected=["/.claude/hooks/context-brake-statusline.mjs","/.claude/hooks/context-brake.mjs","/.codex/hooks/context-brake.mjs","/.context-brake/.gitignore","/.context-brake/claude-mod/.claude-plugin/marketplace.json","/.context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json","/.context-brake/claude-mod/context-brake-restart/hooks/hooks.json","/.context-brake/claude-mod/context-brake-restart/hooks/register.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-mod-install.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"]
+CHECK PASS S01 FR-01 anchored lines
+CHECK PASS S01 FR-01 mod files listed
+CHECK PASS S01 FR-01 both harness scripts listed
+CHECK PASS S01 FR-03 harness config files not listed
+CHECK PASS S01 FR-04 user content kept before block :: {"before":"node_modules/\n\n","after":"\n"}
+CHECK PASS S01 FR-04 text plan names .gitignore with summary

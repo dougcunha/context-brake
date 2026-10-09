@@ -1,0 +1,68 @@
+PASS S05 exit 0
+PASS S05 bytes before block = original + one inserted break + blank line (CRLF file)
+PASS S05 block written with CRLF
+PASS S05 second run byte-identical
+PASS S05 remove exit 0
+PASS S05 remove leaves original + inserted break only (HIL 2 OI-01)
+PASS S05b LF: before block = original + blank line
+PASS S05b second run identical
+PASS S05b OBJ-05 remove restores original byte for byte
+PASS S05c OBJ-05 CRLF round trip byte for byte
+PASS S06 start-only: conflict GITIGNORE_MARKERS_MALFORMED naming .gitignore
+PASS S06 start-only: .gitignore untouched
+PASS S06 start-only: rest of init applied (config and hook written)
+PASS S06 end-only: conflict GITIGNORE_MARKERS_MALFORMED naming .gitignore
+PASS S06 end-only: .gitignore untouched
+PASS S06 end-only: rest of init applied (config and hook written)
+PASS S06 two-pairs: conflict GITIGNORE_MARKERS_MALFORMED naming .gitignore
+PASS S06 two-pairs: .gitignore untouched
+PASS S06 two-pairs: rest of init applied (config and hook written)
+PASS S07 created with only the block
+PASS S07 remove deletes the block-only .gitignore
+PASS S08 block present after first init
+PASS S08 config has no gitIgnore key by default
+PASS S08 --no-gitignore exit 0
+PASS S08 --no-gitignore removes block, user content back
+PASS S08 config stores gitIgnore:false
+PASS S08 plain init keeps the opt-out
+PASS S08 --gitignore returns the block
+PASS S08 --gitignore drops the key
+PASS S08 both flags -> exit 64 with message
+PASS S08b --no-gitignore on fresh repo writes no .gitignore
+PASS S09 exit 0
+PASS S09 no .gitignore
+PASS S09 GITIGNORE_NO_GIT finding
+PASS S10 GITIGNORE_TRACKED_FILES finding
+PASS S10 finding names exact git rm --cached command
+PASS S10 finding severity ok
+PASS S10 index unchanged
+PASS S10 exit code equals untracked baseline
+PASS S10 text output shows the command
+PASS S11 junction: init exit 0
+PASS S11 junction: block lists link path /.claude/hooks/context-brake.mjs
+PASS S11 junction: block lists target path /.agents/hooks/context-brake.mjs
+PASS S11 junction: block lists link path /.claude/hooks/context-brake-statusline.mjs
+PASS S11 junction: block lists target path /.agents/hooks/context-brake-statusline.mjs
+PASS S11 junction: no settings file in block (FR-03)
+PASS S11 junction: no owned file untracked (OBJ-01)
+PASS S11 junction: git check-ignore matches .claude/hooks/context-brake.mjs
+PASS S11 junction: git check-ignore matches .agents/hooks/context-brake.mjs
+PASS S11 junction: git check-ignore matches .claude/hooks/context-brake-statusline.mjs
+PASS S11 junction: git check-ignore matches .agents/hooks/context-brake-statusline.mjs
+PASS S11 junction: second run plans 0 changes (FR-02, NFR-01)
+PASS S11 junction: remove exit 0
+PASS S11 junction: remove restores .gitignore byte for byte (OBJ-05)
+PASS S11 dir: init exit 0
+PASS S11 dir: block lists link path /.claude/hooks/context-brake.mjs
+PASS S11 dir: block lists target path /.agents/hooks/context-brake.mjs
+PASS S11 dir: block lists link path /.claude/hooks/context-brake-statusline.mjs
+PASS S11 dir: block lists target path /.agents/hooks/context-brake-statusline.mjs
+PASS S11 dir: no settings file in block (FR-03)
+PASS S11 dir: no owned file untracked (OBJ-01)
+PASS S11 dir: git check-ignore matches .agents/hooks/context-brake.mjs
+PASS S11 dir: git check-ignore matches .agents/hooks/context-brake-statusline.mjs
+PASS S11 dir: second run plans 0 changes (FR-02, NFR-01)
+PASS S11 dir: remove exit 0
+PASS S11 dir: remove restores .gitignore byte for byte (OBJ-05)
+TOTAL 66 FAILED 0
+b exit=0

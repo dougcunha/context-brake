@@ -1,0 +1,13 @@
+VALID init --yes --json
+VALID remove --yes --json
+VALID init --yes --json
+VALID init --yes --json
+VALID init --yes --json
+VALID init --yes --json
+VALID init --yes --json --gitignore
+VALID init --yes --json
+docs=8 invalid=0
+exit=0
+VALID init --dry-run --json (S13 PowerShell)
+docs=1 invalid=0
+exit=0

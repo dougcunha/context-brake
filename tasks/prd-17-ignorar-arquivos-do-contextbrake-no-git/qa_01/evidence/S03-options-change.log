@@ -1,0 +1,114 @@
+# S03-options-change
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s01-f8ni6F) NO_COLOR=1 node dist/src/cli/main.js init --yes --no-auto-restart
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  Planned changes:
+    [update] .claude/settings.local.json (harness_entry)
+    [delete] .context-brake/.gitignore (runtime_asset)
+    [delete] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [delete] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [delete] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [delete] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [update] .context-brake/manifest.json (manifest)
+    [delete] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /qa-snap at RED; turn off the automatic restart
+--- stderr ---
+--- end ---
+CHECK PASS S03 exit 0 (--no-auto-restart)
+.gitignore after --no-auto-restart:
+node_modules/
+
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.claude/hooks/context-brake-statusline.mjs
+/.claude/hooks/context-brake.mjs
+/.codex/hooks/context-brake.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-statusline.json
+/context-brake.config.json
+# <<< context-brake <<<
+
+CHECK PASS S03 mod lines removed
+CHECK PASS S03 block equals manifest list :: block=["/.claude/hooks/context-brake-statusline.mjs","/.claude/hooks/context-brake.mjs","/.codex/hooks/context-brake.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"] expected=["/.claude/hooks/context-brake-statusline.mjs","/.claude/hooks/context-brake.mjs","/.codex/hooks/context-brake.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"]
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s01-f8ni6F) NO_COLOR=1 node dist/src/cli/main.js init --yes --exclude-harness codex-cli
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: full support (planned)
+    * context_usage: Read from the token_count events of the session rollout file, whose format is undocumented; falls back to an estimate. The context window comes from the same event; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Semi-automatic restart: run /new; the new session resumes by itself.
+  - codex-cli: excluded by configuration
+  Planned changes:
+    [update] .codex/hooks.json (harness_entry)
+    [delete] .codex/hooks/context-brake.mjs (runtime_asset)
+    [update] .context-brake/manifest.json (manifest)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /qa-snap at RED
+--- stderr ---
+--- end ---
+CHECK PASS S03 exit 0 (--exclude-harness codex-cli)
+.gitignore after excluding codex:
+node_modules/
+
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.claude/hooks/context-brake-statusline.mjs
+/.claude/hooks/context-brake.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-statusline.json
+/context-brake.config.json
+# <<< context-brake <<<
+
+CHECK PASS S03 codex script line removed
+CHECK PASS S03 block equals manifest list after harness off :: block=["/.claude/hooks/context-brake-statusline.mjs","/.claude/hooks/context-brake.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"] expected=["/.claude/hooks/context-brake-statusline.mjs","/.claude/hooks/context-brake.mjs","/.context-brake/manifest.json","/.context-brake/runtime/claude-statusline.json","/context-brake.config.json"]
+
+$ (cwd=C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\c30cb916-4ed9-4032-b3fa-d81dfd756e24\scratchpad\qa-runs\s01-f8ni6F) NO_COLOR=1 node dist/src/cli/main.js init --yes --auto-restart
+exit=0
+--- stdout ---
+[OK] ContextBrake init (applied)
+  - claude-code: full support (planned)
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+  - codex-cli: excluded by configuration
+  Planned changes:
+    [update] .claude/settings.local.json (harness_entry)
+    [create] .context-brake/.gitignore (runtime_asset)
+    [create] .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+    [create] .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+    [update] .context-brake/manifest.json (manifest)
+    [update] .context-brake/runtime/claude-mod-install.json (harness_entry)
+    [update] .gitignore (gitignore)
+      Keep ContextBrake's files out of Git
+    [update] context-brake.config.json (config)
+      Configure ContextBrake active harnesses and zones; snapshot command /qa-snap at RED; turn on the automatic restart for interactive Claude Code
+  [OK] AUTO_RESTART_MODE: Restart is automatic on claude-code.
+    Impact: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+--- stderr ---
+--- end ---
+CHECK PASS S03 mod lines return with --auto-restart
+
+$ git status --porcelain -uall
+exit=0
+?? .claude/settings.json
+?? .claude/settings.local.json
+?? .codex/hooks.json
+?? .gitignore
+
+CHECK PASS S03 no owned file untracked after changes :: []

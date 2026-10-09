@@ -23,6 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
           submodules: false
 
       - name: Setup Node.js 20
@@ -64,10 +65,26 @@ jobs:
             npx tsx scripts/check-release-tag.ts
           fi
 
-      - name: Publish to npm with provenance
-        run: npm publish --access public --provenance
+      - name: Setup Node.js 24 for staged publishing
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install npm with staged publishing
+        run: npm install --global npm@11.20.0
+
+      - name: Stage the npm release with provenance
+        run: npm stage publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Ask for the staged release approval
+        run: |
+          {
+            echo "### npm release staged"
+            echo "Approve it with 2FA: \`npm stage list context-brake\`, then \`npm stage approve <stage-id>\`."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create GitHub Release
         run: |

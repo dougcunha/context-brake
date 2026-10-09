@@ -12,6 +12,7 @@ O ContextBrake adota um fluxo de release 100% automatizado via GitHub Actions (`
 - **Validação Pré-Publicação Estrita**: Execução sequencial de todos os gates (`schemas:check`, `dependencies:check`, `build`, `typecheck`, `lint`, `test`, `coverage`, `package:smoke`). Se qualquer verificação falhar, o pipeline aborta imediatamente sem publicar nenhum artefato.
 - **Sincronia Estrita de Versão**: O script `scripts/check-release-tag.ts` valida que a versão da tag Git (sem prefixo `v`) coincide com o campo `"version"` do `package.json`.
 - **npm Provenance com OIDC**: Publicação com atestação criptográfica de procedência (*SLSA / Sigstore*) utilizando a permissão `id-token: write` do GitHub Actions, comprovando publicamente no registro do npm que o pacote foi construído a partir do commit exato do repositório oficial.
+- **Aprovação Manual com 2FA (Staged Publishing)**: O workflow não publica direto. Ele envia a versão para a fila de *staged publishing* do npm com `npm stage publish`, e ela só fica pública depois que um mantenedor a aprova com 2FA (`npm stage approve`). O npm restringe desde julho de 2026 os tokens que ignoram o 2FA e vai retirar deles o publish direto (previsto para janeiro de 2027).
 - **GitHub Releases Automáticas**: Geração automática de release no GitHub com notas e changelog estruturados a partir dos commits.
 
 ---
@@ -28,16 +29,16 @@ Antes do primeiro release pelo GitHub Actions, o mantenedor deve provisionar o t
    - **Opção Recomendada (Granular Access Token)**:
      - **Token name**: `context-brake-github-release`
      - **Expiration**: Selecione a validade desejada (ex: 90 dias ou 1 ano).
-     - **Permissions**: Selecione **Read and write** exclusivamente para o pacote ou escopo do pacote `context-brake`.
+     - **Permissions**: Selecione **Read and write** (ou a opção que só permite *stage*) para o pacote `context-brake`. Antes do primeiro release o pacote ainda não existe, então use **All packages**.
+     - **Bypass two-factor authentication**: Deixe desmarcado. O *staged publishing* não exige 2FA para enviar à fila, e a aprovação sempre exige.
      - **IP allowlist**: Opcional (não preencher caso utilize runners públicos do GitHub Actions).
-   - **Opção Alternativa (Classic Automation Token)**:
-     - Caso utilize token clássico, selecione o tipo **Automation**. Esse tipo é projetado para CI/CD e não exige código 2FA interativo no momento do `npm publish`.
 4. Copie o valor do token gerado imediatamente (ele não será exibido novamente).
 
 ### 2.2. Requisitos de Autenticação em Duas Etapas (2FA)
 
 - Contas de mantenedores no npm devem ter autenticação em duas etapas (2FA) habilitada.
-- Ao usar tokens do tipo *Granular Access Token* ou *Automation*, o npm autoriza publicações não-interativas originadas de pipelines de CI/CD sem bloquear por prompt de OTP no terminal.
+- O token do CI só envia a versão para a fila (`npm stage publish`, que não pede 2FA). A versão fica pública apenas quando um mantenedor a aprova com 2FA, pelo terminal ou em npmjs.com.
+- O *staged publishing* exige npm CLI 11.15.0 ou superior e Node 22.14.0 ou superior; o workflow instala Node 24 e npm 11.20.0 só para essa etapa.
 
 ### 2.3. Adição do Segredo no Repositório GitHub
 
@@ -113,8 +114,19 @@ git push origin v1.1.0
    - Testes unitários, de integração e ponta a ponta, com medição de cobertura;
    - Teste de fumaça de empacotamento (`package:smoke`);
    - Validação da tag via `scripts/check-release-tag.ts`;
-   - Publicação autenticada com provenance no npm;
+   - Envio da versão com provenance para a fila de aprovação do npm (`npm stage publish`);
    - Criação da GitHub Release associada à tag.
+
+### Passo 5: Aprovar a Versão no npm
+
+A versão só fica pública depois da sua aprovação com 2FA:
+
+```bash
+npm stage list context-brake
+npm stage approve <stage-id>
+```
+
+O npm pede o código 2FA. Para descartar a versão, use `npm stage reject <stage-id>`. A aprovação também pode ser feita em npmjs.com.
 
 ---
 
@@ -125,7 +137,7 @@ Caso seja necessário disparar o release manualmente sob demanda (por exemplo, a
 1. Vá para a aba **Actions** no repositório GitHub.
 2. Na lista lateral esquerda, clique em **Release**.
 3. No painel superior direito, clique em **Run workflow**.
-4. No campo **Git tag to release (e.g. v1.0.0)**, informe a tag desejada.
+4. No campo **Git tag to release (e.g. v1.0.0)**, informe a tag desejada. O workflow faz checkout dessa tag, então o pacote é construído a partir do commit da tag.
 5. Clique no botão verde **Run workflow**.
 
 ---
@@ -154,7 +166,8 @@ Após a conclusão bem-sucedida do workflow:
 | Sintoma | Causa Provável | Solução |
 | --- | --- | --- |
 | Erro `Tag version "X.Y.Z" does not match package.json version` | A tag Git criada diverge do campo `"version"` no `package.json`. | Corrija o `package.json` ou exclua a tag local e remota (`git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z`) e crie a tag correspondente correta. |
-| Erro `403 Forbidden` ou `401 Unauthorized` no step de publicação | Secret `NPM_TOKEN` ausente, expirado ou com permissões insuficientes no npmjs.com. | Verifique se o segredo `NPM_TOKEN` está configurado em *Settings* → *Secrets and variables* → *Actions* e gere um novo token Granular/Automation no npmjs.com com escopo Read/Write. |
+| Erro `403 Forbidden` ou `401 Unauthorized` no step de publicação | Secret `NPM_TOKEN` ausente, expirado ou com permissões insuficientes no npmjs.com. Um `npm publish` direto também recebe 403 quando o token não ignora o 2FA. | Verifique se o segredo `NPM_TOKEN` está configurado em *Settings* → *Secrets and variables* → *Actions* e se o workflow usa `npm stage publish`. Gere um novo token granular com Read/Write (ou *stage-only*) no npmjs.com. |
+| Versão não aparece no npm após o workflow passar | A versão está na fila de *staged publishing* aguardando aprovação. | Rode `npm stage list context-brake` e `npm stage approve <stage-id>` com 2FA. |
 | Erro `Cannot publish over existing version` (409 Conflict) | A versão já foi publicada anteriormente no npm. | O registro npm é imutável: versões publicadas não podem ser sobrescritas. Incremente a versão (`patch`, `minor` ou `major`) no `package.json` e crie uma nova tag. |
 | Falha no step `Package smoke test` | Arquivos TypeScript não compilados, diretórios proibidos (`tests/`, `tasks/`, `.agents/`) ou arquivos ausentes na lista `files` do `package.json`. | Execute `npm run package:smoke` localmente para identificar o arquivo divergente e ajuste o `package.json` ou scripts de build. |
 | Falha nos testes de cobertura | Cobertura de código ficou abaixo do piso mínimo de 80% configurado no `vitest.config.ts`. | Adicione testes unitários para cobrir os novos branches ou arquivos antes de gerar a tag. |

@@ -48,10 +48,19 @@ describe('release workflow step sequencing', () => {
 });
 
 describe('release workflow publication and github release', () => {
-  it('configures npm publish with provenance and masked token', async () => {
+  it('stages the npm release with provenance and a masked token for 2FA approval', async () => {
     const yaml = await loadWorkflow();
-    expect(yaml).toContain('npm publish --access public --provenance');
+    expect(yaml).toContain('node-version: 24');
+    expect(yaml).toContain('npm install --global npm@11.20.0');
+    expect(yaml).toContain('npm stage publish --access public --provenance');
+    expect(yaml).not.toMatch(/run: npm publish/);
     expect(yaml).toContain('NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}');
+    expect(yaml).toContain('npm stage approve');
+  });
+
+  it('builds the requested tag on a manual dispatch', async () => {
+    const yaml = await loadWorkflow();
+    expect(yaml).toContain('ref: ${{ github.event.inputs.tag || github.ref }}');
   });
 
   it('configures github release creation with auto notes', async () => {

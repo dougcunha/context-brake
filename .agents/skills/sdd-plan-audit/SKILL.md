@@ -21,7 +21,7 @@ An `architectural-analysis` report becomes **workstreams**: each workstream is a
    | --- | --- |
    | Preserves observable behavior: removal, consolidation, decomposition, coupling, layers, types, smells | `sdd-plan-refactoring` writes `prd.md` and `techspec.md` |
    | Fixes a defect and changes observable behavior: an error becomes reported or propagated, blocking I/O becomes asynchronous, a hook stops writing stray output | `sdd-create-prd`, then `sdd-create-techspec` |
-   | `tasks/prd-[slug]/` already has a PRD and TechSpec valid for the scope | Reused: no new contract |
+   | `tasks/prd-[slug]/` of a feature not yet completed already has a PRD and TechSpec valid for the scope | Reused: no new contract |
 
    When writing the map, read [assets/destinations.template.md](assets/destinations.template.md) in full; workstreams enter as `proposed`.
    **Output:** every actionable finding belongs to exactly one workstream; each workstream has a route and dependencies without cycles; map written.
@@ -36,4 +36,4 @@ An `architectural-analysis` report becomes **workstreams**: each workstream is a
 7. **Close the map.** Record on each `AA-NN` the workstream and tasks that cover it, read from the traceability matrix in `tasks.md`, or its final destination. Check that every actionable finding of a planned workstream appears in at least one task and that the map's links resolve. Present workstreams, execution order, risks, and pending items; implementation authorization stays with the user. Point the snapshot's next step at `sdd-orchestrate-tasks` for the first workstream, or mark it `closed`.
    **Output:** no finding without a destination in the map; execution indicated as `sdd-orchestrate-tasks --prd [slug]` in map order.
 
-New report on code with a previous map: reconcile findings by file and rule, preserve workstreams in progress, and number new workstreams after the highest existing one. A workstream whose source changes during planning invalidates only its own derivatives.
+New report on code with a previous map: reconcile findings by file and rule, preserve workstreams in progress, and number new workstreams after the highest existing one. A workstream whose source changes during planning invalidates only its own derivatives. A completed workstream whose folder the `commit` skill already removed counts as completed; the broken link in the map is not an error.

@@ -4,6 +4,8 @@ SDD skills write artifacts and code in the session that runs them; subagents are
 
 ## Session pause
 
+Under `sdd-orchestrate-flow` with a checkpoint in `mode: auto`, the Context and session section of that skill's `references/autonomous-mode.md` replaces the measurement and destinations below: the session neither estimates context nor asks, and reacts to ContextBrake telemetry.
+
 Runs at every **boundary** the calling skill names (between tasks, slices, or workstreams, at HIL gates, before review or QA, and at the end of standalone use), only after writes are persisted and no explorer or process is running.
 
 ### Measure the context

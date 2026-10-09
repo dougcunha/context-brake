@@ -18,7 +18,7 @@ Run in a session that did not write or change the code under test, or as a deleg
    **Output:** every end-to-end item marked `PASSED`, `FAILED`, or `NOT VERIFIABLE`, with evidence saved under `qa_[num]/evidence/`.
 5. Run the manual acceptance scripts the TechSpec lists, such as a real harness session where a fixture cannot represent the behavior, only when the environment and authorization exist. Record steps, observed result, and who ran it; an essential script that did not run stays `NOT VERIFIABLE`.
    **Output:** manual items executed with evidence, or explicitly pending.
-6. Record each failure as `BUG-NN` with obligation, reproduction command, expected and actual result, evidence path, severity, and suspected area. Do not change code, tests, tasks, or reviews: corrections belong to `sdd-plan-corrections` and `sdd-execute-corrections`, using this report as the source.
+6. Record each failure as `BUG-NN` with obligation, reproduction command, expected and actual result, evidence path, severity, and suspected area. Other features' artifacts are not evidence of expected behavior, and divergence between the code and them is not a `BUG-NN`: they are not maintained after the owning feature completes. Do not change code, tests, tasks, or reviews: corrections belong to `sdd-plan-corrections` and `sdd-execute-corrections`, using this report as the source.
    **Output:** reproducible findings, with no fix attempted by QA.
 7. Read [references/TEMPLATE.md](references/TEMPLATE.md) in full when issuing the report. Reserve the next free numeric suffix under `qa_[num]/`, considering all existing folders, and write a new `qa.md` with exactly one status:
    - `APPROVED`: every acceptance obligation verified and passing, including essential manual items.

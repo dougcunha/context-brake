@@ -1,4 +1,4 @@
-import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach } from 'vitest';
@@ -14,7 +14,7 @@ const EQUIVALENT_PREFIX = 'Equivalent command: context-brake init';
 export type AssistedRun = InProcessRunResult & { readonly asked: readonly string[] };
 
 export async function makeProject(options: { git?: boolean } = {}): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'cb-p16t05-'));
+  const root = await realpath(await mkdtemp(join(tmpdir(), 'cb-p16t05-')));
   await mkdir(join(root, '.claude'), { recursive: true });
   await mkdir(join(root, '.codex'), { recursive: true });
   await writeFile(join(root, '.claude/settings.json'), '{\n}\n', 'utf8');
@@ -24,7 +24,7 @@ export async function makeProject(options: { git?: boolean } = {}): Promise<stri
 }
 
 export async function copyProject(source: string): Promise<string> {
-  const target = await mkdtemp(join(tmpdir(), 'cb-p16t05-'));
+  const target = await realpath(await mkdtemp(join(tmpdir(), 'cb-p16t05-')));
   await cp(source, target, { recursive: true });
   return target;
 }

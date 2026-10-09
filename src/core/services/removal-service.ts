@@ -6,6 +6,7 @@ import type { DiagnosticFinding } from '../contracts/diagnostics.js';
 import { MANIFEST_RELATIVE_PATH, type InstallationManifest } from '../contracts/manifest.js';
 import { createChangePlan } from './change-plan-service.js';
 import { planHarnessRemovals } from './harness-removal.js';
+import { GITIGNORE_PATH, planGitIgnore } from './gitignore-plan.js';
 import { createRemovalFinding, planAssetDeletions, planRuntimeStateDeletions } from './removal-helper.js';
 
 export type RemovalInput = {
@@ -49,14 +50,16 @@ export async function planRemoval(input: RemovalInput): Promise<RemovalResult> {
   }
   const assetPlan = planAssetDeletions(input.manifest, input.allSnapshots, excludedAssetPaths);
   const hasConflicts = adapterResult.conflicts.length > 0 || assetPlan.conflicts.length > 0;
+  const ignore = hasConflicts ? null : planGitIgnore({ enabled: false, insideGit: true, paths: [], snapshot: input.allSnapshots.find((s) => s.path === GITIGNORE_PATH) });
   const plannedChanges: PlannedChange[] = [
     ...adapterResult.changes,
     ...assetPlan.changes,
     ...planRuntimeStateDeletions(input.runtimeStateSnapshots),
     ...planCoreDeletions(input, hasConflicts),
+    ...(ignore?.change ? [ignore.change] : []),
   ];
-  const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts];
-  const assetFindings = assetPlan.conflicts.map((c) => createRemovalFinding(c, null));
+  const conflicts: PlanConflict[] = [...adapterResult.conflicts, ...assetPlan.conflicts, ...(ignore?.conflicts ?? [])];
+  const assetFindings = [...assetPlan.conflicts, ...(ignore?.conflicts ?? [])].map((c) => createRemovalFinding(c, null));
   const findings: DiagnosticFinding[] = [...adapterResult.findings, ...assetFindings];
   const plan = createChangePlan({ projectRoot: input.projectRoot, plannedChanges, conflicts, snapshots: input.allSnapshots, harnesses: adapterResult.harnesses });
   return { plan, findings };

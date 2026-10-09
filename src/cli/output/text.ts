@@ -24,7 +24,7 @@ export function renderInstallText(report: InstallReport): void {
     stream.write('  Planned changes:\n');
     for (const c of report.plan.changes) {
       stream.write(`    [${c.kind}] ${c.path} (${c.owner})\n`);
-      if (report.command === 'init' && c.owner === 'config') stream.write(`      ${c.preview.summary}\n`);
+      if (report.command === 'init' && (c.owner === 'config' || c.owner === 'gitignore')) stream.write(`      ${c.preview.summary}\n`);
     }
   }
   if (report.plan.conflicts.length > 0) {

@@ -4,6 +4,7 @@ import type { FileSnapshot, PlannedChange } from '../contracts/changes.js';
 import { applySnapshot, type SnapshotUpdate } from './snapshot-merge.js';
 import { applyAutoRestart, type AutoRestartUpdate } from './auto-restart-merge.js';
 import { applyDebugMode, type DebugModeUpdate } from './debug-mode-merge.js';
+import { applyGitIgnore, type GitIgnoreUpdate } from './gitignore-merge.js';
 import { normalizeTurnLimits } from './config-legacy-checks.js';
 import type { DroppedKey } from '../validation/configuration-sanitizer.js';
 import { applyExclusion } from './harness-exclusion.js';
@@ -11,6 +12,7 @@ import { applyExclusion } from './harness-exclusion.js';
 const KEEP = { kind: 'keep' } as const;
 const CONFIG_KEY_ORDER = Object.keys(configurationSchema.shape);
 const DEBUG_SUMMARY = { set: 'set the debug mode (agent prints context usage)', remove: 'remove the debug mode' } as const;
+const GIT_IGNORE_SUMMARY = { set: 'stop listing ContextBrake files in .gitignore', remove: 'list ContextBrake files in .gitignore' } as const;
 const AUTO_RESTART_SUMMARY = { set: 'turn on the automatic restart for interactive Claude Code', remove: 'turn off the automatic restart' } as const;
 const CONFIG_SUMMARY = 'Configure ContextBrake active harnesses and zones';
 const DROPPED_SUMMARY = 'drop unrecognized keys:';
@@ -22,11 +24,19 @@ export type ConfigChangeInput = {
   snapshot?: FileSnapshot | null | undefined;
   snapshotUpdate?: SnapshotUpdate | undefined;
   debug?: DebugModeUpdate | undefined;
+  gitIgnore?: GitIgnoreUpdate | undefined;
   autoRestart?: AutoRestartUpdate | undefined;
   dropped?: readonly DroppedKey[] | undefined;
   excluded?: readonly HarnessId[] | undefined;
   retained?: readonly HarnessId[] | undefined;
 };
+
+type UpdatesOf = { snapshot: SnapshotUpdate; debug: DebugModeUpdate; gitIgnore: GitIgnoreUpdate; autoRestart: AutoRestartUpdate };
+
+function updatesOf(input: string | ConfigChangeInput): UpdatesOf {
+  if (typeof input === 'string') return { snapshot: KEEP, debug: KEEP, gitIgnore: KEEP, autoRestart: KEEP };
+  return { snapshot: input.snapshotUpdate ?? KEEP, debug: input.debug ?? KEEP, gitIgnore: input.gitIgnore ?? KEEP, autoRestart: input.autoRestart ?? KEEP };
+}
 
 export function planConfigChange(
   rootOrInput: string | ConfigChangeInput,
@@ -40,10 +50,8 @@ export function planConfigChange(
   const excluded = typeof rootOrInput === 'string' ? undefined : rootOrInput.excluded;
   const retained = typeof rootOrInput === 'string' ? [] : rootOrInput.retained ?? [];
   const merged = Array.from(new Set([...(curr?.activeHarnesses ?? []), ...act].filter((harness) => !(excluded ?? []).includes(harness)).concat(retained))).sort();
-  const update = typeof rootOrInput === 'string' ? KEEP : rootOrInput.snapshotUpdate ?? KEEP;
-  const debug = typeof rootOrInput === 'string' ? KEEP : rootOrInput.debug ?? KEEP;
-  const autoRestart = typeof rootOrInput === 'string' ? KEEP : rootOrInput.autoRestart ?? KEEP;
-  const base = applyDebugMode(applySnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update), debug);
+  const { snapshot: update, debug, gitIgnore, autoRestart } = updatesOf(rootOrInput);
+  const base = applyGitIgnore(applyDebugMode(applySnapshot(curr ? { ...curr, activeHarnesses: merged, telemetry: normalizeTurnLimits(curr.telemetry) } : { ...DEFAULT_CONFIG, activeHarnesses: merged }, update), debug), gitIgnore);
   const config: ContextBrakeConfig = inSchemaOrder(applyExclusion(applyAutoRestart(base, autoRestart), excluded));
   const content = `${JSON.stringify(config, null, 2)}\n`;
   const defaultPath = resolve(root, 'context-brake.config.json').replace(/\\/g, '/');
@@ -54,7 +62,7 @@ export function planConfigChange(
     kind: curr ? 'update' : 'create',
     owner: 'config',
     content,
-    preview: { summary: configSummary({ snapshot: config.snapshot ?? DEFAULT_SNAPSHOT, debug, autoRestart, dropped: typeof rootOrInput === 'string' ? [] : rootOrInput.dropped ?? [] }) },
+    preview: { summary: configSummary({ snapshot: config.snapshot ?? DEFAULT_SNAPSHOT, debug, gitIgnore, autoRestart, dropped: typeof rootOrInput === 'string' ? [] : rootOrInput.dropped ?? [] }) },
   };
   return { config, change };
 }
@@ -66,14 +74,15 @@ function autoRestartSummary(update: Exclude<AutoRestartUpdate, { kind: 'keep' }>
   if (update.kind === 'set' && update.maxConsecutiveRestarts !== undefined) return `${AUTO_RESTART_SUMMARY.set}, at most ${update.maxConsecutiveRestarts} consecutive restarts`;
   return AUTO_RESTART_SUMMARY[update.kind];
 }
-type SummaryUpdates = { snapshot: SnapshotConfig; debug: DebugModeUpdate; autoRestart: AutoRestartUpdate; dropped: readonly DroppedKey[] };
+type SummaryUpdates = { snapshot: SnapshotConfig; debug: DebugModeUpdate; gitIgnore: GitIgnoreUpdate; autoRestart: AutoRestartUpdate; dropped: readonly DroppedKey[] };
 
 function configSummary(updates: SummaryUpdates): string {
-  const { snapshot, debug, autoRestart, dropped } = updates;
+  const { snapshot, debug, gitIgnore, autoRestart, dropped } = updates;
+  const gitIgnorePart = gitIgnore.kind === 'keep' ? [] : [GIT_IGNORE_SUMMARY[gitIgnore.kind]];
   const debugPart = debug.kind === 'keep' ? [] : [DEBUG_SUMMARY[debug.kind]];
   const autoRestartPart = autoRestart.kind === 'keep' ? [] : [autoRestartSummary(autoRestart)];
   const droppedPart = dropped.length === 0 ? [] : [`${DROPPED_SUMMARY} ${dropped.map((key) => key.path).join(', ')}`];
-  return [CONFIG_SUMMARY, snapshotSummary(snapshot), ...debugPart, ...autoRestartPart, ...droppedPart].join('; ');
+  return [CONFIG_SUMMARY, snapshotSummary(snapshot), ...debugPart, ...gitIgnorePart, ...autoRestartPart, ...droppedPart].join('; ');
 }
 function snapshotSummary(section: SnapshotConfig): string {
   if (section.command === undefined) return `no snapshot command, so only zone headers will be injected (trigger: ${section.triggerZone})`;

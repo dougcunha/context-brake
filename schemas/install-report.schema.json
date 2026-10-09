@@ -168,7 +168,8 @@
                   "harness_entry",
                   "runtime_asset",
                   "manifest",
-                  "runtime_state"
+                  "runtime_state",
+                  "gitignore"
                 ]
               },
               "beforeSha256": {

@@ -36,6 +36,7 @@ Harness event names, payload shapes, and config file formats stay inside that ha
 
 - ContextBrake is a CLI plus harness hooks and plugins. There is no web server, frontend, or browser UI, so skip port allocation, browser E2E, and visual or responsive checks. Tests run in process by default; `tests/e2e/` holds only a smoke set that runs the built CLI and built hooks against fixture repositories in temporary directories (`.agents/rules/tests.md`, Time Budget and Processes).
 - Commands must work on Linux, macOS, and Windows (PowerShell and Git Bash), including repositories whose instruction files are symlinks.
+- ContextBrake never edits instruction files. Its only change to the project `.gitignore` is the marked block that lists the files it owns in full, with the `--no-gitignore` opt-out (prd-17, `.agents/rules/file-changes.md`).
 
 ## Commands
 

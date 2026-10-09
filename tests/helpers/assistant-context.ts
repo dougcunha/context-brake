@@ -5,7 +5,7 @@ import type { HarnessDetection, HarnessId } from '../../src/core/contracts/harne
 import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
 import { ScriptedPrompts } from './scripted-prompts.js';
 
-export type ContextOptions = { readonly detected?: readonly HarnessId[]; readonly config?: Partial<ContextBrakeConfig> | null; readonly optOut?: boolean };
+export type ContextOptions = { readonly detected?: readonly HarnessId[]; readonly config?: Partial<ContextBrakeConfig> | null; readonly optOut?: boolean; readonly insideGit?: boolean };
 
 export function detection(harness: HarnessId): HarnessDetection {
   return { harness, state: 'project', evidence: [], selectedExplicitly: false, version: null, versionSource: null };
@@ -18,6 +18,7 @@ export function assistantContext(options: ContextOptions = {}): AssistantContext
     detections: (options.detected ?? ['claude-code']).map(detection),
     adapters: getAllAdapters(),
     hasStatuslineOptOut: options.optOut === true,
+    insideGit: options.insideGit === true,
   };
 }
 

@@ -13,12 +13,13 @@ const EQUIVALENT_PREFIX = 'Equivalent command: context-brake init';
 
 export type AssistedRun = InProcessRunResult & { readonly asked: readonly string[] };
 
-export async function makeProject(): Promise<string> {
+export async function makeProject(options: { git?: boolean } = {}): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'cb-p16t05-'));
   await mkdir(join(root, '.claude'), { recursive: true });
   await mkdir(join(root, '.codex'), { recursive: true });
   await writeFile(join(root, '.claude/settings.json'), '{\n}\n', 'utf8');
   await writeFile(join(root, '.codex/hooks.json'), '{\n}\n', 'utf8');
+  if (options.git === true) await mkdir(join(root, '.git'), { recursive: true });
   return root;
 }
 

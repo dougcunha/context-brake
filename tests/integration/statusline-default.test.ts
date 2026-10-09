@@ -33,7 +33,7 @@ describe('default bridge with unparseable local settings (prd-09 DEC-08, TC-09, 
   beforeEach(async () => { await writeFile(join(world.root, LOCAL_PATH), MALFORMED); });
   it('warns instead of failing a plain init, installs the hooks, and leaves the file untouched', async () => {
     const report = await runJson(world, PLAIN);
-    expect([report.exitCode, report.findings.map((finding) => finding.code)]).toEqual([1, ['STATUSLINE_SETTINGS_INVALID']]);
+    expect([report.exitCode, report.findings.map((finding) => finding.code)]).toEqual([1, ['STATUSLINE_SETTINGS_INVALID', 'GITIGNORE_NO_GIT']]);
     expect(await readWorldFile(world, '.claude/settings.json')).toContain('context-brake');
     expect(await readWorldFile(world, LOCAL_PATH)).toBe(MALFORMED);
     expect(await exists(STATE_PATH)).toBe(false);

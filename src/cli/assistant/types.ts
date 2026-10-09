@@ -8,6 +8,7 @@ export type AssistantContext = {
   readonly detections: readonly HarnessDetection[];
   readonly adapters: readonly HarnessAdapter[];
   readonly hasStatuslineOptOut: boolean;
+  readonly insideGit: boolean;
 };
 
 export type HarnessRestartFact = { readonly harness: HarnessId; readonly mode: HarnessRestartMode };
@@ -22,6 +23,7 @@ export type AssistantFacts = {
   readonly restartModes: readonly HarnessRestartFact[];
   readonly statuslineBridge: boolean | null;
   readonly debug: boolean;
+  readonly gitIgnore: boolean | null;
 };
 
 export type AssistantResult = { readonly flags: readonly string[]; readonly facts: AssistantFacts };

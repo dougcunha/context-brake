@@ -152,6 +152,9 @@
     "debug": {
       "type": "boolean"
     },
+    "gitIgnore": {
+      "type": "boolean"
+    },
     "autoRestart": {
       "type": "object",
       "properties": {

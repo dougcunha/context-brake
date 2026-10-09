@@ -16,6 +16,10 @@ export function assertMaxRestartsCompatible(maxRestarts: number | undefined, noA
   if (maxRestarts !== undefined && noAutoRestart) throw new CliArgumentError(MAX_RESTARTS_CONFLICT);
 }
 
+export function assertGitIgnoreCompatible(flags: { readonly gitignore: boolean; readonly noGitignore: boolean }): void {
+  if (flags.gitignore && flags.noGitignore) throw new CliArgumentError('--gitignore cannot be combined with --no-gitignore.');
+}
+
 export function assertInteractiveCompatible(flags: { readonly interactive: boolean; readonly yes: boolean; readonly json: boolean }): void {
   if (!flags.interactive) return;
   if (flags.yes) throw new CliArgumentError('--interactive cannot be combined with --yes.');

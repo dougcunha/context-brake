@@ -1,6 +1,7 @@
 import type { FileSnapshot } from '../core/contracts/changes.js';
 import { MANIFEST_RELATIVE_PATH } from '../core/contracts/manifest.js';
 import { RESTART_LOG_RELATIVE_DIR } from '../core/contracts/restart-log.js';
+import { GITIGNORE_PATH } from '../core/services/gitignore-plan.js';
 import { MOD_FILES } from '../infrastructure/harnesses/claude-code/auto-restart-files.js';
 import { snapshotFiles } from '../infrastructure/storage/node-file-system.js';
 import { listRuntimeStateFiles } from '../infrastructure/storage/runtime-state-files.js';
@@ -19,7 +20,7 @@ const STANDARD_HARNESS_PATHS = [
 ] as const;
 
 export async function collectProjectSnapshots(root: string): Promise<FileSnapshot[]> {
-  return snapshotFiles(root, ['context-brake.config.json', MANIFEST_RELATIVE_PATH, ...STANDARD_HARNESS_PATHS]);
+  return snapshotFiles(root, ['context-brake.config.json', MANIFEST_RELATIVE_PATH, GITIGNORE_PATH, ...STANDARD_HARNESS_PATHS]);
 }
 
 export async function collectRestartLogSnapshots(root: string): Promise<FileSnapshot[]> {

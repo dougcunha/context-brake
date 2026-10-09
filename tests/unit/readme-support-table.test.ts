@@ -45,9 +45,10 @@ describe('README installation claims (T34, CR-05)', () => {
     expect(table.rows.get('oh-my-pi')?.[0]?.level).toBe('full');
   });
 
-  it('describes no instruction pointer or gitignore block (prd-12 FR-08, FR-12)', () => {
+  it('describes no instruction pointer or old gitignore block, only the managed block (prd-12 FR-08, FR-12, prd-17 FR-10)', () => {
     expect(table.source).not.toMatch(/CONTEXTBRAKE:(START|END)/);
-    expect(table.source).toContain('it never edits instruction files or `.gitignore`');
+    expect(table.source).toContain('it never edits instruction files');
+    expect(table.source).toContain('one marked block in the project `.gitignore`');
   });
 
   it('reports the indirect Antigravity telemetry without promising full support (prd-12 DEC-08)', () => {

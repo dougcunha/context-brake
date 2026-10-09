@@ -19,7 +19,7 @@ export async function runQuestions(context: AssistantContext, prompts: PromptPor
     facts: {
       selected: harness.selected, excluded: harness.excluded, snapshotCommand: snapshot.command, triggerZone: snapshot.triggerZone,
       resumeCommand: snapshot.resumeCommand, restartOn: restart.on, restartLimit: restart.limit, restartModes: restart.modes,
-      statuslineBridge: misc.statuslineBridge, debug: misc.debug,
+      statuslineBridge: misc.statuslineBridge, debug: misc.debug, gitIgnore: misc.gitIgnore,
     },
   };
 }

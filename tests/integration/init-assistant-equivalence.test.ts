@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { installReportSchema } from '../../src/core/contracts/diagnostics.js';
 import { makeProject, printedFlags, projectTree, removeProjects, replay, runAssisted } from '../helpers/assistant-world.js';
 
-type Scenario = { readonly name: string; readonly seed: readonly string[]; readonly answers: readonly string[]; readonly flags: readonly string[] };
+type Scenario = { readonly name: string; readonly seed: readonly string[]; readonly answers: readonly string[]; readonly flags: readonly string[]; readonly git?: boolean };
 
 const SPACED_SNAPSHOT_ANSWERS = ['', '/sdd snapshot', '', '', 'y', '3', '', '', 'y'];
 const STORED_RESTART = ['--snapshot-command', '/sdd-snapshot', '--auto-restart', '--max-restarts', '3'];
@@ -22,8 +22,14 @@ const STORED_SCENARIOS: readonly Scenario[] = [
   { name: 'stored status line opt-out reversed', seed: ['--no-statusline-bridge'], answers: ['', '', '', 'y', '', 'y'], flags: ['--statusline-bridge'] },
 ];
 
-async function seededProject(seed: readonly string[]): Promise<string> {
-  const root = await makeProject();
+const GIT_SCENARIOS: readonly Scenario[] = [
+  { name: 'git ignore turned off inside a Git folder', seed: [], git: true, answers: ['', '', '', '', '', 'n', 'y'], flags: ['--no-gitignore'] },
+  { name: 'stored git ignore opt-out turned back on', seed: ['--no-gitignore'], git: true, answers: ['', '', '', '', '', 'y', 'y'], flags: ['--gitignore'] },
+  { name: 'git ignore kept inside a Git folder', seed: [], git: true, answers: ['', '', '', '', '', '', 'y'], flags: [] },
+];
+
+async function seededProject(seed: readonly string[], git = false): Promise<string> {
+  const root = await makeProject({ git });
   if (seed.length > 0) expect((await replay(root, seed, ['--yes'])).code).toBeLessThanOrEqual(1);
   return root;
 }
@@ -32,9 +38,9 @@ describe('FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant ses
   const roots: string[] = [];
   afterEach(async () => { await removeProjects(...roots.splice(0)); });
 
-  it.each([...FRESH_SCENARIOS, ...STORED_SCENARIOS])('$name: same files as the replayed command and no further change (TC-10)', async ({ seed, answers, flags }) => {
-    const assisted = await seededProject(seed);
-    const replayed = await seededProject(seed);
+  it.each([...FRESH_SCENARIOS, ...STORED_SCENARIOS, ...GIT_SCENARIOS])('$name: same files as the replayed command and no further change (TC-10)', async ({ seed, answers, flags, git }) => {
+    const assisted = await seededProject(seed, git);
+    const replayed = await seededProject(seed, git);
     roots.push(assisted, replayed);
     const run = await runAssisted(assisted, answers);
     expect(run.code).toBeLessThanOrEqual(1);

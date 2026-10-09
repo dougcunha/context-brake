@@ -1,9 +1,10 @@
 import type { HarnessId } from '../../core/contracts/harness.js';
 import { askValidated, confirmSpec, yesNo } from './ask.js';
 import type { PromptPort } from './prompt-port.js';
+import { askGitIgnore } from './questions-gitignore.js';
 import type { AssistantContext } from './types.js';
 
-export type MiscChoice = { readonly statuslineBridge: boolean | null; readonly debug: boolean; readonly flags: readonly string[] };
+export type MiscChoice = { readonly statuslineBridge: boolean | null; readonly debug: boolean; readonly gitIgnore: boolean | null; readonly flags: readonly string[] };
 
 async function askBridge(context: AssistantContext, prompts: PromptPort): Promise<{ answer: boolean; flags: string[] } | null> {
   const fallback = !context.hasStatuslineOptOut;
@@ -20,5 +21,7 @@ export async function askMisc(context: AssistantContext, selected: readonly Harn
   const debug = await askValidated(prompts, confirmSpec('Print context usage to the agent (debug mode)?', wasDebug), yesNo(wasDebug));
   if (debug === null) return null;
   const debugFlags = debug.value === wasDebug ? [] : [debug.value ? '--debug' : '--no-debug'];
-  return { statuslineBridge: bridge.answer, debug: debug.value, flags: [...bridge.flags, ...debugFlags] };
+  const gitIgnore = await askGitIgnore(context, prompts);
+  if (gitIgnore === null) return null;
+  return { statuslineBridge: bridge.answer, debug: debug.value, gitIgnore: gitIgnore.answer, flags: [...bridge.flags, ...debugFlags, ...gitIgnore.flags] };
 }

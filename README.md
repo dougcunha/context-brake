@@ -26,7 +26,7 @@ Long-horizon tasks run by coding agents degrade as the session grows:
 
 ContextBrake plugs into the extension mechanism each harness already documents, hooks or plugins, and adds:
 
-- 🔍 **Detection and setup:** `context-brake init` finds the harnesses a project uses, registers the integration in each one's own configuration, and reports the support level it can guarantee. It writes only its configuration, its manifest, and the harness integration; it never edits instruction files or `.gitignore`.
+- 🔍 **Detection and setup:** `context-brake init` finds the harnesses a project uses, registers the integration in each one's own configuration, and reports the support level it can guarantee. It writes only its configuration, its manifest, and the harness integration, plus one marked block in the project `.gitignore` that keeps those files out of Git; it never edits instruction files.
 - 🚦 **Telemetry:** as soon as the session leaves `GREEN`, or context usage reaches the activation threshold, tool results reach the agent with the session turn, context usage (measured by the harness or estimated), zone, and recommended action.
 - 🪓 **Advisory brake:** from the trigger zone on, the action names your snapshot command, such as a skill that saves the session's state, and asks the agent to end its reply with `[REQUEST_SESSION_RESET]`. Without a snapshot command, the action only tells the agent to wrap up. Tool calls always run.
 - 🔁 **Resume:** after `/clear`, `/new`, or compaction, harnesses that inject context at session start tell the new session to run your resume command. In interactive Claude Code, the [automatic restart](#automatic-restart-in-claude-code) can clear the session for you.
@@ -122,7 +122,7 @@ npx context-brake init --yes --snapshot-command "/sdd-snapshot" --resume-command
 2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments, and installs the [status line bridge](#claude-code-status-line-bridge) for Claude Code.
 3. **Initializes config:** Creates `context-brake.config.json` with the telemetry limits and the `snapshot` section, and records the installed files in `.context-brake/manifest.json`.
 
-It does not touch instruction files such as `CLAUDE.md` and `AGENTS.md`, and it does not touch `.gitignore`. Runtime state lives in `.context-brake/runtime/`, which carries its own `.gitignore`.
+It does not touch instruction files such as `CLAUDE.md` and `AGENTS.md`. The only change it makes to your `.gitignore` is the marked block described in [Keeping ContextBrake Out of Git](#keeping-contextbrake-out-of-git). Runtime state lives in `.context-brake/runtime/`, which carries its own `.gitignore`.
 
 ### Interactive Setup
 
@@ -140,11 +140,29 @@ npx context-brake init --interactive --dry-run
 - **Confirming and cancelling:** the assistant shows the usual plan and asks the usual single confirmation. Ctrl+C or the end of input at any prompt prints `Nothing was written.` and exits with code 0, like a declined confirmation. With `--dry-run` it shows the plan and writes nothing. Typed configuration flags passed together with `--interactive` are not used; only `--dry-run` is.
 - **Git Bash on Windows:** Git Bash in mintty can report that stdin or stdout is not a terminal. Then a plain `init` keeps its non-interactive behavior and `--interactive` explains that the terminal is not interactive. [docs/research/terminal-tty.md](./docs/research/terminal-tty.md) holds the probe and the results per terminal.
 
+### Keeping ContextBrake Out of Git
+
+The files `init` creates belong to your machine and `init` can regenerate them, so inside a Git working tree it keeps them out of `git status`: it maintains one marked block in the `.gitignore` at the project root, with one line per file ContextBrake owns in full.
+
+```gitignore
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.context-brake/manifest.json
+/context-brake.config.json
+# <<< context-brake <<<
+```
+
+- **What is listed:** the configuration file, the manifest, every asset in the manifest (hook scripts, the Claude Code mod, `.context-brake/.gitignore`), and the state files `init` writes under `.context-brake/runtime/` (`claude-mod-install.json`, `claude-statusline.json`, and `claude-statusline-opt-out.json` when the status line bridge is off). Files `init` only edits, such as `.claude/settings.json` and `.codex/hooks.json`, are never listed, and neither are folders. When a harness folder is a link inside the repository (a symbolic link or a Windows junction), the block lists both the link path and the target path, so Git ignores the file through either path.
+- **Always current:** every `init` rebuilds the list from the manifest, so turning automatic restart or a harness on or off adds or removes the matching lines. Everything outside the markers stays byte for byte as it was, and the block appears in `--dry-run` and `--json` like any other change. If the markers are damaged, `init` reports `GITIGNORE_MARKERS_MALFORMED` and leaves the file alone.
+- **Opting out:** a team that wants to version the configuration and the hooks runs `context-brake init --no-gitignore`. It removes the block, and the choice is stored (`"gitIgnore": false` in the configuration), so a plain `init` keeps it. `init --gitignore` turns it back on. The interactive setup asks the same question.
+- **Files Git already tracks:** an ignore rule does not hide a tracked file. `init` reports `GITIGNORE_TRACKED_FILES` with the exact `git rm --cached -- <files>` command, and never changes the Git index.
+- **Outside Git:** with no `.git` in the project or a parent folder, `init` creates no `.gitignore` and reports `GITIGNORE_NO_GIT`.
+- **Removal:** `context-brake remove` deletes the block and leaves the rest of the file; a `.gitignore` that held only the block is deleted. A file that ended without a line break keeps the one `init` added.
+
 ### Updating and Removal
 
 - **Updating:** Running `npx context-brake init --yes` is idempotent. Run it again after upgrading ContextBrake to refresh runtime assets without touching your custom settings.
 - **Upgrading from turn-based limits:** earlier versions blocked tool calls after 12 turns and wrote `turnCeiling`, `criticalTurn`, `greenMaxTurn`, and `yellowMaxTurn` into the config. Those configs stay valid, but `doctor` reports `LEGACY_TURN_LIMITS`. Run `npx context-brake init --yes` once: it removes `turnCeiling` and `criticalTurn`, removes `greenMaxTurn` and `yellowMaxTurn` when they are the retired defaults 7 and 10, and keeps custom values as optional turn limits.
-- **Upgrading an installation from before the single mode:** the configuration keys `stateStorage`, `instructionFiles`, `brake`, `runner`, and the earlier mode keys are no longer recognized, and `init` and `doctor` report an invalid configuration that names each one. Delete those keys and run `npx context-brake init --yes` again. ContextBrake no longer manages the protocol file, the `CONTEXTBRAKE` marker blocks in instruction files and `.gitignore`, or the plan and checkpoint files, so remove them by hand if you no longer want them.
+- **Upgrading an installation from before the single mode:** the configuration keys `stateStorage`, `instructionFiles`, `brake`, `runner`, and the earlier mode keys are no longer recognized, and `init` and `doctor` report an invalid configuration that names each one. Delete those keys and run `npx context-brake init --yes` again. ContextBrake no longer manages the protocol file, the old `CONTEXTBRAKE` marker blocks in instruction files and `.gitignore` (the current block has different markers), or the plan and checkpoint files, so remove them by hand if you no longer want them.
 - **Downgrading:** a version older than this one rejects the `snapshot` section and expects the keys listed above. Run `context-brake remove` before installing an older package, then run its own `init`.
 - **Diagnostics:** Run `npx context-brake doctor` anytime to verify integration integrity, measure latency overhead, and check version compatibility.
 - **Uninstallation:** Run `npx context-brake remove` to delete the registered hooks, the installed assets, the configuration, the manifest, and the runtime files under `.context-brake/runtime/`. Harness settings you wrote, instruction files, and anything else under `.context-brake/` stay in place, and an installed file you edited is reported instead of deleted.
@@ -291,7 +309,7 @@ Each hook call has an internal deadline of 1.5 seconds; the session start event 
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. In a terminal with no other option, or with `--interactive`, it asks the [setup questions](#interactive-setup). |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive`, `--gitignore`, `--no-gitignore` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. In a terminal with no other option, or with `--interactive`, it asks the [setup questions](#interactive-setup). |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, snapshot settings, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json` | Uninstalls the integrations and deletes the configuration, the manifest, and the runtime files. |
 

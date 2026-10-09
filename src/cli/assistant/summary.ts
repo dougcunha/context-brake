@@ -16,6 +16,11 @@ function bridgeLine(facts: AssistantFacts): string {
   return `Status line bridge: ${facts.statuslineBridge ? 'yes' : 'no'}`;
 }
 
+function gitIgnoreLine(facts: AssistantFacts): string {
+  if (facts.gitIgnore === null) return 'Git ignore: not applicable (not a Git repository)';
+  return `Git ignore: ${facts.gitIgnore ? 'yes' : 'no'}`;
+}
+
 export function renderSummary(facts: AssistantFacts, command: readonly string[]): string[] {
   const excluded = facts.excluded.length === 0 ? '' : ` (turned off: ${facts.excluded.join(', ')})`;
   const equivalent = command.length === 1 ? [`Equivalent command: ${command[0]}`] : ['Equivalent command:', ...command.map((line) => `  ${line}`)];
@@ -26,6 +31,7 @@ export function renderSummary(facts: AssistantFacts, command: readonly string[])
     ...restartLines(facts).map((line) => `  ${line}`),
     `  ${bridgeLine(facts)}`,
     `  Debug mode: ${facts.debug ? 'on' : 'off'}`,
+    `  ${gitIgnoreLine(facts)}`,
     ...equivalent,
   ];
 }

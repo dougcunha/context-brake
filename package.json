@@ -2,6 +2,15 @@
   "name": "context-brake",
   "version": "1.0.0",
   "description": "Context telemetry and an advisory brake for coding-agent harnesses",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dougcunha/context-brake.git"
+  },
+  "homepage": "https://github.com/dougcunha/context-brake#readme",
+  "bugs": {
+    "url": "https://github.com/dougcunha/context-brake/issues"
+  },
   "type": "module",
   "bin": {
     "context-brake": "dist/src/cli/main.js"

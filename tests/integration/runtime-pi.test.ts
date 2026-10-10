@@ -1,30 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import type { RuntimeEvent } from '../../src/core/contracts/runtime.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
 import { mapPiEvent, mapPiInput, renderPiToolResult } from '../../src/infrastructure/harnesses/pi/runtime.js';
 
 const SESSION = { harness: 'pi', sessionId: 'pi-session-1', agentId: null } as const;
-
-function toolOf(event: RuntimeEvent | null): unknown {
-  return event !== null && 'tool' in event ? event.tool : null;
-}
+const FIXTURE_CHARACTERS = 61;
+const FIXTURE_TOOL = { name: 'bash', category: 'shell', paths: [], command: 'npm test' };
 
 describe('Pi runtime event mapping (RF1, RF3, RF12, TC-33)', () => {
-  it('maps tool_result fixtures and classifies the documented Pi tool names', async () => {
-    const fixture = mapPiEvent('tool_result', await loadHarnessPayload('pi', 'tool-result.json'), SESSION);
-    expect(toolOf(fixture)).toEqual({ name: 'bash', category: 'shell', paths: [], command: 'npm test' });
-    expect(toolOf(mapPiEvent('tool_result', { toolName: 'bash', input: { command: 'ls' } }, SESSION))).toEqual({ name: 'bash', category: 'shell', paths: [], command: 'ls' });
-    expect(toolOf(mapPiEvent('tool_result', { toolName: 'write', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_write', paths: ['src/a.ts'] });
-    expect(toolOf(mapPiEvent('tool_result', { toolName: 'read', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_read' });
-  });
-
-  it('maps the documented tool_result fixture and counts input plus content characters', async () => {
+  it('maps the documented tool_result fixture with its call identifier and character count, and classifies the documented Pi tool names', async () => {
     const payload = await loadHarnessPayload('pi', 'tool-result.json');
-    const event = mapPiEvent('tool_result', payload, SESSION) as { kind: string; toolUseId: string | null };
-    expect(event.kind).toBe('post_tool');
-    expect(event.toolUseId).toBe('call_pi_result');
-    const fixture = payload as { input: unknown; content: unknown };
-    expect(mapPiInput('tool_result', payload).observedCharacters).toBe(JSON.stringify(fixture.input).length + JSON.stringify(fixture.content).length);
+    const fixture = mapPiEvent('tool_result', payload, SESSION);
+    expect(fixture).toEqual({ kind: 'post_tool', session: SESSION, tool: FIXTURE_TOOL, toolUseId: 'call_pi_result' });
+    expect(mapPiInput('tool_result', payload)).toEqual({ observedCharacters: FIXTURE_CHARACTERS });
+    expect(mapPiEvent('tool_result', { toolName: 'bash', input: { command: 'ls' } }, SESSION)).toMatchObject({ tool: { name: 'bash', category: 'shell', paths: [], command: 'ls' } });
+    expect(mapPiEvent('tool_result', { toolName: 'write', input: { path: 'src/a.ts' } }, SESSION)).toMatchObject({ tool: { category: 'file_write', paths: ['src/a.ts'] } });
+    expect(mapPiEvent('tool_result', { toolName: 'read', input: { path: 'src/a.ts' } }, SESSION)).toMatchObject({ tool: { category: 'file_read' } });
   });
 
   it('maps session_start, session_compact, and message_end', async () => {

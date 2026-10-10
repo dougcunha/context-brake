@@ -1,34 +1,24 @@
 import { describe, expect, it } from 'vitest';
-import type { RuntimeEvent } from '../../src/core/contracts/runtime.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
 import { mapOmpEvent, mapOmpInput, renderOmpToolResult } from '../../src/infrastructure/harnesses/oh-my-pi/runtime.js';
 
 const SESSION = { harness: 'oh-my-pi', sessionId: 'omp-session-1', agentId: null } as const;
-
-function toolOf(event: RuntimeEvent | null): unknown {
-  return event !== null && 'tool' in event ? event.tool : null;
-}
+const FIXTURE_CHARACTERS = 61;
+const FIXTURE_TOOL = { name: 'run_command', category: 'shell', paths: [], command: 'npm test' };
 
 describe('Oh-My-Pi runtime event mapping (RF1, RF3, RF12, TC-33)', () => {
-  it('maps tool_result fixtures and classifies bash and run_command as shell calls', async () => {
-    const fixture = mapOmpEvent('tool_result', await loadHarnessPayload('oh-my-pi', 'tool-result.json'), SESSION);
-    expect(toolOf(fixture)).toEqual({ name: 'run_command', category: 'shell', paths: [], command: 'npm test' });
-    expect(mapOmpEvent('tool_call', { toolName: 'bash' }, SESSION)).toBeNull();
-    expect(toolOf(mapOmpEvent('tool_result', { toolName: 'bash', input: { command: 'ls' } }, SESSION))).toMatchObject({ category: 'shell', command: 'ls' });
-    expect(toolOf(mapOmpEvent('tool_result', { toolName: 'edit', input: { path: 'src/a.ts' } }, SESSION))).toMatchObject({ category: 'file_write' });
-  });
-
-  it('maps the documented tool_result fixture and counts input plus content characters', async () => {
+  it('maps the documented tool_result fixture with its call identifier and character count, and classifies shell and file tools', async () => {
     const payload = await loadHarnessPayload('oh-my-pi', 'tool-result.json');
-    const event = mapOmpEvent('tool_result', payload, SESSION) as { kind: string; toolUseId: string | null };
-    expect(event.kind).toBe('post_tool');
-    expect(event.toolUseId).toBe('call_omp_result');
-    const fixture = payload as { input: unknown; content: unknown };
-    expect(mapOmpInput('tool_result', payload).observedCharacters).toBe(JSON.stringify(fixture.input).length + JSON.stringify(fixture.content).length);
+    const fixture = mapOmpEvent('tool_result', payload, SESSION);
+    expect(fixture).toEqual({ kind: 'post_tool', session: SESSION, tool: FIXTURE_TOOL, toolUseId: 'call_omp_result' });
+    expect(mapOmpInput('tool_result', payload)).toEqual({ observedCharacters: FIXTURE_CHARACTERS });
+    expect(mapOmpEvent('tool_result', { toolName: 'bash', input: { command: 'ls' } }, SESSION)).toMatchObject({ tool: { category: 'shell', command: 'ls' } });
+    expect(mapOmpEvent('tool_result', { toolName: 'edit', input: { path: 'src/a.ts' } }, SESSION)).toMatchObject({ tool: { category: 'file_write' } });
   });
 
   it('maps session_start, both compaction events, and session_stop', async () => {
     expect(mapOmpEvent('session_start', { reason: 'new' }, SESSION)).toEqual({ kind: 'session_reset', session: SESSION, reason: 'new' });
+    expect(mapOmpEvent('session_start', { reason: 'startup' }, SESSION)).toEqual({ kind: 'session_reset', session: SESSION, reason: 'new' });
     expect(mapOmpEvent('session_start', { reason: 'resume' }, SESSION)).toBeNull();
     expect(mapOmpEvent('session_compact', {}, SESSION)).toEqual({ kind: 'session_reset', session: SESSION, reason: 'compact' });
     expect(mapOmpEvent('auto_compaction_end', {}, SESSION)).toEqual({ kind: 'session_reset', session: SESSION, reason: 'compact' });

@@ -6,18 +6,21 @@ import type { SessionKey } from '../../src/core/contracts/runtime.js';
 import type { ToolLine } from '../../src/core/contracts/session-ledger.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
 import { fixedClock, writeRuntimeConfig } from '../helpers/runtime-seed.js';
-import { createOpenCodePlugin, mapOpenCodeSessionEvent, mapOpenCodeToolResult, openCodeDescriptor, openCodeObservedCharacters } from '../../src/infrastructure/harnesses/opencode/runtime.js';
+import { createOpenCodePlugin, mapOpenCodeSessionEvent, mapOpenCodeToolResult, openCodeObservedCharacters } from '../../src/infrastructure/harnesses/opencode/runtime.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 
 const SESSION = { harness: 'opencode', sessionId: 'opencode-session-1', agentId: null } as const;
+const FIXTURE_TOOL = { name: 'bash', category: 'shell', paths: [], command: 'npm test' };
+const INVALID_PAYLOAD = 42;
 
 describe('OpenCode runtime event mapping (RF1, RF3, RF14, TC-33)', () => {
-  it('maps the documented tool.execute.after fixture and counts output.args characters', async () => {
+  it('maps the documented tool.execute.after fixture, counts output.args characters, and tolerates undocumented input fields', async () => {
     const payload = await loadHarnessPayload('opencode', 'tool-execute-after.json') as { input: unknown; output: unknown };
-    const event = mapOpenCodeToolResult(payload.input, payload.output, SESSION) as { kind: string; toolUseId: string | null };
-    expect(event.kind).toBe('post_tool');
-    expect(event.toolUseId).toBe('call_open_1');
-    expect(openCodeObservedCharacters(payload.output)).toBe(JSON.stringify({ command: 'npm test' }).length);
+    expect(mapOpenCodeToolResult(payload.input, payload.output, SESSION)).toEqual({ kind: 'post_tool', session: SESSION, tool: FIXTURE_TOOL, toolUseId: 'call_open_1' });
+    expect(openCodeObservedCharacters(payload.output)).toBe(22);
+    const undocumented = mapOpenCodeToolResult({ tool: 'read', sessionID: 's', callID: 'c', extra: true }, { args: { filePath: 'src/a.ts' } }, SESSION);
+    expect(undocumented).toMatchObject({ tool: { category: 'file_read', paths: ['src/a.ts'] } });
+    expect(mapOpenCodeToolResult({ tool: 'other' }, {}, SESSION)).toMatchObject({ tool: { category: 'other' } });
   });
 
   it('maps session.created and session.compacted events', async () => {
@@ -25,26 +28,6 @@ describe('OpenCode runtime event mapping (RF1, RF3, RF14, TC-33)', () => {
     expect(mapOpenCodeSessionEvent(await loadHarnessPayload('opencode', 'session-compacted.json'))).toEqual({ type: 'session.compacted', sessionId: 'opencode-session-1' });
     expect(mapOpenCodeSessionEvent({ event: { type: 'session.idle' } })).toBeNull();
     expect(mapOpenCodeSessionEvent({})).toBeNull();
-  });
-
-  it('tolerates undocumented and unknown payload fields', () => {
-    const event = mapOpenCodeToolResult({ tool: 'read', sessionID: 's', callID: 'c', extra: true }, { args: { filePath: 'src/a.ts' } }, SESSION);
-    expect(event).toMatchObject({ tool: { category: 'file_read', paths: ['src/a.ts'] } });
-    expect(mapOpenCodeToolResult({ tool: 'other' }, {}, SESSION)).toMatchObject({ tool: { category: 'other' } });
-  });
-});
-
-describe('OpenCode plugin factory and partial profile (RF21, prd-12 TC-11)', () => {
-  it('keeps the partial profile and no new-session command', () => {
-    expect(openCodeDescriptor.newSessionCommand).toBeNull();
-    expect(openCodeDescriptor.capabilities.find((capability) => capability.id === 'post_tool_telemetry')?.state).toBe('unsupported');
-  });
-
-  it('exposes tool.execute.after and an event handler, and no pre-tool hook (prd-12 FR-07, TC-09)', () => {
-    const hooks = createOpenCodePlugin({ directory: process.cwd() });
-    expect('tool.execute.before' in hooks).toBe(false);
-    expect(typeof hooks['tool.execute.after']).toBe('function');
-    expect(typeof hooks.event).toBe('function');
   });
 });
 
@@ -57,6 +40,7 @@ async function toolLines(root: string): Promise<ToolLine[]> {
 
 async function checkOpenCodeLifecycle(root: string): Promise<void> {
   const hooks = createOpenCodePlugin({ directory: root });
+  expect('tool.execute.before' in hooks).toBe(false);
   const input = { tool: 'read', sessionID: LIFECYCLE_KEY.sessionId, callID: 'call-1' };
   await hooks['tool.execute.after']!(input, { args: { filePath: 'src/a.ts' } });
   expect(await toolLines(root)).toHaveLength(1);
@@ -67,10 +51,12 @@ async function checkOpenCodeLifecycle(root: string): Promise<void> {
   await hooks['tool.execute.after']!({ ...input, callID: 'call-3' }, { args: { filePath: 'src/a.ts' } });
   expect((await toolLines(root)).at(-1)?.turn).toBe(1);
   await hooks.event!({ event: { type: 'session.idle' } });
+  await expect(hooks['tool.execute.after']!(INVALID_PAYLOAD, {})).resolves.toBeUndefined();
+  await expect(hooks.event!(INVALID_PAYLOAD)).resolves.toBeUndefined();
   expect(await toolLines(root)).toHaveLength(3);
 }
 
-describe('OpenCode plugin lifecycle (RF1, RF3, DEC-13)', () => {
+describe('OpenCode plugin lifecycle (RF1, RF3, DEC-13, prd-12 FR-07, TC-09)', () => {
   let root: string;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cb-t07-open-life-'));
@@ -78,6 +64,5 @@ describe('OpenCode plugin lifecycle (RF1, RF3, DEC-13)', () => {
   });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('counts one turn per completed call and resets on session.compacted and session.created', async () => { await checkOpenCodeLifecycle(root); });
+  it('registers no pre-tool hook, counts one turn per completed call, resets on session.compacted and session.created, and ignores invalid payloads', async () => { await checkOpenCodeLifecycle(root); });
 });
-

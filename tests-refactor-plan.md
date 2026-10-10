@@ -76,7 +76,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 36 | brake/engine-failure-policy | brake-engine-debug, brake-engine-lifecycle, failure-policy, failure-policy-snapshot-reset, injection-policy, reset-notice (adapter channels now integration/reset-notice-channels) | src/core/services | K | 35 → 35 | done |
 | 37 | runtime/hosts | integration/hook-deadline, in-process-host, in-process-host-deadline, in-process-runtime, process-hook-host, process-hook-host-deadline, runtime-composition, runtime-paths | src/infrastructure/runtime | K | 38 → 34 | done |
 | 38 | storage/json-editing | json-document-editor, json-span-safety | src/infrastructure/storage | K | 23 → 21 | done |
-| 39 | storage/change-apply | change-plan-service, change-target, path-boundary, runtime-state-files, integration/change-applier, integration/directory-pruner, integration/safe-removal | src/core/services/change-plan-service, src/infrastructure/storage | K | 26 | pending |
+| 39 | storage/change-apply | change-plan-service, integration/change-target, -path-boundary, -runtime-state-files, -change-applier, -directory-pruner, -safe-removal | src/core/services/change-plan-service, src/infrastructure/storage | K | 26 → 33 | done |
 | 40 | gitignore/core | gitignore-block, gitignore-merge, gitignore-plan | src/core/services/gitignore-* | K | 28 | pending |
 | 41 | gitignore/integration | init-gitignore, -lifecycle, -tracked, -default-runner, remove-gitignore | src/cli/commands, gitignore-* | K | 20 | pending |
 | 42 | handoff/store | node-handoff-store, -expiry, -lock, handoff-deadline, handoff-deadline-hosts | src/infrastructure/storage, src/infrastructure/runtime | K | 21 | pending |
@@ -2247,7 +2247,7 @@ Survivors, equivalent or covered elsewhere: `hook-failure.ts` 13 (`projectRoot =
 ## 38. storage/json-editing — done 2026-10-10
 
 **Baseline:** 23 runner tests across the 2 files, green (`json-document-editor` 11, `json-span-safety` 12). Stryker (`--disableBail`) on `json-document-editor.ts`, `json-span-utils.ts`, `json-validator.ts` with these 2 files: **63.22%** (201 killed + 7 timeout, 76 survived, 45 no coverage); per file 66.67 / 68.72 / 46.75. Coverage proxy: lines 89.89%, branches 84.04% (`json-document-editor.ts` 31-32; `json-span-utils.ts` 21-23, 95-99; `json-validator.ts` 40-43, 52-54, 57-58).
-**Result:** 21 tests in the same 2 files, green. Stryker on the same sources: **83.28%** (267 killed + 7 timeout, 47 survived, 8 no coverage); per file 91.23 / 85.13 / 72.73. Coverage proxy: lines 97.97%, branches 93.1% (`json-span-utils.ts` 98-99, `json-validator.ts` 57-58). Related suites green: `integration/claude-preservation`, `codex-cursor-user-hooks`, `hook-event-cleanup`, `minified-config`, `minified-config-lifecycle`, `retired-hook-events`, `-copilot`, `-harnesses`, `user-hook-preservation`; `npm run typecheck` green.
+**Result:** 21 tests in the same 2 files, green. Stryker on the same sources: **83.28%** (267 killed + 7 timeout, 47 survived, 8 no coverage); per file 91.23 / 85.13 / 72.73. Coverage proxy: lines 97.97%, branches 93.1% (`json-span-utils.ts` 98-99, `json-validator.ts` 57-58). Related suites green: `integration/claude-preservation`, `codex-cursor-user-hooks`, `hook-event-cleanup`, `minified-config`, `minified-config-lifecycle`, `retired-hook-events`, `-copilot`, `-harnesses`, `user-hook-preservation`; `npm run typecheck` green. Commit `8267fb5`.
 
 Central finding: most baseline survivors came from `toContain`, `toBeDefined` and `JSON.parse(...).toEqual` assertions on a unit whose contract is bytes. Every edit assertion is now an exact `toBe` on the output text, which is the `tests.md` user-file mandate (byte for byte, including a second run) applied at the editor level.
 
@@ -2304,3 +2304,61 @@ No test added: a test of the expected bytes is red today, and one pinning `{\n  
 ### Questions `[?]`
 - Module 32's question (plan line 1918) is answered above: the emptied `hooks` key is a defect with two causes, one in the editor and one in the Cursor and Codex updaters. Confirm whether to fix them in a production change.
 - Decision 3 for pure text transforms: kept in `tests/unit/` (see Layout). Confirm, or move both with `git mv`.
+
+## 39. storage/change-apply — done 2026-10-10
+
+**Baseline:** 26 runner tests across the 7 files, green. Stryker (`--disableBail`) on `change-plan-service.ts`, `manifest-change.ts`, `change-applier.ts`, `change-target.ts`, `path-boundary.ts`, `directory-pruner.ts`, `runtime-state-files.ts`, `atomic-writer.ts`: **61.73%** (276 killed + 3 timeout, 103 survived, 70 no coverage); per file 69.51 / 0 / 65.14 / 75.00 / 40.22 / 69.47 / 89.47 / 72.73. Coverage proxy (same 8 sources): lines 86.55%, branches 80.89%.
+**Result:** 33 tests, green; `change-target`, `path-boundary` and `runtime-state-files` now under `tests/integration/` (Decision 3). Stryker on the same sources: **72.79%** (326 killed + 3 timeout, 73 survived, 50 no coverage); per file 82.93 / 0 / 78.90 / 75.00 / 55.43 / 78.95 / 94.74 / 72.73 (no file dropped). Coverage proxy: lines 89.24%, branches 83.63% (`change-plan-service.ts` 100% lines; `path-boundary.ts` lines unchanged, branches 62.96% → 61.53% from V8 branch counting on the same uncovered lines 19-20, 58, 71-72). Related suites green: `symlinked-harness-config`, `symlinked-harness-lifecycle`, `linked-project-root-lifecycle`, `init-remove-footprint`, `runtime-state-removal`, `init-plan`, `unit/test-lanes`; `npm run typecheck` green. Commit `<pending>`.
+
+`manifest-change.ts` stays at 0% in both runs: no module test executes it (install-only, through `installation-service`; module 24's `init-*` suites assert the manifest end to end). The `--mutate` list is unchanged so the scores compare.
+
+### Levels
+`change-plan-service.ts`, `change-applier.ts`, `path-boundary.ts`, `change-target.ts`, `directory-pruner.ts` → Critical (the plan shared by preview and apply, the precondition that protects user edits, the write boundary, directory deletion). `runtime-state-files.ts` and `atomic-writer.ts` `deleteFileIfExists` → Common. `manifest-change.ts` → Common, covered through `init`.
+
+Layout: `change-plan-service.test.ts` stays in `tests/unit/` (pure `src/core` service, no I/O). The three unit files that create temp directories and junctions against `src/infrastructure/` moved with `git mv` (no lane entries, no name collisions).
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| changes sorted by path with before/after hashes; harnesses sorted (UT-10, CA-11) | `afterSha256` → null; harness `sort` removed (65) | `orders changes and harnesses and records the before and after hashes` |
+| input conflicts kept and sorted next to valid changes (UT-05, CA-06) | conflict `sort` removed (64) | `isolates conflicts sorted by path…` |
+| no-op update omitted, no confirmation (CA-05) | equal-hash guard removed | `omits no-op modifications…` |
+| two planned changes for one target: identical ones planned once, different ones a `CONFLICTING_CHANGES` conflict | `if (existing)` and content comparison (39-41, no coverage) | `plans an identical duplicate once`, `reports a duplicate with other content as a conflict` |
+| a delete, update or create with no matching snapshot is a `SNAPSHOT_MISSING` conflict (UT-11, CA-12) | `!snap` → `false` | `reports a delete, an update, and a create without a matching snapshot…` |
+| a delete of an absent file is silent | absent-delete skip removed | `skips a delete whose matching snapshot records an absent file` |
+| a target edited, created or deleted after the plan fails with its reason, keeps the user state, and the other changes still apply (IT-15, CA-05; FR-09, TC-05 for a runtime delete) | `beforeSha256 === null` branches (13-14, 21-23, no coverage); `some` → `every` (78) | `fails a target $label…` (4 rows, each with an applied sibling) |
+| an applied delete and a plan conflict give `warnings`, exit 1, exact outcomes (CA-12) | conflict outcome template (76) | `deletes the file and reports a plan conflict as a skipped warning` |
+| empty runtime directories are pruned recursively under `remove` (DEC-04) | `recursive: true` → `false` (23) | `prunes already-empty nested runtime directories…` (fixture now two levels deep) |
+| pruning never follows a linked runtime directory | `isSymbolicLink()` → `false` (59, no coverage) | `never prunes through a runtime directory that is a link` |
+| `remove` reports each non-empty runtime directory deepest first, never `.context-brake` itself (prd-14 FR-13, DEC-14) | `dirs.set(contextBrakeDir, false)` → `true` (47); runtime subdirectory flag → `false` (48) | `reports each runtime directory left non-empty, deepest first…` (exact outcomes) |
+| a write outside the project is refused: `..`, absolute, sibling sharing the root prefix, link pointing outside, and `..`/outside link through a linked root | `rootPrefix` without the trailing `/` (54:45) | `rejects $label` (6 rows) |
+| a missing path under a linked root resolves to its canonical target | ancestor walk | `accepts a missing path under a linked root…` (exact path, was `toContain`) |
+| change targets resolve through a linked directory, existing and missing (module 32 relies on it) | realpath branch (31-32); ancestor climb | `resolves %s under a link to the canonical target` (2 rows) |
+| runtime files listed as sorted POSIX paths | `.sort()` removed (15) | `lists nested files as sorted POSIX-relative paths` (top-level file now sorts after the nested one) |
+| `remove` keeps non-owned bytes, including after a second run (IT-09, TC-12, `tests.md` user files) | editor/updater removal | `preserves user settings…` (settings now exact bytes, plus a second `remove`) |
+
+### Actions
+- **Moved (Decision 3):** `change-target`, `path-boundary`, `runtime-state-files` `tests/unit/` → `tests/integration/`.
+- **Deleted (3):**
+  - `change-applier` `leaves directory snapshot completely identical in dry-run mode` (IT-08): 0 exclusive kills; `createChangePlan` is pure and `snapshotFiles` only reads, so no mutant of the dry-run path can turn it red. The dry-run guarantee lives in `init`/`remove` and is asserted by `integration/init-plan` E2E-06 (config absent after `--dry-run`), whose describe now carries IT-08 (title-only edit in module 24's file).
+  - `change-target` `resolves existing file to its canonical path`: 0 exclusive kills; the existing-file case is now a row resolved through a link, which still covers lines 31-32.
+  - `path-boundary` `identifies paths inside repository and rejects paths outside`: 0 exclusive kills; its `..` case is the first escape row, its `toContain` accept became the exact canonical-path test.
+- **Merged:** `change-target` single- and nested-missing link tests → one `it.each`; `change-plan-service` the two snapshot-missing tests → one test with all three kinds (identifiers kept in the describe); `directory-pruner` `fails the changed runtime file and never prunes its still non-empty directory` → the runtime row of the applier race `it.each` (FR-09, TC-05 in its title; the kept file content proves the directory stayed); `path-boundary` linked-root test → rows of the escape matrix.
+- **Rewritten:** plan ordering (exact hashes instead of `toBeDefined`), conflict isolation (two out-of-order conflicts), applier deletion (exact report), pruner reporting (exact outcome list; `keep.json` moved into `runtime/sessions`), `computeFileIdentity` (exact values instead of `toBeDefined`), `safe-removal` settings (exact bytes instead of a `JSON.parse` length).
+- **Created (7 rows/tests):** escape rows `an absolute path outside the root` (mandated escape case, untested before) and `a sibling directory sharing the root name prefix` (kills 54:45, a real escape on every platform); race rows `created after the plan` and `deleted after the plan` (13-14 and 21-23 had no coverage; the `deleted` mutant recreates a file the user removed); the two duplicate-target rows (39-41 had no coverage; Claude Code's `statusline-planner` and `auto-restart-planner` both plan `.claude/settings.local.json`); `never prunes through a runtime directory that is a link` (59 had no coverage; on Windows the mutant removes the user's junction).
+- **Kept:** `omits no-op…`, `skips a delete…`, `rejects out-of-root paths…` (change-target: `..` and outside link), `compares paths…` (only coverage of dead `arePathsEqual`), `deletes file if exists…`, the other two `listRuntimeStateFiles` tests (`falls back to entry.path…` has 0 exclusive kills on Node 24 but is the only test of the Node 20.0-20.11 `path` fallback), `prunes the emptied restart folders silently…`, `safe-removal`.
+
+Growth (26 → 33): the 7 created rows above; the escape matrix also turns inline assertions into runner-counted rows, since every escape case is kept.
+
+Mandated rows: user-file bytes after `remove` and after a second `remove`; every escape case (`..`, absolute, prefix sibling, outside link, linked root); a race on one file never blocks or reverts the other changes.
+
+Survivors, equivalent or unreachable: `change-plan-service.ts` 20 (Windows lowercasing: planners and snapshots both use `realpath`), 29 (wording), 40:48 (same content, different kind: no planner emits it), 53-54 (deletes always carry `null` content; an absent-file delete is skipped at 51), 65:45; `change-applier.ts` 11:53 (a Buffer hashes like the string), 13 (wording only), 40-44 (missing-content and unchanged guards: `createChangePlan` already drops both), 49-50 no-cov (write failure: the precondition read throws first for directories), 71 (a failed delete leaves its file, so the pruner never removes the directory); `change-target.ts`/`path-boundary.ts` 16/28 (the filesystem root always resolves), 33, 35/46 (`missing` always holds the basename), 52 (`resolve(root, '')` is the root), 54:22 (Windows paths never start with `/`), 55-58 (posix branch, no coverage on Windows; Linux CI runs it), 56:82 (target equal to the root: no caller passes it), 6-7 (wording), 70 no-cov (posix `dev:ino` branch); `directory-pruner.ts` 6 (`manifest` owner: only `remove` deletes manifest files under `.context-brake/`, and it adds that directory itself), 24/28/57/60-61 (a non-directory candidate fails `readdir` and is skipped anyway), 26 (Node < 20.12 fallback), 36/39/40 (a broader candidate set only reaches `rmdir`, which refuses non-empty directories), 64 (plural wording), 69-70 no-cov (`rmdir` race); `runtime-state-files.ts` 24 (non-ENOENT errors); `atomic-writer.ts` 12/14 (encoding, `sync` errors), 18-21 no-cov (temp-file cleanup when `rename` fails), 29.
+
+### Production pending items
+- `path-boundary.ts` `arePathsEqual`: no production caller. Remove it and its test together.
+- `FileSnapshot.fileIdentity` / `computeFileIdentity`: written by `snapshotFile`, never read. Use it or remove both with their test.
+- `change-applier.ts` 40-45: the missing-content and unchanged guards are unreachable through `createChangePlan`.
+- `change-applier.ts` `checkPrecondition`: a read error other than `ENOENT` (target became a directory, `EACCES`) rejects the whole `apply` after earlier changes were written, instead of a `failed` outcome for that target.
+- `change-target.ts` duplicates `path-boundary.ts` `findExistingAncestor` and canonical resolution; `resolveChangeTarget`'s second `assertWithinRepository` (line 44) repeats the first, which already resolves links.
+
+### Questions `[?]`
+- `atomic-writer.ts` 18-21 (temp file removed when `rename` fails; `file-changes.md` "never leaves a partial file") has no test anywhere; not added here (no cheap portable failure). Confirm whether it deserves one.

@@ -24,7 +24,7 @@ describe('E2E-05: Invalid adapter input yields partial installation (CA-06)', ()
   });
 });
 
-describe('E2E-06: Dry-run then confirmed run match (CA-11)', () => {
+describe('E2E-06, IT-08: Dry-run then confirmed run match (CA-11)', () => {
   let tempDir: string;
   beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-06-')); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });

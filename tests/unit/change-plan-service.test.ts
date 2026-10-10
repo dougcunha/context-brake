@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { FileSnapshot, PlannedChange } from '../../src/core/contracts/changes.js';
+import type { FileSnapshot, HarnessInstallPlan, PlannedChange } from '../../src/core/contracts/changes.js';
 import { createChangePlan, hashString, SNAPSHOT_MISSING_CODE } from '../../src/core/services/change-plan-service.js';
 
 const root = '/repo';
@@ -9,27 +9,26 @@ const snapB: FileSnapshot = { path: 'a.json', realPath: '/repo/a.json', exists: 
 const planA: PlannedChange = { path: 'b.json', realPath: '/repo/b.json', kind: 'update', owner: 'config', content: '{"v":2}', preview: { summary: 'Update b.json' } };
 const planB: PlannedChange = { path: 'a.json', realPath: '/repo/a.json', kind: 'create', owner: 'config', content: '{"v":1}', preview: { summary: 'Create a.json' } };
 
+function harnessPlan(harness: HarnessInstallPlan['harness']): HarnessInstallPlan {
+  return { harness, outcome: 'planned', supportLevel: 'full', limitations: [] };
+}
+
 describe('shared change plan between preview and apply (UT-10, CA-11)', () => {
-  it('shares one change plan between dry-run preview and apply', () => {
-    const plan = createChangePlan({ projectRoot: root, plannedChanges: [planA, planB], snapshots: [snapA, snapB] });
+  it('orders changes and harnesses and records the before and after hashes', () => {
+    const harnesses = [harnessPlan('cursor'), harnessPlan('claude-code')];
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [planA, planB], snapshots: [snapA, snapB], harnesses });
     expect(plan.requiresConfirmation).toBe(true);
-    expect(plan.changes).toHaveLength(2);
-    expect(plan.changes[0]?.path).toBe('a.json');
-    expect(plan.changes[0]?.beforeSha256).toBeNull();
-    expect(plan.changes[0]?.afterSha256).toBeDefined();
-    expect(plan.changes[1]?.path).toBe('b.json');
-    expect(plan.changes[1]?.beforeSha256).toBe(hashB1);
+    expect(plan.changes.map((change) => [change.path, change.beforeSha256, change.afterSha256])).toEqual([['a.json', null, hashB1], ['b.json', hashB1, hashString('{"v":2}')]]);
+    expect(plan.harnesses.map((harness) => harness.harness)).toEqual(['claude-code', 'cursor']);
   });
 });
 
 describe('conflict isolation and idempotence (UT-05, CA-05, CA-06)', () => {
-  it('isolates conflicts while allowing valid changes to be planned', () => {
-    const conflict = { path: 'broken.json', code: 'INVALID_HARNESS_CONFIG', detail: 'Syntax error' };
-    const plan = createChangePlan({ projectRoot: root, plannedChanges: [planB], snapshots: [snapB], conflicts: [conflict] });
-    expect(plan.conflicts).toHaveLength(1);
-    expect(plan.conflicts[0]?.code).toBe('INVALID_HARNESS_CONFIG');
-    expect(plan.changes).toHaveLength(1);
-    expect(plan.changes[0]?.path).toBe('a.json');
+  it('isolates conflicts sorted by path while allowing valid changes to be planned', () => {
+    const conflicts = [{ path: 'z.json', code: 'INVALID_HARNESS_CONFIG', detail: 'Syntax error' }, { path: 'broken.json', code: 'INVALID_HARNESS_CONFIG', detail: 'Syntax error' }];
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [planB], snapshots: [snapB], conflicts });
+    expect(plan.conflicts.map((conflict) => conflict.path)).toEqual(['broken.json', 'z.json']);
+    expect(plan.changes.map((change) => change.path)).toEqual(['a.json']);
   });
 
   it('omits no-op modifications when before and after hashes match', () => {
@@ -38,22 +37,25 @@ describe('conflict isolation and idempotence (UT-05, CA-05, CA-06)', () => {
     expect(plan.changes).toHaveLength(0);
     expect(plan.requiresConfirmation).toBe(false);
   });
+
+  it.each([
+    ['plans an identical duplicate once', planB, []],
+    ['reports a duplicate with other content as a conflict', { ...planB, content: '{"v":3}' }, ['CONFLICTING_CHANGES']],
+  ])('%s', (_label, duplicate, codes) => {
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [planB, duplicate], snapshots: [snapB] });
+    expect(plan.changes.map((change) => change.content)).toEqual(['{"v":1}']);
+    expect(plan.conflicts.map((conflict) => conflict.code)).toEqual(codes);
+  });
 });
 
 describe('planned changes without a matching snapshot become conflicts (UT-11, CA-11, CA-12)', () => {
-  it('reports a delete whose target has no matching snapshot instead of dropping it', () => {
-    const strayDelete: PlannedChange = { path: 'b.json', realPath: '/linked/repo/b.json', kind: 'delete', owner: 'manifest', content: null, preview: { summary: 'Delete b.json' } };
-    const plan = createChangePlan({ projectRoot: root, plannedChanges: [strayDelete], snapshots: [snapA, snapB] });
-    expect(plan.changes).toHaveLength(0);
-    expect(plan.conflicts).toEqual([expect.objectContaining({ path: 'b.json', code: SNAPSHOT_MISSING_CODE })]);
-  });
-
-  it('reports an update and a create without a matching snapshot as conflicts', () => {
+  it('reports a delete, an update, and a create without a matching snapshot instead of dropping them', () => {
+    const strayDelete: PlannedChange = { path: 'c.json', realPath: '/linked/repo/c.json', kind: 'delete', owner: 'manifest', content: null, preview: { summary: 'Delete c.json' } };
     const strayUpdate: PlannedChange = { ...planA, realPath: '/linked/repo/b.json' };
     const strayCreate: PlannedChange = { ...planB, realPath: '/linked/repo/a.json' };
-    const plan = createChangePlan({ projectRoot: root, plannedChanges: [strayUpdate, strayCreate], snapshots: [snapA, snapB] });
+    const plan = createChangePlan({ projectRoot: root, plannedChanges: [strayDelete, strayUpdate, strayCreate], snapshots: [snapA, snapB] });
     expect(plan.changes).toHaveLength(0);
-    expect(plan.conflicts.map((conflict) => conflict.code)).toEqual([SNAPSHOT_MISSING_CODE, SNAPSHOT_MISSING_CODE]);
+    expect(plan.conflicts.map((conflict) => [conflict.path, conflict.code])).toEqual([['a.json', SNAPSHOT_MISSING_CODE], ['b.json', SNAPSHOT_MISSING_CODE], ['c.json', SNAPSHOT_MISSING_CODE]]);
     expect(plan.requiresConfirmation).toBe(false);
   });
 });

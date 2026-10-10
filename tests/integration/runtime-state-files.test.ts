@@ -13,12 +13,12 @@ describe('listRuntimeStateFiles (FR-09, TC-05)', () => {
     await expect(listRuntimeStateFiles(root)).resolves.toEqual([]);
   });
 
-  it('lists nested files as POSIX-relative paths', async () => {
+  it('lists nested files as sorted POSIX-relative paths', async () => {
     await mkdir(join(root, '.context-brake/runtime/sessions'), { recursive: true });
-    await writeFile(join(root, '.context-brake/runtime/lock.json'), '{}', 'utf8');
+    await writeFile(join(root, '.context-brake/runtime/statusline.json'), '{}', 'utf8');
     await writeFile(join(root, '.context-brake/runtime/sessions/s1.json'), '{}', 'utf8');
     const files = await listRuntimeStateFiles(root);
-    expect(files).toEqual(['.context-brake/runtime/lock.json', '.context-brake/runtime/sessions/s1.json']);
+    expect(files).toEqual(['.context-brake/runtime/sessions/s1.json', '.context-brake/runtime/statusline.json']);
   });
 
   it('falls back to entry.path on Node versions where parentPath is undefined', async () => {

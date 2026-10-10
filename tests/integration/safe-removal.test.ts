@@ -6,7 +6,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runRemove } from '../../src/cli/commands/remove.js';
 import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 
-const LEGACY_CLAUDE_MD = '# My Instructions\n\n<!-- CONTEXTBRAKE:START -->\nfollow docs/context-brake-protocol.md\n<!-- CONTEXTBRAKE:END -->\n\n# User Section\nKeep this.';
+const USER_ONLY_SETTINGS = JSON.stringify({ hooks: { PostToolUse: [{ matcher: 'bash', hooks: [{ type: 'command', command: 'echo user-post' }] }] } }, null, 2);
+const LEGACY_CLAUDE_MD ='# My Instructions\n\n<!-- CONTEXTBRAKE:START -->\nfollow docs/context-brake-protocol.md\n<!-- CONTEXTBRAKE:END -->\n\n# User Section\nKeep this.';
 
 async function writeConfigAndManifest(root: string, hookSha: string) {
   const manifest = {
@@ -53,9 +54,10 @@ describe('IT-09: Removal leaves files it does not own untouched (CA-12, FR-08, T
     await setupInstalledRepo(tempDir);
     const code = await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
     expect(code).toBe(0);
-    const settings = JSON.parse(await readFile(join(tempDir, '.claude/settings.json'), 'utf8'));
-    expect(settings.hooks.PostToolUse).toHaveLength(1);
-    expect(settings.hooks.PostToolUse[0].matcher).toBe('bash');
+    const settings = await readFile(join(tempDir, '.claude/settings.json'), 'utf8');
+    expect(settings).toBe(USER_ONLY_SETTINGS);
+    await runRemove({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
+    expect(await readFile(join(tempDir, '.claude/settings.json'), 'utf8')).toBe(settings);
     expect(await readFile(join(tempDir, 'CLAUDE.md'), 'utf8')).toBe(LEGACY_CLAUDE_MD);
     expect(await readFile(join(tempDir, 'docs/context-brake-protocol.md'), 'utf8')).toBe('# ContextBrake Protocol');
     const planExists = await stat(join(tempDir, 'task_plan.json')).then(() => true).catch(() => false);

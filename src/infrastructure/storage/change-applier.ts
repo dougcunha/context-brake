@@ -5,6 +5,7 @@ import { pruneEmptyContextBrakeDirectories } from './directory-pruner.js';
 import { computeSha256 } from './node-file-system.js';
 
 export const FILE_CHANGED_CODE = 'FILE_CHANGED_SINCE_PREVIEW' as const;
+export const FILE_UNREADABLE_CODE = 'FILE_UNREADABLE' as const;
 
 async function checkPrecondition(change: FileChange): Promise<string | null> {
   try {
@@ -24,7 +25,7 @@ async function checkPrecondition(change: FileChange): Promise<string | null> {
       }
       return null;
     }
-    throw err;
+    return `${FILE_UNREADABLE_CODE}: ${(err as Error).message}`;
   }
 }
 

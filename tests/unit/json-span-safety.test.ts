@@ -69,3 +69,16 @@ describe('trailing comment ownership round trips (CR-01, T29.1)', () => {
     expect(removeJsonArrayItem(installed, ['items'], (v) => v === 2)).toBe(input);
   });
 });
+
+describe('empty container round trips (OI-07)', () => {
+  it.each([
+    { label: 'object', input: '{\n  "hooks": {}\n}\n', install: (text: string) => setJsonProperty(text, ['hooks', 'a'], 1), remove: (text: string) => removeJsonProperty(text, ['hooks', 'a']) },
+    { label: 'array', input: '{\n  "items": []\n}\n', install: (text: string) => appendJsonArrayItem(text, ['items'], 1), remove: (text: string) => removeJsonArrayItem(text, ['items'], (v) => v === 1) },
+  ])('gives back an empty $label after removing the only item it received', ({ input, install, remove }) => {
+    expect(remove(install(input))).toBe(input);
+  });
+
+  it('keeps a comment that shares the container with the removed only item', () => {
+    expect(removeJsonArrayItem('{"a":[ /* c */ 1]}', ['a'], (v) => v === 1)).toBe('{"a":[ /* c */ ]}');
+  });
+});

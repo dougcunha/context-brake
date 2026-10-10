@@ -49,6 +49,16 @@ describe('optimistic concurrency rejection (IT-15, CA-05, CA-11)', () => {
     expect(await readFile(join(dir, race.path), 'utf8').catch(() => null)).toBe(race.userEdit);
     expect(await readFile(join(dir, SIBLING), 'utf8')).toBe('sibling');
   });
+
+  it('fails a target that can no longer be read and still reports the other changes', async () => {
+    const plan = await planRace(RACES[0]!);
+    await rm(join(dir, 'settings.json'));
+    await mkdir(join(dir, 'settings.json'));
+    const report = await new NodeChangeApplier().apply(plan);
+    expect([report.status, report.exitCode]).toEqual(['errors', 2]);
+    expect(report.outcomes).toContainEqual({ path: 'settings.json', status: 'failed', detail: expect.stringMatching(/^FILE_UNREADABLE: EISDIR/) });
+    expect(report.outcomes).toContainEqual({ path: SIBLING, status: 'applied', detail: null });
+  });
 });
 
 describe('deletion and warnings outcome (CA-12)', () => {

@@ -41,7 +41,17 @@ function removeBeforeComma(text: string, node: Node, span: NodeSpan): string {
   if (comma === -1) return `${before}${text.slice(span.end)}`;
   return `${before}${text.slice(span.end, comma)}${text.slice(comma + 1)}`;
 }
+function emptyContainer(text: string, node: Node): string | undefined {
+  const container = node.parent;
+  if (container?.children?.length !== 1) return undefined;
+  const open = container.offset + 1;
+  const close = container.offset + container.length - 1;
+  const rest = `${text.slice(open, node.offset)}${text.slice(node.offset + node.length, close)}`;
+  return /^\s*$/.test(rest) ? `${text.slice(0, open)}${text.slice(close)}` : undefined;
+}
 export function removeNodeSpan(text: string, node: Node): string {
+  const emptied = emptyContainer(text, node);
+  if (emptied !== undefined) return emptied;
   const start = node.offset;
   const end = start + node.length;
   const lineStart = text.lastIndexOf('\n', start) + 1;

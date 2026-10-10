@@ -59,7 +59,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 19 | claude/statusline-planner | integration/statusline-context-window, statusline-default-conflicts, statusline-payload, statusline-planner, statusline-shell-resolution | src/infrastructure/harnesses/claude-code | C | 47 → 38 | done |
 | 20 | claude/statusline-diagnostics | integration/statusline-diagnostics, -shell, -symlink | src/infrastructure/harnesses/claude-code | C | 15 → 11 | done |
 | 21 | runtime/claude-codex | runtime-claude, runtime-claude-measured, claude-runtime-session-key, runtime-codex, runtime-codex-measured | harnesses/claude-code, harnesses/codex-cli | C | 31 → 29 | done |
-| 22 | runtime/process-harnesses | runtime-antigravity, runtime-copilot, runtime-cursor, runtime-assets, harness-schemas-process | harnesses/antigravity-cli, github-copilot-cli, cursor, common | C | 26 | pending |
+| 22 | runtime/process-harnesses | runtime-antigravity, runtime-copilot, runtime-cursor, runtime-assets, harness-schemas-process | harnesses/antigravity-cli, github-copilot-cli, cursor, common | C | 30 → 15 | done |
 | 23 | runtime/in-process-harnesses | runtime-omp, runtime-opencode, runtime-pi, omp-runtime-usage, pi-runtime-usage, harness-schemas-in-process | harnesses/oh-my-pi, opencode, pi | C | 30 | pending |
 | 24 | integration/init-install | init-assistant-cancel, init-assistant-equivalence, init-detection, init-idempotency, init-install, init-interactive-gate, init-plan, init-remove-footprint, multi-harness-install, detection-cross-signals | src/cli/commands | G | 29 | pending |
 | 25 | integration/init-exclusion | init-assistant-exclusion, init-exclusion, -conflicts, -edges, -removal | src/cli/commands, harness-exclusion | G | 16 | pending |
@@ -1239,7 +1239,7 @@ Doctor findings are human-facing warnings (`tests.md`: less depth); the plan cov
 ## 21. runtime/claude-codex — done 2026-10-10
 
 **Baseline:** 31 runner tests across the 5 files, green. Stryker: n/a (Common).
-**Result:** 29 tests across 5 files, green. Scoped coverage proxy (`claude-code/runtime.ts`, `claude-code/transcript-usage.ts`, `codex-cli/runtime.ts`, `codex-cli/rollout-usage.ts`): lines 95.89% → 95.89%, branches 87.38% → 88.39%, functions 82.6% → 82.6%; the uncovered lines are the same before and after (Claude `runtime.ts` branches 88% → 87.75% is a v8 branch-count shift with identical uncovered lines; Codex `runtime.ts` branches 87.5% → 90%). Left uncovered: Claude 31-32 and Codex 38-39 are `toolOf` fallthroughs of the unread tool classification (see Production pending items); 85-86 and 92-93 are the `run*Hook` process entrypoints (process lane, e2e smoke); `transcript-usage.ts:25` and `rollout-usage.ts:29` belong to the module 30 reader suites. Commit `<pending>`.
+**Result:** 29 tests across 5 files, green. Scoped coverage proxy (`claude-code/runtime.ts`, `claude-code/transcript-usage.ts`, `codex-cli/runtime.ts`, `codex-cli/rollout-usage.ts`): lines 95.89% → 95.89%, branches 87.38% → 88.39%, functions 82.6% → 82.6%; the uncovered lines are the same before and after (Claude `runtime.ts` branches 88% → 87.75% is a v8 branch-count shift with identical uncovered lines; Codex `runtime.ts` branches 87.5% → 90%). Left uncovered: Claude 31-32 and Codex 38-39 are `toolOf` fallthroughs of the unread tool classification (see Production pending items); 85-86 and 92-93 are the `run*Hook` process entrypoints (process lane, e2e smoke); `transcript-usage.ts:25` and `rollout-usage.ts:29` belong to the module 30 reader suites. Commit `727ce01`.
 
 Layout: all five files import `src/infrastructure/harnesses/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). `tests/unit/runtime-codex.test.ts` collides with the built-hook suite `tests/integration/runtime-codex.test.ts` (module 30), so it moved as **`tests/integration/runtime-codex-events.test.ts`** (it tests event mapping and rendering, not the hook). The other names stay: prd-02 TC-10 cites `claude-runtime-session-key.test.ts` and prd-02.1 TC-17 cites `runtime-claude.test.ts` (their TechSpec rows still say `tests/unit/`). None of the five is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). The identical `MemoryLedger`/`MemoryErrors` fakes of the two `-measured` files moved to `tests/helpers/recording-ledger.ts` (`RecordingLedger`, `RecordingErrors`); the `MemoryLedger` of `delegated-fixtures.ts` records nothing, so it could not be reused.
 
@@ -1291,6 +1291,81 @@ Mandated rows: the failure policy is the two I/O failure tests (neutral decision
 
 ### Production pending items
 - `ToolCall` (`category`, `paths`, `command`, `skill`) is filled by every adapter's `toolOf` (Claude `WRITE_TOOLS`/`SKILL_TOOL`, Codex `patchPaths`, and the Cursor, Copilot, Antigravity, OpenCode, Pi and Oh-My-Pi adapters) but no service reads it since prd-12 removed the tool-call deny and the plan/checkpoint. Remove the classification together with its tests (`classifies every documented file tool…`, `parses the patch paths…`, and the `tool` fields in the fixture assertions), or record why it stays.
+
+### Questions `[?]`
+- None.
+
+## 22. runtime/process-harnesses — done 2026-10-10
+
+**Baseline:** 30 runner tests across the 5 files, green (the table's 26 was the grep count). Stryker: n/a (Common).
+**Result:** 15 tests across 5 files, green. Scoped coverage proxy (`antigravity-cli/runtime.ts`, `github-copilot-cli/runtime.ts`, `cursor/runtime.ts`, `common/runtime-assets.ts`, and the five process `schemas.ts`): Cursor `runtime.ts` unchanged (95.65% lines, 83.33% branches); Copilot `runtime.ts` lines 93.33% → 93.33%, branches 73.91% → 75%; `runtime-assets.ts` and the Antigravity, Copilot and Cursor `schemas.ts` 100% → 100%. Antigravity `runtime.ts` drops 91.66%/82.35% → 87.5%/75% in the module-only run because lines 46-47 (`renderAntigravityDecision` → null for Stop) are now asserted only by `reset-notice.test.ts:84`; with that suite in the run it is back to 91.66%/82.35%. `claude-code/schemas.ts` and `codex-cli/schemas.ts` read 0% in the module-only run because no file of this module imports them any more; they are 100% with module 21's `runtime-claude`/`runtime-codex-events` suites loaded (include-list artifact, not a loss: a `schemas.ts` of `export const x = z.looseObject(...)` is covered on import, not on `.parse()`). Left uncovered, same as before: Antigravity 21-22 and Copilot 33-34 are `toolOf` fallthroughs of the unread tool classification (module 21 pending item); Antigravity 58-59, Copilot 72-73 and Cursor 56-57 are the `run*Hook` process entrypoints (e2e smoke). Commit `<pending>`.
+
+Layout: all five files import `src/infrastructure/harnesses/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). The three runtime files collide with the built-hook suites of module 30, so they moved as **`runtime-antigravity-events.test.ts`**, **`runtime-copilot-events.test.ts`** and **`runtime-cursor-events.test.ts`** (module 21's `runtime-codex-events` convention). `runtime-assets.test.ts` and `harness-schemas-process.test.ts` keep their names (prd-01.1 TC-01 and `tasks.md` cite the latter; the TechSpec row still says `tests/unit/`). None of the five is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). `tests/helpers/recording-ledger.ts` was not needed: these adapters read no measured usage.
+
+### antigravity-cli/runtime.ts → Common (prd-02 RF1, RF12, RF14, RF17, DEC-13, DEC-14, TC-14, TC-33)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| PostToolUse fixture → `post_tool` without a call id; PreInvocation → `pre_invocation`; PreToolUse and Stop unmapped (prd-12 TC-09) | `case 'PostToolUse'`/`'PreInvocation'` removed; session field changed | `maps the documented PostToolUse and PreInvocation fixtures, ignores PreToolUse, and does not map Stop…` |
+| `run_command` classification (unread output) | category branch | same test (exact `toEqual`) |
+| observed characters are the `toolCall.args` length | `characterLength` term dropped | `counts the documented toolCall args characters` (literal 28) |
+| PostToolUse answers `{}`, PreInvocation `injectSteps` with the block or empty (DEC-14) | `eventName === 'PostToolUse'` → `false`; `kind === 'context'` → `true` | `answers PostToolUse with an empty object and PreInvocation with injectSteps` |
+
+### github-copilot-cli/runtime.ts → Common (prd-02 RF3, RF12, RF14, RF17, DEC-13, TC-14, TC-33)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| postToolUse fixture → `post_tool`; preToolUse unmapped | `case 'postToolUse'` removed | `maps the captured postToolUse fixture and classifies the documented shell and path tools` |
+| shell/read/write classification (unread output) | `SHELL_TOOLS`/`WRITE_TOOLS`/`READ_TOOLS` entries | same test |
+| observed characters are `toolArgs` plus `textResultForLlm` | a term dropped; `textResultForLlm` lookup removed (counts the whole object) | `counts the documented toolArgs and toolResult text characters` (literal 161) |
+| sessionStart `startup`/`new` → `new`, `resume` → none; preCompact → `compact` | each `source ===` operand removed; `case 'preCompact'` removed | `resets on startup, new, and preCompact but not on resume` |
+| context → `additionalContext`, never `modifiedResult`; neutral → nothing (RF14) | field name changed; `kind === 'context'` → `true` | `renders additionalContext without ever touching the tool result` |
+
+### cursor/runtime.ts → Common (prd-02 RF3, RF12, RF14, RF17, DEC-13, TC-14, TC-33)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| Shell classification, other tools `other` (unread output); preToolUse unmapped | `name === 'Shell'` branch | `keeps undocumented file tools unclassified and classifies Shell from its command` |
+| postToolUse carries `tool_use_id` | `tool_use_id ?? null` → `null` | `maps the documented postToolUse fixture with its call identifier` |
+| sessionStart → `new` keyed by `session_id` or `conversation_id` (`harness-integrations.md`: the sessionStart example uses `session_id`); preCompact → `compact`; others ignored | `session_id ??` removed (a `session_id`-only payload throws, the reset is lost); case removed | `resets on sessionStart, keyed by session_id or conversation_id, and on preCompact…` |
+| observed characters are `tool_input` plus `tool_output` | a term dropped | `counts tool_input and tool_output characters on post-tool events` (literal 41) |
+| context → `additional_context` on postToolUse; neutral → nothing | field name changed; `kind === 'context'` → `true` | `injects telemetry through additional_context and stays silent for a neutral decision` |
+
+The sessionStart branch of `renderCursorDecision` (resume text through `additional_context`) is killed by `semi-auto-restart.test.ts` (`cursor delivers a pending handoff once…`).
+
+### common/runtime-assets.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a named asset is read from the runtime asset folder | `return await readFile(...)` → `''`; candidate list emptied | `loads a built process hook asset by name` |
+| a missing asset fails with its name | `throw` removed (returns `undefined`) | `throws when asset does not exist` (exact message) |
+
+Candidate order (`dist` before `assets`) has no test: no test environment tells the candidates apart, and prd-01 `codereview_05/task_18` scoped the lookup order out.
+
+### Process `schemas.ts` (five harnesses) → Trivial
+
+Declarative `z.looseObject` constants. The payload schemas are live through each adapter's `parsePayload`; their non-strictness (`looseObject` → `strictObject`) is killed by the runtime fixture tests, whose fixtures carry undeclared vendor fields (Antigravity `hookName`, Copilot `timestamp`/`cwd`, Cursor `hook_event_name`, the Claude/Codex fixtures of module 21), and by `benchmark-fixtures.test.ts`. The hooks-file, settings and response schemas have no production caller (see Production pending items). Only TC-01 stays.
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| documented Antigravity names `toolCall.name`/`args` parse and undeclared vendor fields pass through (prd-01.1 FR-06, TC-01) | `toolCall` shape renamed; `looseObject` → `object` (strips `hookName`) | `parses the documented Antigravity PostToolUse fixture with toolCall.name/args (FR-06, TC-01)` |
+
+### Actions
+- **Deleted (12 runner tests, plus 3 merged away):**
+  - `runtime-assets` (7): the 4 other rows of `loads the %s process hook asset`, and `loads OpenCode plugin runtime asset`, `loads Pi extension runtime asset`, `loads Oh-My-Pi extension runtime asset`. All kill the same `return readFile` mutant as the kept test; that each built asset exists and works is asserted by `package-assets.test.ts` (`$asset answers $event…` runs each of the five process hooks; `loads in-process plugins and extensions as callable functions` imports the three in-process assets).
+  - `harness-schemas-process` (5): `parses Claude Code settings and hook payloads non-strictly`, `rejects Claude Code hook-specific output without the matching hookEventName`, `parses Codex CLI hooks and payloads non-strictly`, `parses Cursor hooks and payloads non-strictly`, `parses Copilot CLI hooks and Antigravity hooks non-strictly`. Their payload assertions are made redundant by the runtime fixture tests (module 21's `runtime-claude`/`runtime-codex-events` and this module's three `-events` files map the same fields from fixtures with undeclared vendor fields); the Codex, Cursor and Copilot inputs carried no extra field, so they did not test non-strictness (one used a lone `toBeDefined()`); the rest asserts dead schemas (`claudeSettingsSchema`, `claudePostToolUseResponseSchema`, the four hooks-file schemas), which stay 100% covered on import, so deleting their tests does not lower the coverage gate.
+- **Merged (5 → 2):** Antigravity `maps the documented PostToolUse fixture and classifies run_command…` + the PreInvocation half of `maps PostToolUse to a turn without a call identifier and PreInvocation to a context event` (its PostToolUse half repeated the exact `toEqual`) + `does not map Stop because the event carries no assistant text` → one test. Copilot `maps the captured postToolUse fixture and classifies both documented shell tools` + `classifies edit, create, and view tools from their path field` → one test (same unread classification).
+- **Rewritten (6):** the three character-count tests recomputed `JSON.stringify(...).length` from the fixture (anti-catalog) and now assert `toEqual({ observedCharacters: 28 | 161 | 41 })`; Copilot's count test also dropped its `kind`/`toolUseId` assertions (repeated by the fixture test). The three render tests dropped `notify_user → null`, asserted for all three adapters by `reset-notice.test.ts` `delivers the notice on the Claude Code and Codex CLI Stop channels only`. TC-01 asserted `stepIdx` passthrough, but `stepIdx` is now a declared field; it asserts the undeclared `hookName` instead, which is what TC-01's "extra vendor fields" requires. The missing-asset test asserts the full message.
+- **Created (0 tests, 2 assertions):** Copilot `source: 'startup'` → `new`, folded into the existing reset test (its title claimed startup, but no suite sent it; a missed reset leaves a stale turn count). Cursor `session_id`-only sessionStart, folded into the existing reset test (documented; every suite sends `conversation_id`, and the simulator sends both with the same value, so the `??` survived).
+- **Kept:** the Antigravity render test, the Copilot reset and render tests, the Cursor fixture, Shell, count and render tests, and the classification assertions as the only coverage of the unread `RuntimeEvent.tool` (Antigravity `run_command`, Copilot shell/edit/view, Cursor Shell/ReadFile).
+- **Moved:** the five files `tests/unit/` → `tests/integration/`; the three runtime files renamed `runtime-<harness>-events.test.ts`.
+
+Mandated rows: the failure policy for these adapters is `parsePayload`/`requireIdentifier` → `PayloadInvalidError` → the process host's neutral response, asserted end to end by `package-assets.test.ts` (Antigravity malformed stdin → `{}`) and owned by modules 31 and 37. The exact telemetry block and its 60-token budget are module 34; the adapters only transport `decision.block`, so these tests assert the transport field with a placeholder block.
+
+### Production pending items
+- Extend module 21's `ToolCall` item with this module's symbols: Antigravity `toolOf`, Copilot `toolOf`/`READ_TOOLS`/`WRITE_TOOLS`/`SHELL_TOOLS`, Cursor `toolOf`, and their test assertions (the `tool` fields of the three fixture tests and the Copilot path assertions).
+- Dead schema exports with no production caller: `claudeSettingsSchema`, `claudeHookGroupSchema`, `claudeHookItemSchema`, `claudePostToolUseResponseSchema`, `codexHooksFileSchema`, `codexHookGroupSchema`, `codexHookItemSchema`, `cursorHooksFileSchema`, `cursorHookCommandSchema`, `copilotHooksFileSchema`, `copilotHookItemSchema`, `antigravityHooksFileSchema`, `antigravityHookEntrySchema`. The `*PostToolUsePayloadSchema` and `antigravityPreInvocationPayloadSchema` aliases are used only by `benchmark-fixtures.test.ts`. Remove them (no test is left to remove with them), or record why they stay.
+- `runtime-assets.ts:20` keeps a comment in an empty `catch` (`code-standards.md`; prd-01 `codereview_05` CR-06).
 
 ### Questions `[?]`
 - None.

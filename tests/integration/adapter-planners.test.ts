@@ -54,30 +54,20 @@ describe('harness adapter install and remove planners (RF5, RF6, RF19)', () => {
     await rm(tempDir, { recursive: true, force: true });
   });
 
-  it('generates valid install plan for every harness adapter', async () => {
-    const adapters = getAllAdapters();
-    for (const adapter of adapters) {
-      const plan = await adapter.planInstall({ projectRoot: tempDir });
-      expect(plan.harness).toBe(adapter.id);
-      expect(plan.conflicts).toHaveLength(0);
-      expect(plan.changes.length).toBeGreaterThan(0);
-      expect(plan.entries.length).toBeGreaterThan(0);
-    }
-  });
-
-  it('generates valid remove plan for every harness adapter', async () => {
-    const adapters = getAllAdapters();
-    for (const adapter of adapters) {
-      const plan = await adapter.planRemove({ projectRoot: tempDir });
-      expect(plan.harness).toBe(adapter.id);
-      expect(plan.conflicts).toHaveLength(0);
-      expect(plan.changes.length).toBeGreaterThan(0);
+  it('plans install and remove on a clean project without conflicts for every harness', async () => {
+    for (const adapter of getAllAdapters()) {
+      const install = await adapter.planInstall({ projectRoot: tempDir });
+      const remove = await adapter.planRemove({ projectRoot: tempDir });
+      expect([install.harness, remove.harness]).toEqual([adapter.id, adapter.id]);
+      expect([...install.conflicts, ...remove.conflicts]).toEqual([]);
+      expect([install.changes.length > 0, install.entries.length > 0, remove.changes.length > 0]).toEqual([true, true, true]);
     }
   });
 
   it('registers each new event once after three installs (TC-26, DEC-13)', async () => {
     for (const group of NEW_EVENTS) await verifyIdempotentRegistration(tempDir, group);
-  });});
+  });
+});
 
 describe('process harness hook assets (RF5)', () => {
   let tempDir: string;

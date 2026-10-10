@@ -55,7 +55,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 61 → 41 | done |
 | 16 | storage/capabilities | link-capability, process-capability, git-capability | tests/helpers (link-, process-, git-capability) | C | 19 → 9 | done |
 | 17 | install/services | detection-service, installation-summary, removal-service, integration/removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 22 → 21 | done |
-| 18 | harness/registration | harness-registry, harness-adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 27 | pending |
+| 18 | harness/registration | integration/harness-registry, -adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 38 → 32 | done |
 | 19 | claude/statusline-planner | statusline-context-window, statusline-default, statusline-payload, statusline-planner, statusline-shell | src/infrastructure/harnesses/claude-code | C | 29 | pending |
 | 20 | claude/statusline-diagnostics | statusline-diagnostics, -shell, -symlink | src/infrastructure/harnesses/claude-code | C | 15 | pending |
 | 21 | runtime/claude-codex | runtime-claude, runtime-claude-measured, claude-runtime-session-key, runtime-codex, runtime-codex-measured | harnesses/claude-code, harnesses/codex-cli | C | 25 | pending |
@@ -1018,7 +1018,7 @@ Its only consumer was IT-18 (prd-01 TechSpec, `git status --porcelain` over plan
 ## 17. install/services — done 2026-10-10
 
 **Baseline:** 22 runner tests across the 5 files, green (the plan's 19 was the grep count). Stryker: n/a (Common).
-**Result:** 21 tests across the same 5 files, green. Scoped coverage proxy (`detection-service.ts`, `harness-exclusion.ts`, `harness-removal.ts`, `installation-adapters.ts`, `installation-builder.ts`, `installation-findings.ts`, `installation-service.ts`, `removal-helper.ts`, `removal-service.ts`): lines 72.17% → 72.17%; branches 80.95% → 80.68%. The branch delta is v8 block accounting in `removal-service.ts` (83.33% → 82.14%): a per-branch dump shows the same 5 uncovered branches (lines 31, 34, 40 ×2, 59) out of 30 blocks before and 28 after, because the rewritten tests execute fewer distinct ranges. The 0% rows are Glue run only through `init` (module 24): `installation-service.ts`, `installation-adapters.ts`, `installation-findings.ts` (no test imports them). Other gaps: `harness-removal.ts` 26-29 (`guardModifiedAssets`, reached only with `protection` from `installation-service`, asserted by `integration/asset-currency-lifecycle.test.ts`); `installation-builder.ts` 73-76 and its debug/gitignore/auto-restart/dropped summary parts (wording, asserted by the init integrations and modules 13/14); `removal-service.ts` 40 (`removalAdapters` filter) and 59 (the `.gitignore` block change, prd-17, owned by module 41). Commit `<pending>`.
+**Result:** 21 tests across the same 5 files, green. Scoped coverage proxy (`detection-service.ts`, `harness-exclusion.ts`, `harness-removal.ts`, `installation-adapters.ts`, `installation-builder.ts`, `installation-findings.ts`, `installation-service.ts`, `removal-helper.ts`, `removal-service.ts`): lines 72.17% → 72.17%; branches 80.95% → 80.68%. The branch delta is v8 block accounting in `removal-service.ts` (83.33% → 82.14%): a per-branch dump shows the same count of uncovered branches (5) on the same lines (31, 34, 40 ×2, 59), out of 30 blocks before and 28 after. At 31 and 34 the uncovered side swapped: the old fixture had no manifest or config snapshot and ran the `?? resolve(...)` fallback; the new one runs `snap.realPath`. The fallback is defensive (a deletion of an absent file is dropped by `createChangePlan`), so no test was added. The 0% rows are Glue run only through `init` (module 24): `installation-service.ts`, `installation-adapters.ts`, `installation-findings.ts` (no test imports them). Other gaps: `harness-removal.ts` 26-29 (`guardModifiedAssets`, reached only with `protection` from `installation-service`, asserted by `integration/asset-currency-lifecycle.test.ts`); `installation-builder.ts` 73-76 and its debug/gitignore/auto-restart/dropped summary parts (wording, asserted by the init integrations and modules 13/14); `removal-service.ts` 40 (`removalAdapters` filter) and 59 (the `.gitignore` block change, prd-17, owned by module 41). Commit `ba7097d`.
 
 Layout: `removal-conflicts.test.ts` calls `getAdapter(h).planRemove` on four real adapters against a temp directory, so it moved to `tests/integration/` unchanged (decision 3, move-only, name kept because codereview_07 task_27 cites it); it is not in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). The other four files stay in `tests/unit/`, one per source.
 
@@ -1058,15 +1058,67 @@ Layout: `removal-conflicts.test.ts` calls `getAdapter(h).planRemove` on four rea
 ### Actions
 - **Deleted:** none.
 - **Merged (2 → 1):** removal-service `deletes the owned asset and runtime files and never touches…` and `marks every runtime file as an owned runtime-state deletion` (same arrangement) → one test asserting the exact `[path, kind, owner]` list.
-- **Rewritten (13 runner tests):** the merged removal test asserted `arrayContaining`, so dropping the manifest or config deletion survived; its fixture now holds manifest and config snapshots (the change plan drops deletions of absent files) and the list is exact. The modified-asset test asserted `conflicts.some`; it now asserts the exact changes (runtime only, so a `hasConflicts` mutant that deletes the manifest is killed), the conflict, and the generic finding (`harness: null`, impact), the only killer of that `createRemovalFinding` branch. The three `resolveHarnessExclusion` tests became one `it.each` asserting `{ excluded, selection }` (the no-flag row asserted only `excluded`). `hasSameHarnesses(['cursor'], [])` became `([], ['cursor'])`: with a non-empty left, dropping the length check still returned `false`. The four summary tests became one `it.each` asserting the exact summary instead of `toContain`/`toMatch`.
+- **Rewritten (10 runner tests):** the merged removal test asserted `arrayContaining`, so dropping the manifest or config deletion survived; its fixture now holds manifest and config snapshots (the change plan drops deletions of absent files) and the list is exact. The modified-asset test asserted `conflicts.some`; it now asserts the exact changes (runtime only, so a `hasConflicts` mutant that deletes the manifest is killed), the conflict, and the generic finding (`harness: null`, impact), the only killer of that `createRemovalFinding` branch. The three `resolveHarnessExclusion` tests became one `it.each` asserting `{ excluded, selection }` (the no-flag row asserted only `excluded`). `hasSameHarnesses(['cursor'], [])` became `([], ['cursor'])`: with a non-empty left, dropping the length check still returned `false`. The four summary tests became one `it.each` asserting the exact summary instead of `toContain`/`toMatch`.
 - **Created:** none.
-- **Kept (10):** the four detection tests, `feeds detection…`, `writes, keeps, or omits…`, and `removal-conflicts.test.ts` (5) unchanged. Its service test is not redundant with `integration/remove-invalid-config.test.ts`: that file never asserts `finding.harness`.
+- **Kept (11):** the four detection tests, `feeds detection…`, `writes, keeps, or omits…`, and `removal-conflicts.test.ts` (5) unchanged. Its service test is not redundant with `integration/remove-invalid-config.test.ts`: that file never asserts `finding.harness`.
 - **Moved:** `tests/unit/removal-conflicts.test.ts` → `tests/integration/removal-conflicts.test.ts`.
 
 The `.gitignore` fixture in `removal-service.test.ts` carries the pre-prd-17 `# CONTEXTBRAKE:START` markers, which `planGitIgnore` does not recognize, so it stays a plain user file; removing the managed block on `remove` belongs to module 41 (`remove-gitignore`).
 
 ### Production pending items
 - `planConfigChange` accepts `string | ConfigChangeInput` plus two positional parameters, but its only caller (`installation-service.ts` 73) passes the object: the string overload and its `typeof` ternaries could go.
+
+### Questions `[?]`
+- None.
+
+## 18. harness/registration — done 2026-10-10
+
+**Baseline:** 38 runner tests across the 6 files, green (the plan's 27 was the grep count). Stryker: n/a (Common).
+**Result:** 32 tests across the same 6 files, green. Scoped coverage proxy (`registry.ts`, `common/hook-event-cleanup.ts`, `common/runtime-assets.ts`, `common/*-hooks-updater.ts`, `*/planner*.ts`): identical before and after (lines 83.11%, branches 73.44%; `registry.ts` 100%, `hook-event-cleanup.ts` 100% lines and 91.17% branches). The remaining gaps are defensive: `hook-event-cleanup.ts` 7 and 26-27 (non-object item, missing event node), `runtime-assets.ts` 21-24. The partial planner and hooks-updater rows (legacy migration, invalid config) belong to module 43 (`harness/config-preservation`) and module 17's `removal-conflicts`. Commit `<pending>`.
+
+Layout: all six files import `src/infrastructure/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). Names are kept because the prd-01 and prd-02 tasks and code reviews cite them. None is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). The module 9 carry-forward TC-02 (exact support level, capability states and limitation text for all 8 harnesses) is unchanged at `tests/integration/harness-adapters.test.ts`.
+
+### registry.ts → Common (lookup table plus `getDescriptor`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the eight harnesses register in descriptor order | descriptor removed or reordered; `getAllAdapters` `map` → `[]` | `registers the eight harnesses in descriptor order` |
+| each id builds its own adapter with its benchmark event and the 100/15 ms target | `createAdapter` swapped; fixture event or target changed | `builds each adapter with its benchmark event and overhead target` |
+| unknown id throws | `throw` removed | `throws on unknown harness descriptor lookup` |
+
+### Adapter capability profiles → Common (TC-02, prd-01)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| exact support level, capability states and limitation text per harness | any state, level or limitation literal changed | `matches the approved table for %s` (8 rows, FR-02, FR-04, CA-15) |
+
+### Adapter planners → Common (harness config changes, mandated area)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| clean project: install and remove plan for each harness without conflicts | planner returns a conflict, another harness id, or an empty plan | `plans install and remove on a clean project without conflicts for every harness` |
+| a new event registers once across three installs (recovery: the second and third plans are equal) | merge appends instead of replacing | `registers each new event once after three installs (TC-26, DEC-13)` |
+| each process harness installs its own built hook | wrong asset name | `installs the process hook built for %s` (5 rows) |
+| exact hook set and command form per process harness; no pre-tool hook | command form changed; event added or dropped (a re-added `PreToolUse` fails) | `registers exactly the post-tool, session-start, and new-event hooks for $name` (4 rows, RF5, DEC-12, DEC-13, TC-26) |
+| a legacy relative Claude command is replaced and diagnoses clean | legacy entry kept beside the new one | `replaces the relative Claude Code command left by an earlier install…` (RF5) |
+| Antigravity events sit under the `context-brake` key | key or event list changed | `registers the Antigravity events under the context-brake key (DEC-14, TC-34)` |
+| user hooks survive three merges byte for byte | merge rewrites user entries or is not idempotent | `merges ContextBrake hooks three times idempotently while preserving user hooks` (UT-04, CA-05) |
+
+### common/hook-event-cleanup.ts → Common
+
+Unchanged (7 tests): each case kills its own mutant: last entry drops the event (`remaining === 0`), a foreign entry keeps it, a mixed group keeps its foreign handler (`every` → `some`), events without an owned entry and empty user arrays stay (the `isOwnedHere` guard), current events stay (`!currentEvents.includes`), `removeOwnedFromEvent` removes repeated entries (`removeRepeatedly`), and a document without `hooks` stays as is.
+
+### Actions
+- **Deleted:** none.
+- **Merged (2 → 1):** registry `registers all eight harness descriptors immutably` and `returns all adapters via getAllAdapters` → one exact ordered id list. The first only checked set membership; the second only checked the count.
+- **Merged (2 → 1):** planners `generates valid install plan…` and `generates valid remove plan…` (same clean-project arrangement) → one test per adapter that asserts the conflicts list equals `[]`.
+- **Merged and rewritten (8 → 4 rows):** the eight per-event `hook-registration-paths` tests (Claude, Codex, Cursor and Copilot post-tool events and their `Stop`/`preCompact`) → one `it.each` per harness that asserts the whole `hooks` object. This also pins the `SessionStart`/`sessionStart` registrations no test asserted, and an extra event, such as a pre-tool hook, now fails. The legacy-command test asserted `toContain('${CLAUDE_PROJECT_DIR}')`; it now asserts the exact group.
+- **Created:** none.
+- **Kept (25 runner tests):** TC-02 (8), the registry benchmark-fixture test (`integration/benchmark-fixtures.test.ts` parses the payloads but never asserts `event` or `targetMilliseconds`), the unknown-id test, TC-26, the hook assets (5), Antigravity, UT-04, and `hook-event-cleanup` (7).
+- **Moved:** the six files `tests/unit/` → `tests/integration/`.
+
+### Production pending items
+- None.
 
 ### Questions `[?]`
 - None.

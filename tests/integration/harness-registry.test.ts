@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HARNESS_IDS, type HarnessId } from '../../src/core/contracts/harness.js';
 import {
-  ADAPTER_DESCRIPTORS,
   getAdapter,
   getAllAdapters,
   getDescriptor,
@@ -19,15 +18,12 @@ const EXPECTED_EVENTS: Readonly<Record<HarnessId, string>> = {
 };
 
 describe('adapter descriptor registry (RF1, RF2, RF8)', () => {
-  it('registers all eight harness descriptors immutably', () => {
-    expect(ADAPTER_DESCRIPTORS).toHaveLength(8);
-    const ids = ADAPTER_DESCRIPTORS.map((d) => d.id);
-    for (const id of HARNESS_IDS) {
-      expect(ids).toContain(id);
-    }
+  it('registers the eight harnesses in descriptor order', () => {
+    const ids = getAllAdapters().map((adapter) => adapter.id);
+    expect(ids).toEqual(['claude-code', 'codex-cli', 'cursor', 'github-copilot-cli', 'antigravity-cli', 'opencode', 'pi', 'oh-my-pi']);
   });
 
-  it('constructs each adapter through getAdapter', () => {
+  it('builds each adapter with its benchmark event and overhead target', () => {
     for (const id of HARNESS_IDS) {
       const adapter = getAdapter(id);
       expect(adapter.id).toBe(id);
@@ -36,11 +32,6 @@ describe('adapter descriptor registry (RF1, RF2, RF8)', () => {
       expect(fixture.event).toBe(EXPECTED_EVENTS[id]);
       expect(fixture.targetMilliseconds).toBe(adapter.executionModel === 'process' ? 100 : 15);
     }
-  });
-
-  it('returns all adapters via getAllAdapters', () => {
-    const all = getAllAdapters();
-    expect(all).toHaveLength(8);
   });
 
   it('throws on unknown harness descriptor lookup', () => {

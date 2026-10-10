@@ -73,7 +73,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 33 | integration/statusline | statusline-bridge, -bridge-lifecycle, -bridge-previous, statusline-default, -install, -install-invalid, statusline-shell, runtime-statusline-ledger | harnesses/claude-code, src/infrastructure/runtime | G | 40 → 36 | done |
 | 34 | telemetry/zones | zone-classifier, zone-guidance, telemetry-block, telemetry-block-budget | src/core/services | K | 64 → 43 | done |
 | 35 | telemetry/session-zone-usage | session-zone, session-zone-statusline (absorbed session-zone-reset-window), usage-resolver, window-origin, window-trust | src/core/services | K | 50 → 34 | done |
-| 36 | brake/engine-failure-policy | brake-engine-debug, brake-engine-lifecycle, failure-policy, failure-policy-snapshot-reset, injection-policy, reset-notice | src/core/services | K | 35 | pending |
+| 36 | brake/engine-failure-policy | brake-engine-debug, brake-engine-lifecycle, failure-policy, failure-policy-snapshot-reset, injection-policy, reset-notice (adapter channels now integration/reset-notice-channels) | src/core/services | K | 35 → 35 | done |
 | 37 | runtime/hosts | hook-deadline, in-process-host, in-process-host-deadline, in-process-runtime, process-hook-host, process-hook-host-deadline, runtime-composition, runtime-paths | src/infrastructure/runtime | K | 38 | pending |
 | 38 | storage/json-editing | json-document-editor, json-span-safety | src/infrastructure/storage | K | 23 | pending |
 | 39 | storage/change-apply | change-plan-service, change-target, path-boundary, runtime-state-files, integration/change-applier, integration/directory-pruner, integration/safe-removal | src/core/services/change-plan-service, src/infrastructure/storage | K | 26 | pending |
@@ -2049,7 +2049,7 @@ Mandated rows: every usage boundary (49/50/65/66/74/75/130) and turn boundary (5
 ## 35. telemetry/session-zone-usage — done 2026-10-10
 
 **Baseline:** 50 runner tests across the 6 files, green (the table's 42 was the grep count; `session-zone` 11, `session-zone-statusline` 11, `session-zone-reset-window` 4, `usage-resolver` 14, `window-origin` 8, `window-trust` 2). Stryker (`--disableBail`) on `session-zone.ts`, `usage-resolver.ts`, `window-trust.ts` with these 6 files: **95.95%** (71 killed, 3 survived, 0 no coverage); per file 93.33% / 100% / 90.91%. Coverage proxy: lines 100%, branches 94.59% (`session-zone.ts` 90%, lines 21 and 28).
-**Result:** 34 tests in 5 files, green. Stryker on the same scope: **98.65%** (73 killed, 1 survived, 0 no coverage); per file 96.67% / 100% / 100%. Coverage proxy: lines 100%, branches 97.29% (`session-zone.ts` 95.23%, line 21 only). Related suites green: `unit/brake-engine-*`, `unit/statusline-summary`, `unit/in-process-host`; `npm run typecheck` green.
+**Result:** 34 tests in 5 files, green. Stryker on the same scope: **98.65%** (73 killed, 1 survived, 0 no coverage); per file 96.67% / 100% / 100%. Coverage proxy: lines 100%, branches 97.29% (`session-zone.ts` 95.23%, line 21 only). Related suites green: `unit/brake-engine-*`, `unit/statusline-summary`, `unit/in-process-host`; `npm run typecheck` green. Commit `058049a`.
 
 Every deletion was checked against the `--disableBail` kill map: before the cleanup only 3 tests killed an exclusive mutant (the `at the reset` row, the `resolveUsageWithConfig` test, `uses the declared window…`), and all are kept.
 
@@ -2119,3 +2119,82 @@ Mandated rows: stale-reading boundaries before/at/after the reset (FR-06, DEC-09
 
 ### Questions `[?]`
 - The `session-zone` engine describe cites `TC-16`, which matches no row for this behavior (prd-02 TC-16 is the allowlist; DEC-20 is prd-04's `readZone` extraction, from the superseded runner). Left as is.
+
+## 36. brake/engine-failure-policy — done 2026-10-10
+
+**Baseline:** 35 runner tests across the 6 files, green (`brake-engine-debug` 3, `brake-engine-lifecycle` 8, `failure-policy` 5, `failure-policy-snapshot-reset` 3, `injection-policy` 8, `reset-notice` 8). Stryker (`--disableBail`) on `brake-engine.ts`, `failure-policy.ts`, `injection-policy.ts`, `reset-notice.ts` with these 6 files: **79.14%** (129 killed, 26 survived, 8 no coverage); per file 92.86% / 64.47% / 100% / 78.57%. Coverage proxy: lines 98.23%, branches 90.66% (`failure-policy.ts` lines 63-64; branch gaps `brake-engine.ts` 41, `reset-notice.ts` 4).
+**Result:** 35 tests in 7 files, green. Stryker on the same sources with the 7 after-state files: **92.02%** (150 killed, 11 survived, 2 no coverage); per file 96.43% / 89.47% / 100% / 78.57%. Coverage proxy: lines 100%, branches 96.42% (`brake-engine.ts` 41, `failure-policy.ts` 40, `reset-notice.ts` 4). Related suites green: `integration/claude-mod-restart`, `claude-runtime-session-key`, `handoff-deadline`, `runtime-claude-measured`, `runtime-codex-measured`, `runtime-opencode`, `unit/hook-deadline`, `process-hook-host`, `process-hook-host-deadline`, `in-process-host`, `session-zone`, `test-lanes`; `npm run typecheck` green.
+
+Central finding: `resolveFailure` never reads `input.ledger` or the zone. It decides from the event kind, the code, the descriptor's `session_boot` capability and the resume command only, so the mandated four-zone rows kill identical mutants by construction. They stay as the guard against a zone-dependent failure policy coming back (prd-02's deny above the ceiling, which prd-12 removed).
+
+### failure-policy.ts → Critical (failure policy, mandated in every zone; recovery on a session reset past the deadline)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| an adapter failure lets the tool call proceed in GREEN, YELLOW, RED and CRITICAL, recording code, detail, phase and elapsed time (RF19, CA-16, DEC-09, TC-17, prd-12 FR-07, TC-10) | non-neutral decision for a tool call; `kind === 'session_reset'` → `true`; `&&` → `\|\|`; record dropped | `lets the tool call proceed after a deadline failure in %s and records it` (4 rows, resume command and session boot configured, so a forced-true condition would inject) |
+| a failing error log still lets the call proceed | `try/catch` around `errors.append` removed (no Stryker operator; catch body `{ return; }` → `{}` is equivalent) | `lets the tool call proceed when the runtime error log cannot be written` |
+| each failure class maps to its code and detail | each `instanceof` → `true`/`false`; code and detail literals | `maps every failure class to its documented code and detail` (+ `INVALID_CONFIG` / `InvalidConfigurationError schemaVersion`) |
+| work settles with its own value or error before the deadline; past it, a deadline error | resolve or reject callback emptied; timer removed | `settles with the work before the deadline and rejects with a deadline error after it` |
+| session reset past the deadline injects the resume text only with session boot (prd-12 FR-05) | `some` → `every`; `?? DEFAULT_CONFIG` → `&&`; `text === null` inverted | `injects the configured resume command on a harness with session boot` (descriptor lists another capability first) |
+| …and stays neutral without a configuration (FR-06), for another failure, without session boot, or without a descriptor | `code === 'DEADLINE_EXCEEDED'` → `true`; `entry.state === 'supported'` → `true`; `&&` → `\|\|` in the capability check; `descriptor?.` → `descriptor.`; `?? false` → `?? true` | `stays neutral $label` (4 rows) |
+
+### brake-engine.ts → Critical (wires zone, injection, actions and the reset notice)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| post-tool appends the tool line (next turn, call id, estimated or measured reading) and injects the YELLOW block (RF12, RF13, CA-01, CA-06, TC-06) | `usedTokens ?? 0` → `&& 0`; turn or `toolUseId` not stored | `appends the $source tool line and injects the YELLOW block` (2 rows) |
+| first tool line writes the session line; observed characters default to 0 | `ensureSessionLine` emptied; `?? 0` → `&& 0` | `writes the derived session line on the first tool line` |
+| duplicate call ids are skipped; GREEN below the threshold is neutral | `toolUseId !== null` → `===`; `sessionLine !== null` → `false` | `skips a duplicate call identifier…` |
+| debug mode injects the block and debug line at 10% GREEN (prd-08 FR-06, DEC-07) | `debug:` passed as `false` to `decideInjection` or the block | `injects the telemetry block at 10% GREEN…` |
+| reset line and prune only on a new session; pre-invocation telemetry without a tool line; unreadable ledger → `LedgerUnreadableError` | switch cases; `pre_invocation` body; catch emptied | kept as is |
+| reset notice: exact `/clear` text; restart on adds the resume clause; a mid-text marker or a harness without a new-session command stays neutral (RF22, prd-14 DEC-18) | `newSessionCommand === null` → `false`; `restartMode(...) !== 'off'` → `false`; `!endsWithResetSignal` → `false` | `$label` (4 rows) |
+
+### injection-policy.ts → Critical (zone action delivery, activation threshold boundary)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| non-GREEN zones always inject (TC-05 YELLOW by turn count) | `zone !== 'GREEN'` → `false` | `decides true for a session YELLOW by turn count…` |
+| GREEN injects from the activation threshold: 40 yes, 39 no | `>=` → `>`; `\|\|` → `&&`; threshold hardcoded | `decides $expected for a GREEN session at / one point below the threshold` (2 rows) |
+| `always` mode injects in GREEN below the threshold | `=== 'always'` → `false` | `decides true for a GREEN session below the threshold in the always mode` |
+| debug on injects below the threshold (prd-08 TC-04, FR-03, DEC-04) | `input.debug \|\|` → `false \|\|` | `delivers the block for a GREEN session below the threshold when debug is on` |
+
+### reset-notice.ts → Critical (agent-facing reset signal and user notice)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the marker counts only at the end of the reply (RF22, prd-14 FR-12, TC-11) | `trimEnd` → `trimStart`; `endsWith` → `startsWith` | `recognizes the marker alone…`, `does not recognize the marker in the middle…` (module 15 relies on both) |
+| exact notice for `/clear` and `/new`, resume clause when restart is on (DEC-18) | suffix literals; template | `renders the notice with the harness command and says it resumes by itself…` (module 30 relies on the exact `/new`) |
+
+### Decision 3: `reset-notice.test.ts` split
+
+The `reset notice channels per harness` describe imports all eight adapters and asserts their descriptors, `render*Decision` Stop channels and the Pi/Oh-My-Pi `ctx.ui.notify` handlers: adapter behavior, so it moved to `tests/integration/reset-notice-channels.test.ts`. The `reset signal detection` describe tests the shared core rule and stays in `tests/unit/reset-notice.test.ts` (module 15's note). A split cannot be one `git mv`: the file was moved with `git mv`, then the unit file was recreated with the core describe. No lane entries.
+
+Survivors, all equivalent or unobservable: `failure-policy.ts` 12, 15, 18 (six message and `this.name` literals of the three error classes: `failureDetail` uses `constructor.name` and nothing reads `.message` or `.name`; records carry metadata only); 62:11 (catch `{ return; }` → `{}`, both swallow); 40:130 no coverage (`'InvalidConfigurationError'` for an error with no issues; the validator always reports at least one). `brake-engine.ts` 35:7 (`toolUseId !== null` → `true`: `summarizeLedger` stores only non-null ids, so `has(null)` is false); 62:116 (`{ cause: error }` → `{}`: no production reader of `cause`). `reset-notice.ts` 4:10 optional chain and 4:82 `?? false` (`split` never returns an empty array) and 4:31 regex `\r?\n` → `\r\n` (the last line ends with the marker exactly when the trimmed text does; module 15 note).
+
+### Actions
+- **Deleted (8):**
+  - `brake-engine-debug` `stays neutral at 10% GREEN when the debug mode is off`: same neutral-below-threshold decision as `skips a duplicate call identifier and writes a green line below the threshold` (null id at 0%), and the debug-off half of TC-04 is the `injection-policy` 39% row.
+  - `brake-engine-debug` `leaves the stored injection mode unchanged`: the engine never writes the configuration; it killed no mutant.
+  - `failure-policy` `stays neutral when the ledger cannot be read`: `resolveFailure` never reads the ledger, so it was the same call as the zone rows; the engine side is `surfaces an unreadable ledger as a dedicated error`, end to end `runtime-failure-policy` (module 31).
+  - `injection-policy` `delivers the block for a YELLOW session in the default mode` and `delivers on every non-GREEN zone`: the same `zone !== 'GREEN'` operand as the YELLOW-by-turn-count row. `delivers nothing for a GREEN session below the threshold` and `keeps the threshold for the same session when debug is off`: same mutants as the 39% row (debug off).
+  - `reset-notice` `registers no notice channel for OpenCode`: two bare `toBeDefined()`; the plugin's hook shape is `runtime-opencode` `registers no pre-tool hook…`, its null command is the descriptor test.
+- **Merged:**
+  - `failure-policy` `stays neutral below the ceiling…` + `…at the last recorded critical zone (prd-12 FR-07, TC-10)` + the `resolveFailure` half of `rejects with a deadline error…` → the four-zone `it.each` (identifiers kept in the describe).
+  - `failure-policy-snapshot-reset` `stays neutral without a resume command` + `stays neutral with the default snapshot section (prd-12 FR-06)` (one branch, `resumeText` → null) → the row `without a configuration, so without a resume command (prd-12 FR-06)`, which also exercises `config ?? DEFAULT_CONFIG`.
+  - `brake-engine-lifecycle` `appends the tool line and injects at yellow` + `records a measured reading from the in-process host` → `appends the $source tool line…` (2 rows); `notifies the user only for the final reset signal` → `$label` (4 rows).
+  - `injection-policy` → one `it.each` (4 rows) plus the debug test.
+  - `reset-notice` `says the new session resumes by itself…` + `renders the notice with the harness command` → one test with the three exact strings.
+- **Rewritten:** `maps every failure class…` as one table, now with `InvalidConfigurationError` (2 survivors, 3 no-coverage). The deadline test asserts `runWithinDeadline` alone, with the resolve and reject paths (2 no-coverage). The Pi/Oh-My-Pi notice test asserts the literal `/new` notice instead of `renderResetNotice('/new')`, uses `registerExtension` and a `mkdtemp` root removed after each test (it wrote under a shared `tmpdir()/cb-t07-reset`). `writes the derived session line…` also asserts the stored `toolUseId` (kept from the merged yellow test).
+- **Created (rows):** zone rows YELLOW and RED (mandate: all four zones; module 31 covers only GREEN and CRITICAL); `lets the tool call proceed when the runtime error log cannot be written` (mandated failure path, no test anywhere); `stays neutral` rows `for another failure of the session reset` (51:47), `on a harness without session boot` (67:51, 67:82, the `||` at 51:7), `before the harness descriptor is known` (67:10, 67:114); engine notice rows `restart is on` (55:95) and `without a new-session command` (54:7).
+- **Moved:** the adapter describe to `tests/integration/reset-notice-channels.test.ts` (Decision 3).
+- **Kept:** everything else, including the module 15 (`reset signal detection`), module 22/23 (descriptor and Stop-channel assertions, Pi/Oh-My-Pi notify) and module 30 (exact `/new` notice) carry-forwards.
+
+Mandated rows: failure policy in every zone (GREEN, YELLOW, RED, CRITICAL) is asserted here at the unit level, plus the failing error log and the session-reset recovery; the exact reset notice is asserted for `/clear`, `/new` and the restart-on clause.
+
+### Production pending items
+- `FailureResolutionInput.ledger` has no reader in `resolveFailure`: remove the field and the callers' argument.
+- `failure-policy.ts` 12, 15, 18: the error messages and `this.name` assignments are never read (`failureDetail` uses `constructor.name`); optional cleanup.
+- `reset-notice.ts` 4: `endsWithResetSignal` is `text.trimEnd().endsWith(SESSION_RESET_SIGNAL)`; the split, `at(-1)` and `?? false` are redundant (three equivalent mutants).
+
+### Questions `[?]`
+- `brake-engine-debug` describe cites prd-08 `TC-09, TC-10`, which the prd-08 TechSpec assigns to `init-debug-mode` and `doctor-mode-text`. Left as is; FR-06 and DEC-07 match.

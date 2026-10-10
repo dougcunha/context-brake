@@ -24,12 +24,4 @@ describe('telemetry injection in the debug mode (FR-06, DEC-07, TC-09, TC-10)', 
     expect(block).toContain(`${TELEMETRY_BLOCK_PREFIX} turn=1 usage=10% tokens=12800/128000 source=measured window=harness zone=GREEN`);
     expect(block).toContain(DEBUG_LINE);
   });
-  it('stays neutral at 10% GREEN when the debug mode is off', async () => {
-    expect(await postToolDecision({ ...DEFAULT_CONFIG, debug: false })).toEqual({ kind: 'neutral' });
-  });
-  it('leaves the stored injection mode unchanged', async () => {
-    const config: ContextBrakeConfig = { ...DEFAULT_CONFIG, debug: true };
-    await postToolDecision(config);
-    expect(config.telemetry.injectionMode).toBe('threshold_only');
-  });
 });

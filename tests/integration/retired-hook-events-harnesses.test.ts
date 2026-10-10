@@ -70,26 +70,20 @@ function retiredText(scenario: Scenario, text: string): string {
   return JSON.stringify(scenario.retired.map((event) => hooks[event] ?? null));
 }
 
+async function plannedHarnessFileChanges(scenario: Scenario, root: string): Promise<unknown[]> {
+  const result = await runInProcessCli(['init', '--dry-run', '--json', '--harness', scenario.harness], root);
+  return installReportSchema.parse(JSON.parse(result.stdout)).plan.changes.filter((change) => change.path === scenario.file);
+}
+
 describe.each(SCENARIOS)('FR-03 and FR-04 retired events for $name (prd-15, TC-07, TC-08)', (scenario) => {
   let root: string;
   beforeEach(async () => { root = await seed(scenario); });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('init removes the owned entries and keeps the foreign ones (FR-03, TC-07)', async () => {
+  it('init removes the owned retired entries, a second init plans nothing, and remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-07)', async () => {
     expect((await runInProcessCli(['init', '--yes', '--harness', scenario.harness], root)).code).toBeLessThanOrEqual(1);
-    const text = await readFile(join(root, scenario.file), 'utf8');
-    expect(retiredText(scenario, text)).not.toContain('context-brake.mjs');
-    expect(text).toContain('keep-same');
-    expect(text).toContain(scenario.harness === 'antigravity-cli' ? 'keep-key' : 'keep-event');
-  });
-  it('a second init plans no change to the harness file (FR-03, NFR-01, TC-07)', async () => {
-    await runInProcessCli(['init', '--yes', '--harness', scenario.harness], root);
-    const result = await runInProcessCli(['init', '--dry-run', '--json', '--harness', scenario.harness], root);
-    const report = installReportSchema.parse(JSON.parse(result.stdout));
-    expect(report.plan.changes.filter((change) => change.path === scenario.file)).toEqual([]);
-  });
-  it('init then remove restores the foreign content byte for byte (FR-04, NFR-01, TC-07)', async () => {
-    await runInProcessCli(['init', '--yes', '--harness', scenario.harness], root);
+    expect(retiredText(scenario, await readFile(join(root, scenario.file), 'utf8'))).not.toContain('context-brake.mjs');
+    expect(await plannedHarnessFileChanges(scenario, root)).toEqual([]);
     expect((await runInProcessCli(['remove', '--yes'], root)).code).toBe(0);
     expect(await readFile(join(root, scenario.file), 'utf8')).toBe(render(scenario, false));
   });

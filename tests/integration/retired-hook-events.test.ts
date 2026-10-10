@@ -6,6 +6,8 @@ import { installReportSchema } from '../../src/core/contracts/diagnostics.js';
 import { attemptLink, requireLink } from '../helpers/link-capability.js';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
+type ClaudeHooks = { hooks: Record<string, unknown[]> };
+
 function ownedHandler(event: string) {
   return { type: 'command', command: 'node', args: ['${CLAUDE_PROJECT_DIR}/.claude/hooks/context-brake.mjs', event] };
 }
@@ -33,47 +35,38 @@ function claudeSettings(options: { owned: boolean; eol: string }): string {
 
 const EOLS = [['LF', '\n'], ['CRLF', '\r\n']] as const;
 
-async function seedClaude(eol: string): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), 'cb-t03-'));
-  await mkdir(join(root, '.claude'), { recursive: true });
-  await writeFile(join(root, '.claude/settings.json'), claudeSettings({ owned: true, eol }), 'utf8');
-  return root;
-}
-
 async function settingsText(root: string): Promise<string> {
   return readFile(join(root, '.claude/settings.json'), 'utf8');
 }
 
-describe.each(EOLS)('FR-03 init on retired Claude Code events with %s endings (prd-15, TC-06)', (_label, eol) => {
+async function assertOnlyCurrentOwnedEvents(root: string): Promise<void> {
+  const settings = JSON.parse(await settingsText(root)) as ClaudeHooks;
+  const expected = JSON.parse(claudeSettings({ owned: false, eol: '\n' })) as ClaudeHooks;
+  expect(settings.hooks.PreToolUse).toEqual(expected.hooks.PreToolUse);
+  expect(settings.hooks.PostCompact).toBeUndefined();
+  expect(settings.hooks.UserPromptSubmit).toEqual(expected.hooks.UserPromptSubmit);
+  expect(settings.hooks.SubagentStop).toEqual([]);
+  expect(Object.keys(settings.hooks)).toEqual(expect.arrayContaining(['PostToolUse', 'SessionStart', 'Stop']));
+}
+
+async function plannedSettingsChanges(root: string): Promise<unknown[]> {
+  const result = await runInProcessCli(['init', '--dry-run', '--json'], root);
+  return installReportSchema.parse(JSON.parse(result.stdout)).plan.changes.filter((change) => change.path === '.claude/settings.json');
+}
+
+describe.each(EOLS)('FR-03 and FR-04 retired Claude Code events with %s endings (prd-15, TC-06)', (_label, eol) => {
   let root: string;
-  beforeEach(async () => { root = await seedClaude(eol); });
+  beforeEach(async () => {
+    root = await mkdtemp(join(tmpdir(), 'cb-t03-'));
+    await mkdir(join(root, '.claude'), { recursive: true });
+    await writeFile(join(root, '.claude/settings.json'), claudeSettings({ owned: true, eol }), 'utf8');
+  });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('removes owned entries outside the current events and keeps foreign ones (FR-03, TC-06)', async () => {
+  it('init keeps only current owned events, a second init plans nothing, and remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06)', async () => {
     expect((await runInProcessCli(['init', '--yes'], root)).code).toBeLessThanOrEqual(1);
-    const settings = JSON.parse(await settingsText(root)) as { hooks: Record<string, unknown[]> };
-    const expected = JSON.parse(claudeSettings({ owned: false, eol: '\n' })) as { hooks: Record<string, unknown[]> };
-    expect(settings.hooks.PreToolUse).toEqual(expected.hooks.PreToolUse);
-    expect(settings.hooks.PostCompact).toBeUndefined();
-    expect(settings.hooks.UserPromptSubmit).toEqual(expected.hooks.UserPromptSubmit);
-    expect(settings.hooks.SubagentStop).toEqual([]);
-    expect(Object.keys(settings.hooks)).toEqual(expect.arrayContaining(['PostToolUse', 'SessionStart', 'Stop']));
-  });
-  it('a second init plans no change to the settings file (FR-03, NFR-01, TC-06)', async () => {
-    await runInProcessCli(['init', '--yes'], root);
-    const result = await runInProcessCli(['init', '--dry-run', '--json'], root);
-    const report = installReportSchema.parse(JSON.parse(result.stdout));
-    expect(report.plan.changes.filter((change) => change.path === '.claude/settings.json')).toEqual([]);
-  });
-});
-
-describe.each(EOLS)('FR-04 remove on retired Claude Code events with %s endings (prd-15, TC-06)', (_label, eol) => {
-  let root: string;
-  beforeEach(async () => { root = await seedClaude(eol); });
-  afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
-  it('init then remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06)', async () => {
-    await runInProcessCli(['init', '--yes'], root);
+    await assertOnlyCurrentOwnedEvents(root);
+    expect(await plannedSettingsChanges(root)).toEqual([]);
     expect((await runInProcessCli(['remove', '--yes'], root)).code).toBe(0);
     expect(await settingsText(root)).toBe(claudeSettings({ owned: false, eol }));
   });

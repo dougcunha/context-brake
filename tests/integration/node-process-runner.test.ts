@@ -24,12 +24,6 @@ describe('Node version process probe execution (IT-13, CA-16)', () => {
     expect(versionFromProcess({ result, minimumVersion: '2.0.0' })).toMatchObject({ status, normalized });
   });
 
-  it('returns a bounded timeout state', async () => {
-    const result = await runner.run({ executable: process.execPath, args: [versionFixture, 'timeout'], timeoutMilliseconds: 100 });
-    expect(result.status).toBe('timed_out');
-    expect(versionFromProcess({ result, minimumVersion: '2.0.0' }).status).toBe('timed_out');
-  });
-
   it('passes metacharacters as one argument without a shell', async () => {
     const value = 'literal; echo not-interpolated && still-one-argument';
     const result = await runner.run({ executable: process.execPath, args: [versionFixture, 'echo', value], timeoutMilliseconds: 2_000 });
@@ -47,13 +41,14 @@ describe('Node executable discovery and tree termination (IT-13, CA-16)', () => 
     expect(results[1]).toEqual({ name: missing, path: null, timedOut: false });
   });
 
-  it('stops descendants when the parent times out', async () => {
+  it('returns a timed-out probe and stops descendants when the parent times out', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'context-brake-process-'));
     const markerPath = join(directory, 'descendant-finished');
     const readyPath = join(directory, 'descendant-started');
     try {
       const result = await runner.run({ executable: process.execPath, args: [treeFixture, markerPath, readyPath], timeoutMilliseconds: 1_000 });
       expect(result.status).toBe('timed_out');
+      expect(versionFromProcess({ result, minimumVersion: '2.0.0' }).status).toBe('timed_out');
       await expect(access(readyPath)).resolves.toBeUndefined();
       await delay(800);
       await expect(access(markerPath)).rejects.toMatchObject({ code: 'ENOENT' });

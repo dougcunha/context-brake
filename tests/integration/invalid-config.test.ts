@@ -1,11 +1,11 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { dispatchCommand } from '../../src/cli/composition-root.js';
-import { runDoctor } from '../../src/cli/commands/doctor.js';
-import { fakeOverheadMeasurer } from '../helpers/fake-overhead-measurer.js';
-import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
+import { doctorReportSchema } from '../../src/core/contracts/diagnostics.js';
+import { runInProcessCli } from '../helpers/in-process-cli.js';
+
+const CONFIG_FILE = 'context-brake.config.json';
 
 const invalidConfig = JSON.stringify({
   schemaVersion: 1,
@@ -19,31 +19,20 @@ const invalidConfig = JSON.stringify({
   },
 }, null, 2);
 
-describe('IT-10: Invalid ContextBrake config blocks writes (CA-13)', () => {
+describe('IT-10: Invalid ContextBrake config blocks writes and remains diagnosable (CA-13)', () => {
   let tempDir: string;
-  beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-it10-a-')); });
+  beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-it10-')); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('blocks writes in init and remove with exit code 2 and leaves repo unchanged', async () => {
-    await writeFile(join(tempDir, 'context-brake.config.json'), invalidConfig, 'utf8');
-    const beforeConfig = await readFile(join(tempDir, 'context-brake.config.json'), 'utf8');
-    const initExit = await dispatchCommand({ command: 'init', dryRun: false, yes: true, json: true, harness: [], excludeHarness: [] }, { projectRoot: tempDir, runner: fakeProcessRunner });
-    expect(initExit).toBe(2);
-    const removeExit = await dispatchCommand({ command: 'remove', dryRun: false, yes: true, json: true }, { projectRoot: tempDir, runner: fakeProcessRunner });
-    expect(removeExit).toBe(2);
-    const afterConfig = await readFile(join(tempDir, 'context-brake.config.json'), 'utf8');
-    expect(afterConfig).toBe(beforeConfig);
-  });
-});
-
-describe('IT-10: Invalid ContextBrake config remains diagnosable (CA-13)', () => {
-  let tempDir: string;
-  beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-it10-b-')); });
-  afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
-  it('doctor continues diagnostics and reports INVALID_CONTEXTBRAKE_CONFIG with rule issue', async () => {
-    await writeFile(join(tempDir, 'context-brake.config.json'), invalidConfig, 'utf8');
-    const doctorExit = await runDoctor({ command: 'doctor', json: true, harness: [] }, { projectRoot: tempDir, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
-    expect(doctorExit).toBe(2);
+  it('blocks init and remove with exit code 2 leaving the repository unchanged, and doctor reports INVALID_CONTEXTBRAKE_CONFIG with exit code 2', async () => {
+    await writeFile(join(tempDir, CONFIG_FILE), invalidConfig, 'utf8');
+    expect((await runInProcessCli(['init', '--yes', '--json'], tempDir)).code).toBe(2);
+    expect((await runInProcessCli(['remove', '--yes', '--json'], tempDir)).code).toBe(2);
+    expect(await readdir(tempDir)).toEqual([CONFIG_FILE]);
+    expect(await readFile(join(tempDir, CONFIG_FILE), 'utf8')).toBe(invalidConfig);
+    const doctor = await runInProcessCli(['doctor', '--json'], tempDir);
+    expect(doctor.code).toBe(2);
+    const report = doctorReportSchema.parse(JSON.parse(doctor.stdout));
+    expect(report.findings).toContainEqual(expect.objectContaining({ code: 'INVALID_CONTEXTBRAKE_CONFIG', severity: 'error', path: CONFIG_FILE }));
   });
 });

@@ -71,7 +71,7 @@ When escalating: first finish the independent units, save the checkpoint with `s
 | QA `BLOCKED` | Escalation rubric; a missing environment or essential manual validation escalates when no other eligible unit remains |
 | HIL 3 | Automatic acceptance, below |
 
-**Automatic acceptance.** With the latest review `APPROVED`, or `APPROVED WITH RESERVATIONS` with the reservations routed, the latest `qa_[num]/qa.md` `APPROVED` when QA was enabled, no blocking obligation open, and no essential manual validation pending, mark the checkpoint `completed`, the snapshot `closed`, and record `automatic acceptance` in the log with the review and QA report paths. A pending visual check or other essential manual validation prevents completion: escalate, with the manual acceptance script and the log summary at HIL 3. ADR candidates and accepted open items go into the final summary, because a later removal of the artifacts would take them along.
+**Automatic acceptance.** With the latest review `APPROVED`, or `APPROVED WITH RESERVATIONS` with the reservations routed, the latest `qa_[num]/qa.md` `APPROVED` when QA was enabled, no blocking obligation open, and no essential manual validation pending, mark the checkpoint `completed`, the snapshot `closed`, and record `automatic acceptance` in the log with the review and QA report paths. A pending visual check or other essential manual validation prevents completion: escalate, with the manual acceptance script and the log summary at HIL 3. ADR candidates and accepted open items go into the final summary: the candidates are moved to `docs/adr/` when the `commit` skill removes the artifacts, and the accepted open items would leave with them.
 
 ## Context and session
 

@@ -44,7 +44,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 → 35 | done |
 | 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 → 40 | done |
 | 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 → 13 | done |
-| 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 36 | pending |
+| 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 64 → 51 | done |
 | 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 21 | pending |
 | 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 | pending |
 | 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 29 | pending |
@@ -432,7 +432,7 @@ Layout: `adapter-version-probes`, `adapter-diagnostics`, `in-process-sampler`, a
 ## 6. doctor/integration — done 2026-10-10
 
 **Baseline:** 21 runner tests across the 8 files, green. Stryker: n/a (Glue).
-**Result:** 13 tests across 6 files, green. Scoped coverage proxy (`commands/doctor.ts`, `handoff-findings.ts`, `restart-doctor-findings.ts`, `runtime-error-checks.ts`, `no-harness-finding.ts`, `asset-currency.ts`, `active-sessions.ts`, `harnesses/common/restart-diagnostics.ts`, `runtime/runtime-state-reader.ts`): lines 96.03% → 94.2%; branches 81.06% → 79.74% (`restart-diagnostics.ts` branches 66.66% → 76%). The lines lost were executed without assertions by deleted tests and stay covered by the related suites: `doctor.ts` 27-30 (the invalid-config read, asserted by `integration/invalid-config.test.ts` and `integration/config-repair-errors.test.ts`) and `asset-currency.ts` 77-79 (`protectModifiedAssets` on a re-init that adds a harness, run by the deleted Oh-My-Pi test; `multi-harness-install`, `init-idempotency`, `init-exclusion`, and `omp-restart` run it). Commit pending.
+**Result:** 13 tests across 6 files, green. Scoped coverage proxy (`commands/doctor.ts`, `handoff-findings.ts`, `restart-doctor-findings.ts`, `runtime-error-checks.ts`, `no-harness-finding.ts`, `asset-currency.ts`, `active-sessions.ts`, `harnesses/common/restart-diagnostics.ts`, `runtime/runtime-state-reader.ts`): lines 96.03% → 94.2%; branches 81.06% → 79.74% (`restart-diagnostics.ts` branches 66.66% → 76%). The lines lost were executed without assertions by deleted tests and stay covered by the related suites: `doctor.ts` 27-30 (the invalid-config read, asserted by `integration/invalid-config.test.ts` and `integration/config-repair-errors.test.ts`) and `asset-currency.ts` 77-79 (`protectModifiedAssets` on a re-init that adds a harness, run by the deleted Oh-My-Pi test; `multi-harness-install`, `init-idempotency`, `init-exclusion`, and `omp-restart` run it). Commit `f0eaa71`.
 
 Every file is Glue: integration through the CLI edge (`runCli`/`runInProcessCli`) or, where a fixed clock is needed, `diagnoseProject` fed by the real runtime reader. The decisions live in units cleaned in modules 4–5 (`doctor-service`, `report-service`, `active-sessions`, `asset-currency`), so each file keeps one test per business flow and asserts what only the wiring can break. No surviving file was renamed (TechSpecs cite them); none is listed in `tests/test-lanes.ts`.
 
@@ -465,6 +465,73 @@ Every file is Glue: integration through the CLI edge (`runCli`/`runInProcessCli`
 ### Notes for later modules
 - The prd-02.2 TechSpec TC-18 row cites `tests/integration/doctor-state-schema.test.ts`, which does not exist; its scenario (`doctor --json` parses at `schemaVersion: 1`) lives in `integration/init-remove-footprint.test.ts` E2E-08 and `statusline-bridge-lifecycle.test.ts`.
 - `asset-currency.ts` 77-79 and 82-84 (`protectModifiedAssets`) run in the init suites (module 24) and `asset-currency-lifecycle.test.ts` (module 32); keep one of them asserting `MODIFIED_OWNED_ASSET`.
+
+### Questions `[?]`
+- None.
+## 7. repo/release-packaging — done 2026-10-10
+
+**Baseline:** 64 runner tests across the 7 files, green (the plan's 36 was the grep count). Stryker: n/a (Common/Glue).
+**Result:** 51 tests across 7 files, green. Scoped coverage proxy (`scripts/check-release-tag.ts`, `scripts/asset-bundler.ts`, `src/infrastructure/storage/package-metadata.ts`): unchanged, lines 90.05% → 90.05%, branches 84.61% → 84.61%. Remaining gaps: `check-release-tag.ts` 60-69 and 75-76 (`runCli` and the direct-run guard, run only by the release workflow step); `asset-bundler.ts` 57-58 (rethrow of a non-ENOENT read error, defensive); `package-metadata.ts` 50-51 (zod shape failure, defensive) and 62-63 (`readPackageVersion` on the real layout, the e2e half of TC-02). Commit pending.
+
+Layout: `package-metadata.test.ts` imports `src/infrastructure/storage/` and moved unchanged to `tests/integration/` (decision 3, `git mv` only; not in `tests/test-lanes.ts`, no process marker). No file was renamed: the prd-01.1, prd-02, prd-05, and prd-13 TechSpecs cite them, and `package-assets`/`package-contents` stay in `PROCESS_LANE_FILES` (`test-lanes.test.ts` green).
+
+### check-release-tag.ts → Common (`resolveTargetTag`, `parseAndValidateTag`, `verifyReleaseTag`); `runCli` → Glue
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| `--tag <value>` wins over the environment; `--tag=<value>`; GITHUB_REF_NAME before TAG_NAME; TAG_NAME; empty when nothing is set | either argv branch removed; `??` operands swapped; `''` literal changed | `resolves the tag from $source` (5 rows, TC-04) |
+| a `v`-prefixed SemVer tag yields its version, prerelease included | `slice(1)` changed; `semver.valid` inverted | `returns the version of a v-prefixed SemVer tag… (TC-04)` |
+| blank, unprefixed, or non-SemVer tags are rejected with their own message | `trim()` removed; any guard removed | `rejects %j (TC-03)` (3 rows) |
+| a matching tag returns tag and version; a mismatch or a missing version aborts | `!==` inverted; `typeof` guard removed; return object changed | `returns the tag and version… (TC-01)`, `rejects a package.json with $case` (2 rows, TC-02) |
+
+### release.yml → Trivial by triage, kept for prd-05 DEC-07/TC-05
+
+The file pins literals of the workflow; every test kills the "literal edited out of `release.yml`" mutant class, so the six tests became three (triggers and permissions, gates in order, publication and release) carrying the FR/NFR/DEC identifiers that prd-05 `tasks.md` maps to the file.
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a version tag or a manual dispatch builds the requested tag, with `contents`/`id-token` write only | trigger, `ref`, or permission edited | `runs on a version tag or a manual dispatch… (FR-01, NFR-01, DEC-01)` |
+| gates run in order on ubuntu-latest with Node 20, all before `npm stage publish` | a gate removed or moved after publishing | `runs every pre-release gate in order… (FR-02, FR-03, NFR-04)` |
+| staged publish with provenance and the masked token; GitHub release with notes | `--provenance` dropped; direct `npm publish`; `gh release` removed | `stages the npm release… (FR-04, FR-05, NFR-03, DEC-03, DEC-04)` |
+
+### package-metadata.ts → Common (integration: real filesystem)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| dist layout (four up) and source layout (three up) | either candidate removed | the two `resolves the version from…` tests (FR-07, TC-02) |
+| no package.json, a non-SemVer version, or another package name → `PackageMetadataError` | `continue` → rethrow; either guard removed | the three `throws PackageMetadataError…` tests |
+
+### asset-bundler.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| importing the module builds nothing | a top-level build call | `leaves built runtime assets untouched…` (T18/OBS-01) |
+| a modified asset is reported stale and left in place | `!==` inverted; push removed; the check rewrites the file | `reports a modified asset…` (T18/OBS-02) |
+| missing assets fail with their names and `npm run build` | `length === 0` inverted; message changed | `rejects missing assets…` |
+
+### Built runtime assets and the package → Glue, checked at the bundle, process, and tarball edges
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| no runtime asset pulls classic Zod, `jsonc-parser`, `semver`, `child_process`, or `src/cli/`; each guard rule detects its import | an asset imports a forbidden module; a guard rule broken | `runtime-bundle-imports` (13 asset rows + 5 fixture rows, TC-24, QA-08), kept |
+| each built process hook runs from its install path, exits 0, and writes only what its harness documents, also for an unhandled event and malformed stdin | the bundle crashes at load; failure policy lost at the process edge | `$asset answers $event (stdin $stdin)…` (8 rows) |
+| built in-process assets export a default function | default export missing | `loads in-process plugins and extensions…` |
+| the tarball holds every asset, schema, and doc, an executable bin, and no development or prd-12 removed file | `files` in `package.json` edited; shebang lost; manifest field changed | `packs the runtime assets, schemas, and an executable bin…` (RF17, RF23, CA-19, prd-12 DEC-15) |
+
+### Actions
+- **Moved (1, move-only):** `tests/unit/package-metadata.test.ts` → `tests/integration/`.
+- **Deleted (9):** package-assets `verifies all expected runtime asset files exist on disk` (`npm pack` lists only files on disk, and package-contents `REQUIRED_FILES` now holds all 13 assets, `pi-restart.js` and `omp-restart.js` added as in `scripts/check-package.ts`; the lost `size > 0` check is low risk); seven `HOOK_CASES` rows (claude-code `PostToolUse`/`Stop`, codex `Stop`, cursor `postToolUse`/`preCompact`, copilot `postToolUse`, antigravity valid `PostToolUse`): each repeats an asset a kept row already runs with the same output, so it kills the same bundle mutants; event routing is in `unit/runtime-claude`/`-codex`/`-cursor`/`-copilot`/`-antigravity` (modules 21–22, e.g. `answers PostToolUse with an empty object and PreInvocation with injectSteps`), the built post-tool round trip per harness is `e2e/e2e-hook-round-trips.test.ts`, and antigravity `PostToolUse` → `{}` stays asserted by the malformed-stdin row; package-contents `validates that published config schema is usable JSON (RF17)` (`toBeDefined` only; `unit/schemas.test.ts` `publishes deterministic Draft 2020-12 schemas (RF17)` parses the file and asserts `$schema`, and `schemas:check` pins its content).
+- **Merged (5 → 1 inside other tests):** release-workflow 6 → 3 (dispatch `ref` into the trigger test; runner and Node 20 into the gate-order test; GitHub release into the publication test); package-contents manifest/shebang test into the pack test. Table merges with the runner count unchanged: package-assets malformed-stdin and unhandled-event tests into the `HOOK_CASES` `it.each` through an optional `stdin` column; check-release-tag's five `resolveTargetTag` tests, three rejections, and two `verifyReleaseTag` rejections into `it.each` tables.
+- **Rewritten (3):** the GITHUB_REF_NAME row now also sets TAG_NAME (the `??` swap survived: each env test set one variable) and the `--tag` row sets GITHUB_REF_NAME (argv precedence); the empty/whitespace rejection keeps only `'   '` (it alone kills both the `trim()` and the empty-guard mutants); gate order now ends at `npm stage publish`, so moving a gate after publishing fails. TC-01..TC-05 and the prd-05 FR/NFR/DEC identifiers are now in the titles.
+- **Created:** none.
+- **Kept:** asset-bundler (3), runtime-bundle-imports (18), package-metadata (5), the in-process loading test.
+
+### Production pending items
+- `scripts/check-package.ts` and `integration/package-contents.test.ts` keep separate `REQUIRED_FILES` lists that drift (the script lacks `docs/telemetry-block.md`; the test lacked the two restart assets). The script's top-level `await verifyPackage()` prevents importing it; an `isDirect` guard like the one in `check-release-tag.ts` would let the test share the list and the checks.
+
+### Notes for later modules
+- The prd-01.1 TechSpec TC-02 row cites `tests/unit/package-metadata.test.ts`, now in `tests/integration/`.
+- package-contents cites RF23, which in prd-01 is doctor text/JSON parity, not the package manifest; the identifier was kept as found.
 
 ### Questions `[?]`
 - None.

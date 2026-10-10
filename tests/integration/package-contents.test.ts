@@ -7,9 +7,11 @@ const execAsync = promisify(exec);
 
 type PackFile = { path: string };
 type PackResult = [{ files: PackFile[] }];
+type Manifest = { name: string; type: string; bin: Record<string, string>; engines: { node: string } };
 
+const BIN_PATH = 'dist/src/cli/main.js';
 const REQUIRED_FILES: readonly string[] = [
-  'dist/src/cli/main.js',
+  BIN_PATH,
   'schemas/context-brake.config.schema.json',
   'schemas/doctor-report.schema.json',
   'schemas/install-report.schema.json',
@@ -25,46 +27,31 @@ const REQUIRED_FILES: readonly string[] = [
   'dist/assets/runtime/opencode-plugin.js',
   'dist/assets/runtime/pi-extension.js',
   'dist/assets/runtime/omp-extension.js',
+  'dist/assets/runtime/pi-restart.js',
+  'dist/assets/runtime/omp-restart.js',
 ];
-
 const REMOVED_FILES: readonly string[] = ['docs/context-brake-protocol.md', 'schemas/task-plan.schema.json', 'schemas/state-checkpoint.schema.json', 'schemas/run-summary.schema.json'];
+const DEVELOPMENT_PREFIXES: readonly string[] = ['tests/', '.github/', '.agents/', 'tasks/'];
 
-describe('package contents assets and schemas (RF17, CA-19)', () => {
-  it('includes all required runtime assets, schemas, and binary, without the protocol doc or removed schemas (prd-12 DEC-15)', async () => {
-    const { stdout } = await execAsync('npm pack --dry-run --json');
-    const packInfo = JSON.parse(stdout) as PackResult;
-    const packedPaths = new Set(packInfo[0]?.files.map((f) => f.path) ?? []);
-    for (const required of REQUIRED_FILES) expect(packedPaths.has(required)).toBe(true);
-    for (const removed of REMOVED_FILES) expect(packedPaths.has(removed)).toBe(false);
-    for (const path of packedPaths) {
-      expect(path.startsWith('tests/')).toBe(false);
-      expect(path.startsWith('.github/')).toBe(false);
-      expect(path.startsWith('.agents/')).toBe(false);
-      expect(path.startsWith('tasks/')).toBe(false);
-      if (path.endsWith('.ts')) expect(path.endsWith('.d.ts')).toBe(true);
-    }
-  });
+async function packedPaths(): Promise<string[]> {
+  const { stdout } = await execAsync('npm pack --dry-run --json');
+  const packInfo = JSON.parse(stdout) as PackResult;
+  return packInfo[0]?.files.map((file) => file.path) ?? [];
+}
 
-  it('validates that published config schema is usable JSON (RF17)', async () => {
-    const schemaContent = await readFile('schemas/context-brake.config.schema.json', 'utf8');
-    const schema = JSON.parse(schemaContent) as { type: string; properties: Record<string, unknown> };
-    expect(schema.type).toBe('object');
-    expect(schema.properties.schemaVersion).toBeDefined();
-  });
-});
+function isDevelopmentFile(path: string): boolean {
+  const isSource = path.endsWith('.ts') && !path.endsWith('.d.ts');
+  return isSource || DEVELOPMENT_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
 
-describe('package manifest inputs and shebang (RF23)', () => {
-  it('validates package manifest inputs and binary shebang', async () => {
-    const content = await readFile('package.json', 'utf8');
-    const manifest = JSON.parse(content) as {
-      name: string; type: string; bin: Record<string, string>; engines: { node: string };
-    };
-    expect(manifest.name).toBe('context-brake');
-    expect(manifest.type).toBe('module');
-    expect(manifest.bin['context-brake']).toBe('dist/src/cli/main.js');
+describe('published package (RF17, RF23, CA-19)', () => {
+  it('packs the runtime assets, schemas, and an executable bin, without development files or the removed protocol doc and schemas (prd-12 DEC-15)', async () => {
+    const paths = await packedPaths();
+    const manifest = JSON.parse(await readFile('package.json', 'utf8')) as Manifest;
+    expect(REQUIRED_FILES.filter((file) => !paths.includes(file))).toEqual([]);
+    expect(paths.filter((path) => REMOVED_FILES.includes(path) || isDevelopmentFile(path))).toEqual([]);
+    expect(manifest).toMatchObject({ name: 'context-brake', type: 'module', bin: { 'context-brake': BIN_PATH } });
     expect(manifest.engines.node).toContain('>=20');
-    const binContent = await readFile('dist/src/cli/main.js', 'utf8');
-    expect(binContent.startsWith('#!/usr/bin/env node')).toBe(true);
+    expect((await readFile(BIN_PATH, 'utf8')).startsWith('#!/usr/bin/env node')).toBe(true);
   });
 });
-

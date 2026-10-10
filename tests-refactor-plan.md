@@ -42,7 +42,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 2 | cli/assistant-questions | assistant-questions, -gitignore, -invalid, -state | src/cli/assistant | G/C | 28 → 30 | done |
 | 3 | cli/assistant-terminal | assistant-output, clack-prompt-port, equivalent-command, terminal | src/cli/assistant, src/cli | C | 35 → 29 | done |
 | 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 → 35 | done |
-| 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 | pending |
+| 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 → 40 | done |
 | 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 | pending |
 | 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 36 | pending |
 | 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 21 | pending |
@@ -285,7 +285,7 @@ Layout: one file per source, keeping the names the prd-16 TechSpec cites (TC-04 
 ## 4. doctor/service — done 2026-10-10
 
 **Baseline:** 29 runner tests across the 7 files, green (`doctor-context-window.test.ts` came from module 1). Stryker: n/a (Common).
-**Result:** 35 tests across the same 7 files, green. Scoped coverage proxy (`doctor-service.ts`, `doctor-checks.ts`, `doctor-report-extras.ts`, `report-service.ts`, `active-sessions.ts`, `asset-currency.ts`): lines 75.09% → 78.33%; branches 83.33% → 88.52% (`doctor-service.ts` 70.96% → 85.29%, `report-service.ts` lines 86.15% → 96.92%, `doctor-report-extras.ts` 85.71% → 100%). The remaining gaps: `assetCurrencyFindings` and `protectModifiedAssets` (`asset-currency.ts` 18-88) run only in `integration/doctor-asset-currency.test.ts` (current, outdated, modified across three harnesses) and `integration/asset-currency-lifecycle.test.ts` (`MODIFIED_OWNED_ASSET`); the `InvalidConfigurationError.remediation` branch (`doctor-checks.ts` 9, prd-15 DEC-01) is asserted by `integration/config-repair-errors.test.ts`; `cleanPlan`'s change mapping (`report-service.ts` 41-42) is parsed by every `init --json` integration test; the `doctor-service.ts` branches left are explicit harnesses, exclusion, and the no-project finding, covered by `integration/doctor-exclusion.test.ts` and `integration/init-detection.test.ts`. Commit pending.
+**Result:** 35 tests across the same 7 files, green. Scoped coverage proxy (`doctor-service.ts`, `doctor-checks.ts`, `doctor-report-extras.ts`, `report-service.ts`, `active-sessions.ts`, `asset-currency.ts`): lines 75.09% → 78.33%; branches 83.33% → 88.52% (`doctor-service.ts` 70.96% → 85.29%, `report-service.ts` lines 86.15% → 96.92%, `doctor-report-extras.ts` 85.71% → 100%). The remaining gaps: `assetCurrencyFindings` and `protectModifiedAssets` (`asset-currency.ts` 18-88) run only in `integration/doctor-asset-currency.test.ts` (current, outdated, modified across three harnesses) and `integration/asset-currency-lifecycle.test.ts` (`MODIFIED_OWNED_ASSET`); the `InvalidConfigurationError.remediation` branch (`doctor-checks.ts` 9, prd-15 DEC-01) is asserted by `integration/config-repair-errors.test.ts`; `cleanPlan`'s change mapping (`report-service.ts` 41-42) is parsed by every `init --json` integration test; the `doctor-service.ts` branches left are explicit harnesses, exclusion, and the no-project finding, covered by `integration/doctor-exclusion.test.ts` and `integration/init-detection.test.ts`. Commit `a5e3965`.
 
 Layout: one file per source, except `doctor-context-window.test.ts`, which keeps its name because the prd-09 and prd-12 TechSpecs cite it; it tests the `doctor-report-extras.ts` section and finding through `diagnoseProject`, where the claude-code targeting lives. Both doctor files hand-rolled the same fake `HarnessAdapter`; it moved to the new `tests/helpers/fake-doctor-adapter.ts`. `diagnostics.test.ts` tests the `src/core/contracts/diagnostics.ts` schemas and stays as is. No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
 
@@ -348,6 +348,83 @@ Date arithmetic would make it Critical in the `ts-tests` triage, but it only fil
 
 ### Production pending items
 - None.
+
+### Questions `[?]`
+- None.
+
+## 5. doctor/support-versions — done 2026-10-10
+
+**Baseline:** 25 runner tests across the 6 files, green. Stryker: n/a (Common).
+**Result:** 40 tests across 6 files, green. Scoped coverage proxy (`support-service.ts`, `version-service.ts`, `harnesses/common/version-probes.ts`, `diagnostics/p95.ts`, `diagnostics/in-process-sampler.ts`, `diagnostics/sample-failure.ts`): lines 89.74% → 98.97%; branches 84.11% → 93.54% (`version-service.ts` 75% → 100%, `version-probes.ts` 87.5% → 100%, `sample-failure.ts` lines 29.41% → 100%). Remaining gaps: `support-service.ts` 26-27 and `p95.ts` 7 are unreachable (see pending items); `in-process-sampler.ts` 80 (an asset whose default export is not a function) and `sample-failure.ts` 25/31 (a non-`Error` throw, a `SampleError` passed through by `process-sampler.ts`) run only in `tests/bench/overhead-measurer.test.ts`. Commit pending.
+
+Layout: `adapter-version-probes`, `adapter-diagnostics`, `in-process-sampler`, and `overhead-p95` import `src/infrastructure/` and moved to `tests/integration/` unchanged (decision 3, move-only step), keeping their names because the TechSpecs cite them. None is listed in `tests/test-lanes.ts` or carries a process marker, so the lanes file is unchanged (`test-lanes.test.ts` green after the move). `support-service-version-gating.test.ts` merged into `support-service.test.ts` (one file per source); the new `tests/unit/version-service.test.ts` owns the version parsing.
+
+### support-service.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the 4 remaining capability IDs and 2 levels (TC-11) | an ID re-added or dropped | `has exactly the four remaining capability IDs…` |
+| level is full only when post_tool_telemetry and session_boot are supported | `FULL_SUPPORT_CAPABILITIES` changed; `every` → `some`; ternary swapped | `derives every capability combination…` (81 combinations) |
+| an old probe gates every supported capability with the detected/minimum text | `status === 'old'` inverted; `?? display` order; `.filter` dropped | `gates every declared capability for an old prerelease (UT-15, CA-16, TC-08)` (exact capabilities and limitations) |
+| any other status keeps the declared states; a set floor adds no limitation | `=== 'old'` → `!== 'resolved'`; `minimumVersion !== null` inverted | `keeps the declared states for a $status probe with floor $floor (FR-12, DEC-07, TC-08)` (7 rows, with and without a floor) |
+| no floor adds the unverified-floor limitation; `minimumVersion` null | `floorLimitation` push removed; `?? null` dropped | `reports an unverified version floor… (RF9, DEC-08)` |
+
+### version-service.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| null → unknown, non-string → malformed without display, no version → malformed with display, below floor → old, equal to floor → resolved, `v` prefix | each early return removed; `lt` → `lte`; `v?` dropped from the pattern | `reads $display as $status against the floor (UT-15)` (5 rows) |
+| no floor resolves and keeps the source; an invalid floor throws | `source ??` default; `throw` removed | `resolves any version without a floor and rejects an invalid floor` |
+| timed out → timed_out, failed → unknown even with a version in the output, completed → parsed; stderr read when stdout is blank | either status branch removed; `\|\|` fallback dropped | `turns a $result.status process into a $status probe…` (3 rows) |
+
+### version-probes.ts → Common; adapter `probeVersion` → Glue (1:1 delegation)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| no runner → unknown with the floor, from every adapter | `!runner` guard removed | `returns an unknown probe from every adapter…` |
+| the first discovered path runs `--version` with the 2 s bound; the floor is forwarded | `find` → `[0]`; args or timeout changed; `minimumVersion` not passed | `runs --version on the first discovered path…` |
+| nothing found: timed_out if a search timed out, unknown otherwise, nothing run | ternary swapped; `some` → `every` | `returns $status without running anything for $case` (3 rows) |
+
+### p95.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| empty → null; rank `ceil(0.95·n)` of the sorted samples, rounded to 0.1 | sort removed; `ceil` → `floor`/`round`; `rank - 1` → `rank`; `toFixed` removed | `selects rank ceil(0.95 * n)… for $case` (4 rows: empty, 1, 100 descending, 12 shuffled) |
+
+### in-process-sampler.ts and sample-failure.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a registered handler gets the payload and the benchmark context, 10 warm-ups + 100 samples | counts changed; context not passed | `runs only the tool_result handler…` |
+| absent handler → null, no fallback | `selected === null` guard removed | `returns null instead of falling back…` |
+| returned hooks get `(input, output)` | `invocationArgs` branch removed | `invokes OpenCode tool.execute.after…` |
+| benchmark context shape and cwd | literal or `cwd` changed | `builds the documented synchronous ContextUsage shape…` |
+| a throwing handler → `handler_error`, a missing asset → `import_error`, detail from the error code or name | either `catch` removed; fallback causes swapped; `errorLabel` code/name choice | `rejects with a $failure.cause sample error for $asset` (2 rows) |
+
+### adapter diagnostics (`src/infrastructure/harnesses/*`) → Glue, integration
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| every adapter reports INTEGRATION_MISSING in an empty project | a missing check removed | `reports INTEGRATION_MISSING…` |
+| malformed claude-code and cursor config → INVALID_HARNESS_CONFIG | parse-error branch removed | `reports INVALID_HARNESS_CONFIG when $file has malformed JSON` (2 rows) |
+| Codex `[hooks]` in config.toml → MIXED_HOOK_REPRESENTATIONS | `includes('[hooks]')` inverted | `reports MIXED_HOOK_REPRESENTATIONS…` |
+| no Codex git root warning with `.git` present (CR-07) | `.git` check inverted | `does not warn about the Codex git root when .git exists (CR-07)` |
+
+### Actions
+- **Moved (4, move-only):** `adapter-version-probes`, `adapter-diagnostics`, `in-process-sampler`, `overhead-p95` from `tests/unit/` to `tests/integration/`.
+- **Deleted (6):** support-service `never lets context_usage or auto_restart change the level` and `is partial when session_boot is not supported` (both are rows of the 81-combination `derives every capability combination…`); version-gating `downgrades declared capabilities only when the probe is old` (same arrangement and assertion as UT-15, which now carries TC-08); overhead-p95 `evaluates in-process threshold against 15ms target` (asserts the test's own `<= 15`; no production code compares p95 with 15 ms, the targets live in `tests/bench/`); overhead-p95 `selects rank 19 for 20 synthetic samples…` (pre-sorted input with integral `0.95·n` and no rounding, so it killed nothing the new rows do not); adapter-diagnostics `warns when project root has no .git entry` (`integration/codex-hook-root.test.ts` `warns when Codex integration is installed outside git repo (CR-07)` asserts the exact message, impact, and remediation).
+- **Merged:** `support-service-version-gating.test.ts` into `support-service.test.ts`: its unknown/malformed/timed_out loops with and without a floor became one 7-row `it.each` (TC-08 "with and without a floor" kept); the INVALID_HARNESS_CONFIG test into a 2-row `it.each`; the three adapter-diagnostics `describe`s into one setup.
+- **Rewritten (6):** UT-15 asserted one limitation with `toContainEqual`, so gating only the full-support IDs survived; it now asserts all capabilities and limitations (its `normalizeVersion` assertion moved to `version-service.test.ts`). The gating loops asserted `some(...startsWith('Detected version'))` false; they now assert the exact limitations. The unverified-floor test asserts the exact list. The p95 tests used sorted inputs and asserted `p95! <= 100`; they became 4 rows that kill sort, rounding, and rank mutants. The probe tests asserted `status` only; they now assert the full probe, the run request, and the floor passthrough. The context test lost its two `typeof` assertions and asserts the passed `cwd`.
+- **Created (14 runner tests):** `version-service.test.ts` (9: no unit test covered the non-string, invalid-floor, failed, stderr, or equal-to-floor cases); the `resolved`+floor gating row (the only verified-floor case); the two `unknown` discovery rows of the probe (`version-probes.ts` 20 was uncovered); the two `SampleError` rows (`sample-failure.ts` ran only in the bench).
+- **Kept:** TC-11 IDs test, exhaustive derivation, the three handler-selection tests, INTEGRATION_MISSING, MIXED_HOOK_REPRESENTATIONS, the CR-07 no-warning test.
+
+### Production pending items
+- `support-service.ts` 26-27: the "could not be verified against minimum" impact is unreachable since DEC-07; `limitationFor` reaches `versionImpact` only for a supported definition gated to `unknown`, which happens only when the status is `old`.
+- `p95.ts` 7: `value !== undefined ? … : null` is unreachable (the index is always in range for a non-empty array).
+
+### Notes for later modules
+- The prd-01.1 TechSpec TC-08 row cites `tests/unit/support-service-version-gating.test.ts`, now merged into `support-service.test.ts`; the TechSpec citations of the four moved files say `tests/unit/`.
+- `integration/node-process-runner.test.ts` (module 32) runs `versionFromProcess` through a real process; the parsing rows now live in `version-service.test.ts`, so module 32 can keep only the process-boundary assertions.
 
 ### Questions `[?]`
 - None.

@@ -47,10 +47,17 @@ describe('TC-04: in-process sampling selects the registered handler by event (FR
   it('returns null instead of falling back when the named handler is absent', runMissingHandler);
   it('invokes OpenCode tool.execute.after with the documented input and output arguments', runOpenCodeHandler);
   it('builds the documented synchronous ContextUsage shape and session manager', () => {
-    const context = createBenchmarkContext();
+    const context = createBenchmarkContext(FIXTURES);
     expect(context.getContextUsage()).toEqual({ tokens: 42000, contextWindow: 128000, percent: 33 });
     expect(context.sessionManager.getSessionId()).toBe('context-brake-benchmark');
-    expect(typeof context.cwd).toBe('string');
-    expect(context.ui.notify).toBeTypeOf('function');
+    expect(context.cwd).toBe(FIXTURES);
+  });
+
+  it.each([
+    { asset: 'in-process-throwing.mjs', failure: { cause: 'handler_error', detail: 'Error' } },
+    { asset: 'in-process-absent.mjs', failure: { cause: 'import_error', detail: 'ERR_MODULE_NOT_FOUND' } },
+  ])('rejects with a $failure.cause sample error for $asset', async ({ asset, failure }) => {
+    const sampling = sampleInProcess({ assetPath: join(FIXTURES, asset), event: 'tool.execute.after', payload: {} });
+    await expect(sampling).rejects.toMatchObject({ name: 'SampleError', failure });
   });
 });

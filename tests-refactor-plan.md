@@ -45,7 +45,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 → 40 | done |
 | 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 → 13 | done |
 | 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 64 → 51 | done |
-| 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 21 | pending |
+| 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 22 → 21 | done |
 | 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 | pending |
 | 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 29 | pending |
 | 11 | config/schemas-stores | schemas, changes-schema, project-config-store, manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 16 | pending |
@@ -471,7 +471,7 @@ Every file is Glue: integration through the CLI edge (`runCli`/`runInProcessCli`
 ## 7. repo/release-packaging — done 2026-10-10
 
 **Baseline:** 64 runner tests across the 7 files, green (the plan's 36 was the grep count). Stryker: n/a (Common/Glue).
-**Result:** 51 tests across 7 files, green. Scoped coverage proxy (`scripts/check-release-tag.ts`, `scripts/asset-bundler.ts`, `src/infrastructure/storage/package-metadata.ts`): unchanged, lines 90.05% → 90.05%, branches 84.61% → 84.61%. Remaining gaps: `check-release-tag.ts` 60-69 and 75-76 (`runCli` and the direct-run guard, run only by the release workflow step); `asset-bundler.ts` 57-58 (rethrow of a non-ENOENT read error, defensive); `package-metadata.ts` 50-51 (zod shape failure, defensive) and 62-63 (`readPackageVersion` on the real layout, the e2e half of TC-02). Commit pending.
+**Result:** 51 tests across 7 files, green. Scoped coverage proxy (`scripts/check-release-tag.ts`, `scripts/asset-bundler.ts`, `src/infrastructure/storage/package-metadata.ts`): unchanged, lines 90.05% → 90.05%, branches 84.61% → 84.61%. Remaining gaps: `check-release-tag.ts` 60-69 and 75-76 (`runCli` and the direct-run guard, run only by the release workflow step); `asset-bundler.ts` 57-58 (rethrow of a non-ENOENT read error, defensive); `package-metadata.ts` 50-51 (zod shape failure, defensive) and 62-63 (`readPackageVersion` on the real layout, the e2e half of TC-02). Commit `d525fd1`.
 
 Layout: `package-metadata.test.ts` imports `src/infrastructure/storage/` and moved unchanged to `tests/integration/` (decision 3, `git mv` only; not in `tests/test-lanes.ts`, no process marker). No file was renamed: the prd-01.1, prd-02, prd-05, and prd-13 TechSpecs cite them, and `package-assets`/`package-contents` stay in `PROCESS_LANE_FILES` (`test-lanes.test.ts` green).
 
@@ -532,6 +532,62 @@ The file pins literals of the workflow; every test kills the "literal edited out
 ### Notes for later modules
 - The prd-01.1 TechSpec TC-02 row cites `tests/unit/package-metadata.test.ts`, now in `tests/integration/`.
 - package-contents cites RF23, which in prd-01 is doctor text/JSON parity, not the package manifest; the identifier was kept as found.
+
+### Questions `[?]`
+- None.
+
+## 8. repo/test-infra — done 2026-10-10
+
+**Baseline:** 22 runner tests across the 5 files, green (the plan's 21 was the grep count). Stryker: n/a (Common/Trivial).
+**Result:** 21 tests across 5 files, green. Scoped coverage proxy (`scripts/test-budget.ts`, `tests/test-lanes.ts`, `vitest.config.ts`, `vitest.bench.config.ts`): unchanged, lines 98.67% → 98.67%, branches 100% → 100%. The only gap is `tests/test-lanes.ts` 41-42 (`isSerialLaneFile`), unreachable from the marker test because `SERIAL_LANE_FILES` is a subset of `PROCESS_LANE_FILES`, so `isProcessLaneFile` short-circuits it. Commit `<hash>`.
+
+Layout: `benchmark-fixtures.test.ts` imports every harness adapter from `src/infrastructure/harnesses/` and moved unchanged to `tests/integration/` (decision 3, `git mv` only; no process marker, not in `tests/test-lanes.ts`, so the lanes file is unchanged and `test-lanes.test.ts` stays green). The other files keep their names. The prd-13 TechSpec cites `test-lanes.test.ts` for TC-03 and TC-05, which live in `bench-config.test.ts` and `e2e-smoke-set.test.ts`. Merging them into `test-lanes.test.ts` would push it past 100 lines, so the split stays. These tests guard the `tests.md` Time Budget and Processes rules (process lane, smoke set, bench runner, 180 s budget), so the rules they pin count as mandated behavior even where the source is a config object.
+
+### scripts/test-budget.ts → Common (`evaluateBudget`); `parseVitestReport` → Trivial (Zod schema), kept as the TC-07 malformed-report guard; `scripts/check-test-budget.ts` → Glue (spawns Vitest and reads the JSON report; runs only in `npm run test:budget`, no unit test)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a successful run at exactly 180 s passes; above it fails with TEST_BUDGET_EXCEEDED and the full message; the wall time line comes first | `>` → `>=`; budget check removed; message template; `toFixed(1)` changed | `exits $exitCode for a successful run of $wallSeconds s…` (2 rows, exact result) |
+| a failed report, a non-zero exit code, or a killed run (null) fails with TEST_RUN_FAILED even within the budget | `!input.report.success` removed; `!== 0` → `> 0` or removed; `String(code)` template | `fails with TEST_RUN_FAILED within the budget for success $success and Vitest exit code $vitestExitCode` (3 rows) |
+| the ten slowest files, slowest first, relative to the root | sort comparator; `slice` bound; `relative` dropped | `lists the ten slowest files…` |
+| each failed assertion is named after the error | `status === 'failed'` filter inverted or removed | `names each failed test after TEST_RUN_FAILED` |
+| a report without test results is rejected | `testResults` made optional | `rejects a report without test results` |
+
+### tests/test-lanes.ts → Common (`hasProcessMarker`, `isProcessLaneFile`, `processLaneGlobs`); vitest.config.ts and vitest.bench.config.ts → Trivial by triage, kept for prd-13 FR-01/03/04/05, DEC-01/03/04/05, TC-03/05/06 and T23/CR-01
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| every test file with a process marker sits in the process or serial lane, and the scan does detect markers | `PROCESS_MARKERS` emptied or `some` → `every`; `\|\|` → `&&` in `isProcessLaneFile` | `assigns every test file with a process marker to the process or serial lane` |
+| every lane entry names an existing file | a moved or deleted file left in a list | `matches existing test files with every process and serial lane entry` |
+| the process lane equals the TechSpec list (DEC-EXC-01) | a file added to `PROCESS_LANE_FILES` without review | `keeps the process lane equal to the TechSpec list…` (TC-06) |
+| lanes run parallel, process, serial, every lane ordered, 6 workers | `groupOrder` changed or dropped; `maxWorkers` | `runs the lanes in order…` |
+| process files in parallel forks, serial files alone in one fork; neither in the parallel lane | include/exclude spreads dropped; `singleFork` changed | `runs process lane files in parallel forks…`, `keeps process and serial files out of the parallel lane` |
+| global 30 s timeout, no test mode variable | `testTimeout` changed; `env` re-added | `gives every lane the global timeout… (prd-12 DEC-16)` |
+| the e2e folder holds only the four smoke files | a fifth e2e file | `lists one built-CLI file per command and the hook round trips` (TC-05) |
+| the bench folder holds exactly the six timing suites, runs in one fork, and stays out of the default lanes | a bench suite moved back; `BENCH_FILE_PATTERN` dropped from the parallel exclude; `singleFork` changed | the three `bench-config` tests (TC-03) |
+
+### Adapter benchmark fixtures (`src/infrastructure/harnesses/*/adapter.ts` `benchmarkFixture`) → Trivial data, kept for TC-04 (FR-05, prd-12 DEC-07)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| each sample payload parses with its adapter's documented post-tool schema, with the fields the handler reads | a payload field renamed or dropped | `parses the five process event payloads…`, `parses the three in-process payloads…` |
+
+`unit/harness-registry.test.ts` asserts `fixture.harness` and `fixture.event`, which are different mutants, so both files stay.
+
+### Actions
+- **Moved (1, move-only):** `tests/unit/benchmark-fixtures.test.ts` → `tests/integration/`.
+- **Deleted (1 row):** the `59.94 s` within-budget case. The `180 s` row kills the `>=` mutant and the exit-0 path, and the `180.5 s` row kills the `toFixed` mutants, both with exact output.
+- **Merged:** test-budget `passes a successful run within the budget…`, `accepts a run at exactly the budget`, and `fails a successful run above the budget…` into one 2-row `it.each` asserting the whole result. `fails a run with test failures with TEST_RUN_FAILED…` folded into the exit-code `it.each` as a row.
+- **Rewritten (3):** that row now uses `success: false` with Vitest exit code `0`. Both earlier failed-run tests passed exit code `1`, so removing `!input.report.success` survived. The exit-code rows assert the exact TEST_RUN_FAILED line and the over-budget row the exact TEST_BUDGET_EXCEEDED line, where they used `toMatch`/`toContain`. In `test-lanes.test.ts`, the marker test now also requires the scan to flag `node-process-runner.test.ts` (an empty `PROCESS_MARKERS` passed before), and the lane-order test rejects a lane without `groupOrder` (the `?? -1` fallback kept `[-1, 1, 2]` sorted and unique). No test was added for either.
+- **Created:** none.
+- **Kept:** `rejects a report without test results`, the slowest-files and failed-names tests, all 7 `test-lanes` tests, including the duplicated TC-06 list the user accepted as an open item (prd-13 DEC-RES-01), `e2e-smoke-set` (1), `bench-config` (3), and `benchmark-fixtures` (2).
+
+### Production pending items
+- None.
+
+### Notes for later modules
+- prd-12 `task_05.md` and prd-01 codereview_08 `task_33.md` list `tests/unit/benchmark-fixtures.test.ts`, now in `tests/integration/`.
+- `tests/test-lanes.ts` 41-42 (`isSerialLaneFile`) runs only if a serial file ever leaves `PROCESS_LANE_FILES`. It is test infrastructure, not production code.
 
 ### Questions `[?]`
 - None.

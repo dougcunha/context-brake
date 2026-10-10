@@ -37,8 +37,10 @@ describe('T23/CR-01: process-heavy test files leave the parallel lane', () => {
   it('assigns every test file with a process marker to the process or serial lane', async () => {
     const files = (await listTestFiles()).filter((file) => !file.startsWith(BENCH_DIRECTORY));
     const sources = await Promise.all(files.map(async (file) => ({ file, source: await readFile(file, 'utf8') })));
-    const misplaced = sources.filter(({ file, source }) => hasProcessMarker(source) && !isProcessLaneFile(file) && !isSerialLaneFile(file));
-    expect(misplaced.map(({ file }) => file)).toEqual([]);
+    const marked = sources.filter(({ source }) => hasProcessMarker(source)).map(({ file }) => file);
+    const misplaced = marked.filter((file) => !isProcessLaneFile(file) && !isSerialLaneFile(file));
+    expect(marked).toContain('tests/integration/node-process-runner.test.ts');
+    expect(misplaced).toEqual([]);
   });
 
   it('matches existing test files with every process and serial lane entry', async () => {
@@ -72,6 +74,7 @@ describe('only the listed tests start a process (prd-13 FR-05, DEC-04, DEC-05, T
 describe('T23/CR-01: the Vitest configuration wires the three lanes', () => {
   it('runs the lanes in order: parallel, bounded process, then serial', () => {
     const orders = LANES.map((name) => laneProject(name)?.sequence?.groupOrder ?? -1);
+    expect(orders).not.toContain(-1);
     expect(orders).toEqual([...orders].sort((left, right) => left - right));
     expect(new Set(orders).size).toBe(LANES.length);
     expect(config.test?.maxWorkers).toBe(MAX_WORKERS);

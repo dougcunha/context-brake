@@ -48,7 +48,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 22 → 21 | done |
 | 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 → 0 | done |
 | 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 34 → 29 | done |
-| 11 | config/schemas-stores | schemas, changes-schema, project-config-store, manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 16 | pending |
+| 11 | config/schemas-stores | schemas, changes-schema, integration/project-config-store, integration/manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 18 → 11 | done |
 | 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 29 | pending |
 | 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 21 | pending |
 | 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 32 | pending |
@@ -628,7 +628,7 @@ The only check with no equivalent is the README-to-adapter consistency itself (R
 ## 10. config/validation — done 2026-10-10
 
 **Baseline:** 34 runner tests across the 5 files, green (the plan's 29 was the grep count). Stryker: n/a (Common).
-**Result:** 29 tests across the same 5 files, green. Scoped coverage proxy (`contracts/configuration.ts`, `configuration-validator.ts`, `configuration-sanitizer.ts`, `config-legacy-checks.ts`): lines 100% → 100%; branches 87.5% → 91.02% (`configuration.ts` 86.36% → 100%: the trimmed and single-line `agentCommand` rules, lines 25-26, and the `yellowMaxPercentage < criticalPercentage` rule, line 37, had no test). The uncovered lines are unchanged in the other three files; their branch percentages moved by under one point (`config-legacy-checks.ts` 83.33% → 82.35%, `configuration-validator.ts` 88.88% → 88.46%) because v8 counted a different branch total, not because a branch was lost. Remaining gaps: `config-legacy-checks.ts` 17 (`??` fallbacks when only one of `criticalTurn`/`turnCeiling` is set) and 34 (`declaredContextWindow`, asserted by `unit/window-origin.test.ts` `keeps declaredContextWindow through a config rewrite`); `configuration-sanitizer.ts` 14 (defensive guard zod cannot reach); `configuration-validator.ts` 35-36 (the `'(root)'` and non-`input` fallbacks, defensive) and 39 (`invalidSyntaxError`, asserted by module 11's `unit/project-config-store.test.ts`). Commit `PENDING`.
+**Result:** 29 tests across the same 5 files, green. Scoped coverage proxy (`contracts/configuration.ts`, `configuration-validator.ts`, `configuration-sanitizer.ts`, `config-legacy-checks.ts`): lines 100% → 100%; branches 87.5% → 91.02% (`configuration.ts` 86.36% → 100%: the trimmed and single-line `agentCommand` rules, lines 25-26, and the `yellowMaxPercentage < criticalPercentage` rule, line 37, had no test). The uncovered lines are unchanged in the other three files; their branch percentages moved by under one point (`config-legacy-checks.ts` 83.33% → 82.35%, `configuration-validator.ts` 88.88% → 88.46%) because v8 counted a different branch total, not because a branch was lost. Remaining gaps: `config-legacy-checks.ts` 17 (`??` fallbacks when only one of `criticalTurn`/`turnCeiling` is set) and 34 (`declaredContextWindow`, asserted by `unit/window-origin.test.ts` `keeps declaredContextWindow through a config rewrite`); `configuration-sanitizer.ts` 14 (defensive guard zod cannot reach); `configuration-validator.ts` 35-36 (the `'(root)'` and non-`input` fallbacks, defensive) and 39 (`invalidSyntaxError`, asserted by module 11's `unit/project-config-store.test.ts`). Commit `0afc274`.
 
 Layout: one file per source, except that the schema rules of `contracts/configuration.ts` stay split between `configuration.test.ts` (zones, legacy fields, `excludedHarnesses`) and `configuration-snapshot.test.ts` (the snapshot section, a `tests.md` high-risk area), the names the prd-12 and prd-15 TechSpecs cite. The `configurationIssues` and `parseError` helpers, duplicated in three files, moved to the new `tests/helpers/configuration-issues.ts`. No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
 
@@ -680,6 +680,56 @@ Layout: one file per source, except that the schema rules of `contracts/configur
 
 ### Notes for later modules
 - zod/mini reports `minLength`/`maxLength`/`enum` failures as `Invalid input`, so the rule shown for a too-long or empty snapshot command does not name the limit (`snapshot-merge.ts`, module 13, prints it).
+
+### Questions `[?]`
+- None.
+
+## 11. config/schemas-stores — done 2026-10-10
+
+**Baseline:** 18 runner tests across the 4 files, green (the plan's 16 was the grep count). Stryker: n/a (Common).
+**Result:** 11 tests across the same 4 files, green. Scoped coverage proxy (`contracts/changes.ts`, `contracts/manifest.ts`, `storage/project-config-store.ts`, `storage/manifest-store.ts`): lines 95.55% → 85.55%; branches 88.23% → 100% (`manifest-store.ts` lines 95.12% → 73.17%, branches 81.81% → 100%). The lost lines are `NodeManifestStore.planSave` (27-37), which no production code calls (see pending items); the gained branch is the corrupt-manifest rethrow in `load()` (22-23). `project-config-store.ts` 12-13 (`readTolerant`, a 1:1 call to `sanitizeConfiguration`) stay uncovered here and run in `integration/init-config-repair.test.ts`. The published `schemas/*.json` files are not TypeScript and have no proxy; `npm run schemas:check` (in `release:check`) pins their content. Commit `<hash>`.
+
+Layout: `project-config-store.test.ts` and `manifest-store.test.ts` import `src/infrastructure/storage/` and moved to `tests/integration/` unchanged (decision 3, move-only step with `git mv`), keeping their names because prd-01 `done/task_3.md` cites them. Neither is listed in `tests/test-lanes.ts`, so the lanes file is unchanged (`test-lanes.test.ts` green). `schemas.test.ts` and `changes-schema.test.ts` import only `src/core/contracts/` and stay in `tests/unit/`.
+
+### contracts/changes.ts → `CHANGE_OWNERS` Common (the closed owner set, read by `installReportSchema` in `diagnostics.ts`); the zod schemas → Trivial (no production import)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the prd-12 removed owners stay out of the closed set | `protocol`, `instruction_block`, or `ignore_block` re-added to `CHANGE_OWNERS` | `rejects the removed %s owner (prd-12 FR-08, DEC-11)` (3 rows) |
+| every live owner stays in the set | an owner dropped from `CHANGE_OWNERS` | `npm run typecheck`: all six owners are typed `ChangeOwner` literals in `src/` planners (`installation-builder.ts`, `removal-helper.ts`, `gitignore-plan.ts`, `manifest-change.ts`, the harness planners) |
+
+### contracts/manifest.ts and storage/manifest-store.ts → Common (`load`: absent vs corrupt); `save`, `delete`, `planSave` → no production caller
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| an absent manifest reads as null; a saved one reads back whole | ENOENT guard → `throw`; the parsed result replaced | `persists, reads back, and deletes manifest on filesystem` |
+| a corrupt or unknown-version manifest throws instead of reading as absent | `if (code === 'ENOENT')` → `if (true)`; `installationManifestSchema.parse` removed | `rejects a manifest with $name instead of reading it as absent` (2 rows: `SyntaxError`, `ZodError`) |
+
+### storage/project-config-store.ts → Common (`read`); `readTolerant` → Glue
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a valid file parses to the configuration | `parseConfiguration` result dropped | `reads and validates a project configuration asynchronously` |
+| schema and syntax errors carry the file path and the issue | `this.filePath` not passed; `catch` removed; `invalidSyntaxError` arguments changed | `rejects $name with the file path and the issue` (2 rows; module 10 relies on the syntax row for `invalidSyntaxError`) |
+
+### schemas/*.json (generated by `scripts/generate-schemas.ts`) → Common, through the published files
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| exactly the config, doctor report, and install report schemas ship, as Draft 2020-12 | a schema file added or dropped; `target` changed | `publishes only the config, doctor report, and install report schemas, as Draft 2020-12 (prd-12 FR-01, FR-03, TC-02)` (module 7 relies on it) |
+| both reports stay at `schemaVersion` 1 | `z.literal(1)` bumped in `diagnostics.ts` and regenerated | `keeps both report schemas at version 1 (NFR-02)` (module 6 relies on it) |
+
+### Actions
+- **Deleted (7 runner tests):** changes-schema `validates a valid fileChange`, `validates a complete change plan`, and `requires limitations alongside the derived support level`: they parse `fileChangeSchema`, `changePlanSchema`, and `harnessInstallPlanSchema`, which nothing in `src/` imports; `diagnostics.ts` defines its own `fileChange`, `plan`, and `harnessPlan` (with required `limitations`), parsed by every `init --json` integration test. The `DEC-02, DEC-03` on the last one's `describe` resolve in prd-01 to the git ignore block and Antigravity registration, not to limitations, so no TechSpec row loses its test. changes-schema `accepts every closed owner`: it loops over `CHANGE_OWNERS` itself, so dropping an owner only shortens the loop; typecheck kills that mutant (see the table). changes-schema `rejects an unknown owner`: same `z.enum` mutant as the three removed-owner rows. schemas `publishes two support levels and the four capability IDs in both reports (prd-12 DEC-08, TC-11)`: the body never asserted the support levels; the four capability IDs and both levels are `support-service.test.ts` `has exactly the four remaining capability IDs…` and `derives every capability combination…` (TC-11 maps there in the prd-12 TechSpec), and the published file's content is pinned by `schemas:check`. manifest-store `validates schema-compliant manifest records`: `toHaveLength(1)` on arrays; the round trip parses the same schema in `load()` and compares the whole manifest. manifest-store `plans create and update changes for manifest persistence`: `planSave` has no caller; the live planner is `planManifestChange` in `core/services/manifest-change.ts`, run by every `init` integration test.
+- **Merged:** schemas `publishes deterministic Draft 2020-12 schemas` and `publishes only the config, doctor report, and install report schemas` into one test (the TC-02 directory listing plus the `$schema` check; the title lost "deterministic", which the body never checked; module 7's report cites the old title). project-config-store `attaches the file path to schema errors` and `reports malformed JSON without accepting it` into one 2-row `it.each`.
+- **Rewritten:** schemas test 1 lost three `toBeDefined()` assertions on imported schemas and the dynamic `node:fs/promises` import. The version test lost the `runtime_state` and removed-owner substring checks on `install-report.schema.json` (the owner set is asserted in process by changes-schema and typecheck, the file's content by `schemas:check`) and with them `RF24` and `prd-12 FR-08`, which stay on the changes-schema test. project-config-store reads once per row with `rejects.toMatchObject`, drops `cause toBeDefined()` (losing the low-risk "error not passed as cause" mutant), and removes its temp directory in `finally`, as manifest-store now does.
+- **Created (2 rows):** `rejects a manifest with $name instead of reading it as absent`: the mutant ENOENT guard → `true` makes a corrupt manifest look like a fresh project (init reinstalls over it, remove finds nothing to remove), and a dropped `parse` lets an unknown schema version through; no test in the suite killed either (`manifest-store.ts` 22-23 had no coverage anywhere).
+- **Kept:** the three removed-owner rows, the manifest round trip, the valid configuration read.
+- **Moved:** `tests/unit/project-config-store.test.ts` and `tests/unit/manifest-store.test.ts` → `tests/integration/` (decision 3).
+
+### Production pending items
+- `src/core/contracts/changes.ts`: `changePreviewSchema`, `fileChangeSchema`, `planConflictSchema`, `harnessInstallPlanSchema`, `applyOutcomeSchema`, and `changePlanSchema` have no production import; `diagnostics.ts` duplicates them inline. Either `diagnostics.ts` reuses them or they go (the removed-owner test would then probe `installReportSchema` or `CHANGE_OWNERS`).
+- `NodeManifestStore.planSave`, `save`, and `delete` (and those `ManifestStore` port methods) have no caller: init plans the manifest through `planManifestChange` and remove deletes it through a `manifest` change. `planSave` duplicates `planManifestChange`. The round trip still uses `save`/`delete` to arrange a valid `load()`.
 
 ### Questions `[?]`
 - None.

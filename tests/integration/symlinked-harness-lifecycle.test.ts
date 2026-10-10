@@ -9,11 +9,12 @@ import { snapshotFiles } from '../../src/infrastructure/storage/node-file-system
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 import { attemptLink, type LinkAttempt, linkExists, requireLink } from '../helpers/link-capability.js';
 
+const USER_SETTINGS = '{\n  "hooks": {\n    "UserHook": "node custom.js"\n  }\n}\n';
+
 async function setupJunctionRepo(dir: string): Promise<LinkAttempt> {
   const realAgents = join(dir, '.agents');
   await mkdir(realAgents, { recursive: true });
-  const settings = JSON.stringify({ hooks: { UserHook: 'node custom.js' } }, null, 2);
-  await writeFile(join(realAgents, 'settings.json'), `${settings}\n`, 'utf8');
+  await writeFile(join(realAgents, 'settings.json'), USER_SETTINGS, 'utf8');
   await writeFile(join(dir, 'CLAUDE.md'), '# Claude Guide\n', 'utf8');
   return attemptLink(realAgents, join(dir, '.claude'));
 }
@@ -23,7 +24,7 @@ describe('E2E symlinked harness install and idempotency (T10.5, CR-01)', () => {
   beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-sym-a-')); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {}); });
 
-  it('runs init --yes on junction fixture, succeeds, and second run is byte-identical', async (ctx) => {
+  it('runs init --yes on junction fixture, succeeds, a second run is byte-identical, and remove restores the user settings', async (ctx) => {
     await requireLink(ctx, await setupJunctionRepo(tempDir), join(tempDir, '.claude'));
     expect(await linkExists(join(tempDir, '.claude'))).toBe(true);
     const first = await runInProcessCli(['init', '--yes'], tempDir);
@@ -39,6 +40,8 @@ describe('E2E symlinked harness install and idempotency (T10.5, CR-01)', () => {
     const second = await runInProcessCli(['init', '--yes'], tempDir);
     expect(second.code).toBe(0);
     expect(await readFile(settingsPath, 'utf8')).toBe(contentAfterFirst);
+    expect((await runInProcessCli(['remove', '--yes'], tempDir)).code).toBe(0);
+    expect(await readFile(settingsPath, 'utf8')).toBe(USER_SETTINGS);
   });
 });
 

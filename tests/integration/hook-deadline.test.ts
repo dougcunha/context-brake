@@ -38,10 +38,12 @@ describe('hook deadline selection (FR-10, DEC-11, TC-15)', () => {
     deadline.extendTo(40);
     await expect(deadline.run(sleep(60))).rejects.toBeInstanceOf(DeadlineExceededError);
   });
-  it('resolves work that finishes in time and ignores extensions after it', async () => {
-    const deadline = new HookDeadline(50, 'engine');
+  it('resolves work that finishes in time and never expires after it, even when extended', async () => {
+    const deadline = new HookDeadline(20, 'engine');
     expect(await deadline.run(Promise.resolve('done'))).toBe('done');
-    expect(() => { deadline.extendTo(10); }).not.toThrow();
+    deadline.extendTo(10);
+    await sleep(40);
+    expect(deadline.isExpired()).toBe(false);
   });
 });
 
@@ -70,7 +72,13 @@ describe('session reset phases (FR-11, DEC-12, TC-16)', () => {
     expect(deadlineTiming(error)?.elapsedMs).toBeGreaterThanOrEqual(75);
     expect(phases).toEqual(['ledger']);
   });
-  it('has no timing for other failures', () => {
+  it('times out with the running phase and the whole milliseconds since the hook start, and has no timing for other failures', async () => {
+    let now = 1000;
+    const deadline = new HookDeadline(10, 'engine', () => now);
+    deadline.mark('prune');
+    now = 1042.4;
+    const error: unknown = await deadline.run(sleep(40)).catch((caught: unknown) => caught);
+    expect(deadlineTiming(error)).toEqual({ phase: 'prune', elapsedMs: 42 });
     expect(deadlineTiming(new Error('other'))).toBeUndefined();
   });
 });

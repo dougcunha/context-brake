@@ -15,6 +15,7 @@ const EVENT_LIMIT = 100;
 const SESSION_START_LIMIT = 500;
 const WITHIN_SESSION_START = 250;
 const BEYOND_SESSION_START = 700;
+const DEADLINE_LINE = 'ContextBrake: DEADLINE_EXCEEDED\n';
 
 let root = '';
 beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-hook-deadline-')); });
@@ -22,10 +23,6 @@ afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetrie
 
 function sleep(milliseconds: number): Promise<void> {
   return new Promise((resolve) => { setTimeout(resolve, milliseconds); });
-}
-async function slowStdin(): Promise<string> {
-  await sleep(50);
-  return '{}';
 }
 function eventFor(eventName: string): RuntimeEvent | null {
   if (eventName === 'SessionStart') return { kind: 'session_reset', session: KEY, reason: 'clear' };
@@ -41,15 +38,17 @@ function slowAdapter(inputDelay: number): ProcessHarnessAdapter {
     resolveProjectRoot: async () => root,
   };
 }
-async function runHook(eventName: string, inputDelay: number): Promise<{ readonly stderr: string[] }> {
+type HookRun = { readonly exitCode: number; readonly stdout: string[]; readonly stderr: string[] };
+async function runHook(eventName: string, inputDelay: number, overrides: Partial<ProcessHookContext> = {}): Promise<HookRun> {
+  const stdout: string[] = [];
   const stderr: string[] = [];
-  const context: ProcessHookContext = { argv: ['node', 'hook', eventName], readStdin: async () => '{}', writeStdout: () => undefined, writeStderr: (text) => { stderr.push(text); }, deadlineMilliseconds: EVENT_LIMIT, sessionStartDeadlineMilliseconds: SESSION_START_LIMIT };
-  await runProcessHook(slowAdapter(inputDelay), context);
-  return { stderr };
+  const context: ProcessHookContext = { argv: ['node', 'hook', eventName], readStdin: async () => '{}', writeStdout: (text) => { stdout.push(text); }, writeStderr: (text) => { stderr.push(text); }, deadlineMilliseconds: EVENT_LIMIT, sessionStartDeadlineMilliseconds: SESSION_START_LIMIT, ...overrides };
+  const exitCode = await runProcessHook(slowAdapter(inputDelay), context);
+  return { exitCode, stdout, stderr };
 }
-async function errorLines(): Promise<unknown[]> {
+async function errorRecords(): Promise<ReturnType<typeof errorLineSchema.parse>[]> {
   const text = await readFile(join(runtimeDirectory(root), 'errors.jsonl'), 'utf8').catch(() => '');
-  return text.split('\n').filter((line) => line !== '').map((line) => JSON.parse(line) as unknown);
+  return text.split('\n').filter((line) => line !== '').map((line) => errorLineSchema.parse(JSON.parse(line)));
 }
 
 describe('session start deadline (FR-10, DEC-11, TC-15)', () => {
@@ -59,34 +58,28 @@ describe('session start deadline (FR-10, DEC-11, TC-15)', () => {
     expect(defaultProcessHookContext.deadlineMilliseconds).toBe(1500);
     expect(defaultProcessHookContext.sessionStartDeadlineMilliseconds).toBe(5000);
   });
-  it('lets a session start finish past the event deadline but within its own', async () => {
-    const { stderr } = await runHook('SessionStart', WITHIN_SESSION_START);
-    expect(stderr).toEqual([]);
-    expect(await errorLines()).toEqual([]);
-  });
-  it('records DEADLINE_EXCEEDED when a session start passes its own deadline', async () => {
-    const { stderr } = await runHook('SessionStart', BEYOND_SESSION_START);
-    expect(stderr[0]).toContain('DEADLINE_EXCEEDED');
-    expect(await errorLines()).toHaveLength(1);
-  });
-  it('keeps the event deadline for a tool call of the same duration', async () => {
-    const { stderr } = await runHook('PostToolUse', WITHIN_SESSION_START);
-    expect(stderr[0]).toContain('DEADLINE_EXCEEDED');
+  it.each([
+    { eventName: 'SessionStart', stderr: [], records: 0 },
+    { eventName: 'PostToolUse', stderr: [DEADLINE_LINE], records: 1 },
+  ])('records $records deadline failures for $eventName work past the event deadline but within the session-start deadline', async ({ eventName, stderr, records }) => {
+    const run = await runHook(eventName, WITHIN_SESSION_START);
+    expect(run.stderr).toEqual(stderr);
+    expect(await errorRecords()).toHaveLength(records);
   });
 });
 
 describe('deadline phase record (FR-11, DEC-12, TC-16)', () => {
-  it('names the running phase and the elapsed milliseconds', async () => {
-    await runHook('SessionStart', BEYOND_SESSION_START);
-    const [line] = await errorLines();
-    const record = errorLineSchema.parse(line);
-    expect(record).toMatchObject({ event: 'session_reset', code: 'DEADLINE_EXCEEDED', phase: 'input' });
-    expect(record.elapsedMs).toBeGreaterThanOrEqual(SESSION_START_LIMIT - 5);
+  it('records DEADLINE_EXCEEDED with the running phase and the elapsed milliseconds when a session start passes its own deadline', async () => {
+    const run = await runHook('SessionStart', BEYOND_SESSION_START);
+    const records = await errorRecords();
+    expect(run.stderr).toEqual([DEADLINE_LINE]);
+    expect(records).toHaveLength(1);
+    expect(records[0]).toMatchObject({ event: 'session_reset', code: 'DEADLINE_EXCEEDED', phase: 'input' });
+    expect(records[0]?.elapsedMs).toBeGreaterThanOrEqual(SESSION_START_LIMIT - 5);
   });
-  it('names the phase of a failure before the event is known', async () => {
-    const stderr: string[] = [];
-    const context: ProcessHookContext = { argv: ['node', 'hook', 'PostToolUse'], readStdin: slowStdin, writeStdout: () => undefined, writeStderr: (text) => { stderr.push(text); }, deadlineMilliseconds: 5 };
-    await runProcessHook(slowAdapter(0), context);
-    expect(errorLineSchema.parse((await errorLines())[0])).toMatchObject({ event: 'PostToolUse', phase: 'stdin' });
+  it('lets the tool call proceed and names the stdin phase when the deadline elapses before the event is known (DEC-09, TC-17)', async () => {
+    const run = await runHook('PostToolUse', 0, { readStdin: async () => { await sleep(50); return '{}'; }, deadlineMilliseconds: 5 });
+    expect(run).toEqual({ exitCode: 0, stdout: ['{"kind":"neutral"}'], stderr: [DEADLINE_LINE] });
+    expect(await errorRecords()).toEqual([expect.objectContaining({ event: 'PostToolUse', code: 'DEADLINE_EXCEEDED', phase: 'stdin' })]);
   });
 });

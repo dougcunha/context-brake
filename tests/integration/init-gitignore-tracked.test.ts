@@ -1,3 +1,4 @@
+import { realpath } from 'node:fs/promises';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installReportSchema } from '../../src/core/contracts/diagnostics.js';
 import type { ProcessRunner } from '../../src/core/contracts/processes.js';
@@ -21,7 +22,7 @@ describe('FR-08 files Git already tracks (prd-17, TC-07)', () => {
     const clean = await dryRunFindings(root, runnerListing([]));
     const tracked = await dryRunFindings(root, runnerListing(TRACKED));
     const finding = tracked.findings.find((item) => item.code === 'GITIGNORE_TRACKED_FILES');
-    expect(tracked.gitArgs?.slice(0, 5)).toEqual(['-C', root, 'ls-files', '-z', '--']);
+    expect(tracked.gitArgs?.slice(0, 5)).toEqual(['-C', await realpath(root), 'ls-files', '-z', '--']);
     expect(finding?.message).toContain(TRACKED.join(', '));
     expect([finding?.remediation, finding?.severity]).toEqual([`Run: git rm --cached -- ${TRACKED.join(' ')}`, 'ok']);
     expect(tracked.code).toBe(clean.code);

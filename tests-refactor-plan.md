@@ -30,6 +30,7 @@ Order confirmed by user: 2026-10-10
 2. **Stryker.** Installed locally only (`npm install --no-save @stryker-mutator/core @stryker-mutator/vitest-runner`), with `stryker.config.json` and a flat Vitest config kept out of the repo (scratchpad or `.git/info/exclude`). Nothing Stryker-related is committed. Set up and proven on `src/core/services/zone-classifier.ts` before the first Critical module; reinstall if a later `npm install` removes it.
 3. **Unit tests importing `src/infrastructure/`** are moved to `tests/integration/` when their module is cleaned (move-only step, separate from rewrites; `tests/test-lanes.ts` updated in the same commit when a listed file moves).
 4. **Documentation-drift tests** (`readme-*`, `docs-auto-restart`) are treated as Trivial: deleted unless a test protects observable behavior of the code rather than README wording.
+5. **Test budget.** `npm run test:budget` (full-suite timing, required by `tests.md` after moving tests) is deferred to the end-of-refactor full run together with the full coverage run; merging and deleting files can only shorten the suite.
 
 ## Modules
 
@@ -38,7 +39,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | # | Module | Test files | Source | Level | Tests | Status |
 |---|--------|------------|--------|-------|-------|--------|
 | 1 | cli/args-output | init-arguments, main, exit-codes, cli-output-text, doctor-mode-text | src/cli, src/cli/output | G/C | 42 → 41 | done |
-| 2 | cli/assistant-questions | assistant-questions, -gitignore, -invalid, -state | src/cli/assistant | G/C | 21 | pending |
+| 2 | cli/assistant-questions | assistant-questions, -gitignore, -invalid, -state | src/cli/assistant | G/C | 28 → 30 | done |
 | 3 | cli/assistant-terminal | assistant-output, clack-prompt-port, equivalent-command, terminal | src/cli/assistant, src/cli | G/C | 23 | pending |
 | 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 | pending |
 | 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 | pending |
@@ -86,7 +87,7 @@ Unit files under `tests/unit/` are prefixed implicitly; files marked `integratio
 ## 1. cli/args-output — done 2026-10-10
 
 **Baseline:** 46 runner tests across the 7 listed files, green; 42 belong to this module (the 4 `diagnoseProject` tests in `doctor-context-window.test.ts` test `doctor-service` and move to module 4). Stryker: n/a (Glue/Common).
-**Result:** 41 tests, green. Scoped coverage proxy (`text.ts`, `doctor-mode-text.ts`, `init-arguments.ts`, `exit-codes.ts`, `main.ts`, `argument-parser.ts`): lines unchanged (91.2%); `text.ts` branches 92.5% → 91.4% (lines 22, 27, 51 were already uncovered before). Commit below.
+**Result:** 41 tests, green. Scoped coverage proxy (`text.ts`, `doctor-mode-text.ts`, `init-arguments.ts`, `exit-codes.ts`, `main.ts`, `argument-parser.ts`): lines unchanged (91.2%); `text.ts` branches 92.5% → 91.4% (lines 22, 27, 51 were already uncovered before). Commit `4481177`.
 
 ### init-arguments.ts → Common
 
@@ -131,7 +132,7 @@ Kept as is: the three tests run the real entrypoint in process (no module mocks)
 | configured snapshot with resume, before the debug line | `resumeCommand === null` inverted; order swapped | `prints the snapshot command, trigger, and resume command before the debug line` |
 
 ### Actions
-- **Deleted (5):** `exit-codes` `keeps usage and interruption codes named` and `adds the runner stop codes without changing existing codes (DEC-16)`, tests of the `EXIT_CODES` constant (Trivial; code 64 is asserted by `main.test.ts` and the integration suites; the second title also referred to the removed runner); the `[]` row of the severity `it.each` (same mutants as `['ok']`); the `[]` and `['--debug', '--no-debug']` rows of the debug `it.each` (the default-value mutants are killed by the `--debug`/`--no-debug` rows; the pair is rejected end to end by `integration/init-debug-mode.test.ts` and `debug-mode-merge.test.ts`).
+- **Deleted (5):** `exit-codes` `keeps usage and interruption codes named` and `adds the runner stop codes without changing existing codes (DEC-16)`, tests of the `EXIT_CODES` constant (Trivial; code 64 is asserted by `main.test.ts` and the integration suites; the second cites prd-04 DEC-16, the runner exit codes `limitReached`/`decisionRequired` that prd-12 superseded, so the identifier is dead); the `[]` row of the severity `it.each` (same mutants as `['ok']`); the `[]` and `['--debug', '--no-debug']` rows of the debug `it.each` (the default-value mutants are killed by the `--debug`/`--no-debug` rows; the pair is rejected end to end by `integration/init-debug-mode.test.ts` and `debug-mode-merge.test.ts`).
 - **Merged (2 files → 1):** `cli-install-text.test.ts` (2 tests, kept unchanged) and the two render tests of `doctor-context-window.test.ts` (`renders one text line…`, `renders an unknown last window` → one `it.each`, built from literal reports instead of `diagnoseProject`) moved into `cli-output-text.test.ts`, the file for `output/text.ts`.
 - **Rewritten (5):** the three `cli-output-text` tests asserted `toHaveBeenCalled()` on the stream spies and a single line each; they became exact-line assertions for harness, limitation, conflict, finding, integration, header, and CLI error output (split by behavior). The removed-flag rejections asserted a bare `toThrow()` and now assert the `Unknown option '<flag>'` message.
 - **Created (2 rows):** `labels a %s finding as %s` (`ok`, `error`): the old tests executed these labels without asserting them; the scoped coverage proxy showed the branches were otherwise lost.
@@ -140,3 +141,75 @@ Kept as is: the three tests run the real entrypoint in process (no module mocks)
 
 ### Production pending items
 - None.
+
+## 2. cli/assistant-questions — done 2026-10-10
+
+**Baseline:** 28 runner tests across the 4 files, green (the plan's 21 was the grep count). Stryker: n/a (Glue/Common).
+**Result:** 30 tests, green. Scoped coverage proxy (`assistant-questions.ts`, `ask.ts`, `questions-gitignore.ts`, `questions-harness.ts`, `questions-misc.ts`, `questions-restart.ts`, `questions-snapshot.ts`, `snapshot-specs.ts`): lines 100% → 100%; branches 94.57% → 96.98% (`questions-misc.ts` and the first-run fallbacks in `questions-harness.ts`/`questions-snapshot.ts` now covered; the remaining gaps are `ask.ts` 8 and 13, the `?? 'unknown'` adapter fallbacks in `questions-harness.ts` 19 and 29, unreachable with `getAllAdapters()`, `questions-restart.ts` 47, and `questions-snapshot.ts` 70). Commit pending.
+
+Every test drives the flow through `runQuestions` (the public entry) with the scripted prompt port, so the layout stays one file per concern (order and applicability, defaults from state, invalid answers, the git ignore question) rather than one per question module. The files stay in `tests/unit/` (decision 3): no test imports `src/infrastructure/`; `tests/helpers/assistant-context.ts` uses `getAllAdapters()` as collaborator data for the support levels and restart modes, not as the unit under test.
+
+### assistant-questions.ts → Glue (orchestrator with a cancel short-circuit per step), tested through its public API
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| questions run in the FR-02 order and the flags concatenate in that order | step order or flag spread order changed | `asks every applicable question in order and builds the flags` |
+| ending input at any question returns null | any `if (x === null) return null` removed | `returns null and no flags when the person cancels at any question (FR-07, TC-07, TC-08)` (9 cancel points, git ignore included) |
+
+### ask.ts → Common (`askValidated` loop, `yesNo`, `confirmSpec`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| an unclear yes/no answer re-asks with the rule | `yesNo` error branch → `{ value: false }` | `re-asks a yes or no question for an unclear answer` |
+| the hint follows the default | `yesNoHint` ternary swapped | git ignore `it.each` (`[Y/n]`/`[y/N]`), first-run defaults test |
+
+### questions-harness.ts → Common (boundary validator `validateNumbers`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| detected harnesses listed with support level, preselected | `'detected, '` or `[x]` dropped | `lists detected harnesses with support level…` |
+| numbers outside 1..8, fractions, or a partly invalid list re-ask | `>= 1` / `<= length` removed; `Number.isInteger` removed; `every` → `some` | `re-asks the harness list for %j` (`9`, `0`, `1.5`, `1 9`) |
+| `1`, `8`, and `none` select and exclude the rest | `<=` → `<`; `none` branch removed; excluded filter inverted | `turns the deselected detected harnesses into --exclude-harness for answer $answer` (3 rows) |
+
+### questions-snapshot.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| invalid command, trigger, resume re-ask with the `mergeSnapshot` rule | error passthrough → `{ value: answer }` | `re-asks the snapshot command for %j` (2 rows), `re-asks the trigger and a resume command…` |
+| dash-leading values join their flag | `valueFlag` → always `[name, value]` | `joins the value to its flag…` (CR-01) |
+| defaults from config; unchanged values emit nothing; `none` clears | `=== current` comparisons inverted; `--no-snapshot-command` guard | state tests `emits nothing…`, `clears the snapshot command…` |
+| first run without config uses RED and emits `--snapshot-trigger` on change | `DEFAULT_ZONE` literal; `?.` removed; trigger comparison inverted | `uses the flag defaults on a first run without a configuration` |
+
+### questions-restart.ts → Common (boundary validator `validateLimit`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| asked only when a selected harness has a restart mode | `!facts.some(...)` inverted | `skips the restart and bridge questions…` |
+| mode per harness and the carrier text | carrier ternary swapped | `lists detected harnesses…`, `states the handoff carrier…` |
+| limit 1..10 integer, re-asked with the rule | `>=` → `>`, `<=` → `<`, regex removed | `re-asks the restart limit for %j and accepts %j` (`0`/`1`, `11`/`10`, `2.5`/`5`) |
+| `--auto-restart`, `--max-restarts`, `--no-auto-restart` only on change | `wasOn` guards inverted | order test, state tests |
+
+### questions-misc.ts and questions-gitignore.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| bridge asked only with claude-code; opt-out flips the default | `includes('claude-code')` → `true`; `!hasStatuslineOptOut` → `true` | `skips the restart and bridge questions…`, `honors a previous status line opt-out…` |
+| debug flag only on change, both directions | `debug.value === wasDebug` → `false`; ternary swapped | `changes the limit… and turns debug off`, first-run test (`--debug`) |
+| git ignore asked last inside Git, flag only when it differs from the stored value | `answer.value === stored` → `false`; flag ternary swapped; `yesNo(stored)` fallback | `is asked last and emits $flags for answer "$answer" with stored $stored` (4 rows) |
+| not asked outside Git, fact null | `!context.insideGit` inverted | `is not asked outside Git…` |
+
+### snapshot-specs.ts → Trivial
+Prompt text only; asserted through the prompts above.
+
+### Actions
+- **Deleted (2 rows):** `abc` row of the harness `it.each` (NaN already fails `>= 1`, so it kills nothing `0` doesn't; replaced by `1.5`, which kills the `Number.isInteger` removal); `abc` row of the restart-limit `it.each` (the regex mutant is killed by `2.5`, the range by `0`/`11`).
+- **Merged (1 → loop):** git ignore `returns null when the person cancels at the question (FR-07, TC-08)` folded into the cancel loop in `assistant-questions-invalid.test.ts`, which now runs inside Git with a ninth answer and carries `TC-08`.
+- **Rewritten (5 → 4 rows + 4):** the three git ignore yes/no tests asserted `not.toContain`, which let the mutant `answer.value === stored` → `false` survive (it emits `--gitignore` when kept); they became one object-row `it.each` over stored × answer with the exact question line and exact flags. The harness re-ask rows asserted `result).not.toBeNull()` and now assert the exact flags. The restart re-ask rows asserted `find(...).toBeDefined()` and `toContain('5')`; they now assert the exact re-ask line and exact flags with the accepted value on the boundary (`1`, `10`), which kills the `>=`/`<=` boundary mutants that survived before.
+- **Created (3):** harness rows `8` and `none` (upper boundary and the `none` branch had no test); `uses the flag defaults on a first run without a configuration (FR-03, DEC-03, TC-06)` (no unit test passed `config: null`; covers the DEC-03 defaults, `--snapshot-trigger`, and `--debug`).
+- **Kept:** order, carrier, applicability, dash values (CR-01), unclear yes/no, both snapshot command rows, trigger/resume re-ask, the four state tests, git ignore outside Git.
+
+### Production pending items
+- `askValidated` accepts `string | PromptSpec`, but every caller passes a `PromptSpec` (`ask.ts` 13 uncovered): the string overload could go.
+
+### Notes for later modules
+- The two snapshot command rows (201 characters, two lines) are the only tests of the `agentCommand` length and single-line rules in `src/core/contracts/configuration.ts`; modules 10/11 should keep or move that protection.

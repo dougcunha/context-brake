@@ -4,14 +4,16 @@ import { parseInit } from '../../src/cli/init-arguments.js';
 import { runScripted } from '../helpers/assistant-context.js';
 
 const BOTH = { detected: ['claude-code', 'codex-cli'] } as const;
+const BOTH_FLAGS = ['--harness', 'claude-code', '--harness', 'codex-cli'];
 const LONG_COMMAND = 'x'.repeat(201);
+const LIMIT_REASK = 'The restart limit must be an integer from 1 to 10.\nConsecutive-restart limit 1-10 [2]: ';
 
 describe('assistant questions: invalid answers are re-asked with the rule (prd-16 FR-04, TC-07)', () => {
-  it.each([['9'], ['0'], ['abc'], ['1 9']])('re-asks the harness list for %j (FR-04, TC-07)', async (bad) => {
+  it.each([['9'], ['0'], ['1.5'], ['1 9']])('re-asks the harness list for %j (FR-04, TC-07)', async (bad) => {
     const { asked, result } = await runScripted([bad, '', '', '', '', '', ''], { detected: ['claude-code'] });
     expect(asked[1]).toMatch(/^Choose numbers from 1 to 8/);
     expect(asked[1]).toContain('Harnesses to configure');
-    expect(result).not.toBeNull();
+    expect(result?.flags).toEqual(['--harness', 'claude-code']);
   });
   it.each([[LONG_COMMAND], ['line one\nline two']])('re-asks the snapshot command for %j (FR-04, TC-07)', async (bad) => {
     const { asked, result } = await runScripted(['', bad, '/ok', '', '', 'n', 'n', 'n']);
@@ -24,10 +26,10 @@ describe('assistant questions: invalid answers are re-asked with the rule (prd-1
     expect(asked[5]).toMatch(/^Invalid snapshot option: snapshot\.resumeCommand/);
     expect(result?.flags).toContain('/r');
   });
-  it.each([['0'], ['11'], ['2.5'], ['abc']])('re-asks the restart limit for %j (FR-04, TC-07)', async (bad) => {
-    const { asked, result } = await runScripted(['', '', 'y', bad, '5', 'n', 'n'], BOTH);
-    expect(asked.find((question) => question.startsWith('The restart limit must be an integer from 1 to 10.'))).toBeDefined();
-    expect(result?.flags).toContain('5');
+  it.each([['0', '1'], ['11', '10'], ['2.5', '5']])('re-asks the restart limit for %j and accepts %j (FR-04, TC-07)', async (bad, accepted) => {
+    const { asked, result } = await runScripted(['', '', 'y', bad, accepted, 'n', 'n'], BOTH);
+    expect(asked[4]).toBe(LIMIT_REASK);
+    expect(result?.flags).toEqual([...BOTH_FLAGS, '--auto-restart', '--max-restarts', accepted, '--no-statusline-bridge']);
   });
 });
 
@@ -45,11 +47,11 @@ describe('assistant questions: unclear answers and cancel (prd-16 FR-04, FR-07, 
     const { asked } = await runScripted(['', '', 'maybe', 'n', 'n']);
     expect(asked.some((question) => question.startsWith('Answer y or n.'))).toBe(true);
   });
-  it('returns null and no flags when the person cancels at any question (FR-07, TC-07)', async () => {
-    const answers = ['', '/s', '', '', 'y', '3', '', ''];
+  it('returns null and no flags when the person cancels at any question (FR-07, TC-07, TC-08)', async () => {
+    const answers = ['', '/s', '', '', 'y', '3', '', '', ''];
     for (let cancelAt = 0; cancelAt < answers.length; cancelAt += 1) {
       const scripted = answers.map((answer, index) => (index === cancelAt ? null : answer));
-      expect((await runScripted(scripted, BOTH)).result).toBeNull();
+      expect((await runScripted(scripted, { ...BOTH, insideGit: true })).result).toBeNull();
     }
   });
 });

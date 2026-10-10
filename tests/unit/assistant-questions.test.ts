@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { runScripted } from '../helpers/assistant-context.js';
 
 const BOTH = { detected: ['claude-code', 'codex-cli'] } as const;
+const THREE = ['claude-code', 'codex-cli', 'opencode'] as const;
 
 describe('assistant questions: order, defaults, and facts (prd-16 FR-02, FR-03, TC-06)', () => {
   it('asks every applicable question in order and builds the flags (FR-02, TC-06)', async () => {
@@ -32,9 +33,13 @@ describe('assistant questions: applicability and exclusion (prd-16 FR-02, FR-05,
     expect(asked.some((question) => question.includes('Restart sessions'))).toBe(false);
     expect(result?.flags).toEqual(['--harness', 'opencode']);
   });
-  it('turns a deselected detected harness into --exclude-harness (FR-05, TC-06)', async () => {
-    const { result } = await runScripted(['1', '', 'n', '', ''], { detected: ['claude-code', 'codex-cli', 'opencode'] });
-    expect(result?.flags).toEqual(['--harness', 'claude-code', '--exclude-harness', 'codex-cli', '--exclude-harness', 'opencode']);
-    expect(result?.facts.excluded).toEqual(['codex-cli', 'opencode']);
+  it.each([
+    { answer: '1', selected: ['claude-code'], excluded: ['codex-cli', 'opencode'] },
+    { answer: '8', selected: ['antigravity-cli'], excluded: THREE },
+    { answer: 'none', selected: [], excluded: THREE },
+  ])('turns the deselected detected harnesses into --exclude-harness for answer $answer (FR-05, TC-06)', async ({ answer, selected, excluded }) => {
+    const { result } = await runScripted([answer, '', '', '', '', ''], { detected: THREE });
+    expect(result?.flags).toEqual([...selected.flatMap((id) => ['--harness', id]), ...excluded.flatMap((id) => ['--exclude-harness', id])]);
+    expect(result?.facts.excluded).toEqual(excluded);
   });
 });

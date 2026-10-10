@@ -77,7 +77,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 37 | runtime/hosts | integration/hook-deadline, in-process-host, in-process-host-deadline, in-process-runtime, process-hook-host, process-hook-host-deadline, runtime-composition, runtime-paths | src/infrastructure/runtime | K | 38 → 34 | done |
 | 38 | storage/json-editing | json-document-editor, json-span-safety | src/infrastructure/storage | K | 23 → 21 | done |
 | 39 | storage/change-apply | change-plan-service, integration/change-target, -path-boundary, -runtime-state-files, -change-applier, -directory-pruner, -safe-removal | src/core/services/change-plan-service, src/infrastructure/storage | K | 26 → 33 | done |
-| 40 | gitignore/core | gitignore-block, gitignore-merge, gitignore-plan | src/core/services/gitignore-* | K | 28 | pending |
+| 40 | gitignore/core | gitignore-block, gitignore-merge, gitignore-plan (now also gitignore-plan-install) | src/core/services/gitignore-* | K | 39 → 40 | done |
 | 41 | gitignore/integration | init-gitignore, -lifecycle, -tracked, -default-runner, remove-gitignore | src/cli/commands, gitignore-* | K | 20 | pending |
 | 42 | handoff/store | node-handoff-store, -expiry, -lock, handoff-deadline, handoff-deadline-hosts | src/infrastructure/storage, src/infrastructure/runtime | K | 21 | pending |
 | 43 | harness/config-preservation | antigravity-lifecycle, antigravity-registration, claude-preservation, codex-cursor-user-hooks, codex-hook-command-shells, codex-hook-migration, codex-hook-root, legacy-user-hooks, minified-config, minified-config-lifecycle, user-hook-preservation, symlinked-harness-config, symlinked-harness-lifecycle | src/infrastructure/harnesses | K | 30 | pending |
@@ -2308,7 +2308,7 @@ No test added: a test of the expected bytes is red today, and one pinning `{\n  
 ## 39. storage/change-apply — done 2026-10-10
 
 **Baseline:** 26 runner tests across the 7 files, green. Stryker (`--disableBail`) on `change-plan-service.ts`, `manifest-change.ts`, `change-applier.ts`, `change-target.ts`, `path-boundary.ts`, `directory-pruner.ts`, `runtime-state-files.ts`, `atomic-writer.ts`: **61.73%** (276 killed + 3 timeout, 103 survived, 70 no coverage); per file 69.51 / 0 / 65.14 / 75.00 / 40.22 / 69.47 / 89.47 / 72.73. Coverage proxy (same 8 sources): lines 86.55%, branches 80.89%.
-**Result:** 33 tests, green; `change-target`, `path-boundary` and `runtime-state-files` now under `tests/integration/` (Decision 3). Stryker on the same sources: **72.79%** (326 killed + 3 timeout, 73 survived, 50 no coverage); per file 82.93 / 0 / 78.90 / 75.00 / 55.43 / 78.95 / 94.74 / 72.73 (no file dropped). Coverage proxy: lines 89.24%, branches 83.63% (`change-plan-service.ts` 100% lines; `path-boundary.ts` lines unchanged, branches 62.96% → 61.53% from V8 branch counting on the same uncovered lines 19-20, 58, 71-72). Related suites green: `symlinked-harness-config`, `symlinked-harness-lifecycle`, `linked-project-root-lifecycle`, `init-remove-footprint`, `runtime-state-removal`, `init-plan`, `unit/test-lanes`; `npm run typecheck` green. Commit `<pending>`.
+**Result:** 33 tests, green; `change-target`, `path-boundary` and `runtime-state-files` now under `tests/integration/` (Decision 3). Stryker on the same sources: **72.79%** (326 killed + 3 timeout, 73 survived, 50 no coverage); per file 82.93 / 0 / 78.90 / 75.00 / 55.43 / 78.95 / 94.74 / 72.73 (no file dropped). Coverage proxy: lines 89.24%, branches 83.63% (`change-plan-service.ts` 100% lines; `path-boundary.ts` lines unchanged, branches 62.96% → 61.53% from V8 branch counting on the same uncovered lines 19-20, 58, 71-72). Related suites green: `symlinked-harness-config`, `symlinked-harness-lifecycle`, `linked-project-root-lifecycle`, `init-remove-footprint`, `runtime-state-removal`, `init-plan`, `unit/test-lanes`; `npm run typecheck` green. Commit `54579b4`.
 
 `manifest-change.ts` stays at 0% in both runs: no module test executes it (install-only, through `installation-service`; module 24's `init-*` suites assert the manifest end to end). The `--mutate` list is unchanged so the scores compare.
 
@@ -2362,3 +2362,60 @@ Survivors, equivalent or unreachable: `change-plan-service.ts` 20 (Windows lower
 
 ### Questions `[?]`
 - `atomic-writer.ts` 18-21 (temp file removed when `rename` fails; `file-changes.md` "never leaves a partial file") has no test anywhere; not added here (no cheap portable failure). Confirm whether it deserves one.
+
+## 40. gitignore/core — done 2026-10-10
+
+**Baseline:** 39 runner tests across the 3 files, green. Stryker (`--disableBail` for kill attribution) on `gitignore-block.ts`, `gitignore-merge.ts`, `gitignore-plan.ts`: **78.15%** (236 killed, 39 survived, 27 no coverage); per file 87.29 / 100 / 63.57. Coverage proxy (same 3 sources): lines 95.31%, branches 94.64% (`gitignore-plan.ts` lines 87-89, 92-94 uncovered).
+**Result:** 40 tests, green; `gitignore-plan.test.ts` split in two (`gitignore-plan-install.test.ts` holds `runtimeStatePaths` and `planGitIgnoreForInstall`, so both stay under 100 lines). Stryker on the same sources, with the four files: **92.38%** (279 killed, 18 survived, 5 no coverage); per file 91.53 / 100 / 90.71 (no file dropped). Coverage proxy: lines 100%, branches 95.16% (only 70 and 92 partial). Related suites green: `integration/init-gitignore`, `-lifecycle`, `-tracked`, `-default-runner`, `remove-gitignore`, `init-assistant-equivalence`, `unit/assistant-questions-gitignore`, `removal-service`, `installation-summary`, `test-lanes`; `npm run typecheck` green. Commit `<hash>`.
+
+### Levels
+`gitignore-block.ts` → Critical (the only edit ContextBrake makes to the user's `.gitignore`: insert, replace, remove, malformed markers; bytes outside the markers must survive, prd-17 NFR-01). `gitignore-plan.ts` `planGitIgnore`, `ownedPathsFor`, `runtimeStatePaths`, `planGitIgnoreForInstall` → Critical (what the block lists and which change kind the plan shows). `gitignore-merge.ts` → Common (the `--gitignore`/`--no-gitignore` truth table and the stored `gitIgnore: false`).
+
+The second `describe` of `gitignore-merge.test.ts` (3 tests) tests `cli/init-arguments`, `cli/init-config-updates` and `installation-builder` (flag parsing, `hasConfigurationFlag`, the written config key order, schema and summary). Kept unchanged: no other test rejects `--gitignore --no-gitignore` at parse time or counts the two flags as configuration flags, and the write test also kills 20 in-scope mutants through `applyGitIgnore`. End-to-end flows stay in module 41.
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a missing or empty file gets the block alone (FR-04) | `content === ''` branch removed | `creates the block alone for a missing or empty file` |
+| the block is appended after the user lines with one blank line, user bytes intact (FR-04, mandated) | `closed` / blank-line template | `appends after the user lines…` |
+| a last line without a break gains one, and `remove` leaves it (OI-01) | `TRAILING_BREAK.test` inverted | `adds one line break before the block when the last line has none, and remove leaves it` |
+| a CRLF file gets a CRLF block (NFR-01, mandated line endings) | `lineEnding` → `'\n'` | `writes the block with CRLF in a CRLF file…` |
+| an existing block is replaced in place; a second run changes nothing (FR-02, NFR-01) | span replace → append | `replaces an existing block in place and is idempotent` |
+| text before and after a block that sits right after a user line survives replace and remove (FR-04, FR-06) | `TWO_TRAILING_BREAKS` without `$` or with one break (12:29) | `keeps the text around a block placed right after a user line…` |
+| apply then remove restores the original, LF and CRLF (FR-06, mandated) | `LEADING_BREAK`, `TWO_TRAILING_BREAKS` | `restores %j after apply then remove` (3 rows) |
+| remove of a block-only file deletes it; no block or no file is a no-op (FR-06) | `{ content: null }` / `{ content }` literals (44, 47) | `returns null content when only the block was there…` |
+| an empty line list removes the block (FR-02) | `lines.length === 0` removed | `removes the block when no lines are left to list` |
+| missing, reversed, doubled, repeated-start and repeated-end markers leave the file untouched (FR-04) | `starts.length !== 1` / `ends.length !== 1` → `false`, `\|\|` → `&&` (29:7, 29:30) | `reports malformed markers and changes nothing for %j` (6 rows) |
+| `--no-gitignore`/`--gitignore` against the stored value, and both together (FR-05) | each branch of `mergeGitIgnore` | `stored %s with %j gives %s` (6 rows), `rejects both flags together…` |
+| only `false` is stored; turning it on drops the key; absent means enabled (FR-05) | `!== false` → `=== true`; key filter | `stores false only, drops the key…` |
+| owned paths: config, manifest, assets, plus link target inside the project, sorted, no target outside (FR-01, FR-03, BUG-01) | `.filter` removed (35:21, 35:115); `path.startsWith('..')` | `names the link path and the target path…`, `keeps the link path but skips a target outside…` (exact list) |
+| a missing file is a `create`, an existing one an `update`, with the exact change, no conflicts or findings (FR-01, FR-04) | `before === null` → `true` (49:10, 49:39 no-cov); preview, `conflicts`/`findings` literals (55, 75) | `plans the file %j as a %s with the block…` (2 rows) |
+| a current block plans nothing (NFR-01, second run) | `before === after` removed | `plans nothing when the block is already current` |
+| the opt-out removes the block and deletes a block-only file (FR-05) | `enabled ?` swapped; `paths` kept when disabled | `removes the block and deletes a file…` |
+| Git special characters and a trailing space are escaped (FR-01) | `SPECIAL_CHARACTERS` | `escapes characters Git treats specially` |
+| malformed markers give a conflict with code and detail, no change, no finding (FR-04) | `findings` literal (74:150), code literal | `reports a conflict and no change for malformed markers` (exact plan) |
+| outside Git: no change, a `GITIGNORE_NO_GIT` ok finding with project scope only when enabled (FR-07) | `conflicts`/`paths` literals (69), `scope` literal (40:54) | `writes nothing outside Git…` (exact plans) |
+| runtime state files: planned-only and existing-only listed, non-runtime and deleted dropped (CR-02) | planned filter `() => undefined`, `endsWith` (82); existing filter (83) | `adds planned and existing runtime files…`, `drops a runtime file that the plan deletes…` |
+| an install locates each owned file through the planned change, then the snapshot, then the root, and picks the root `.gitignore` snapshot (FR-03, CR-02, BUG-01) | `locateOwned` `??` → `&&`, `find` predicates, optional chaining (87-89, 27 no-cov); `.gitignore` find (93) | `lists the owned files, the targets of planned and existing links, and the runtime state files` |
+
+### Actions
+- **Deleted (3):**
+  - `ownedPathsFor` `lists the configuration, the manifest, and the assets, sorted and without duplicates`: 0 exclusive kills; the link test lists the same configuration and manifest (both located in the root, so deduplicated) in sorted order, and FR-01 moved to its title.
+  - `restores "a/\n\nb/\n" after apply then remove`: 0 exclusive kills; an inner blank line never reaches the trailing-break logic. The new "block right after a user line" case covers inner blank lines where they matter.
+  - `leaves the added line break when the original had none` (OI-01): merged into the OI-01 insert test (same arrangement, both assertions kept).
+- **Rewritten (6):** `keeps the link path but skips a target outside` (exact list instead of `toContain`/`not.toContainEqual`, which passed with `null` entries); `creates the file with the block alone` → `it.each` with an `update` row, asserting the whole plan; the malformed-marker conflict and the no-Git plans (whole plan instead of `objectContaining` on two fields); `keeps text after the block when it is replaced` (block moved right after a user line, plus the remove result); `runtimeStatePaths` first test (one runtime file planned only, one existing only: before, both were planned and existing, so dropping either list survived).
+- **Created (4 rows/tests):** malformed rows `a repeated start marker` and `a repeated end marker` (29:7 and 29:30 survived: the four old rows never had exactly one marker of a kind repeated); the `update` row (49:10 survived, 49:39 had no coverage: no test planned an insert into an existing file); `planGitIgnoreForInstall` (lines 87-94 had no unit coverage: change-over-snapshot-over-root precedence and the `.gitignore` snapshot lookup decide which link targets the block lists, BUG-01).
+- **Kept:** the CRLF, append, idempotent and empty-file block tests, the `mergeGitIgnore` truth table (6 rows, one per flag/stored cell of FR-05), `applyGitIgnore`, the three cross-source flag tests, `plans nothing when current`, the opt-out delete, the escapes, `drops a runtime file that the plan deletes`.
+- **Split:** `gitignore-plan.test.ts` → `gitignore-plan.test.ts` (ownedPathsFor, planGitIgnore) + `gitignore-plan-install.test.ts` (runtimeStatePaths, planGitIgnoreForInstall); no lane entries.
+
+Growth (39 → 40): 4 created rows/tests above against 3 removed; each created one kills a named survivor or a no-coverage block.
+
+Mandated rows: user lines byte for byte on insert (LF, CRLF, no final newline), on replace and on remove; second run plans nothing; malformed markers leave the file untouched; opt-out removes the block.
+
+Survivors, equivalent or unreachable: `gitignore-block.ts` 3 (message wording; tests compare to the constant), 9/10 regex `$` removed (`[^\r\n]*` is greedy, same match), 9/10 `^` removed (a marker text in the middle of a user line: not plausible), 13 unanchored `LEADING_BREAK` (the end marker consumes its line, so the tail starts with a break or is empty), 29:51/29:74 (`first`/`last === undefined` only narrow types: the length checks already return), 29:96 `<` → `<=` (two markers never share an index), 56:37 (`?? ''` only feeds `lineEnding`: any text without `\r\n` gives `\n`); `gitignore-plan.ts` 24:63 (only a path with an inner and a trailing space differs; owned asset names have neither), 29:10/29:19 (no owned path resolves to the root itself), 40:111/40:237 (finding wording), 70 (snapshot `undefined` guard: `snapshot-helper` always snapshots `.gitignore`, and `removal-service` passes the same list), 81:27/81:54 (a wider `deleted` set only drops existing paths that `planned` already lists or that fail the runtime prefix), 92:177 no-cov (`hasInstall: false`; left to module 41's `init` flows).
+
+### Production pending items
+- `gitignore-plan.ts` line 70: the `snapshot === undefined` guard is unreachable from both callers.
+- `gitignore-block.ts` line 29: `first === undefined || last === undefined` exists only for type narrowing; destructuring after the length check would drop the two dead conditions.
+
+### Questions `[?]`
+- None.

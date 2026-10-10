@@ -3,6 +3,7 @@ import { applyIgnoreBlock, BLOCK_END, BLOCK_START, MALFORMED_MARKERS_MESSAGE, re
 
 const LINES = ['/context-brake.config.json', '/.context-brake/manifest.json'];
 const BLOCK = [BLOCK_START, ...LINES, BLOCK_END].join('\n');
+const X_BLOCK = [BLOCK_START, '/x', BLOCK_END].join('\n');
 
 function applied(content: string | null, lines: readonly string[] = LINES): string | null {
   const result = applyIgnoreBlock(content, lines);
@@ -19,8 +20,10 @@ describe('applyIgnoreBlock adds and replaces the managed block (prd-17 FR-04, NF
     const user = '# mine\nnode_modules/\n\ndist/\n';
     expect(applied(user)).toBe(`${user}\n${BLOCK}\n`);
   });
-  it('adds one line break before the block when the last line has none (OI-01, TC-01)', () => {
-    expect(applied('dist/')).toBe(`dist/\n\n${BLOCK}\n`);
+  it('adds one line break before the block when the last line has none, and remove leaves it (OI-01, TC-01)', () => {
+    const once = applied('dist/');
+    expect(once).toBe(`dist/\n\n${BLOCK}\n`);
+    expect(removeIgnoreBlock(once)).toEqual({ content: 'dist/\n' });
   });
   it('writes the block with CRLF in a CRLF file and leaves the user bytes alone (NFR-01, TC-01)', () => {
     const user = 'dist/\r\n# c\r\n';
@@ -32,19 +35,17 @@ describe('applyIgnoreBlock adds and replaces the managed block (prd-17 FR-04, NF
     expect(changed).toBe(`a/\n\n${[BLOCK_START, '/only.json', BLOCK_END].join('\n')}\n`);
     expect(applied(once)).toBe(once);
   });
-  it('keeps text after the block when it is replaced (FR-04, TC-01)', () => {
-    const text = `a/\n\n${BLOCK}\nz/\n`;
-    expect(applied(text, ['/x'])).toBe(`a/\n\n${[BLOCK_START, '/x', BLOCK_END].join('\n')}\nz/\n`);
+  it('keeps the text around a block placed right after a user line when it is replaced or removed (FR-04, FR-06, TC-01)', () => {
+    const text = `a/\n\nb/\n${BLOCK}\nz/\n`;
+    expect(applied(text, ['/x'])).toBe(`a/\n\nb/\n${X_BLOCK}\nz/\n`);
+    expect(removeIgnoreBlock(text)).toEqual({ content: 'a/\n\nb/\nz/\n' });
   });
 });
 
 describe('removeIgnoreBlock and malformed markers (prd-17 FR-04, FR-06, TC-01)', () => {
-  it.each([['a/\n'], ['a/\n\nb/\n'], ['a/\n\n\n'], ['# only a comment\r\nb/\r\n']])('restores %j after apply then remove (FR-06, TC-01)', (original) => {
+  it.each([['a/\n'], ['a/\n\n\n'], ['# only a comment\r\nb/\r\n']])('restores %j after apply then remove (FR-06, TC-01)', (original) => {
     const result = removeIgnoreBlock(applied(original));
     expect(result).toEqual({ content: original });
-  });
-  it('leaves the added line break when the original had none (OI-01, TC-01)', () => {
-    expect(removeIgnoreBlock(applied('dist/'))).toEqual({ content: 'dist/\n' });
   });
   it('returns null content when only the block was there, and the text when there is no block (FR-06, TC-01)', () => {
     expect(removeIgnoreBlock(applied(null))).toEqual({ content: null });
@@ -59,6 +60,8 @@ describe('removeIgnoreBlock and malformed markers (prd-17 FR-04, FR-06, TC-01)',
     [`/a\n${BLOCK_END}\n`],
     [`${BLOCK_END}\n/a\n${BLOCK_START}\n`],
     [`${BLOCK}\n${BLOCK}\n`],
+    [`${BLOCK_START}\n${BLOCK}\n`],
+    [`${BLOCK}\n${BLOCK_END}\n`],
   ])('reports malformed markers and changes nothing for %j (FR-04, TC-01)', (text) => {
     expect(applyIgnoreBlock(text, LINES)).toEqual({ error: MALFORMED_MARKERS_MESSAGE });
     expect(removeIgnoreBlock(text)).toEqual({ error: MALFORMED_MARKERS_MESSAGE });

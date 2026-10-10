@@ -5,12 +5,13 @@ import { cleanupScenes, finishTurn, readCodes, settleClear, signalTurn, startSce
 
 afterEach(cleanupScenes);
 
-describe('clear on the restart signal (FR-01, DEC-01, DEC-02, TC-09)', () => {
-  it('queues exactly one clear for a signal at the end of a turn', async () => {
+describe('clear on the restart signal (FR-01, DEC-01, DEC-02, TC-09, prd-12 FR-10, TC-03)', () => {
+  it('queues exactly one clear for a signal at the end of a turn, with no state file read', async () => {
     const scene = await startScene({});
     await signalTurn(scene);
     expect(scene.state.clears).toEqual(['clear']);
     expect(await readCodes(scene)).toEqual(['RESTARTED']);
+    expect(scene.state.accessed.filter((path) => /task_plan|state_checkpoint/.test(path))).toEqual([]);
   });
 
   it('does not clear without the signal, whatever the answer says', async () => {
@@ -27,7 +28,7 @@ describe('clear on the restart signal (FR-01, DEC-01, DEC-02, TC-09)', () => {
   });
 });
 
-describe('seed after the clear (FR-02, DEC-03, TC-10, TC-11)', () => {
+describe('seed after the clear (FR-02, DEC-03, TC-10, TC-11, prd-12 TC-03)', () => {
   it('submits the seed once, after the queued clear resolves', async () => {
     const scene = await startScene({});
     await signalTurn(scene);
@@ -35,14 +36,6 @@ describe('seed after the clear (FR-02, DEC-03, TC-10, TC-11)', () => {
     await settleClear(scene);
     await settleClear(scene);
     expect(scene.state.seeds).toEqual([seedText()]);
-  });
-
-  it('submits nothing when the person types /clear themselves', async () => {
-    const scene = await startScene({});
-    await scene.fire('session.end', { reason: 'clear' });
-    await finishTurn(scene, 'Plain answer.');
-    expect(scene.state.clears).toEqual([]);
-    expect(scene.state.seeds).toEqual([]);
   });
 });
 

@@ -31,17 +31,12 @@ describe('loop guard (FR-04, DEC-06, TC-04)', () => {
 });
 
 describe('no-progress guard (FR-05, TC-05)', () => {
-  it('refuses a signal from a seeded session that made no tool call', async () => {
+  it('refuses a signal from a seeded session that made no tool call and accepts it after one', async () => {
     const scene = await startScene({});
     await restartAndSeed(scene, 0);
     await signalTurn(scene, 0);
     expect(scene.state.clears).toHaveLength(1);
     expect((await readCodes(scene)).at(-1)).toBe('SKIP_NO_PROGRESS');
-  });
-
-  it('accepts the signal once a tool call happened after the seed', async () => {
-    const scene = await startScene({});
-    await restartAndSeed(scene, 0);
     await signalTurn(scene, 2);
     expect(scene.state.clears).toHaveLength(2);
   });
@@ -51,11 +46,11 @@ describe('stand-down conditions (FR-06, TC-06)', () => {
   it.each([
     ['CONTEXT_BRAKE_AUTO_RESTART', '0', 'SKIP_DISABLED_ENV'],
     ['DISABLE_AUTO_COMPACT', '1', 'SKIP_DISABLED_ENV'],
-  ] as const)('stands down when %s is %s', async (name, value, code) => {
+    ['DISABLE_AUTO_COMPACT', 'False', 'RESTARTED'],
+  ] as const)('logs %s=%s as %s', async (name, value, code) => {
     const scene = await startScene({});
     scene.state.env.set(name, value);
     await signalTurn(scene);
-    expect(scene.state.clears).toEqual([]);
     expect(await readCodes(scene)).toEqual([code]);
   });
 

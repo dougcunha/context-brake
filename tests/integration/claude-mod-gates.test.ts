@@ -1,24 +1,11 @@
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { seedText } from '../../src/core/services/auto-restart-notices.js';
-import { cleanupScenes, readCodes, settleClear, signalTurn, startScene } from '../fixtures/claude-mod-scene.js';
+import { RESTART_LOG_VERSION } from '../../src/core/contracts/restart-log.js';
+import { MOD_LOG_DIR, MOD_VERSION } from '../../src/infrastructure/harnesses/claude-code/mod/mod-info.js';
+import { cleanupScenes, readCodes, signalTurn, startScene } from '../fixtures/claude-mod-scene.js';
 
 afterEach(cleanupScenes);
-
-describe('signal-only gate (prd-12 FR-10, TC-03)', () => {
-  it('restarts on the signal with no state file', async () => {
-    const scene = await startScene({});
-    await signalTurn(scene);
-    expect(scene.state.clears).toEqual(['clear']);
-    expect(scene.state.accessed.filter((path) => /task_plan|state_checkpoint/.test(path))).toEqual([]);
-  });
-
-  it('seeds with the generic text that does not mention the boot', async () => {
-    const scene = await startScene({});
-    await signalTurn(scene);
-    await settleClear(scene);
-    expect(scene.state.seeds).toEqual([seedText()]);
-  });
-});
 
 describe('feature switched off (FR-07)', () => {
   it('does nothing and writes no log when the configuration has no autoRestart block', async () => {
@@ -26,5 +13,14 @@ describe('feature switched off (FR-07)', () => {
     await signalTurn(scene);
     expect(scene.state.clears).toEqual([]);
     expect(await readCodes(scene)).toEqual([]);
+  });
+});
+
+describe('loaded header for doctor (FR-08, DEC-10)', () => {
+  it('writes the mod and Claude Code versions with no record when the session starts', async () => {
+    const scene = await startScene({});
+    await scene.fire('session.start', {});
+    const log: unknown = JSON.parse(await readFile(join(scene.root, MOD_LOG_DIR, 'session-1.json'), 'utf8'));
+    expect(log).toEqual({ v: RESTART_LOG_VERSION, harness: 'claude-code', componentVersion: MOD_VERSION, harnessVersion: '2.1.289', records: [] });
   });
 });

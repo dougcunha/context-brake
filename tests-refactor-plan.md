@@ -65,7 +65,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 25 | integration/init-exclusion | init-assistant-exclusion, init-exclusion, -conflicts, -edges, -removal | src/cli/commands, harness-exclusion | G | 16 → 9 | done |
 | 26 | integration/init-settings | init-auto-restart, init-config-repair, config-repair-errors, init-debug-mode, init-debug-mode-disable, init-legacy-turn-limits, init-max-restarts, init-snapshot | src/cli/commands, src/core/validation | G | 40 → 17 | done |
 | 27 | integration/claude-auto-restart | auto-restart-doctor, -lifecycle, -planner, -removal, -user-settings | harnesses/claude-code | G | 31 → 23 | done |
-| 28 | integration/claude-mod | claude-mod-bundle, -gates, -guards, -handoff, -restart | harnesses/claude-code/mod | G/C | 26 | pending |
+| 28 | integration/claude-mod | claude-mod-bundle, -gates, -guards, -handoff, -restart | harnesses/claude-code/mod | G/C | 27 → 23 | done |
 | 29 | integration/omp-pi-restart | omp-restart, omp-restart-handoff, omp-session-switch, pi-restart, pi-restart-handoff, in-process-restart-plan, semi-auto-restart | harnesses/oh-my-pi, pi | G | 24 | pending |
 | 30 | integration/runtime-harnesses | runtime-antigravity, -codex, -copilot, -cursor, -in-process, -host-process, claude-transcript-usage, codex-rollout-usage | src/infrastructure/runtime, harnesses | G | 33 | pending |
 | 31 | integration/runtime-policies | runtime-failure-policy, copilot-failure-policy, runtime-invalid-config, runtime-light-mode, light-mode-lifecycle, runtime-parallel-turns, runtime-retention, runtime-session-ledger, runtime-state-removal, brake-lifecycle, debug-mode-lifecycle, simulated-usage | src/infrastructure/runtime | G | 33 | pending |
@@ -1582,7 +1582,7 @@ Every source is Glue reached through `init`/`doctor`/`remove` in process; the de
 ## 27. integration/claude-auto-restart — done 2026-10-10
 
 **Baseline:** 31 runner tests across the 5 files, green. Stryker: n/a (Glue).
-**Result:** 23 tests across 5 files, green. Scoped coverage proxy (`claude-code/auto-restart-planner.ts`, `-diagnostics.ts`, `-ownership.ts`, `-settings.ts`, `-files.ts`): lines 98.13% → 98.13%; branches 91.48% → 91.48%. The uncovered lines are the same before and after: defensive `catch` blocks (`auto-restart-diagnostics.ts` 56-57, `auto-restart-ownership.ts` 21-22) and the `INVALID_HARNESS_CONFIG` branch of `settingsBase` (`auto-restart-planner.ts` 55-56; the invalid local settings path is module 33 `statusline-install-invalid`). Commit `<hash>`.
+**Result:** 23 tests across 5 files, green. Scoped coverage proxy (`claude-code/auto-restart-planner.ts`, `-diagnostics.ts`, `-ownership.ts`, `-settings.ts`, `-files.ts`): lines 98.13% → 98.13%; branches 91.48% → 91.48%. The uncovered lines are the same before and after: defensive `catch` blocks (`auto-restart-diagnostics.ts` 56-57, `auto-restart-ownership.ts` 21-22) and the `INVALID_HARNESS_CONFIG` branch of `settingsBase` (`auto-restart-planner.ts` 55-56; the invalid local settings path is module 33 `statusline-install-invalid`). Commit `f185faa`.
 
 All five sources are Glue reached through `init`/`doctor`/`remove` in process (`statusline-world` and `runInProcessCli`); no unit test covers them and no other test file imports them (`doctor-remove-restart`, `init-auto-restart`, `init-gitignore-lifecycle`, `harness-adapters` reach them only through the CLI and stay green). `planClaudeRemove` calls `planAutoRestart(..., false)`, so `remove` deletes the mod files through the removal service (`assetPaths`) while `init --no-auto-restart` deletes them through `removalChanges`; each path keeps its own edited-file test. No file is in `tests/test-lanes.ts`; no file renamed or moved.
 
@@ -1611,11 +1611,61 @@ All five sources are Glue reached through `init`/`doctor`/`remove` in process (`
 - **Merged (6 → 3):**
   - doctor `reports ready without a warning once a session recorded the loaded header` + `adds the last skip code next to ready…` → one sequence on the same log file (RESTARTED alone → `READY` only; then a skip; then an error).
   - planner `writes the marketplace, the plugin files…` + `plans nothing on the second run and keeps the status line bridge` → one TC-17 sequence.
-  - removal `deletes the files, the settings keys and the config block` + `leaves an edited mod file in place and says so` → one `--no-auto-restart` sequence (same arrangement; it now also asserts the three unedited files are deleted).
+  - removal `deletes the files, the settings keys and the config block` + `leaves an edited mod file in place and says so` → one `--no-auto-restart` sequence (same arrangement; it now also asserts the three unedited files are deleted). R1's `exitCode` 0 assertion was dropped: the merged flow carries the `MODIFIED_OWNED_ASSET` conflict and exits 2; a clean `--no-auto-restart` exit 0 stays asserted at the CLI edge by module 26 `init-auto-restart` (`[applied.code, status]` → `[0, 'success']`).
 - **Rewritten (assertions only):** planner TC-20 asserts the seeded local file is restored byte for byte (the TechSpec row says "kept byte for byte"; it compared parsed JSON) and uses a static `writeFile` import; doctor `not loaded` asserts code and severity plus one cause instead of four wording checks (`tests.md`: doctor formatting needs less depth).
 - **Created:** none.
 - **Kept (18 runner tests):** the lifecycle test (the module's mandated byte-for-byte test; only TC-17/TC-23 added to its `describe`), planner TC-18, CR-01 opt-out and the 2 switch-off rows, removal `remove` edited-file test, doctor off/outdated×2/too-old, and all 8 user-settings rows (each dimension takes a different path: file content → `isEmptySettings`; bridge on/off → base change from the status line planner vs disk read; remove vs opt-out → `deleteFiles=false` with `assetPaths` vs the init `deletesLocal` branch).
 - The lifecycle file keeps `FLOW_TIMEOUT_MILLISECONDS = 120_000` from prd-13's budget work; it now runs one flow.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.
+
+## 28. integration/claude-mod — done 2026-10-10
+
+**Baseline:** 27 runner tests across the 5 files, green (the table's 26 was the grep count). Stryker: n/a (Glue/Common).
+**Result:** 23 tests across 5 files, green. Scoped coverage proxy (`claude-code/mod/*.ts`, `core/services/restart-guards.ts`): lines 217/239 (90.79%) → 229/239 (95.81%); branches 81/93 (87.09%) → 84/97 (86.59%; v8 counts the branches of `onSessionStart`/`recordLoaded` only once they run, so the percentage dips while no covered branch was lost). Remaining gaps: the `catch` blocks of `onSessionStart`, `onTurnStart` and `onPromptSubmit` (`hooks.ts` 13-14, 21-22, 42-43), the JSON `catch` of `parseConfig` (`mod-config.ts` 25-26) and of `readLog` (`mod-log.ts` 21-22): defensive; the `onTurnComplete` catch is asserted by `logs an internal error and lets the turn go on when a read fails`; `host.ts` is type-only.
+
+The five files drive the real `register` through the simulated `$` host (`tests/fixtures/claude-mod-host.ts`, `claude-mod-scene.ts`) in process; the bundle test runs esbuild through the `bundleAsset` API. No file holds a `PROCESS_MARKERS` string, none is in `tests/test-lanes.ts`, and no file moved or was renamed (the prd-11 and prd-12 TechSpecs cite all five). The decisions the mod hands to core are unit-tested elsewhere: `decideRestart` in `unit/auto-restart-policy` (module 14), `handleTurnEnd` in `unit/restart-flow` (module 15). `restart-guards.ts` has no unit test; this module (`foldToolCalls`, `resetConsecutive`, `rollbackConsecutive` through the store) and the omp/pi restart suites (module 29) are its coverage.
+
+### register.ts, hooks.ts, mod-log.ts, mod-guards.ts, turn-state.ts → Glue; mod-info.ts → Trivial (except the DEC-10 version pin)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| bundle built from the mod entry, exports `register`, no `node:` import or sync file/process API | `ASSET_ENTRIES` path changed; a Node import or `process.env` added to the mod | bundle `is built from the mod entry, exports register, and holds no Node module import…` (NFR-01, DEC-11, TC-15) |
+| only events, fields and prompt origins the observed session delivers | a `classic.*` or extra event registered; `PERSON_PROMPT_ORIGINS` drops the observed typed kind | bundle `registers only delivered events and reads only the turn.complete fields…` (DEC-13, TC-16) |
+| mod version equals the package version | `MOD_VERSION` not bumped with a release (doctor drift check) | bundle `matches the package version so doctor can detect drift` (DEC-10) |
+| `session.start` writes the loaded header doctor reads | `onSessionStart` unwired; `recordLoaded` drops `componentVersion`/`harnessVersion` | gates `writes the mod and Claude Code versions with no record when the session starts` (FR-08, DEC-10) |
+| a person's prompt resets the loop counter; the seed prompt does not | `PERSON_PROMPT_ORIGINS.includes(kind)` → `true` / `false` | guards `refuses the third consecutive restart and resumes after a typed prompt`, `does not reset the counter for the seed prompt itself` (FR-04, DEC-06, TC-04) |
+
+### restart-flow.ts, restart-host.ts, restart-facts.ts, mod-config.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| signal at the end of a turn queues one `clear`, logs `RESTARTED`, reads no plan or checkpoint file | `'clear'` literal; signal path cut | restart `queues exactly one clear for a signal at the end of a turn, with no state file read` (FR-01, DEC-01, DEC-02, TC-09, prd-12 FR-10, TC-03) |
+| no signal (or the signal mid-answer) clears nothing | mod `endsWithResetSignal` check → `includes` or removed | restart `does not clear without the signal, whatever the answer says` |
+| subagent and non-answer turns are ignored | `reason !== 'answer'` or `agentId !== undefined` removed | restart `ignores subagent turns and turns that did not end with an answer` |
+| seed submitted once, only after the queued clear resolves | `submitSeed` called before `.then`; called per settle | restart `submits the seed once, after the queued clear resolves` (FR-02, DEC-03, TC-10, TC-11, prd-12 TC-03) |
+| no `autoRestart` block: nothing happens, no log | `config === undefined` return removed | gates `does nothing and writes no log…` (FR-07) |
+| tool calls since the seed feed the no-progress guard | `foldToolCalls` unwired; `countToolCall` not called | guards `refuses a signal from a seeded session that made no tool call and accepts it after one` (FR-05, TC-05) |
+| env switches stand down; a false-like `DISABLE_AUTO_COMPACT` does not | `=== '0'` changed; `FALSE_ENV_VALUES` or `toLowerCase` dropped | guards `logs %s=%s as %s` (3 rows, FR-06, TC-06) |
+| no terminal or desktop surface stands down | `INTERACTIVE_SURFACES` check → `true` | guards `stands down without a terminal or desktop surface` |
+| handoff mode: missing, stale, fresh | `exists` guard removed; `turnSnapshot().startedAt` or `mtimeMs` mis-wired; mode ignored | handoff 3 tests (prd-14 FR-04, FR-05, TC-07) |
+| failures never break the session: read failure, rejected clear (rollback), rejected seed, store failure after the clear | hook `try/catch` removed; `onRejected` unwired; `submitSeed` catch removed; `Promise.all` → sequential and unguarded | restart 4 failure tests (NFR-04, TC-13, CR-03) |
+
+### Actions
+- **Deleted (3):**
+  - gates `restarts on the signal with no state file` (prd-12 FR-10, TC-03): same arrangement and `clears` assertion as restart `queues exactly one clear…`; its `task_plan|state_checkpoint` access check moved into that test and the identifiers into its `describe`.
+  - gates `seeds with the generic text that does not mention the boot` (prd-12 TC-03): identical assertion (`seeds` → `[seedText()]`) to restart `submits the seed once, after the queued clear resolves`; TC-03 added to that `describe`. The seed wording belongs to `seedText()`, tested in core.
+  - restart `submits nothing when the person types /clear themselves` (TC-11): the mod registers no `session.end` handler (bundle TC-16 asserts the exact event list), so the test was a no-signal turn, already restart `does not clear without the signal…`; "only the mod's own clear seeds" (DEC-03) stays asserted by the seed test, which now carries TC-11.
+- **Merged (6 → 3):** bundle `is built from the mod entry and exports register` + `contains no Node module import…` → one test on one esbuild build (TC-15); bundle `registers only events the real session delivered…` + `reads only turn.complete fields and prompt origins…` → one TC-16 test on one fixture read; guards `refuses a signal from a seeded session that made no tool call` + `accepts the signal once a tool call happened after the seed` → one TC-05 sequence on the same scene.
+- **Rewritten:** the stand-down `it.each` asserts the logged code only (the skip path never reaches `openSession`, `unit/restart-flow`), so a row can expect `RESTARTED`.
+- **Created (1 test, 1 row):**
+  - gates `writes the mod and Claude Code versions with no record when the session starts`: `onSessionStart`/`recordLoaded` never ran in the module (proxy: `hooks.ts` 9-15, `register.ts` 6-7, `mod-log.ts` 29-33); it writes the header doctor reads for READY vs `AUTO_RESTART_NOT_LOADED`, and module 27 fakes that file.
+  - stand-down row `DISABLE_AUTO_COMPACT=False` → `RESTARTED`: kills dropping `FALSE_ENV_VALUES` or `toLowerCase` in `isTruthyEnv`, which would silently disable restarts for a user who sets the variable to false.
+- **Kept (16):** bundle DEC-10; gates FR-07; guards loop guard ×2, 2 env rows, surfaces; handoff ×3; restart `queues exactly one clear…`, `does not clear without the signal…`, `ignores subagent turns…`, `submits the seed once…`, and the 4 failure tests.
 
 ### Production pending items
 - None.

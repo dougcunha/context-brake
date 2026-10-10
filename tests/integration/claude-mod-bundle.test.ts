@@ -21,28 +21,20 @@ function registeredEvents(): string[] {
 }
 
 describe('bundled mod (NFR-01, DEC-11, TC-15)', () => {
-  it('is built from the mod entry and exports register', async () => {
+  it('is built from the mod entry, exports register, and holds no Node module import or synchronous file or process API', async () => {
     const entry = ASSET_ENTRIES.find((candidate) => candidate.source === MOD_ENTRY);
-    expect(entry?.destination).toBe('dist/assets/runtime/claude-code-mod.mjs');
     const bundled = await bundleAsset(entry ?? { source: MOD_ENTRY, destination: '' });
+    expect(entry?.destination).toBe('dist/assets/runtime/claude-code-mod.mjs');
     expect(bundled.text).toMatch(/export\s*\{[^}]*\bregister\b/);
-  });
-
-  it('contains no Node module import and no synchronous file or process API', async () => {
-    const bundled = await bundleAsset({ source: MOD_ENTRY, destination: '' });
     expect(bundled.text.match(FORBIDDEN)).toBeNull();
   });
 });
 
 describe('contract with the observed Claude Code behavior (DEC-13, TC-16)', () => {
-  it('registers only events the real session delivered, never classic.* events', async () => {
+  it('registers only delivered events and reads only the turn.complete fields and prompt origins the fixture shows', async () => {
     const observed = JSON.parse(await readFile(OBSERVED, 'utf8')) as Observed;
     expect(observed.classicEvents.interactive).toBe('not delivered');
     expect(registeredEvents()).toEqual(['session.start', 'turn.start', 'tool.call', 'turn.complete', 'prompt.submit']);
-  });
-
-  it('reads only turn.complete fields and prompt origins the fixture shows', async () => {
-    const observed = JSON.parse(await readFile(OBSERVED, 'utf8')) as Observed;
     expect(observed['turn.complete'].keys).toEqual(expect.arrayContaining(['answer', 'reason', 'isAborted']));
     expect(PERSON_PROMPT_ORIGINS).toContain(observed['prompt.submit'].origins.typed.kind);
   });

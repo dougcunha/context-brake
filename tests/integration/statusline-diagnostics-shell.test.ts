@@ -23,9 +23,9 @@ async function install(command: string): Promise<void> {
   await write(LOCAL, { statusLine: { type: 'command', command } });
   await write(STATE, { v: 1, installedCommand: command, previousLocal: null, previousSource: 'project', previousCommand: 'project.sh', createdLocalFile: true });
 }
-async function recordShell(shell: string): Promise<void> {
-  const line = { v: 1, type: 'statusline', at: '2026-09-29T12:00:00.000Z', windowTokens: 200000, inputTokens: 1000, usedPercentage: 1, model: 'claude-opus-5-5', shell };
-  await write(LEDGER, `${JSON.stringify(line)}\n`);
+async function recordShell(...shells: string[]): Promise<void> {
+  const lines = shells.map((shell) => JSON.stringify({ v: 1, type: 'statusline', at: '2026-09-29T12:00:00.000Z', windowTokens: 200000, inputTokens: 1000, usedPercentage: 1, model: 'claude-opus-5-5', shell }));
+  await write(LEDGER, `${lines.join('\n')}\n`);
 }
 async function codes(platform: NodeJS.Platform): Promise<string[]> {
   return (await diagnoseStatusline({ projectRoot: root, userHome: home, runner: IGNORED }, platform)).map((finding) => finding.code);
@@ -54,9 +54,9 @@ describe('status line shell and command format warnings (FR-04, FR-05, DEC-05, D
     const findings = await diagnoseStatusline({ projectRoot: root, userHome: home, runner: IGNORED }, 'win32');
     expect(findings).toEqual([expect.objectContaining({ code: 'STATUSLINE_POWERSHELL_FALLBACK', severity: 'warning', remediation: expect.stringContaining('CLAUDE_CODE_GIT_BASH_PATH') as unknown })]);
   });
-  it('stays quiet after a Git Bash run, without a recorded run, and outside Windows', async () => {
+  it('stays quiet without a recorded run, when the latest run used Git Bash, and outside Windows', async () => {
     expect(await codes('win32')).toEqual([]);
-    await recordShell('git-bash');
+    await recordShell('powershell', 'git-bash');
     expect(await codes('win32')).toEqual([]);
     await recordShell('powershell');
     expect(await codes('linux')).toEqual([]);

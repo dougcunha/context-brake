@@ -57,7 +57,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 17 | install/services | detection-service, installation-summary, removal-service, integration/removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 22 → 21 | done |
 | 18 | harness/registration | integration/harness-registry, -adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 38 → 32 | done |
 | 19 | claude/statusline-planner | integration/statusline-context-window, statusline-default-conflicts, statusline-payload, statusline-planner, statusline-shell-resolution | src/infrastructure/harnesses/claude-code | C | 47 → 38 | done |
-| 20 | claude/statusline-diagnostics | statusline-diagnostics, -shell, -symlink | src/infrastructure/harnesses/claude-code | C | 15 | pending |
+| 20 | claude/statusline-diagnostics | integration/statusline-diagnostics, -shell, -symlink | src/infrastructure/harnesses/claude-code | C | 15 → 11 | done |
 | 21 | runtime/claude-codex | runtime-claude, runtime-claude-measured, claude-runtime-session-key, runtime-codex, runtime-codex-measured | harnesses/claude-code, harnesses/codex-cli | C | 25 | pending |
 | 22 | runtime/process-harnesses | runtime-antigravity, runtime-copilot, runtime-cursor, runtime-assets, harness-schemas-process | harnesses/antigravity-cli, github-copilot-cli, cursor, common | C | 26 | pending |
 | 23 | runtime/in-process-harnesses | runtime-omp, runtime-opencode, runtime-pi, omp-runtime-usage, pi-runtime-usage, harness-schemas-in-process | harnesses/oh-my-pi, opencode, pi | C | 30 | pending |
@@ -1126,7 +1126,7 @@ Unchanged (7 tests): each case kills its own mutant: last entry drops the event 
 ## 19. claude/statusline-planner — done 2026-10-10
 
 **Baseline:** 47 runner tests across the 5 files, green (the plan's 29 was the grep count). Stryker: n/a (Common).
-**Result:** 38 tests across 5 files, green. Scoped coverage proxy (`statusline-context-window.ts`, `statusline-default.ts`, `statusline-payload.ts`, `statusline-settings.ts`, `statusline-state.ts`, `statusline-shell.ts`): identical before and after (lines 86.28%, branches 94.54%, functions 80.64%). The uncovered lines belong to other modules: `statusline-default.ts` 13-26 (opt-out record, `integration/statusline-default.test.ts`, module 33), `statusline-context-window.ts` 40-48 (`lastRecordedShell`, doctor shell diagnostics, module 20), `statusline-settings.ts` 31-33 and 41-42 (unreadable settings and `statuslineOf`, the planner and diagnostics paths), `statusline-shell.ts` 32-34 (the real `stat` host, `integration/statusline-bridge-previous.test.ts`). Commit `<pending>`.
+**Result:** 38 tests across 5 files, green. Scoped coverage proxy (`statusline-context-window.ts`, `statusline-default.ts`, `statusline-payload.ts`, `statusline-settings.ts`, `statusline-state.ts`, `statusline-shell.ts`): identical before and after (lines 86.28%, branches 94.54%, functions 80.64%). The uncovered lines belong to other modules: `statusline-default.ts` 13-26 (opt-out record, `integration/statusline-default.test.ts`, module 33), `statusline-context-window.ts` 40-48 (`lastRecordedShell`, doctor shell diagnostics, module 20), `statusline-settings.ts` 31-33 and 41-42 (unreadable settings and `statuslineOf`, the planner and diagnostics paths), `statusline-shell.ts` 32-34 (the real `stat` host, `integration/statusline-bridge-previous.test.ts`). Commit `95c72b4`.
 
 Layout: all five files import `src/infrastructure/harnesses/claude-code/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). `statusline-context-window`, `statusline-payload` and `statusline-planner` keep their names because the prd-02.2 tasks cite them. Two names were taken in `tests/integration/` (module 33's process-lane `statusline-shell.test.ts` and its `statusline-default.test.ts`), so these moved as `statusline-shell-resolution.test.ts` (prd-10 TC-03) and `statusline-default-conflicts.test.ts` (prd-09 CR-01). None of the five is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). `statusline-planner.test.ts` tests `statusline-settings.ts` and `statusline-state.ts`, not `statusline-planner.ts`; the name stays for the same traceability reason. Module 6 carry-forward: `falls back to the ceiling when no ledger has a window` is unchanged, now at `tests/integration/statusline-context-window.test.ts`.
 
@@ -1194,6 +1194,44 @@ Unchanged (5 tests): each covers a TC-03 case and kills its own mutant: the plat
 
 ### Production pending items
 - None.
+
+### Questions `[?]`
+- None.
+
+## 20. claude/statusline-diagnostics — done 2026-10-10
+
+**Baseline:** 15 runner tests across the 3 files, green (the junction tests ran; none skipped). Stryker: n/a (Common).
+**Result:** 11 tests across 3 files, green. Scoped coverage proxy (`statusline-diagnostics.ts`, `statusline-context-window.ts`): lines 84.95% → 84.95%, branches 88% → 88.23%, functions 78.57% → 78.57%; `statusline-diagnostics.ts` stays at 100% lines (branches 91.66% → 91.89%). `statusline-context-window.ts` shows 63.82% because this module only runs `lastRecordedShell` (40-48); lines 15-18 and 25-38 are module 19's `readClaudeContextWindow`. The three uncovered branches of `statusline-diagnostics.ts` get no test: line 50 (a command without a quoted script) and line 71 (`resolveChangeTarget` failure) are defensive guards, and line 62 (`new NodeProcessRunner()` without an injected runner) starts a real `git`, which belongs to the process lane. Commit `<pending>`.
+
+Layout: all three files import `src/infrastructure/harnesses/claude-code/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). No name collision in `tests/integration/`, none of the three is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move), and the names stay because prd-02.2 TC-16 and prd-10 TC-06 cite `statusline-diagnostics.test.ts` (their TechSpec rows still say `tests/unit/`). The three files are not merged: together they exceed the 100-line limit, and each has its own arrangement (installed bridge, recorded shells, linked `.claude`). The symlink tests already follow `tests.md` Platforms through `requireLink` (skip with the reason locally, fail in CI).
+
+### statusline-diagnostics.ts → Common (`diagnoseStatusline`, prd-02.2 FR-07, DEC-10, TC-16; prd-10 FR-04, FR-05, DEC-05, DEC-06, TC-06; codereview_01/CR-02)
+
+Doctor findings are human-facing warnings (`tests.md`: less depth); the plan covers each finding's trigger and its quiet case, not the wording.
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a healthy install reports nothing, with the previous command recorded from the project, the local file, or the user | any trigger condition inverted; the `local` or `user` candidate dropped from `currentPreviousCommand`; user read before project | `reports nothing for a healthy install with the $scope status line recorded at install` (3 rows) |
+| no state file → no findings, even with git reporting the file as tracked | `raw === null` guard removed | `reports nothing when the bridge was never installed` |
+| unparseable state → only `STATUSLINE_STATE_INVALID` | `state === null` guard removed or returns `[]` | `warns about a state file that does not parse` |
+| inactive bridge, missing script, changed previous command and tracked local file each give a warning with remediation, in order (TC-16) | any `&& FINDING` → `false`; `exitCode === 1` → `!== 1`; `severity`, `harness` or the remediation changed in `finding()` | `gives the inactive bridge, missing script, changed previous command, and tracked local file a warning with remediation` |
+| the PRD-09 pipeline command → `STATUSLINE_BRIDGE_OUTDATED` (TC-06) | `includes(' --pipe \| ')` → `false` | `flags the pipeline command of PRD-09 as outdated` |
+| a PowerShell run on Windows → `STATUSLINE_POWERSHELL_FALLBACK` with the Git Bash remediation | platform or shell check inverted; finding dropped | `warns on Windows after a bridge run through PowerShell` |
+| quiet without a run, when the latest run used Git Bash, and outside Windows | `return null` → `'powershell'` in `lastRecordedShell`; `shells.at(-1)` → `at(0)`; platform check removed | `stays quiet without a recorded run, when the latest run used Git Bash, and outside Windows` |
+| a linked `.claude` checks the link path and the real target, and reports the target (CR-02) | `localSettingsPaths` returns only the link path; the reported path is the link | `warns when the link path is ignored but the real target is not` |
+| a plain `.claude` checks only the local path | `targetPath === LOCAL` ternary always returns both paths | `checks only the local path when .claude is a plain directory` |
+
+### Actions
+- **Deleted (1):** symlink `reports nothing when both the link path and the real target are ignored`: every mutant that would make it report a finding (tracked filter → `() => true`, `=== 1` → `!== 1`, a broken link lookup) also fails `reports nothing for a healthy install…` or the exact `toEqual` of `warns when the link path is ignored but the real target is not`, which already proves no other finding appears through the link.
+- **Merged (5 → 1, TC-16):** `warns when the local status line no longer runs the bridge`, `warns when the bridge script is missing at the recorded root`, `warns when the project status line changed after install`, `warns when git reports the local settings as not ignored` and `gives every warning a remediation` → one test that sets all four conditions, which is the TC-16 row as the TechSpec writes it. Each standalone's `&& FINDING` → `false` mutant fails the merged test's exact code list, and each `!==` → `===` mutant already fails the healthy-install rows; the old remediation test covered three of the four warnings.
+- **Rewritten (2 → 1 `it.each` of 3 rows):** `reports nothing for a healthy install` and `warns when the user status line now takes precedence`. The user test killed no mutant: dropping the user candidate still gives `null !== 'project.sh'`, so it warned either way. The rows now record the previous command from the project (with a user status line present in the home, which kills reading user before project), from `previousLocal` (kills dropping the local candidate, the TC-12 install of a wrapped local status line) and from the user (kills dropping the user candidate or the user home).
+- **Rewritten (1):** `stays quiet after a Git Bash run…` now records a PowerShell run followed by a Git Bash run, which also kills `shells.at(-1)` → `at(0)`; `recordShell` takes several shells. No new test.
+- **Created:** none (the two new healthy rows replace the user test; net +1 runner row against 5 tests removed).
+- **Kept (5):** `reports nothing when the bridge was never installed`, `warns about a state file that does not parse`, the shell file's `flags the pipeline command of PRD-09 as outdated` (TC-06; `integration/statusline-install.test.ts` TC-05 also asserts the code end to end, but TC-06 names this unit file) and `warns on Windows after a bridge run through PowerShell` (deterministic on every OS; `integration/statusline-bridge-lifecycle.test.ts` TC-07 asserts it only on win32), the symlink `warns when the link path…` and `checks only the local path…`.
+- **Moved:** the three files `tests/unit/` → `tests/integration/`.
+
+### Production pending items
+- None. Observation: prd-02.2 `task_04.md` says the tracked-file check is "skipped without a runner"; the code falls back to `new NodeProcessRunner()` (line 62), so without an injected runner it runs a real `git check-ignore` instead of skipping. Likely a later, intended change (the other git checks in `init-flow.ts` do the same); the task text, not the code, looks stale.
 
 ### Questions `[?]`
 - None.

@@ -55,11 +55,6 @@ describe('tracked local settings through a symlinked .claude (FR-07, DEC-10, TC-
     expect(checked).toEqual([LINK_LOCAL, REAL_LOCAL]);
   });
 
-  it('reports nothing when both the link path and the real target are ignored', async (ctx) => {
-    await requireLink(ctx, await attemptLink(join(root, '.agents'), join(root, '.claude')), join(root, '.claude'));
-    expect(await diagnose([])).toEqual([]);
-  });
-
   it('checks only the local path when .claude is a plain directory', async () => {
     await write(LINK_LOCAL, {});
     const checked: string[] = [];

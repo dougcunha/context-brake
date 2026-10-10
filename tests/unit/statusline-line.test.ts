@@ -8,10 +8,6 @@ const VALID = { v: 1, type: 'statusline', at: AT, windowTokens: 1000000, inputTo
 const TOOL = { v: 1, type: 'tool', at: AT, toolUseId: 'toolu_1', observedCharacters: 10, turn: 1, usedTokens: 10, windowTokens: 128000, estimatedTokens: 10, source: 'estimated', zone: 'GREEN' } as const;
 
 describe('statusline ledger line schema (FR-03, DEC-04, TC-01)', () => {
-  it('accepts a line with the five recorded values', () => {
-    expect(statuslineLineSchema.safeParse(VALID).success).toBe(true);
-  });
-
   it('accepts null for every recorded value', () => {
     const line = { ...VALID, windowTokens: null, inputTokens: null, usedPercentage: null, model: null };
     expect(statuslineLineSchema.safeParse(line).success).toBe(true);

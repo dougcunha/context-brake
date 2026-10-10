@@ -49,7 +49,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 → 0 | done |
 | 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 34 → 29 | done |
 | 11 | config/schemas-stores | schemas, changes-schema, integration/project-config-store, integration/manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 18 → 11 | done |
-| 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 29 | pending |
+| 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 36 → 29 | done |
 | 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 21 | pending |
 | 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 32 | pending |
 | 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 30 | pending |
@@ -687,7 +687,7 @@ Layout: one file per source, except that the schema rules of `contracts/configur
 ## 11. config/schemas-stores — done 2026-10-10
 
 **Baseline:** 18 runner tests across the 4 files, green (the plan's 16 was the grep count). Stryker: n/a (Common).
-**Result:** 11 tests across the same 4 files, green. Scoped coverage proxy (`contracts/changes.ts`, `contracts/manifest.ts`, `storage/project-config-store.ts`, `storage/manifest-store.ts`): lines 95.55% → 85.55%; branches 88.23% → 100% (`manifest-store.ts` lines 95.12% → 73.17%, branches 81.81% → 100%). The lost lines are `NodeManifestStore.planSave` (27-37), which no production code calls (see pending items); the gained branch is the corrupt-manifest rethrow in `load()` (22-23). `project-config-store.ts` 12-13 (`readTolerant`, a 1:1 call to `sanitizeConfiguration`) stay uncovered here and run in `integration/init-config-repair.test.ts`. The published `schemas/*.json` files are not TypeScript and have no proxy; `npm run schemas:check` (in `release:check`) pins their content. Commit `<hash>`.
+**Result:** 11 tests across the same 4 files, green. Scoped coverage proxy (`contracts/changes.ts`, `contracts/manifest.ts`, `storage/project-config-store.ts`, `storage/manifest-store.ts`): lines 95.55% → 85.55%; branches 88.23% → 100% (`manifest-store.ts` lines 95.12% → 73.17%, branches 81.81% → 100%). The lost lines are `NodeManifestStore.planSave` (27-37), which no production code calls (see pending items); the gained branch is the corrupt-manifest rethrow in `load()` (22-23). `project-config-store.ts` 12-13 (`readTolerant`, a 1:1 call to `sanitizeConfiguration`) stay uncovered here and run in `integration/init-config-repair.test.ts`. The published `schemas/*.json` files are not TypeScript and have no proxy; `npm run schemas:check` (in `release:check`) pins their content. Commit `eba24d9`.
 
 Layout: `project-config-store.test.ts` and `manifest-store.test.ts` import `src/infrastructure/storage/` and moved to `tests/integration/` unchanged (decision 3, move-only step with `git mv`), keeping their names because prd-01 `done/task_3.md` cites them. Neither is listed in `tests/test-lanes.ts`, so the lanes file is unchanged (`test-lanes.test.ts` green). `schemas.test.ts` and `changes-schema.test.ts` import only `src/core/contracts/` and stay in `tests/unit/`.
 
@@ -730,6 +730,62 @@ Layout: `project-config-store.test.ts` and `manifest-store.test.ts` import `src/
 ### Production pending items
 - `src/core/contracts/changes.ts`: `changePreviewSchema`, `fileChangeSchema`, `planConflictSchema`, `harnessInstallPlanSchema`, `applyOutcomeSchema`, and `changePlanSchema` have no production import; `diagnostics.ts` duplicates them inline. Either `diagnostics.ts` reuses them or they go (the removed-owner test would then probe `installReportSchema` or `CHANGE_OWNERS`).
 - `NodeManifestStore.planSave`, `save`, and `delete` (and those `ManifestStore` port methods) have no caller: init plans the manifest through `planManifestChange` and remove deletes it through a `manifest` change. `planSave` duplicates `planManifestChange`. The round trip still uses `save`/`delete` to arrange a valid `load()`.
+
+### Questions `[?]`
+- None.
+
+## 12. telemetry/counters-statusline — done 2026-10-10
+
+**Baseline:** 36 runner tests across the 4 files, green (the plan's 29 was the grep count). Stryker: n/a (Common).
+**Result:** 29 tests across the same 4 files, green. Scoped coverage proxy (`session-counters.ts`, `session-reset-handler.ts`, `statusline-summary.ts`, `contracts/statusline-line.ts`, `contracts/session-ledger.ts`): lines 98.13% → 98.13%; branches 87.5% → 89.09% (`session-reset-handler.ts` 81.81% → 86.36%: the compaction guard on line 28 is now covered). Remaining gaps: the `hooks.onPhase?.` calls (`session-reset-handler.ts` 23-25, 29) run in `hook-deadline.test.ts` and `integration/handoff-deadline.test.ts`; the invalid-JSON `catch` of `parseLedgerLine` (`session-ledger.ts` 67-68) belongs to the ledger store tests. Commit `<hash>`.
+
+Layout unchanged: one file per source, keeping the names the TechSpecs cite (prd-02.1 TC-12, prd-02.2 TC-01 and TC-02, prd-14 TC-02). `statusline-line.test.ts` covers `contracts/statusline-line.ts` and the ledger union in `contracts/session-ledger.ts`. No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
+
+### session-counters.ts → Common (turn counting that feeds zone classification; the zone boundaries are module 34)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| empty ledger: 0 turns, next turn 1, every field null, empty status line summary | `turns + 1` → `turns`; any `?? null` removed | `summarizes an empty ledger as no turns, reading, zone, session, reset, or status line` |
+| tool lines count, status line lines do not; characters sum; last reading, zone, session line | `type !== 'tool'` narrowed; `+=` → `=`; `lastReading` assignment dropped | `counts the tool lines but not the status line lines… (DEC-05, TC-02)` |
+| a repeated tool call id counts once, unidentified calls each count | `has` check removed; `!== null` inverted | `deduplicates a repeated tool call identifier…` |
+| the count restarts after the last reset; the session line survives it | `slice(resetIndex + 1)` → whole ledger; session line looked up after the reset | `restarts the count at the reset line, ignores earlier readings, and keeps the session line` |
+| `lastResetAt` is the last reset (TC-12) | `lastResetIndex` keeps the first reset | `reports the time of the last of two reset lines` |
+
+### statusline-summary.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the window survives the reset, earlier usage is dropped, `summarizeLedger` passes its last reset | `position > resetIndex` removed or applied to the window; `-1` passed; `type !== 'statusline'` removed | `keeps the window but drops the usage recorded before the last reset of the ledger` |
+| the latest window wins; usage after the reset carries its timestamp | first window kept; `at` changed | `uses the latest window and reads the usage recorded after the reset with its timestamp` |
+| null values never overwrite | either `!== null` guard removed | `does not let null values overwrite the last valid ones` |
+
+### contracts/statusline-line.ts and the ledger union → Common (TC-01)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| nulls and the boundaries 0, 0%, 100%, 200 characters are accepted | `nullable` dropped; `nonnegative` → `positive`; `lte`/`maxLength` off by one | `accepts null…`, `accepts the boundary values…` |
+| zero or fractional window, negative tokens, out-of-range percentage, 201 characters, unknown field rejected | each refinement or `strictObject` relaxed | `rejects %s` (7 rows) |
+| the line parses in the ledger union; older parsers skip it | schema dropped from the union | `parses the line as a ledger line…`, `is skipped without error… (NFR-04)` |
+
+### session-reset-handler.ts → Common (agent-facing resume text, mandated)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| `new`/`clear` claim a pending handoff and name the archived path | claim skipped; text argument changed | `claims a pending handoff on %s…` (2 rows) |
+| the hook deadline reaches the claim | `deadline` not passed | `passes the hook deadline to the claim (CR-01)` |
+| no pending handoff → neutral | `archived === null` guard removed | `injects nothing without a pending handoff` |
+| compaction, restart off, or no session boot: neutral, no claim | `reason === 'compact'`, `restartMode !== 'handoff'`, or the capability check removed | `neither claims nor injects %s` (3 rows) |
+| snapshot mode: resume command on `new` and on compaction where compaction boots; neutral elsewhere (prd-12 FR-05) | `resumeText ??` order swapped; `COMPACTION_BOOT_HARNESSES` check removed or inverted | `in snapshot mode answers %s on %s with %j…` (3 rows) |
+
+### Actions
+- **Deleted (4):** session-counters `has no reset time without a reset line` (the empty-ledger `toEqual` asserts `lastResetAt: null`); statusline-summary `returns no window and no usage without statusline lines` (the empty-ledger `toEqual` asserts the null summary; skipping non-statusline lines is killed by the reset line in `keeps the window but drops the usage…`); statusline-line `accepts a line with the five recorded values` (`accepts the boundary values…` spreads the same `VALID` line); session-reset-handler `delivers a handoff to one session only` (same `archived === null` path as `injects nothing without a pending handoff`; once-only delivery is the store contract, asserted by `integration/node-handoff-store.test.ts` `lets only one of two concurrent claims deliver the handoff` and `node-handoff-store-lock.test.ts` `delivers each handoff once…`).
+- **Merged:** `keeps the session line across a reset` into the reset test. statusline-summary `keeps the window recorded before the reset`, `drops usage recorded before the reset` (identical arrangement), and `is filled by the ledger summary using the last reset` (which passed even with `-1` as the reset index) into one test through `summarizeLedger`. `uses the latest window, recorded after the reset` and `reads usage recorded after the reset with its timestamp` into one whole-object assertion. `does not count statusline lines as turns` into the session-counters count test (DEC-05, TC-02 in its title). The compaction, restart-off, and no-boot reset tests into one 3-row `it.each`.
+- **Rewritten:** the empty-ledger test asserts the whole summary; the count test asserts `lastReading` by identity. The fake handoff store no longer empties itself after a claim (only the deleted test needed it).
+- **Created (2 rows):** snapshot mode `compact` on `codex-cli` (resume text) and on `cursor` (neutral): line 28 (`COMPACTION_BOOT_HARNESSES`) had no killing test anywhere, and prd-12 FR-05 requires the resume instruction after compaction on a harness with session-start injection.
+- **Kept:** dedup and last-reset counters, null-overwrite summary, all statusline-line rejection rows and both parse tests (TC-01), the claim rows, the deadline and no-pending tests.
+
+### Production pending items
+- None.
 
 ### Questions `[?]`
 - None.

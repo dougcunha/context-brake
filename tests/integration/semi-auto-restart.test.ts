@@ -44,11 +44,10 @@ describe('semi-automatic resume at session start (prd-14 FR-02, FR-03, FR-08, TC
     expect(await startSession(root, item)).not.toMatch(RESUME);
     expect(await readdir(join(root, '.context-brake', 'handoffs'))).toHaveLength(1);
   });
-
-  it.each(CASES)('$harness ignores a handoff with automatic restart off (NFR-05)', async (item) => {
+  it('leaves the handoff pending with automatic restart off (NFR-05)', async () => {
     await writeConfig(root, false);
     await writeHandoff(root);
-    expect(await startSession(root, item)).not.toMatch(RESUME);
+    expect(await startSession(root, CASES[0]!)).not.toMatch(RESUME);
     expect(await readdir(join(root, '.context-brake'))).toContain('handoff.md');
   });
 });

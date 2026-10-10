@@ -66,7 +66,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 26 | integration/init-settings | init-auto-restart, init-config-repair, config-repair-errors, init-debug-mode, init-debug-mode-disable, init-legacy-turn-limits, init-max-restarts, init-snapshot | src/cli/commands, src/core/validation | G | 40 → 17 | done |
 | 27 | integration/claude-auto-restart | auto-restart-doctor, -lifecycle, -planner, -removal, -user-settings | harnesses/claude-code | G | 31 → 23 | done |
 | 28 | integration/claude-mod | claude-mod-bundle, -gates, -guards, -handoff, -restart | harnesses/claude-code/mod | G/C | 27 → 23 | done |
-| 29 | integration/omp-pi-restart | omp-restart, omp-restart-handoff, omp-session-switch, pi-restart, pi-restart-handoff, in-process-restart-plan, semi-auto-restart | harnesses/oh-my-pi, pi | G | 24 | pending |
+| 29 | integration/omp-pi-restart | omp-restart, omp-restart-handoff, omp-session-switch, pi-restart, pi-restart-handoff, in-process-restart-plan, semi-auto-restart (now in-process-restart, -gates) | harnesses/oh-my-pi, pi | G | 28 → 27 | done |
 | 30 | integration/runtime-harnesses | runtime-antigravity, -codex, -copilot, -cursor, -in-process, -host-process, claude-transcript-usage, codex-rollout-usage | src/infrastructure/runtime, harnesses | G | 33 | pending |
 | 31 | integration/runtime-policies | runtime-failure-policy, copilot-failure-policy, runtime-invalid-config, runtime-light-mode, light-mode-lifecycle, runtime-parallel-turns, runtime-retention, runtime-session-ledger, runtime-state-removal, brake-lifecycle, debug-mode-lifecycle, simulated-usage | src/infrastructure/runtime | G | 33 | pending |
 | 32 | integration/hooks-lifecycle-misc | retired-hook-events, -copilot, -harnesses, linked-project-root, -lifecycle, asset-currency-lifecycle, cli-shells, support-limitations, invalid-config, remove-invalid-config, node-process-runner | src/cli/commands, src/infrastructure/process | G | 26 | pending |
@@ -1626,7 +1626,7 @@ All five sources are Glue reached through `init`/`doctor`/`remove` in process (`
 ## 28. integration/claude-mod — done 2026-10-10
 
 **Baseline:** 27 runner tests across the 5 files, green (the table's 26 was the grep count). Stryker: n/a (Glue/Common).
-**Result:** 23 tests across 5 files, green. Scoped coverage proxy (`claude-code/mod/*.ts`, `core/services/restart-guards.ts`): lines 217/239 (90.79%) → 229/239 (95.81%); branches 81/93 (87.09%) → 84/97 (86.59%; v8 counts the branches of `onSessionStart`/`recordLoaded` only once they run, so the percentage dips while no covered branch was lost). Remaining gaps: the `catch` blocks of `onSessionStart`, `onTurnStart` and `onPromptSubmit` (`hooks.ts` 13-14, 21-22, 42-43), the JSON `catch` of `parseConfig` (`mod-config.ts` 25-26) and of `readLog` (`mod-log.ts` 21-22): defensive; the `onTurnComplete` catch is asserted by `logs an internal error and lets the turn go on when a read fails`; `host.ts` is type-only.
+**Result:** 23 tests across 5 files, green. Scoped coverage proxy (`claude-code/mod/*.ts`, `core/services/restart-guards.ts`): lines 217/239 (90.79%) → 229/239 (95.81%); branches 81/93 (87.09%) → 84/97 (86.59%; v8 counts the branches of `onSessionStart`/`recordLoaded` only once they run, so the percentage dips while no covered branch was lost). Remaining gaps: the `catch` blocks of `onSessionStart`, `onTurnStart` and `onPromptSubmit` (`hooks.ts` 13-14, 21-22, 42-43), the JSON `catch` of `parseConfig` (`mod-config.ts` 25-26) and of `readLog` (`mod-log.ts` 21-22): defensive; the `onTurnComplete` catch is asserted by `logs an internal error and lets the turn go on when a read fails`; `host.ts` is type-only. Commit `5d97c75`.
 
 The five files drive the real `register` through the simulated `$` host (`tests/fixtures/claude-mod-host.ts`, `claude-mod-scene.ts`) in process; the bundle test runs esbuild through the `bundleAsset` API. No file holds a `PROCESS_MARKERS` string, none is in `tests/test-lanes.ts`, and no file moved or was renamed (the prd-11 and prd-12 TechSpecs cite all five). The decisions the mod hands to core are unit-tested elsewhere: `decideRestart` in `unit/auto-restart-policy` (module 14), `handleTurnEnd` in `unit/restart-flow` (module 15). `restart-guards.ts` has no unit test; this module (`foldToolCalls`, `resetConsecutive`, `rollbackConsecutive` through the store) and the omp/pi restart suites (module 29) are its coverage.
 
@@ -1672,3 +1672,56 @@ The five files drive the real `register` through the simulated `$` host (`tests/
 
 ### Questions `[?]`
 - None.
+
+## 29. integration/omp-pi-restart — done 2026-10-10
+
+**Baseline:** 28 runner tests across the 7 files, green (the table's 24 was the grep count). Stryker: n/a (Glue/Common).
+**Result:** 27 tests across 5 files, green. Scoped coverage proxy (`oh-my-pi/restart.ts`, `pi/restart.ts`, `core/services/restart-guards.ts`, `restart-flow.ts`, `storage/node-handoff-store.ts`, `common/in-process-restart-state.ts`, `-support.ts`, `-log.ts`, `common/restart-asset-plan.ts`): lines 364/408 (89.21%) → 373/408 (91.42%); branches 116/150 (77.33%) → 126/160 (78.75%). Newly covered: `in-process-restart-support.ts` 14-20 and `in-process-restart-log.ts` 38-40 (the loaded header). Remaining gaps: `restart-flow.ts` 18-19, 36-37 (`reportRestart`/`guarded` catches, asserted by claude-mod `logs an internal error…` and `unit/restart-flow`), `restart-guards.ts` 26 (idle early return, defensive), `in-process-restart-state.ts` 54-56 (unreadable config rethrow), the `catch` of each `runRestartCommand` (`newSession` throwing), and `node-handoff-store.ts` claim paths (module 42's suites). Commit `<pending>`.
+
+Pi and Oh-My-Pi share `handleTurnEnd`, `restart-guards.ts`, and `common/in-process-restart-*`; each `restart.ts` wires its own host (stand-down, handoff store, turn start, guard store, open session). The shared flows now run as `it.each` over both harnesses through a uniform `RestartRun` adapter (`tests/helpers/in-process-restart-run.ts`, built by `omp-restart-world.ts` and `pi-restart-world.ts`); the Oh-My-Pi run presses Enter on the prefilled `/context-brake-restart` with the captured `input-interactive.json`. No file is in `tests/test-lanes.ts`. `restart-guards.ts` carry-forward (no unit test): `bumpConsecutive` → every `RESTARTED` row; `rollbackConsecutive` → `rolls the counter back and reports when Pi cancels…` (now at limit 1, so a missing rollback pauses the next restart) and claude-mod `rolls the counter back…`; `markSeeded` and `foldToolCalls` → the guard sequence (`SKIP_NO_PROGRESS`, then `RESTARTED` after a tool call) and claude-mod TC-05; `resetConsecutive` → the typed prompt in the same sequence and claude-mod guards; line 26 stays uncovered (defensive).
+
+### oh-my-pi/restart.ts, pi/restart.ts, common/in-process-restart-*.ts → Glue (integration through the simulated extension API)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| session start writes the loaded header doctor reads (READY vs NOT_LOADED) | `session_start` unregistered; `recordRestartLoaded` settings guard inverted | `$harness records the loaded restart module when a session starts (FR-11)` (2 rows) |
+| a valid signal opens one new session seeded once (Oh-My-Pi after one Enter) | `newSession` call removed; prefill text changed; seed not sent | `$harness opens one new session seeded once on a valid signal` (2 rows) |
+| loop guards: no tool call since the seed skips; the limit pauses; a typed prompt resets; the own seed prompt (Pi `extension` input, Oh-My-Pi Enter on the command) does not | `foldToolCalls`/`countToolCall` unwired; `onOpened` (markSeeded) removed; `source === 'interactive'` (Pi) or `!== COMMAND_TEXT` (Oh-My-Pi) dropped; `resetConsecutive` unwired | `$harness skips a turn without tool calls, stops at the consecutive limit, and resumes after a typed prompt` (2 rows) |
+| Oh-My-Pi keeps a person's draft and reports the restart as not carried out | editor check removed; `onRejected` not called | `leaves a busy Oh-My-Pi editor alone…` |
+| a cancelled Pi session rolls the counter back and reports | `result.cancelled` check removed; `rollbackConsecutive` removed | `rolls the counter back and reports when Pi cancels the new session` |
+| env switch, non-interactive mode, and restart off stand down; restart off writes no log | `standDown` wiring; `mode === 'tui'` → `true`; `settings === undefined` return removed | gates `stands down with CONTEXT_BRAKE_AUTO_RESTART=0` (2 rows), `stands down outside the interactive terminal`, `writes nothing with automatic restart off` |
+| handoff mode: missing, stale, fresh | handoff store mis-wired; `agent_start`/`turnStartedAt` unwired (undefined reads as stale, so only the fresh row kills it) | gates `skips without a handoff`, `skips a handoff written before the turn started`, `restarts with a handoff written during the turn` (2 rows each) |
+
+### common/restart-asset-plan.ts (through both planners) → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| restart file created only with restart on; deleted when turned off or on remove; nothing when absent | `autoRestart === true` → `!== false`; `pathExists` guard removed; a planner drops `planRestartRemoval` | `$harness plans the restart file only with restart on, and deletes it…` (2 rows) |
+| an edited restart file is kept with `MODIFIED_OWNED_ASSET` | `isModified` → `false` | `keeps a restart file the person edited and reports the conflict` |
+
+### oh-my-pi/runtime.ts (module 23's source) and the process-harness session start → Glue
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| `session_switch` after `/new` delivers the pending handoff (DEC-20) | `session_switch` unregistered or `resetOf` drops it | switch `delivers a pending handoff after a session switch…` |
+| the captured message-shaped `last_assistant_message` reaches the reset notice | `events.ts:48` reads only a string | switch `reads the final text from a message-shaped last_assistant_message` |
+| Codex, Cursor, Copilot deliver a pending handoff once and archive it | a harness's session-start renderer drops the resume text (Cursor's `additional_context` is covered only here) | semi `$harness delivers a pending handoff once and archives it` (3 rows) |
+| restart off leaves the handoff pending | composition passes a config with restart on | semi `leaves the handoff pending with automatic restart off (NFR-05)` |
+
+### Actions
+- **Deleted (2 rows):** semi `ignores a handoff with automatic restart off (NFR-05)` `cursor` and `github-copilot-cli` rows: the decision is `restartMode(config) !== 'handoff'` in `session-reset-handler.ts`, killed by `unit/session-reset-handler` `neither claims nor injects with automatic restart off (NFR-05)`; the kept codex-cli test checks the real config read end to end and keeps NFR-05.
+- **Merged (4 files → 2):** `omp-restart`, `omp-restart-handoff`, `pi-restart`, `pi-restart-handoff` (17 tests) → `in-process-restart.test.ts` (8) and `in-process-restart-gates.test.ts` (10), identifiers kept in the `describe` titles:
+  - `prefills the command, and Enter opens a seeded session` + Pi `opens one new session seeded once…` → one 2-row `it.each`.
+  - `counts restarts confirmed with Enter toward the consecutive limit` + Pi `stops at the consecutive limit and resumes after a typed prompt` + Pi `does not reset the guard for the seed prompt it sent itself` → one 2-row guard sequence asserting the full code list.
+  - both env-switch tests, Pi `stands down outside the interactive terminal`, Pi `does nothing with automatic restart off`, and the six handoff tests → one 10-row gates table.
+  - `in-process-restart-plan` `plans the restart file only with automatic restart on` + `deletes an installed restart file…` → one 2-row `it.each` (Oh-My-Pi deletion was not asserted before).
+- **Rewritten (1):** Pi `rolls back and reports when Pi cancels…` runs at `maxConsecutiveRestarts: 1`; at 2 the follow-up restart passed without the rollback.
+- **Created (2 rows):** `$harness records the loaded restart module when a session starts (FR-11)`: `recordRestartLoaded`/`recordInProcessLoaded` never ran in any suite (`doctor-remove-restart` writes the log by hand), and the header decides doctor's `AUTO_RESTART_READY` vs `AUTO_RESTART_NOT_LOADED` for Pi and Oh-My-Pi (module 28 added the same test for the Claude mod). The Oh-My-Pi rows of the guard sequence need no new `it`: they are folded rows that now also kill the Oh-My-Pi `onOpened` and typed-prompt mutants.
+- **Kept (4 tests, 6 rows):** `omp-session-switch` (2; the second is the only runtime-path assertion for the captured message-shaped stop payload, which `runtime-omp` and `reset-notice` send as a string), semi delivery (3 rows), `in-process-restart-plan` conflict test; the semi restart-off test kept its codex-cli row.
+- **Moved/renamed:** none besides the merge; `omp-restart-world.ts` and `pi-restart-world.ts` now export `createOmpWorld`/`createPiWorld` and `RestartRun` adapters; Pi's unused `notices` field dropped.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- prd-14 TechSpec TC-09 names `tests/integration/<harness>-restart.test.ts`; the Pi and Oh-My-Pi restart flows now live in `in-process-restart.test.ts` and `in-process-restart-gates.test.ts` (rows per harness). Confirm the TechSpec row can point there.

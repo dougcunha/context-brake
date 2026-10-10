@@ -1,6 +1,6 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { planOmpInstall, planOmpRemove } from '../../src/infrastructure/harnesses/oh-my-pi/planner.js';
 import { planPiInstall, planPiRemove } from '../../src/infrastructure/harnesses/pi/planner.js';
@@ -16,19 +16,20 @@ function restartChanges(plan: { changes: readonly { path: string; kind: string }
   return plan.changes.filter((change) => change.path === path).map((change) => change.kind);
 }
 
+const HARNESSES = [
+  { harness: 'pi', path: PI_RESTART, install: planPiInstall, remove: planPiRemove },
+  { harness: 'oh-my-pi', path: OMP_RESTART, install: planOmpInstall, remove: planOmpRemove },
+];
+
 describe('in-process restart file planning (prd-14 FR-07, FR-13, NFR-05, DEC-15)', () => {
-  it('plans the restart file only with automatic restart on', async () => {
-    expect(restartChanges(await planPiInstall({ projectRoot: root, autoRestart: true }), PI_RESTART)).toEqual(['create']);
-    expect(restartChanges(await planOmpInstall({ projectRoot: root, autoRestart: true }), OMP_RESTART)).toEqual(['create']);
-    expect(restartChanges(await planPiInstall({ projectRoot: root }), PI_RESTART)).toEqual([]);
-    expect(restartChanges(await planOmpInstall({ projectRoot: root, autoRestart: false }), OMP_RESTART)).toEqual([]);
-  });
-  it('deletes an installed restart file when restart is turned off or ContextBrake is removed', async () => {
-    await mkdir(join(root, '.pi', 'extensions'), { recursive: true });
-    await writeFile(join(root, PI_RESTART), 'export default () => {};\n', 'utf8');
-    expect(restartChanges(await planPiInstall({ projectRoot: root, autoRestart: false }), PI_RESTART)).toEqual(['delete']);
-    expect(restartChanges(await planPiRemove({ projectRoot: root }), PI_RESTART)).toEqual(['delete']);
-    expect(restartChanges(await planOmpRemove({ projectRoot: root }), OMP_RESTART)).toEqual([]);
+  it.each(HARNESSES)('$harness plans the restart file only with restart on, and deletes it when restart is turned off or ContextBrake is removed', async ({ path, install, remove }) => {
+    expect(restartChanges(await install({ projectRoot: root, autoRestart: true }), path)).toEqual(['create']);
+    expect(restartChanges(await install({ projectRoot: root }), path)).toEqual([]);
+    expect(restartChanges(await remove({ projectRoot: root }), path)).toEqual([]);
+    await mkdir(dirname(join(root, path)), { recursive: true });
+    await writeFile(join(root, path), 'export default () => {};\n', 'utf8');
+    expect(restartChanges(await install({ projectRoot: root, autoRestart: false }), path)).toEqual(['delete']);
+    expect(restartChanges(await remove({ projectRoot: root }), path)).toEqual(['delete']);
   });
   it('keeps a restart file the person edited and reports the conflict', async () => {
     await mkdir(join(root, '.pi', 'extensions'), { recursive: true });

@@ -1,25 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
-import { InvalidConfigurationError, parseConfiguration, type ConfigurationIssue } from '../../src/core/validation/configuration-validator.js';
+import { parseConfiguration } from '../../src/core/validation/configuration-validator.js';
+import { configurationIssues } from '../helpers/configuration-issues.js';
 
-function configurationIssues(input: unknown): ConfigurationIssue[] {
-  try {
-    parseConfiguration(input);
-  } catch (error) {
-    if (error instanceof InvalidConfigurationError) return error.issues;
-    throw error;
-  }
-  return [];
-}
+const ZOD_DEFAULT_RULE = 'Invalid input';
 
 describe('single-mode configuration (prd-12 FR-02, FR-04, TC-04)', () => {
-  it.each(['lightMode', 'fullMode', 'delegatedSnapshot', 'brake', 'stateStorage', 'instructionFiles'])('rejects the removed %s key and names it (prd-12 FR-02, TC-04)', (key) => {
-    const issues = configurationIssues({ ...DEFAULT_CONFIG, [key]: {} });
-    expect(issues).toContainEqual(expect.objectContaining({ path: key, rule: 'is not a recognized key' }));
-  });
-  it('names every removed key in the error message the CLI prints (prd-12 FR-02, TC-04)', () => {
-    expect(() => parseConfiguration({ ...DEFAULT_CONFIG, stateStorage: {}, runner: {} })).toThrow('Configuration validation failed:\n  stateStorage is not a recognized key\n  runner is not a recognized key');
-  });
   it('requires a snapshot command for a resume command (prd-12 FR-04, TC-04)', () => {
     const issues = configurationIssues({ ...DEFAULT_CONFIG, snapshot: { triggerZone: 'RED', resumeCommand: '/r' } });
     expect(issues).toContainEqual(expect.objectContaining({ path: 'snapshot.resumeCommand', rule: 'requires snapshot.command' }));
@@ -29,8 +15,14 @@ describe('single-mode configuration (prd-12 FR-02, FR-04, TC-04)', () => {
     delete file['snapshot'];
     expect(parseConfiguration(file).snapshot).toEqual({ triggerZone: 'RED' });
   });
-  it('rejects the removed runner key and names it (FR-02, TC-04)', () => {
-    const issues = configurationIssues({ ...DEFAULT_CONFIG, runner: { maxSessions: 20 } });
-    expect(issues.map((issue) => `${issue.path} ${issue.rule}`).join(' ')).toContain('runner');
+  it.each([
+    { case: '200 characters', command: 'x'.repeat(200), rules: [] },
+    { case: '201 characters', command: 'x'.repeat(201), rules: [ZOD_DEFAULT_RULE] },
+    { case: 'an empty command', command: '', rules: [ZOD_DEFAULT_RULE] },
+    { case: 'a leading space', command: ' /s', rules: ['must not have leading or trailing whitespace'] },
+    { case: 'two lines', command: '/s\n/t', rules: ['must be a single line'] },
+  ])('applies the snapshot command rules to $case (prd-12 FR-04)', ({ command, rules }) => {
+    const issues = configurationIssues({ ...DEFAULT_CONFIG, snapshot: { triggerZone: 'RED', command } });
+    expect(issues.map((issue) => [issue.path, issue.rule])).toEqual(rules.map((rule) => ['snapshot.command', rule]));
   });
 });

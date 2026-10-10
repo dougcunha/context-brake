@@ -4,9 +4,6 @@ import { sanitizeConfiguration } from '../../src/core/validation/configuration-s
 import { InvalidConfigurationError } from '../../src/core/validation/configuration-validator.js';
 
 describe('sanitizeConfiguration (prd-15 FR-02, TC-03)', () => {
-  it('returns a valid configuration untouched with nothing dropped (prd-15 FR-02, TC-03)', () => {
-    expect(sanitizeConfiguration(DEFAULT_CONFIG)).toEqual({ config: DEFAULT_CONFIG, dropped: [] });
-  });
   it('drops top-level and nested unrecognized keys across passes and lists them (prd-15 FR-02, TC-03)', () => {
     const zones = { ...DEFAULT_CONFIG.telemetry.zones, legacy: 1 };
     const input = { ...DEFAULT_CONFIG, stateStorage: { mode: 'x' }, runner: {}, telemetry: { ...DEFAULT_CONFIG.telemetry, zones } };

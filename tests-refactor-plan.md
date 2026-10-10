@@ -47,7 +47,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 64 → 51 | done |
 | 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 22 → 21 | done |
 | 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 → 0 | done |
-| 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 29 | pending |
+| 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 34 → 29 | done |
 | 11 | config/schemas-stores | schemas, changes-schema, project-config-store, manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 16 | pending |
 | 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 29 | pending |
 | 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 21 | pending |
@@ -595,7 +595,7 @@ Layout: `benchmark-fixtures.test.ts` imports every harness adapter from `src/inf
 ## 9. repo/docs-drift — done 2026-10-10
 
 **Baseline:** 24 runner tests across the 5 files, green (the plan's 24 matched). Stryker: n/a (Trivial).
-**Result:** 0 tests; the 5 files were deleted (Decision 4). Module coverage proxy before (`configuration.ts`, `harness.ts`, `registry.ts`): lines 98.11%, branches 57.57%; after: n/a, the module is empty. Combined proxy on those sources plus every `harnesses/*/adapter.ts`, run with the related suites (`unit/harness-adapters`, `unit/configuration`, `unit/configuration-snapshot`, `unit/support-service`, `integration/init-snapshot`, `unit/test-lanes`, `unit/e2e-smoke-set`): identical before and after the deletion, lines 53.82% → 53.82%, branches 94.11% → 94.11%, so no line or branch was executed only by these files. Commit `<hash>`.
+**Result:** 0 tests; the 5 files were deleted (Decision 4). Module coverage proxy before (`configuration.ts`, `harness.ts`, `registry.ts`): lines 98.11%, branches 57.57%; after: n/a, the module is empty. Combined proxy on those sources plus every `harnesses/*/adapter.ts`, run with the related suites (`unit/harness-adapters`, `unit/configuration`, `unit/configuration-snapshot`, `unit/support-service`, `integration/init-snapshot`, `unit/test-lanes`, `unit/e2e-smoke-set`): identical before and after the deletion, lines 53.82% → 53.82%, branches 94.11% → 94.11%, so no line or branch was executed only by these files. Commit `964af2f`.
 
 No test file lists these files: `git grep` outside `tasks/` finds no reference, so `tests/test-lanes.ts` and `e2e-smoke-set.test.ts` are unchanged (both green). ESLint is n/a, since no touched test file remains.
 
@@ -621,6 +621,65 @@ The only check with no equivalent is the README-to-adapter consistency itself (R
 ### Notes for later modules
 - TechSpec rows that now cite deleted files (`tasks/` not edited): prd-01.1 DEC-08 (and line 20); prd-02 DEC-14, TC-31, TC-34, the line-19 note, and the drift table at lines 403-404; prd-02.1 TC-22; prd-02.2 TC-19; prd-06 TC-15; prd-07 TC-14; prd-09 TC-14 (and line 88); prd-10 TC-18; prd-11 TC-26 (and line 185); prd-12 line 291; prd-17 TC-10. Done task files and code reviews under `tasks/` also name them (e.g. prd-01 `codereview_01/done/task_09.md`, `codereview_08/done/task_34.md`).
 - With these files gone, nothing checks README or docs against the code. If the user wants that kept, it belongs in a release or docs check, not in `npm test`.
+
+### Questions `[?]`
+- None.
+
+## 10. config/validation — done 2026-10-10
+
+**Baseline:** 34 runner tests across the 5 files, green (the plan's 29 was the grep count). Stryker: n/a (Common).
+**Result:** 29 tests across the same 5 files, green. Scoped coverage proxy (`contracts/configuration.ts`, `configuration-validator.ts`, `configuration-sanitizer.ts`, `config-legacy-checks.ts`): lines 100% → 100%; branches 87.5% → 91.02% (`configuration.ts` 86.36% → 100%: the trimmed and single-line `agentCommand` rules, lines 25-26, and the `yellowMaxPercentage < criticalPercentage` rule, line 37, had no test). The uncovered lines are unchanged in the other three files; their branch percentages moved by under one point (`config-legacy-checks.ts` 83.33% → 82.35%, `configuration-validator.ts` 88.88% → 88.46%) because v8 counted a different branch total, not because a branch was lost. Remaining gaps: `config-legacy-checks.ts` 17 (`??` fallbacks when only one of `criticalTurn`/`turnCeiling` is set) and 34 (`declaredContextWindow`, asserted by `unit/window-origin.test.ts` `keeps declaredContextWindow through a config rewrite`); `configuration-sanitizer.ts` 14 (defensive guard zod cannot reach); `configuration-validator.ts` 35-36 (the `'(root)'` and non-`input` fallbacks, defensive) and 39 (`invalidSyntaxError`, asserted by module 11's `unit/project-config-store.test.ts`). Commit `PENDING`.
+
+Layout: one file per source, except that the schema rules of `contracts/configuration.ts` stay split between `configuration.test.ts` (zones, legacy fields, `excludedHarnesses`) and `configuration-snapshot.test.ts` (the snapshot section, a `tests.md` high-risk area), the names the prd-12 and prd-15 TechSpecs cite. The `configurationIssues` and `parseError` helpers, duplicated in three files, moved to the new `tests/helpers/configuration-issues.ts`. No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
+
+### contracts/configuration.ts → Common (validation rules; snapshot settings get success, failure, boundary, and recovery rows)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the canonical defaults parse unchanged | a default changed so it fails its own schema | `parses the canonical defaults` (module 9 relies on it) |
+| green < yellow < critical percentages, green < yellow turns, turns set in pairs, each issue with path, received value, and rule | `>=` → `>` on any comparison; either pair check removed; `input` dropped | `rejects zones $zones with the received value and the rule (FR-02, TC-03)` (5 rows, two on the equal boundary) |
+| legacy `turnCeiling` and `criticalTurn` still parse | either field removed from the schema | `accepts a PRD-02 legacy configuration… (FR-09, TC-03)` |
+| `excludedHarnesses` accepts known unique ids, rejects duplicates and unknown ids | field removed; `uniqueCheck` dropped; `z.enum` → `z.string` | `accepts a unique list…`, `rejects $excluded and names the path (FR-05, TC-12)` (2 rows) |
+| a resume command needs a snapshot command | the `resumeCommand && !command` check removed | `requires a snapshot command for a resume command (prd-12 FR-04, TC-04)` (module 9 relies on it) |
+| a missing section defaults to a RED trigger without commands | `_default` or `DEFAULT_SNAPSHOT` changed | `defaults the snapshot section to a RED trigger without commands` |
+| a snapshot command has 1 to 200 characters, no surrounding whitespace, one line | `maxLength(200)` → 199 or 201; `minLength(1)` dropped; either custom check removed | `applies the snapshot command rules to $case (prd-12 FR-04)` (200 accepted, 201, empty, leading space, two lines) |
+
+### configuration-validator.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| only unrecognized keys: one line per key and the remediation; every removed prd-12 key is unrecognized | `isUnrecognizedKeysOnly` → `false`; join changed; a removed key re-added to the schema | `names every retired key on its own line and sets the remediation (prd-15 FR-01, TC-01; prd-12 FR-02, TC-04)` (7 keys) |
+| a nested key is named by its dotted path | `[...issue.path, key]` → `[key]`; join separator | `names a nested key with its dotted path` |
+| mixed issues: one-line message, no remediation | `every` → `some`; `isUnrecognizedKeysOnly` → `true` | `keeps the one-line message and no remediation when another issue exists` |
+
+### configuration-sanitizer.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| unrecognized keys at any depth are dropped over several passes and listed with their value | loop exits after one pass; `received` not recorded | `drops top-level and nested unrecognized keys across passes and lists them` |
+| the input is not mutated | `structuredClone` removed | `does not mutate its input` |
+| any other issue throws that pass's error, without remediation | `keyIssues.length === issues.length` → `true` | `throws the error of the failing pass when another issue exists` |
+
+### config-legacy-checks.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| retired 7/10/12 → retired message; custom limits or another critical turn → ignored message; one warning with the init remediation | ternary swapped; `hasRetiredTurns` or the critical comparison removed; a finding field changed | `reports one warning for turn limits $turns` (3 rows, exact finding) |
+| no turn ceiling or critical turn → no finding, also through doctor | guard inverted | `reports nothing for a normalized config` (module 4 relies on it) |
+| normalization drops the four fields and keeps custom green/yellow turns only | `keepPair` inverted; a telemetry key dropped | `drops the retired turn fields and keeps only custom green and yellow turns for $turns` (2 rows) |
+
+### Actions
+- **Deleted (12 runner tests):** configuration `rejects unknown fields` (the 7-key validator test asserts every root key is unrecognized, with the exact message); configuration-snapshot `rejects the removed %s key and names it` (6 rows) and `rejects the removed runner key and names it` (folded into the 7-key validator test, which kills the per-key re-add mutants with exact lines and now carries prd-12 FR-02, TC-04); `names every removed key in the error message the CLI prints` (a substring check of the same multi-line message the validator test pins line by line); validator `has no remediation for a syntax-style error` (its only input is a non-key issue; `keeps the one-line message and no remediation…` kills both `isUnrecognizedKeysOnly` mutants it could kill; `invalidSyntaxError` itself is never called there); sanitizer `returns a valid configuration untouched with nothing dropped` (the success return is asserted by `drops top-level and nested…`, which compares the whole result with `DEFAULT_CONFIG`); legacy `plans a normalized config update that is stable on a second pass` (tests `installation-builder.ts`; `integration/init-legacy-turn-limits.test.ts` `removes the four turn fields and keeps the other keys` and `changes nothing on a second run and doctor reports no legacy finding` (TC-20) assert both halves end to end).
+- **Merged:** `reports the received source value for invalid zone ordering`, `rejects non-increasing turn limits`, and `rejects a turn limit set without its pair` into one 5-row `it.each` asserting the whole issue list; the three `LEGACY_TURN_LIMITS` tests into a 3-row `it.each` on `checkLegacyTurnLimits` with the exact finding (the doctor wiring stays in `reports nothing for a normalized config` and in `integration/init-legacy-turn-limits.test.ts` `reports the retired defaults in doctor before migration`); the two `normalizeTurnLimits` tests into a 2-row `it.each`; the duplicate and unknown-id `excludedHarnesses` tests into a 2-row `it.each`.
+- **Rewritten:** the zone-ordering row moved from 40 to the equal boundary 49 (40 let `>=` → `>` survive); the unknown harness row asserted `not.toEqual([])` and now asserts the path and received value; the legacy parse test asserts the parsed telemetry instead of `turnCeiling` alone, and lost two assertions that killed no mutant (a mismatched `turnCeiling` producing no issue, and the `DEFAULT_CONFIG` constant).
+- **Created (7 runner rows):** the `yellowMaxPercentage: 75` zone row (line 37 had no test); the second turn-pair row (the two pair directions were two assertions in one test); the five `agentCommand` rows (carry-forward from module 2: the only tests of these rules were two assistant re-ask rows; lines 25-26 had none; the 200-character row is the accept side of the boundary).
+- **Kept:** the canonical defaults, TC-04 resume rule, snapshot default, `excludedHarnesses` accept, the nested-key and mixed-message validator tests, three sanitizer tests, `reports nothing for a normalized config`.
+
+### Production pending items
+- None.
+
+### Notes for later modules
+- zod/mini reports `minLength`/`maxLength`/`enum` failures as `Invalid input`, so the rule shown for a too-long or empty snapshot command does not name the limit (`snapshot-merge.ts`, module 13, prints it).
 
 ### Questions `[?]`
 - None.

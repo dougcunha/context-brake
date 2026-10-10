@@ -53,7 +53,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 28 → 28 | done |
 | 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 42 → 31 | done |
 | 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 61 → 41 | done |
-| 16 | storage/capabilities | link-capability, process-capability, git-capability | src/infrastructure (git, process, storage) | C | 19 | pending |
+| 16 | storage/capabilities | link-capability, process-capability, git-capability | tests/helpers (link-, process-, git-capability) | C | 19 → 9 | done |
 | 17 | install/services | detection-service, installation-summary, removal-service, removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 19 | pending |
 | 18 | harness/registration | harness-registry, harness-adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 27 | pending |
 | 19 | claude/statusline-planner | statusline-context-window, statusline-default, statusline-payload, statusline-planner, statusline-shell | src/infrastructure/harnesses/claude-code | C | 29 | pending |
@@ -913,7 +913,7 @@ Kept as a grep over the seven core restart files plus the rendered notices and s
 ## 15. restart/flow-arguments — done 2026-10-10
 
 **Baseline:** 61 runner tests across the 4 files, green (the plan's 30 was the grep count). Stryker: n/a (Common).
-**Result:** 41 tests (`auto-restart-merge` 9, `init-max-restarts-arguments` 23, `restart-flow` 7, plus 2 added to `init-arguments.test.ts`, which goes from 21 to 23), green. Scoped coverage proxy (`restart-flow.ts`, `init-arguments.ts`, `init-option-rules.ts`, `auto-restart-merge.ts`, `reset-notice.ts`): lines 94.44% → 96.91%; branches 90.81% → 95.41% (`auto-restart-merge.ts` branches 96.66% → 100%: the `keep` branch of `applyAutoRestart` is now asserted; `init-arguments.ts` 93.65% → 100% because the after-run includes `init-arguments.test.ts`, which holds the bridge-target tests). Remaining gaps: `restart-flow.ts` 36-37 (the `guarded` catch around `markSeeded`/`rollbackConsecutive`, a defensive guard, uncovered before too); `init-option-rules.ts` 20 (`--gitignore` with `--no-gitignore`, owned by module 40's `gitignore-merge.test.ts`); `reset-notice.ts` 8-10 (`renderResetNotice`, asserted by `reset-notice.test.ts`, module 36). Commit pending.
+**Result:** 41 tests (`auto-restart-merge` 9, `init-max-restarts-arguments` 23, `restart-flow` 7, plus 2 added to `init-arguments.test.ts`, which goes from 21 to 23), green. Scoped coverage proxy (`restart-flow.ts`, `init-arguments.ts`, `init-option-rules.ts`, `auto-restart-merge.ts`, `reset-notice.ts`): lines 94.44% → 96.91%; branches 90.81% → 95.41% (`auto-restart-merge.ts` branches 96.66% → 100%: the `keep` branch of `applyAutoRestart` is now asserted; `init-arguments.ts` 93.65% → 100% because the after-run includes `init-arguments.test.ts`, which holds the bridge-target tests). Remaining gaps: `restart-flow.ts` 36-37 (the `guarded` catch around `markSeeded`/`rollbackConsecutive`, a defensive guard, uncovered before too); `init-option-rules.ts` 20 (`--gitignore` with `--no-gitignore`, owned by module 40's `gitignore-merge.test.ts`); `reset-notice.ts` 8-10 (`renderResetNotice`, asserted by `reset-notice.test.ts`, module 36). Commit `7d10af2`.
 
 Layout: one file per source. The new `tests/unit/auto-restart-merge.test.ts` is the file the prd-16 TechSpec TC-01 names (prd-16 codereview_02 CR-03 flagged that the cases lived elsewhere); it holds the merge tests from `auto-restart-arguments.test.ts` and `init-max-restarts-arguments.test.ts`. The auto restart command-line tests went to `init-arguments.test.ts` (the file prd-11 TC-21 names; 70 non-blank lines). `init-max-restarts-arguments.test.ts` keeps the `--max-restarts`, `--interactive`, and `hasConfigurationFlag` tests and the two titles module 3 cites. `assertAutoRestartTarget` takes `getAllAdapters()` as collaborator data for the restart modes, as in module 2, so decision 3 does not apply; no file is in `tests/test-lanes.ts`.
 
@@ -972,3 +972,45 @@ Layout: one file per source. The new `tests/unit/auto-restart-merge.test.ts` is 
 ### Notes for later modules
 - Module 36: `reset-notice.test.ts` `reset signal detection` is now the only test of `endsWithResetSignal`; keep it in `tests/unit/` when decision 3 moves the per-harness notice tests.
 - Module 3's citations of `counts %j…` / `does not count %j…` still resolve to `init-max-restarts-arguments.test.ts`; the `--max-restarts` row is now `["--max-restarts","3"]`, the `--dry-run` row is unchanged.
+
+## 16. storage/capabilities — done 2026-10-10
+
+**Baseline:** 19 runner tests across the 3 files, green. Stryker: n/a (Common).
+**Result:** 9 tests (`link-capability` 4, `process-capability` 5), green; `git-capability.test.ts` and its helper removed. Scoped coverage proxy on the helpers (`coverage.include` is `src/**/*.ts`, so these helpers do not count toward the 80% gate; the proxy is informational): `link-capability.ts` lines 92.59% → 92.59%, branches 76.47% → 75% (same uncovered lines 20 and 35; v8 split one executed range of `linkPolicy` into two blocks before, both branches of the `fail`/`skip` ternary are still executed); `process-capability.ts` lines 91.48% → 91.48%, branches 95% → 100% (the `code === 0` side of the `close` handler is now asserted); `git-capability.ts` 61.76% → removed. Remaining gaps: `attemptLink` success (line 20, executed by the link integration suites), `requireLink`'s created-but-missing guard (line 35, defensive), `attemptGitProcess`/`attemptShellProcess` (48-53, one-line wrappers). Commit pending.
+
+The three files test test infrastructure (`tests/helpers/*-capability.ts`, the `tests.md` Platforms rule: skip locally with the reason, fail in CI), not `src/infrastructure/`, so decision 3 does not apply and they stay in `tests/unit/`. The plan row's Source column was corrected. No file is in `tests/test-lanes.ts`.
+
+### link-capability.ts → Common (`linkPolicy`, `requireLink`, `attemptLink`, `linkExists`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a created link proceeds | `if (attempt.created)` → `if (false)` | `proceeds when the link was created, in CI and locally` |
+| an unavailable link skips locally with the reason and fails in CI | `fail`/`skip` swapped in the ternary; `ciRequiresLinks` comparison changed; `ctx.skip` or the `throw` removed | `skips locally but fails in CI when the required link is unavailable` |
+| a failed attempt reports not created with platform and error detail | `created: false` → `true`; reason without `process.platform` | `captures platform and error detail when the link cannot be created` |
+| `linkExists` tells an existing path from a missing one | `.then(() => true)` → `false`; `.catch(() => false)` → `true` | `detects an existing path and a missing path without throwing` |
+
+### process-capability.ts → Common (`processPolicy`, `requireProcess`, `attemptExecutable`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| an available executable proceeds | `if (attempt.available)` → `if (false)` | `proceeds when the executable is available, in CI and locally` |
+| an unavailable executable skips locally and fails in CI | `fail`/`skip` swapped; `ciRequiresProcesses` comparison changed; `ctx.skip` or the `throw` removed | `skips locally but fails in CI when a required shell is unavailable` |
+| a zero exit is available | `code === 0` → `code !== 0` (every probe would skip locally, the silent pass `tests.md` forbids) | `reports a zero exit as available` |
+| a missing binary settles through the `error` event with file and platform | `error` handler removed; reason without file or platform | `reports a missing executable through the child error event` |
+| a hanging probe settles at the timeout | timer removed | `reports a hanging probe as timed out instead of blocking the suite` |
+
+### git-capability.ts → dead test infrastructure
+Its only consumer was IT-18 (prd-01 TechSpec, `git status --porcelain` over plan/checkpoint files), whose suite `tests/integration/gitignore-lifecycle.test.ts` was deleted with the plan and checkpoint files in `cca3a29` (prd-12). No file imports the helper; the one git-dependent suite left (`codex-hook-command-shells.test.ts`) uses `attemptGitProcess` + `requireProcess` from `process-capability.ts`, whose policy is tested above. The helper and its test are removed together.
+
+### Actions
+- **Deleted (11 runner tests):** `git-capability.test.ts` (5) with `tests/helpers/git-capability.ts`, dead since `cca3a29` (successor: `attemptGitProcess`/`requireProcess`, covered by `skips locally but fails in CI when a required shell is unavailable`). In `link-capability.test.ts` and `process-capability.test.ts`: `skips with the captured reason when a local environment cannot create the link` / `lacks the shell`, `fails in CI mode when a required link cannot be created` / `the shell is unavailable`, and `requires links` / `the process only for an explicit CI environment` (6): each is redundant with the routing test of its file (`skips locally but fails in CI when …`), which reaches the same `linkPolicy`/`processPolicy` branches and the `CI` comparison through the public `requireLink`/`requireProcess`, under `CI=false` and `CI=true`, with the reason pinned by `rejects.toThrow`.
+- **Merged (2 → 1, plus 1 row):** `reports a missing executable through the child error event without throwing` and `bounds a hanging probe with the timeout instead of blocking the suite` → `it.each` `reports $name` over `attemptExecutable`; the missing-binary row asserts `<file> is unavailable on <platform>` in one `toContain`.
+- **Created (1 runner row):** `reports a zero exit as available` (row of the same `it.each`): the `close` handler's `code === 0` had no killer, and the integration callers would turn that mutant into local skips instead of failures.
+- **Kept (4):** both `proceeds when …` policy tests, both routing tests, `captures platform and error detail …`, `detects an existing path and a missing path …`. The describes were merged into one per file, keeping `T14/CR-04` and `T35/CR-06`.
+
+### Production pending items
+- None in `src/`. Test infrastructure: `attemptShellProcess` in `process-capability.ts` has no caller (remove it); `link-capability.ts` and `process-capability.ts` duplicate `ciRequires*`/`*Policy` and could share one capability policy helper.
+
+### Questions `[?]`
+- `process-capability.test.ts` starts child processes (`attemptExecutable` spawns `node` and a missing binary) but is not in `PROCESS_LANE_FILES`; the lane test only scans test-file source for `node:child_process`, and the spawn lives in the helper. Move it to the process lane, or accept it in the parallel lane (3 short probes, ~0.3 s)?
+- The `CI === '1'` operand of `ciRequiresLinks`/`ciRequiresProcesses` has no killer; GitHub Actions sets `CI=true`, so it was left untested.

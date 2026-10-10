@@ -1,45 +1,38 @@
 import { describe, expect, it } from 'vitest';
+import type { ApplyOutcome, ChangePlan } from '../../src/core/contracts/changes.js';
 import type { DiagnosticFinding } from '../../src/core/contracts/diagnostics.js';
-import { buildDoctorReport, buildInstallReport, sortFindings } from '../../src/core/services/report-service.js';
+import { buildCliErrorDocument, buildDoctorReport, buildInstallReport, sortFindings } from '../../src/core/services/report-service.js';
 
-const sampleFindings: readonly DiagnosticFinding[] = [
-  {
-    code: 'HARNESS_WARNING', severity: 'warning', scope: 'harness', harness: 'github-copilot-cli',
-    path: null, message: 'Harness github-copilot-cli has an active limitation.',
-    impact: 'A hook timeout lets the tool call proceed.', remediation: null,
-  },
-  {
-    code: 'INTEGRATION_MISSING', severity: 'error', scope: 'harness', harness: 'claude-code',
-    path: '.claude/settings.json', message: 'The claude-code integration is missing.',
-    impact: 'ContextBrake cannot stop or annotate tool calls in this harness.',
-    remediation: 'Run context-brake init --harness claude-code --yes.',
-  },
-];
+const WARNING_FINDING: DiagnosticFinding = {
+  code: 'HARNESS_WARNING', severity: 'warning', scope: 'harness', harness: 'github-copilot-cli',
+  path: null, message: 'Harness github-copilot-cli has an active limitation.',
+  impact: 'A hook timeout lets the tool call proceed.', remediation: null,
+};
+const ERROR_FINDING: DiagnosticFinding = {
+  code: 'INTEGRATION_MISSING', severity: 'error', scope: 'harness', harness: 'claude-code',
+  path: '.claude/settings.json', message: 'The claude-code integration is missing.',
+  impact: 'ContextBrake cannot stop or annotate tool calls in this harness.',
+  remediation: 'Run context-brake init --harness claude-code --yes.',
+};
+const FLOOR_FINDING: DiagnosticFinding = { code: 'VERSION_FLOOR_UNVERIFIED', severity: 'warning', scope: 'harness', harness: 'claude-code', path: null, message: 'The minimum verified version for claude-code is unknown.', impact: 'Version compatibility cannot be verified.', remediation: 'Confirm the installed harness version and update ContextBrake.' };
+const EMPTY_PLAN: ChangePlan = { schemaVersion: 1, projectRoot: '/test', changes: [], conflicts: [], harnesses: [], requiresConfirmation: false };
 
 describe('UT-16: Canonical finding preservation (CA-17)', () => {
-  it('preserves finding properties identically in canonical doctor and install reports', () => {
-    const docReport = buildDoctorReport({ detections: [], integrations: [], findings: sampleFindings });
-    const installReport = buildInstallReport({
-      command: 'init', mode: 'dry_run', detections: [],
-      plan: { schemaVersion: 1, projectRoot: '/test', changes: [], conflicts: [], harnesses: [], requiresConfirmation: false },
-      outcomes: [], findings: sampleFindings,
-    });
-    expect(docReport.findings).toHaveLength(2);
-    expect(installReport.findings).toHaveLength(2);
-    expect(docReport.findings[0]?.code).toBe('INTEGRATION_MISSING');
-    expect(docReport.findings[0]?.severity).toBe('error');
-    expect(docReport.findings[0]?.impact).toBe('ContextBrake cannot stop or annotate tool calls in this harness.');
-    expect(docReport.findings[0]?.remediation).toBe('Run context-brake init --harness claude-code --yes.');
-    expect(installReport.findings[0]).toEqual(docReport.findings[0]);
-    expect(installReport.findings[1]).toEqual(docReport.findings[1]);
+  it('preserves finding properties identically, errors first, in canonical doctor and install reports', () => {
+    const docReport = buildDoctorReport({ detections: [], integrations: [], findings: [WARNING_FINDING, ERROR_FINDING] });
+    const installReport = buildInstallReport({ command: 'init', mode: 'dry_run', detections: [], plan: EMPTY_PLAN, outcomes: [], findings: [WARNING_FINDING, ERROR_FINDING] });
+    expect(docReport.findings).toEqual([ERROR_FINDING, WARNING_FINDING]);
+    expect(installReport.findings).toEqual(docReport.findings);
   });
 });
 
 describe('UT-16: Finding severity sorting (CA-17)', () => {
-  it('sorts findings by severity (error > warning > ok) then code', () => {
-    const sorted = sortFindings(sampleFindings);
-    expect(sorted[0]?.severity).toBe('error');
-    expect(sorted[1]?.severity).toBe('warning');
+  it('sorts findings by severity (error > warning > ok), then code, then path', () => {
+    const okFinding: DiagnosticFinding = { ...WARNING_FINDING, code: 'A_OK', severity: 'ok' };
+    const errorAtB: DiagnosticFinding = { ...ERROR_FINDING, path: 'b.json' };
+    const errorAtA: DiagnosticFinding = { ...ERROR_FINDING, path: 'a.json' };
+    const sorted = sortFindings([okFinding, FLOOR_FINDING, WARNING_FINDING, errorAtB, errorAtA]);
+    expect(sorted).toEqual([errorAtA, errorAtB, WARNING_FINDING, FLOOR_FINDING, okFinding]);
   });
 });
 
@@ -48,7 +41,7 @@ describe('TC-03: limitations create no finding and never change the exit code', 
     const report = buildInstallReport({
       command: 'init', mode: 'applied', detections: [], outcomes: [], findings: [],
       plan: {
-        schemaVersion: 1, projectRoot: '/test', changes: [], conflicts: [], requiresConfirmation: false,
+        ...EMPTY_PLAN,
         harnesses: [{
           harness: 'github-copilot-cli', outcome: 'planned', supportLevel: 'full',
           limitations: [{ capability: 'context_usage', impact: 'Context usage is not exposed to GitHub Copilot CLI hooks.' }],
@@ -61,17 +54,36 @@ describe('TC-03: limitations create no finding and never change the exit code', 
   });
 });
 
-const floorFinding: DiagnosticFinding = { code: 'VERSION_FLOOR_UNVERIFIED', severity: 'warning', scope: 'harness', harness: 'claude-code', path: null, message: 'The minimum verified version for claude-code is unknown.', impact: 'Version compatibility cannot be verified.', remediation: 'Confirm the installed harness version and update ContextBrake.' };
+describe('install report status from the apply outcomes', () => {
+  it.each([
+    ['failed', 'errors', 2],
+    ['skipped', 'warnings', 1],
+  ] as const)('reports a %s outcome as %s with exit code %i', (outcome, status, exitCode) => {
+    const outcomes: ApplyOutcome[] = [{ path: '.claude/settings.json', status: outcome, detail: null }];
+    const report = buildInstallReport({ command: 'init', mode: 'applied', detections: [], plan: EMPTY_PLAN, outcomes, findings: [] });
+    expect(report).toMatchObject({ status, exitCode });
+  });
+});
 
 describe('T12/CR-02: Doctor status honors warning and error precedence', () => {
   it('returns warnings/exit 1 for the unknown-floor warning and errors/exit 2 when an error exists', () => {
-    const warningReport = buildDoctorReport({ detections: [], integrations: [], findings: [floorFinding] });
-    const errorReport = buildDoctorReport({ detections: [], integrations: [], findings: [...sampleFindings, floorFinding] });
-
+    const warningReport = buildDoctorReport({ detections: [], integrations: [], findings: [FLOOR_FINDING] });
+    const errorReport = buildDoctorReport({ detections: [], integrations: [], findings: [WARNING_FINDING, ERROR_FINDING, FLOOR_FINDING] });
     expect(warningReport.status).toBe('warnings');
     expect(warningReport.exitCode).toBe(1);
     expect(errorReport.status).toBe('errors');
     expect(errorReport.exitCode).toBe(2);
     expect(errorReport.findings.some((f) => f.code === 'VERSION_FLOOR_UNVERIFIED')).toBe(true);
+  });
+});
+
+describe('CLI error document exit codes', () => {
+  it.each([
+    ['INVALID_ARGUMENTS', 64],
+    ['INTERRUPTED', 130],
+    ['UNEXPECTED_ERROR', 2],
+  ] as const)('maps %s to exit code %i', (code, exitCode) => {
+    const document = buildCliErrorDocument({ command: 'doctor', code, message: 'stopped' });
+    expect(document).toEqual({ schemaVersion: 1, command: 'doctor', status: 'error', exitCode, error: { code, message: 'stopped' } });
   });
 });

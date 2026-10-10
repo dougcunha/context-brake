@@ -41,7 +41,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 1 | cli/args-output | init-arguments, main, exit-codes, cli-output-text, doctor-mode-text | src/cli, src/cli/output | G/C | 42 → 41 | done |
 | 2 | cli/assistant-questions | assistant-questions, -gitignore, -invalid, -state | src/cli/assistant | G/C | 28 → 30 | done |
 | 3 | cli/assistant-terminal | assistant-output, clack-prompt-port, equivalent-command, terminal | src/cli/assistant, src/cli | C | 35 → 29 | done |
-| 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 | pending |
+| 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 → 35 | done |
 | 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 | pending |
 | 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 | pending |
 | 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 36 | pending |
@@ -217,7 +217,7 @@ Prompt text only; asserted through the prompts above.
 ## 3. cli/assistant-terminal — done 2026-10-10
 
 **Baseline:** 35 runner tests across the 4 files, green (the plan's 23 was the grep count). Stryker: n/a (Common).
-**Result:** 29 tests across 5 files, green. Scoped coverage proxy (`summary.ts`, `equivalent-command.ts`, `clack-prompt-port.ts`, `prompt-port.ts`, `prompt-factory.ts`, `terminal.ts`): lines 97.2% → 97.2%; branches 93.06% → 99.04% (`summary.ts` 77.77% → 100%). The remaining gaps are by design: `detectTerminal` (`terminal.ts` 9-10) reads the real `process` streams, and the `catch` fallback of `createPromptPort` (`prompt-factory.ts` 15-16) is unreachable without a module mock of `@clack/prompts`. Commit pending.
+**Result:** 29 tests across 5 files, green. Scoped coverage proxy (`summary.ts`, `equivalent-command.ts`, `clack-prompt-port.ts`, `prompt-port.ts`, `prompt-factory.ts`, `terminal.ts`): lines 97.2% → 97.2%; branches 93.06% → 99.04% (`summary.ts` 77.77% → 100%). The remaining gaps are by design: `detectTerminal` (`terminal.ts` 9-10) reads the real `process` streams, and the `catch` fallback of `createPromptPort` (`prompt-factory.ts` 15-16) is unreachable without a module mock of `@clack/prompts`. Commit `27459fb`.
 
 Layout: one file per source, keeping the names the prd-16 TechSpec cites (TC-04 → `terminal.test.ts`, TC-08 → `equivalent-command.test.ts`, TC-13 → `assistant-output.test.ts`). The new `prompt-port.test.ts` holds `ReadlinePromptPort`, both branches of `confirmWithPort`, and `createPromptPort`; `clack-prompt-port.test.ts` keeps the port plus the `askValidated` rich-path test. No test imports `src/infrastructure/` (decision 3 does not apply), and every file runs in the parallel lane, so `tests/test-lanes.ts` is unchanged.
 
@@ -275,6 +275,76 @@ Layout: one file per source, keeping the names the prd-16 TechSpec cites (TC-04 
 - **Rewritten (6):** `--interactive forces the assistant` passed `['--interactive']` on a terminal, which `shouldRunAssistant` returns `true` for even without the early return, so it killed nothing; it now adds `--harness cursor`, so only the early return makes it pass. `starts on a terminal for %j` became a plain `it` after its second row went. The clack confirm test now passes `context: []` (what `confirmSpec` builds) and asserts that neither log is called. The three summary tests asserted a few lines with `toContain` (the bridge, debug, and excluded-suffix lines were unasserted); they now assert the exact lines, and the NO_COLOR test asserts the whole two-line block.
 - **Created (1):** `states declined choices, no harness, and the default restart limit in words (FR-06, TC-13)`: six branches of `summary.ts` had no test.
 - **Kept (17):** the remaining terminal rows, the clack multiselect, cancel, and context tests, the `askValidated` rich-path test, and the remaining equivalent-command tests.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.
+
+## 4. doctor/service — done 2026-10-10
+
+**Baseline:** 29 runner tests across the 7 files, green (`doctor-context-window.test.ts` came from module 1). Stryker: n/a (Common).
+**Result:** 35 tests across the same 7 files, green. Scoped coverage proxy (`doctor-service.ts`, `doctor-checks.ts`, `doctor-report-extras.ts`, `report-service.ts`, `active-sessions.ts`, `asset-currency.ts`): lines 75.09% → 78.33%; branches 83.33% → 88.52% (`doctor-service.ts` 70.96% → 85.29%, `report-service.ts` lines 86.15% → 96.92%, `doctor-report-extras.ts` 85.71% → 100%). The remaining gaps: `assetCurrencyFindings` and `protectModifiedAssets` (`asset-currency.ts` 18-88) run only in `integration/doctor-asset-currency.test.ts` (current, outdated, modified across three harnesses) and `integration/asset-currency-lifecycle.test.ts` (`MODIFIED_OWNED_ASSET`); the `InvalidConfigurationError.remediation` branch (`doctor-checks.ts` 9, prd-15 DEC-01) is asserted by `integration/config-repair-errors.test.ts`; `cleanPlan`'s change mapping (`report-service.ts` 41-42) is parsed by every `init --json` integration test; the `doctor-service.ts` branches left are explicit harnesses, exclusion, and the no-project finding, covered by `integration/doctor-exclusion.test.ts` and `integration/init-detection.test.ts`. Commit pending.
+
+Layout: one file per source, except `doctor-context-window.test.ts`, which keeps its name because the prd-09 and prd-12 TechSpecs cite it; it tests the `doctor-report-extras.ts` section and finding through `diagnoseProject`, where the claude-code targeting lives. Both doctor files hand-rolled the same fake `HarnessAdapter`; it moved to the new `tests/helpers/fake-doctor-adapter.ts`. `diagnostics.test.ts` tests the `src/core/contracts/diagnostics.ts` schemas and stays as is. No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
+
+### doctor-service.ts → Common (orchestration with its own decisions: integration state, floor warning, targets, overhead)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| `INTEGRATION_MISSING` → missing, `INVALID_HARNESS_CONFIG`/`ASSET_MISSING` → broken; errors and exit 2; no overhead measured; floor warning kept | either `deriveIntegrationState` branch removed; `state === 'installed' &&` removed | `reports %s as a %s integration with exit code 2, unmeasured, keeping the floor warning (T12/CR-02)` (3 rows, UT-13) |
+| an unknown floor emits one warning, exit 1 | `minimumVersion !== null` inverted; push removed | `emits exactly one VERSION_FLOOR_UNVERIFIED warning…` |
+| a verified floor is healthy and the overhead is measured | guard removed; `overhead = await measure` dropped | `reports a healthy measured integration without the warning…` |
+| a failing measurement yields a null overhead, not a crash | `try/catch` removed | `reports a null overhead and stays healthy when the measurement fails` |
+| no config: defaults, `CONFIG_MISSING`, targets fall back to project detections, no snapshot section | line 78 fallback removed; `config === null` guard in `snapshotReport` removed | `diagnoses the project-detected harnesses with a missing-configuration warning…` |
+| runtime errors become the only extra finding | `if (input.runtimeState)` push removed | `adds only the runtime error finding… (prd-12 FR-09)` (T05) |
+
+### doctor-report-extras.ts → Common, tested through `diagnoseProject`
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| context window only when claude-code is targeted | `targetIds.has('claude-code')` → `true`/`false` | `includes the section…`, `omits the section…` (TC-17) |
+| bridge absent warns, installed stays silent | `bridge !== 'absent'` inverted | `warns with Claude Code active and the bridge absent…`, `stays silent…` (TC-14) |
+
+### doctor-checks.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| an error or a missing config yields one finding with severity and remediation, and the defaults as `effective` | `if (error)`/`if (!config)` removed; severity or remediation literal; `effective` → `config` | `reports %s configuration and falls back to the defaults` (2 rows) |
+
+### report-service.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| both builders sort and keep findings identical | `sortFindings` call dropped in one builder | `preserves finding properties identically, errors first…` (UT-16) |
+| severity, then code, then path | either tie-break removed; severity order changed | `sorts findings by severity (error > warning > ok), then code, then path` |
+| limitations never change install status | `success` literal changed | `keeps a success install report…` (TC-03) |
+| failed outcome → errors 2, skipped → warnings 1 | either `outcomes.some` removed | `reports a %s outcome as %s with exit code %i` (2 rows) |
+| doctor warning and error precedence | `deriveDoctorStatus` checks swapped | `returns warnings/exit 1… and errors/exit 2…` (T12/CR-02) |
+| CLI error exit codes 64, 130, 2 | either ternary changed | `maps %s to exit code %i` (3 rows) |
+
+### active-sessions.ts → Common
+
+Date arithmetic would make it Critical in the `ts-tests` triage, but it only filters a diagnostic list (no brake, no persistence), so it stays Common as planned; the 30-minute boundary is now covered.
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| 30-minute window inclusive, newest first | `>=` → `>`; sort removed | `lists recent sessions newest first, keeps one at exactly 30 minutes, and drops older ones` |
+| at most 10, unparseable ledgers excluded, usage source selection, reset → null, bridge-only → null session id | unchanged from baseline | the six other tests, kept |
+
+### asset-currency.ts → Common (`classifyAssetCurrency`); the two planners are covered by integration (see Result)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| current / outdated / modified | check order swapped; comparisons changed | `classifies installed $installed with manifest $manifest and expected $expected as $currency` (3 rows) |
+
+### Actions
+- **Deleted (2):** doctor-checks `reports nothing for the default configuration` (`config-legacy-checks.test.ts` `reports nothing for a normalized config` makes the same call and assertion); doctor-service `emits at most one warning per integration across multiple diagnosed harnesses` (kills no mutant the single-harness `emits exactly one…` does not; the loop over several adapters runs in `integration/doctor-asset-currency.test.ts`).
+- **Merged:** doctor-service `keeps error precedence when the integration also has an error finding` into the UT-13 `it.each` (same arrangement as `produces INTEGRATION_MISSING…`; its floor assertion moved there). The three asset-currency tests into one `it.each`; the `stale` manifest assertion went (kills nothing the `a/a/a` row does not). The two doctor-checks tests into one `it.each`.
+- **Rewritten (7):** doctor-checks rows now assert severity, remediation, and `effective` (they asserted the code only). UT-16 asserted `[0]` fields; it now asserts the full sorted list. The sort test asserted `[0]`/`[1]` severity, so the code and path tie-breaks survived; it now sorts five findings that tie on severity and code. The T05 test asserted `some` plus a `BRAKE_` filter no code can fail; it now asserts the exact finding list. The floor test lost two `toBeTruthy()` assertions. The bridge test lost `'brakeWindow' in report` (not a schema key; the parse would reject it). The active-sessions window test gained the 30-minute row.
+- **Created (9 runner tests):** state rows `INVALID_HARNESS_CONFIG` and `ASSET_MISSING` (no test asserted `broken`); measurement failure; missing configuration; install status from outcomes (2 rows); `buildCliErrorDocument` (3 rows: `130` was asserted nowhere). The verified-floor test now also passes a measurer and asserts the overhead.
+- **Kept:** `diagnostics.test.ts` (2), the TC-03 and T12/CR-02 report tests, the context window tests, six active-sessions tests.
 
 ### Production pending items
 - None.

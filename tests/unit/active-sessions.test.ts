@@ -14,9 +14,9 @@ function ledger(sessionId: string, lines: LedgerLine[]): HarnessLedger { return 
 function sessions(ledgers: HarnessLedger[]) { return activeSessions(ledgers, { now: NOW, zones: ZONES }); }
 
 describe('active sessions window and order (TC-16, FR-14, PD-05)', () => {
-  it('lists recent sessions newest first and drops those older than 30 minutes', () => {
-    const result = sessions([ledger('old', [toolLine(minutesAgo(31))]), ledger('five', [toolLine(minutesAgo(5))]), ledger('one', [toolLine(minutesAgo(1))])]);
-    expect(result.map((session) => session.sessionId)).toEqual(['one', 'five']);
+  it('lists recent sessions newest first, keeps one at exactly 30 minutes, and drops older ones', () => {
+    const result = sessions([ledger('old', [toolLine(minutesAgo(31))]), ledger('edge', [toolLine(minutesAgo(30))]), ledger('five', [toolLine(minutesAgo(5))]), ledger('one', [toolLine(minutesAgo(1))])]);
+    expect(result.map((session) => session.sessionId)).toEqual(['one', 'five', 'edge']);
     expect(result[0]?.lastActivityAt).toBe(minutesAgo(1));
   });
   it('keeps at most 10 sessions', () => {

@@ -16,6 +16,20 @@ describe('JSONC comment safety (CR-01, F2)', () => {
   it('removes a middle property whose comment precedes its comma', () => {
     expect(removeJsonProperty('{"a":1, "b":2 /* note */, "c":3}', ['b'])).toBe('{"a":1 /* note */, "c":3}');
   });
+
+  it.each([
+    { label: 'property', remove: (text: string) => removeJsonProperty(text, ['a']), input: '{"a":1 /*x*/,"b":2}', expected: '{ /*x*/"b":2}' },
+    { label: 'array item', remove: (text: string) => removeJsonArrayItem(text, [], (v) => v === 1), input: '[1 /*x*/,2]', expected: '[ /*x*/2]' },
+  ])('removes a first $label whose comment precedes its comma', ({ remove, input, expected }) => {
+    expect(remove(input)).toBe(expected);
+  });
+
+  it.each([
+    { label: 'array item', remove: (text: string) => removeJsonArrayItem(text, ['items'], (v) => v === 2), input: '{\n  "items": [\n    1,\n    2\n    // c\n  ]\n}\n', expected: '{\n  "items": [\n    1\n    // c\n  ]\n}\n' },
+    { label: 'property', remove: (text: string) => removeJsonProperty(text, ['b']), input: '{\n  "a": 1,\n  "b": 2\n  // c\n}\n', expected: '{\n  "a": 1\n  // c\n}\n' },
+  ])('drops the previous comma when removing a last $label followed by a comment line', ({ remove, input, expected }) => {
+    expect(remove(input)).toBe(expected);
+  });
 });
 
 describe('minified removal safety (CR-01)', () => {

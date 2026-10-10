@@ -1,6 +1,7 @@
 import { findNodeAtLocation, getNodeValue } from 'jsonc-parser';
 import { parseAndValidateJson } from './json-validator.js';
-import { detectEol, detectIndent, formatJsonValue, insertArrayItem, insertObjectEntry, removeNodeSpan } from './json-span-utils.js';
+import { detectEol, detectIndent, formatJsonValue, insertArrayItem, insertObjectEntry } from './json-span-utils.js';
+import { removeNodeSpan } from './json-node-removal.js';
 
 export { InvalidJsonDocumentError, validateJsonDocument, parseAndValidateJson } from './json-validator.js';
 

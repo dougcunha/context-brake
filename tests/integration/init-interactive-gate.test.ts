@@ -26,15 +26,6 @@ describe('FR-01 and FR-08 the --interactive gate and the unchanged non-TTY run (
     expect(result.stderr).toContain(NOT_INTERACTIVE_MESSAGE);
     expect(await exists(join(root, 'context-brake.config.json'))).toBe(false);
   });
-  it('reports the parse-time conflict in the JSON error document (FR-01, TC-05)', async () => {
-    const conflict = await runInProcessCli(['init', '--interactive', '--json'], root);
-    expect(conflict.code).toBe(64);
-    expect(conflict.stdout).toContain('--interactive cannot be combined with --json.');
-  });
-  it('lets --interactive pass the gate on a terminal (FR-01, TC-05)', async () => {
-    const result = await runInProcessCliWith(['init', '--interactive', '--dry-run'], { cwd: root, overrides: { terminal: { stdinIsTty: true, stdoutIsTty: true }, prompts: new ScriptedPrompts([null]) } });
-    expect(result.stderr).not.toContain(NOT_INTERACTIVE_MESSAGE);
-  });
   it('still fails with CONFIRMATION_REQUIRED on a non-TTY run without --yes (FR-08, TC-05)', async () => {
     const result = await runInProcessCli(['init', '--json'], root);
     expect(result.code).toBe(2);

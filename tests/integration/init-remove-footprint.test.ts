@@ -29,15 +29,11 @@ describe('E2E-07: init and remove without support files (FR-08, DEC-04, DEC-11, 
   beforeEach(async () => { tempDir = await createClaudeFixture(); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('installs no protocol file, instruction block, or gitignore change', async () => {
+  it('installs no protocol file, instruction block, or gitignore change, then remove deletes the manifest assets, the config, and the owned runtime files', async () => {
     expect((await runInProcessCli(['init', '--yes'], tempDir)).code).toBe(0);
     expect(await exists(join(tempDir, 'docs/context-brake-protocol.md'))).toBe(false);
     expect(await exists(join(tempDir, '.gitignore'))).toBe(false);
     expect(await readFile(join(tempDir, 'CLAUDE.md'), 'utf8')).toBe(CLAUDE_MD);
-  });
-
-  it('deletes the manifest assets, the config, and the owned runtime files', async () => {
-    await runInProcessCli(['init', '--yes'], tempDir);
     await seedRuntimeAndPlan(tempDir);
     expect((await runInProcessCli(['remove', '--yes'], tempDir)).code).toBe(0);
     expect(await exists(join(tempDir, '.claude/hooks/context-brake.mjs'))).toBe(false);
@@ -63,7 +59,6 @@ describe('E2E-08: Doctor JSON validates schema (CA-14, CA-15, CA-16, CA-17, CA-1
     await mkdir(join(tempDir, '.claude'), { recursive: true });
     await writeFile(join(tempDir, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
     await runInProcessCli(['init', '--yes'], tempDir);
-
     const docResult = await runInProcessCli(['doctor', '--json'], tempDir);
     expect(docResult.code).toBe(1);
     const parsed = JSON.parse(docResult.stdout) as unknown;

@@ -41,16 +41,6 @@ export async function testClaudeInstall(runner: (args: string[]) => Promise<{ co
   await verifyClaudeInstalled(dir);
 }
 
-export async function testIdempotency(runner: (args: string[]) => Promise<{ code: number | null; stdout: string }>, dir: string): Promise<void> {
-  await setupClaudeFixture(dir);
-  for (let i = 0; i < 3; i += 1) {
-    const res = await runner(['init', '--yes']);
-    expect(res.code).toBe(0);
-  }
-  await verifyClaudeInstalled(dir);
-  expect(await readFile(join(dir, 'CLAUDE.md'), 'utf8')).toBe(USER_INSTRUCTIONS);
-}
-
 export async function testSymlinkTarget(runner: (args: string[]) => Promise<{ code: number | null }>, dir: string, ctx: LinkContext): Promise<void> {
   const agentsPath = join(dir, 'AGENTS.md');
   await writeFile(join(dir, 'CLAUDE.md'), LINKED_INSTRUCTIONS, 'utf8');

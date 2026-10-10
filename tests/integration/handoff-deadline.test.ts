@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,7 +9,6 @@ import type { SessionLedger } from '../../src/core/contracts/session-ledger.js';
 import { DeadlineExceededError } from '../../src/core/services/failure-policy.js';
 import { handleSessionReset } from '../../src/core/services/session-reset-handler.js';
 import { HookDeadline } from '../../src/infrastructure/runtime/hook-deadline.js';
-import { runProcessHook, type ProcessHarnessAdapter } from '../../src/infrastructure/runtime/process-hook-host.js';
 import { NodeHandoffStore } from '../../src/infrastructure/storage/node-handoff-store.js';
 
 const KEY: SessionKey = { harness: 'codex-cli', sessionId: 'deadline-session', agentId: null };
@@ -20,15 +19,12 @@ const AT = new Date('2026-10-07T12:00:00.000Z');
 const DEADLINE_MS = 40;
 const SLOW_MS = 150;
 
-function sleep(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => { setTimeout(resolve, milliseconds); });
-}
 function ledgerTaking(milliseconds: number): SessionLedger {
   return {
     readLines: async () => [],
     appendSessionLine: async () => undefined,
     appendToolLine: async () => undefined,
-    appendResetLine: async () => { if (milliseconds > 0) await sleep(milliseconds); },
+    appendResetLine: async () => { if (milliseconds > 0) await new Promise((resolve) => { setTimeout(resolve, milliseconds); }); },
     appendStatuslineLine: async () => undefined,
     pruneStaleSessions: async () => 0,
   };
@@ -42,19 +38,11 @@ function elapsingAfterSecondCheck(deadline: HookDeadline): ClaimDeadline {
   }
   return { isExpired: () => elapseAfter(deadline.isExpired()), commit: () => elapseAfter(deadline.commit()) };
 }
-function slowStartAdapter(): ProcessHarnessAdapter {
-  return {
-    descriptor: DESCRIPTOR,
-    mapEvent: () => START,
-    mapInput: async () => { await sleep(SLOW_MS); return {}; },
-    renderDecision: (decision) => JSON.stringify(decision),
-    resolveProjectRoot: async () => root,
-  };
-}
 
 let root: string;
 let pending: string;
 beforeEach(async () => {
+  vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
   root = await mkdtemp(join(tmpdir(), 'cb-handoff-deadline-'));
   pending = join(root, '.context-brake', 'handoff.md');
   await mkdir(join(root, '.context-brake'), { recursive: true });
@@ -66,27 +54,22 @@ afterEach(async () => {
 });
 
 describe('session start past its deadline keeps the handoff (prd-14 FR-03, codereview_03 CR-01)', () => {
-  it('answers through the deadline and leaves the handoff pending for the next session', async () => {
+  it('answers through the deadline in the ledger phase and leaves the handoff pending for the next session', async () => {
     const deadline = new HookDeadline(DEADLINE_MS, 'engine');
     const handoff = new NodeHandoffStore(root, { now: () => AT });
     const work = handleSessionReset({ descriptor: DESCRIPTOR, config: HANDOFF_CONFIG, ledger: ledgerTaking(SLOW_MS), handoff }, START, { onPhase: deadline.mark, deadline });
-    await expect(deadline.run(work)).rejects.toBeInstanceOf(DeadlineExceededError);
+    const answer = deadline.run(work).catch((error: unknown) => error);
+    await vi.advanceTimersByTimeAsync(SLOW_MS);
+    const error = await answer;
+    expect(error).toBeInstanceOf(DeadlineExceededError);
+    expect(error).toMatchObject({ phase: 'ledger' });
     await expect(work).resolves.toEqual({ kind: 'neutral' });
     await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
-  });
-  it('keeps the handoff pending when a process hook session start expires before the claim', async () => {
-    await writeFile(join(root, 'context-brake.config.json'), JSON.stringify(HANDOFF_CONFIG), 'utf8');
-    const context = { argv: ['node', 'hook', 'SessionStart'], readStdin: async () => '{}', writeStdout: () => undefined, writeStderr: () => undefined, deadlineMilliseconds: DEADLINE_MS, sessionStartDeadlineMilliseconds: DEADLINE_MS };
-    await runProcessHook(slowStartAdapter(), context);
-    await sleep(SLOW_MS * 3);
-    await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
-    expect(await readdir(join(root, '.context-brake', 'handoffs')).catch(() => [])).not.toContain('20261007T120000.000Z.md');
   });
 });
 
 describe('a committed claim outlives the deadline (prd-14 FR-02, FR-03, codereview_05 CR-01)', () => {
   it('delivers the resume text when the deadline elapses after the commit, during the prune and the lock release', async () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const deadline = new HookDeadline(DEADLINE_MS, 'engine');
     const handoff = new NodeHandoffStore(root, { now: () => AT });
     const work = handleSessionReset({ descriptor: DESCRIPTOR, config: HANDOFF_CONFIG, ledger: ledgerTaking(0), handoff }, START, { deadline: elapsingAfterSecondCheck(deadline) });

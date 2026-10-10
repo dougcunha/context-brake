@@ -10,7 +10,6 @@ import { NodeHandoffStore } from '../../src/infrastructure/storage/node-handoff-
 const AT = new Date('2026-10-07T12:00:00.000Z');
 const clock = { now: () => AT };
 const OLDEST = '20250101T000000.000Z.md';
-const EXPIRED: ClaimDeadline = { isExpired: () => true, commit: () => false };
 
 let root: string;
 let archive: string;
@@ -39,16 +38,16 @@ function expiresAfter(calls: number): ClaimDeadline {
   return { isExpired, commit: () => !isExpired() };
 }
 
-describe('NodeHandoffStore keeps an undelivered handoff pending (prd-14 FR-03, codereview_03 CR-01)', () => {
-  it('does not move the handoff when the deadline already expired', async () => {
-    await expect(new NodeHandoffStore(root, clock).claim(EXPIRED)).resolves.toBeNull();
+describe('NodeHandoffStore keeps an undelivered handoff pending and prunes only a delivered claim (prd-14 FR-03, codereview_03 CR-01, codereview_04 CR-01)', () => {
+  it.each([
+    ['already expired', 0],
+    ['expires during the move', 1],
+  ])('keeps the handoff and a full archive when the deadline %s', async (_label, checksBeforeExpiry) => {
+    await writeFile(join(archive, OLDEST), 'old');
+    const before = await fillArchive();
+    await expect(new NodeHandoffStore(root, clock).claim(expiresAfter(checksBeforeExpiry))).resolves.toBeNull();
     await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
-    expect(await readdir(archive)).toEqual([]);
-  });
-  it('moves the handoff back when the deadline expires during the move', async () => {
-    await expect(new NodeHandoffStore(root, clock).claim(expiresAfter(1))).resolves.toBeNull();
-    await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
-    expect(await readdir(archive)).toEqual([]);
+    expect((await readdir(archive)).sort()).toEqual(before);
   });
   it('keeps a newer handoff and the archived one when both exist at restore time', async () => {
     const check = expiresAfter(1);
@@ -60,23 +59,6 @@ describe('NodeHandoffStore keeps an undelivered handoff pending (prd-14 FR-03, c
     await expect(new NodeHandoffStore(root, clock).claim({ isExpired: check.isExpired, commit: commitAfterNewer })).resolves.toBeNull();
     await expect(readFile(pending, 'utf8')).resolves.toBe('# newer\n');
     expect(await readdir(archive)).toEqual(['20261007T120000.000Z.md']);
-  });
-});
-
-describe('NodeHandoffStore prunes only a delivered claim (prd-14 FR-03, codereview_03 CR-01, codereview_04 CR-01)', () => {
-  it('keeps a full archive when the deadline already expired', async () => {
-    await writeFile(join(archive, OLDEST), 'old');
-    const before = await fillArchive();
-    await expect(new NodeHandoffStore(root, clock).claim(EXPIRED)).resolves.toBeNull();
-    await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
-    expect((await readdir(archive)).sort()).toEqual(before);
-  });
-  it('keeps a full archive when the deadline expires during the move', async () => {
-    await writeFile(join(archive, OLDEST), 'old');
-    const before = await fillArchive();
-    await expect(new NodeHandoffStore(root, clock).claim(expiresAfter(1))).resolves.toBeNull();
-    await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
-    expect((await readdir(archive)).sort()).toEqual(before);
   });
   it('rejects when the archive cannot be pruned, leaving the handoff pending, the archive unchanged, and no lock', async () => {
     await mkdir(join(archive, OLDEST));

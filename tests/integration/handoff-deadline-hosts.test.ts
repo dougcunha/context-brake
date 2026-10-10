@@ -23,6 +23,7 @@ beforeEach(async () => {
   pending = join(root, '.context-brake', 'handoff.md');
   await mkdir(join(root, '.context-brake'), { recursive: true });
   await writeFile(pending, '# goal\n', 'utf8');
+  await writeFile(join(root, 'context-brake.config.json'), JSON.stringify(HANDOFF_CONFIG), 'utf8');
 });
 afterEach(async () => {
   vi.restoreAllMocks();
@@ -43,40 +44,39 @@ function watchClaims(afterClaim: () => void): Promise<string | null>[] {
   });
   return claims;
 }
-async function expectDelivered(text: string): Promise<void> {
-  const archived = ARCHIVED_PATH.exec(text)?.[0];
-  expect(archived).toBeDefined();
-  await expect(access(join(root, archived ?? ''))).resolves.toBeUndefined();
-  await expect(access(pending)).rejects.toThrow();
+async function inProcessStart(): Promise<string> {
+  const decision = await createInProcessRuntime({ projectRoot: root, descriptor: DESCRIPTOR, config: HANDOFF_CONFIG, deadlines: { event: DEADLINE_MS, sessionStart: DEADLINE_MS } }).handle(START);
+  return JSON.stringify(decision);
 }
-function inProcessStart(): Promise<unknown> {
-  return createInProcessRuntime({ projectRoot: root, descriptor: DESCRIPTOR, config: HANDOFF_CONFIG, deadlines: { event: DEADLINE_MS, sessionStart: DEADLINE_MS } }).handle(START);
+async function processHookStart(): Promise<string> {
+  const stdout: string[] = [];
+  const adapter: ProcessHarnessAdapter = { descriptor: DESCRIPTOR, mapEvent: () => START, mapInput: async () => ({}), renderDecision: (decision) => JSON.stringify(decision), resolveProjectRoot: async () => root };
+  const context = { argv: ['node', 'hook', 'SessionStart'], readStdin: async () => '{}', writeStdout: (text: string) => { stdout.push(text); }, writeStderr: () => undefined, deadlineMilliseconds: DEADLINE_MS, sessionStartDeadlineMilliseconds: DEADLINE_MS };
+  await runProcessHook(adapter, context);
+  return stdout.join('');
 }
 
-describe('in-process host passes its deadline to the handoff claim (prd-14 FR-02, FR-03, codereview_06 CR-01)', () => {
-  it('keeps the handoff pending when the deadline answers before the claim', async () => {
+describe('hosts pass their deadline to the handoff claim (prd-14 FR-02, FR-03, codereview_03 CR-01, codereview_06 CR-01)', () => {
+  it.each([
+    ['in-process host', inProcessStart],
+    ['process hook host', processHookStart],
+  ])('%s keeps the handoff pending when the deadline answers before the claim', async (_host, start) => {
     const claims = watchClaims(() => undefined);
-    const decision = inProcessStart();
+    const answer = start();
     elapseDeadline();
-    expect(JSON.stringify(await decision)).not.toMatch(ARCHIVED_PATH);
+    expect(await answer).not.toMatch(ARCHIVED_PATH);
     await vi.waitFor(() => { expect(claims).toHaveLength(1); });
     await expect(claims[0]).resolves.toBeNull();
     await expect(readFile(pending, 'utf8')).resolves.toBe('# goal\n');
   });
-  it('delivers the resume text when the deadline elapses after the commit', async () => {
+  it.each([
+    ['in-process host', inProcessStart],
+    ['process hook host', processHookStart],
+  ])('%s delivers the resume text when the deadline elapses after the commit', async (_host, start) => {
     watchClaims(elapseDeadline);
-    await expectDelivered(JSON.stringify(await inProcessStart()));
-  });
-});
-
-describe('process hook host passes its deadline to the handoff claim (prd-14 FR-02, FR-03, codereview_06 CR-01)', () => {
-  it('writes the resume text when the deadline elapses after the commit', async () => {
-    await writeFile(join(root, 'context-brake.config.json'), JSON.stringify(HANDOFF_CONFIG), 'utf8');
-    watchClaims(elapseDeadline);
-    const stdout: string[] = [];
-    const adapter: ProcessHarnessAdapter = { descriptor: DESCRIPTOR, mapEvent: () => START, mapInput: async () => ({}), renderDecision: (decision) => JSON.stringify(decision), resolveProjectRoot: async () => root };
-    const context = { argv: ['node', 'hook', 'SessionStart'], readStdin: async () => '{}', writeStdout: (text: string) => { stdout.push(text); }, writeStderr: () => undefined, deadlineMilliseconds: DEADLINE_MS, sessionStartDeadlineMilliseconds: DEADLINE_MS };
-    await runProcessHook(adapter, context);
-    await expectDelivered(stdout.join(''));
+    const archived = ARCHIVED_PATH.exec(await start())?.[0];
+    expect(archived).toBeDefined();
+    await expect(access(join(root, archived ?? ''))).resolves.toBeUndefined();
+    await expect(access(pending)).rejects.toThrow();
   });
 });

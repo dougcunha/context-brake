@@ -1,4 +1,5 @@
 import { access, mkdir, mkdtemp, readdir, rm, utimes, writeFile } from 'node:fs/promises';
+import { rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -7,7 +8,9 @@ import { NodeHandoffStore } from '../../src/infrastructure/storage/node-handoff-
 const AT = new Date('2026-10-07T12:00:00.000Z');
 const clock = { now: () => AT };
 const CONCURRENT_PAIRS = 100;
+const STALE_LOCK_MS = 30_000;
 const LOCK = join('.context-brake', 'handoffs', '.claim.lock');
+const ARCHIVED = '20261007T120000.000Z.md';
 
 async function writeHandoff(root: string): Promise<void> {
   await mkdir(join(root, '.context-brake', 'handoffs'), { recursive: true });
@@ -34,18 +37,28 @@ describe('NodeHandoffStore claim lock (prd-14 FR-03, NFR-02, TC-03, codereview_0
       expect(await readdir(join(root, '.context-brake', 'handoffs'))).toHaveLength(1);
     }
   });
-  it('returns null while another claim holds a fresh lock', async () => {
+  it.each([
+    { label: 'respects a lock exactly at the stale limit', lockAgeMs: STALE_LOCK_MS, claimed: null, archive: ['.claim.lock'] },
+    { label: 'takes over a lock just past the stale limit, left by a crashed claim', lockAgeMs: STALE_LOCK_MS + 1, claimed: `.context-brake/handoffs/${ARCHIVED}`, archive: [ARCHIVED] },
+  ])('$label', async ({ lockAgeMs, claimed, archive }) => {
     await writeHandoff(base);
     await writeFile(join(base, LOCK), '', 'utf8');
-    await utimes(join(base, LOCK), AT, AT);
-    await expect(new NodeHandoffStore(base, clock).claim()).resolves.toBeNull();
+    const lockTime = new Date(AT.getTime() - lockAgeMs);
+    await utimes(join(base, LOCK), lockTime, lockTime);
+    await expect(new NodeHandoffStore(base, clock).claim()).resolves.toBe(claimed);
+    expect(await readdir(join(base, '.context-brake', 'handoffs'))).toEqual(archive);
   });
-  it('takes over a stale lock left by a crashed claim', async () => {
+});
+
+describe('NodeHandoffStore claim race (prd-14 FR-03, NFR-02)', () => {
+  it('returns null and leaves no reserved archive file when the handoff vanishes before the move', async () => {
     await writeHandoff(base);
-    await writeFile(join(base, LOCK), '', 'utf8');
-    const old = new Date(AT.getTime() - 3_600_000);
-    await utimes(join(base, LOCK), old, old);
-    await expect(new NodeHandoffStore(base, clock).claim()).resolves.toBe('.context-brake/handoffs/20261007T120000.000Z.md');
-    expect(await readdir(join(base, '.context-brake', 'handoffs'))).toEqual(['20261007T120000.000Z.md']);
+    const pending = join(base, '.context-brake', 'handoff.md');
+    function removeHandoff(): boolean {
+      rmSync(pending);
+      return false;
+    }
+    await expect(new NodeHandoffStore(base, clock).claim({ isExpired: removeHandoff, commit: () => true })).resolves.toBeNull();
+    expect(await readdir(join(base, '.context-brake', 'handoffs'))).toEqual([]);
   });
 });

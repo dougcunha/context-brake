@@ -41,7 +41,7 @@ beforeEach(async () => {
 });
 afterEach(async () => { await rm(base, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-describe('E2E automatic restart install, re-install, doctor and remove (FR-07, FR-08, FR-09, TC-25)', () => {
+describe('E2E automatic restart install, re-install, doctor and remove (FR-07, FR-08, FR-09, TC-17, TC-23, TC-25)', () => {
   it('installs the mod, changes nothing the second time, reports it, and restores the repository', async () => {
     const before = await tree(root);
     const install = await run(['init', '--yes', '--auto-restart']);
@@ -60,39 +60,5 @@ describe('E2E automatic restart install, re-install, doctor and remove (FR-07, F
     const remove = await run(['remove', '--yes']);
     expect(remove.code).toBe(0);
     expect(withoutBaseHooks(await tree(root))).toEqual(withoutBaseHooks(before));
-  }, FLOW_TIMEOUT_MILLISECONDS);
-});
-
-describe('E2E automatic restart with the status line opt-out (FR-07, DEC-08, CR-01)', () => {
-  it('keeps the loader keys when the opt-out removes the bridge-created local settings, then changes nothing', async () => {
-    await rm(join(root, LOCAL));
-    await run(['init', '--yes', '--statusline-bridge']);
-    const optOut = await run(['init', '--yes', '--auto-restart', '--no-statusline-bridge']);
-    expect(optOut.code).toBe(0);
-    const local = JSON.parse((await tree(root))[LOCAL] ?? '{}') as Record<string, unknown>;
-    expect(Object.keys(local).sort()).toEqual(['enabledPlugins', 'extraKnownMarketplaces']);
-    const installed = await tree(root);
-    const again = await run(['init', '--yes']);
-    expect(installReportSchema.parse(again.json).plan.changes).toEqual([]);
-    expect(await tree(root)).toEqual(installed);
-  }, FLOW_TIMEOUT_MILLISECONDS);
-});
-
-describe('E2E automatic restart removal without a prior local settings file (FR-09, codereview_02 CR-01)', () => {
-  it('restores the repository, local settings file included, after install and remove', async () => {
-    await rm(join(root, LOCAL));
-    const before = await tree(root);
-    expect((await run(['init', '--yes', '--auto-restart'])).code).toBe(0);
-    expect((await run(['remove', '--yes'])).code).toBe(0);
-    expect(withoutBaseHooks(await tree(root))).toEqual(withoutBaseHooks(before));
-  }, FLOW_TIMEOUT_MILLISECONDS);
-});
-
-describe('E2E automatic restart removal keeps a user-created empty local settings file (FR-09, codereview_03 CR-01)', () => {
-  it('leaves the user file in place after install and remove', async () => {
-    await writeFile(join(root, LOCAL), '{}\n', 'utf8');
-    expect((await run(['init', '--yes', '--auto-restart'])).code).toBe(0);
-    expect((await run(['remove', '--yes'])).code).toBe(0);
-    expect((await tree(root))[LOCAL]?.replace(/\s/g, '')).toBe('{}');
   }, FLOW_TIMEOUT_MILLISECONDS);
 });

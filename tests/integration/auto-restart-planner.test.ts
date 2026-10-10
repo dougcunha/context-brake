@@ -1,3 +1,4 @@
+import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MOD_FILES, MOD_MARKETPLACE_NAME, MOD_PLUGIN_ID, MOD_ROOT } from '../../src/infrastructure/harnesses/claude-code/auto-restart-files.js';
@@ -26,23 +27,19 @@ async function presentModFiles(): Promise<string[]> {
 }
 
 describe('install through init --auto-restart (FR-07, DEC-08, TC-17)', () => {
-  it('writes the marketplace, the plugin files, the two settings keys and the config block', async () => {
+  it('writes the marketplace, the plugin files, the two settings keys next to the status line, and the config block, then plans nothing', async () => {
     const report = await runJson(world, [...INIT, '--auto-restart']);
     expect(report.exitCode).toBe(0);
     expect(await presentModFiles()).toEqual([...MOD_FILES]);
     const settings = await localSettings();
     expect(settings.extraKnownMarketplaces?.[MOD_MARKETPLACE_NAME]?.source).toEqual({ source: 'directory', path: join(world.root, MOD_ROOT) });
     expect(settings.enabledPlugins?.[MOD_PLUGIN_ID]).toBe(true);
+    expect(settings.statusLine).toBeDefined();
     expect((await readConfig(world.root)).autoRestart).toEqual({ maxConsecutiveRestarts: 2 });
-  });
-
-  it('plans nothing on the second run and keeps the status line bridge', async () => {
-    await runJson(world, [...INIT, '--auto-restart']);
     const before = await readWorldFile(world, LOCAL_PATH);
     const second = await runJson(world, INIT);
     expect(second.plan.changes.map((change) => change.path).filter((path) => MOD_FILES.includes(path) || path === LOCAL_PATH)).toEqual([]);
     expect(await readWorldFile(world, LOCAL_PATH)).toBe(before);
-    expect(JSON.parse(before ?? '{}')).toHaveProperty('statusLine');
   });
 });
 
@@ -56,15 +53,14 @@ describe('plain init adds nothing (FR-07, NFR-05, TC-18)', () => {
 });
 
 describe('existing user entries survive (FR-07, TC-20)', () => {
-  it('keeps the other marketplaces and plugins through install and removal', async () => {
+  it('keeps the other marketplaces and plugins through install and removal, byte for byte', async () => {
     await runJson(world, INIT);
-    const seeded = { ...(await localSettings()), extraKnownMarketplaces: OTHER_MARKETPLACE, enabledPlugins: OTHER_PLUGINS };
-    await (await import('node:fs/promises')).writeFile(join(world.root, LOCAL_PATH), `${JSON.stringify(seeded, null, 2)}\n`, 'utf8');
+    const seeded = `${JSON.stringify({ ...(await localSettings()), extraKnownMarketplaces: OTHER_MARKETPLACE, enabledPlugins: OTHER_PLUGINS }, null, 2)}\n`;
+    await writeFile(join(world.root, LOCAL_PATH), seeded, 'utf8');
     await runJson(world, [...INIT, '--auto-restart']);
     expect(Object.keys((await localSettings()).extraKnownMarketplaces ?? {}).sort()).toEqual([MOD_MARKETPLACE_NAME, 'other']);
     await runJson(world, [...INIT, '--no-auto-restart']);
-    expect((await localSettings()).extraKnownMarketplaces).toEqual(OTHER_MARKETPLACE);
-    expect((await localSettings()).enabledPlugins).toEqual(OTHER_PLUGINS);
+    expect(await readWorldFile(world, LOCAL_PATH)).toBe(seeded);
   });
 });
 

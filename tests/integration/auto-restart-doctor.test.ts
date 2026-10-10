@@ -1,7 +1,7 @@
 import { rm, utimes } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { doctorReportSchema, type DiagnosticFinding } from '../../src/core/contracts/diagnostics.js';
+import type { DiagnosticFinding } from '../../src/core/contracts/diagnostics.js';
 import { MOD_MODULE_FILE } from '../../src/infrastructure/harnesses/claude-code/auto-restart-files.js';
 import { MOD_LOG_DIR, MOD_VERSION } from '../../src/infrastructure/harnesses/claude-code/mod/mod-info.js';
 import { autoRestartFindings, modLog, writeModLog } from '../helpers/auto-restart-doctor-world.js';
@@ -23,20 +23,13 @@ describe('doctor automatic-restart findings (FR-08, DEC-10, TC-22)', () => {
     expect(codes(await autoRestartFindings(world.root, false))).toEqual(['AUTO_RESTART_OFF:ok']);
   });
 
-  it('reports ready without a warning once a session recorded the loaded header', async () => {
-    await runJson(world, [...INIT, '--auto-restart']);
-    await writeModLog(world.root, 'session-a', modLog([{ at: '2026-10-05T10:00:00.000Z', code: 'RESTARTED' }]));
-    expect(codes(await autoRestartFindings(world.root, true))).toEqual(['AUTO_RESTART_READY:ok']);
-  });
-
   it('reports the mod as not loaded, listing the causes that switch mods off', async () => {
     await runJson(world, [...INIT, '--auto-restart']);
     await writeModLog(world.root, 'broken', '{ not json');
     await writeModLog(world.root, 'old-format', { v: 0, records: [] });
     const [finding] = await autoRestartFindings(world.root, true);
-    expect(finding?.code).toBe('AUTO_RESTART_NOT_LOADED');
-    expect(finding?.severity).toBe('warning');
-    for (const cause of ['disableAllHooks', '--safe-mode', 'managed policy', 'WSL']) expect(finding?.remediation).toContain(cause);
+    expect(`${finding?.code}:${finding?.severity}`).toBe('AUTO_RESTART_NOT_LOADED:warning');
+    expect(finding?.remediation).toContain('disableAllHooks');
   });
 });
 
@@ -66,22 +59,16 @@ describe('doctor automatic-restart problems (FR-08, TC-22)', () => {
   });
 });
 
-describe('doctor last automatic-restart skip (FR-08, DEC-10, TC-22)', () => {
-  it('adds the last skip code next to ready, as a warning only for errors', async () => {
+describe('doctor ready state and last automatic-restart skip (FR-08, DEC-10, TC-22)', () => {
+  it('reports ready alone after a restart, adds the last skip code next to it, as a warning only for errors', async () => {
     await runJson(world, [...INIT, '--auto-restart']);
+    await writeModLog(world.root, 'skip', modLog([{ at: '2026-10-05T10:00:00.000Z', code: 'RESTARTED' }]));
+    expect(codes(await autoRestartFindings(world.root, true))).toEqual(['AUTO_RESTART_READY:ok']);
     await writeModLog(world.root, 'skip', modLog([{ at: '2026-10-05T10:00:00.000Z', code: 'RESTARTED' }, { at: '2026-10-05T11:00:00.000Z', code: 'SKIP_NO_PROGRESS' }]));
     expect(codes(await autoRestartFindings(world.root, true))).toEqual(['AUTO_RESTART_READY:ok', 'AUTO_RESTART_LAST_SKIP:ok']);
     await writeModLog(world.root, 'skip', modLog([{ at: '2026-10-05T12:00:00.000Z', code: 'ERROR_RESTART_REJECTED' }]));
     const last = (await autoRestartFindings(world.root, true)).at(-1);
     expect(last?.severity).toBe('warning');
     expect(last?.message).toContain('ERROR_RESTART_REJECTED');
-  });
-});
-
-describe('doctor --json with automatic restart (FR-08, TC-23)', () => {
-  it('validates against the doctor report schema and carries an AUTO_RESTART finding', async () => {
-    await runJson(world, [...INIT, '--auto-restart']);
-    const report = doctorReportSchema.parse(await runJson(world, ['doctor', '--json', '--harness', 'claude-code']));
-    expect(report.findings.some((finding) => finding.code.startsWith('AUTO_RESTART_'))).toBe(true);
   });
 });

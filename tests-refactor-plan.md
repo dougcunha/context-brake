@@ -64,7 +64,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 24 | integration/init-install | init-assistant-cancel, init-assistant-equivalence, init-detection, init-idempotency, init-install, init-interactive-gate, init-plan, init-remove-footprint, multi-harness-install, detection-cross-signals | src/cli/commands | G | 47 → 37 | done |
 | 25 | integration/init-exclusion | init-assistant-exclusion, init-exclusion, -conflicts, -edges, -removal | src/cli/commands, harness-exclusion | G | 16 → 9 | done |
 | 26 | integration/init-settings | init-auto-restart, init-config-repair, config-repair-errors, init-debug-mode, init-debug-mode-disable, init-legacy-turn-limits, init-max-restarts, init-snapshot | src/cli/commands, src/core/validation | G | 40 → 17 | done |
-| 27 | integration/claude-auto-restart | auto-restart-doctor, -lifecycle, -planner, -removal, -user-settings | harnesses/claude-code | G | 23 | pending |
+| 27 | integration/claude-auto-restart | auto-restart-doctor, -lifecycle, -planner, -removal, -user-settings | harnesses/claude-code | G | 31 → 23 | done |
 | 28 | integration/claude-mod | claude-mod-bundle, -gates, -guards, -handoff, -restart | harnesses/claude-code/mod | G/C | 26 | pending |
 | 29 | integration/omp-pi-restart | omp-restart, omp-restart-handoff, omp-session-switch, pi-restart, pi-restart-handoff, in-process-restart-plan, semi-auto-restart | harnesses/oh-my-pi, pi | G | 24 | pending |
 | 30 | integration/runtime-harnesses | runtime-antigravity, -codex, -copilot, -cursor, -in-process, -host-process, claude-transcript-usage, codex-rollout-usage | src/infrastructure/runtime, harnesses | G | 33 | pending |
@@ -1526,7 +1526,7 @@ Every source is Glue reached through `init` in process (`runInProcessCli`, `runA
 ## 26. integration/init-settings — done 2026-10-10
 
 **Baseline:** 40 runner tests across the 8 files, green. Stryker: n/a (Glue).
-**Result:** 17 tests across 7 files, green. Scoped coverage proxy (`init-flow.ts`, `init-config-updates.ts`, `init-config-state.ts`, `handoff-findings.ts`, `installation-builder.ts`, `snapshot-merge.ts`, `debug-mode-merge.ts`, `auto-restart-merge.ts`, `config-legacy-checks.ts`, `restart-install-extras.ts`, `configuration-sanitizer.ts`, `configuration-validator.ts`): lines 98.95% → 96.87%; branches 81.88% → 79.46%. The lines lost (`init-config-state.ts` 20-21, `configuration-sanitizer.ts` 30-31, `configuration-validator.ts` 19-20/34-37) were run by the deleted typo test (unrepairable config); `unit/configuration-sanitizer`, `unit/configuration-validator` and `integration/invalid-config` (module 32) cover all three files at 100% lines (checked with a scoped run). Every other uncovered line is the same before and after (`init-config-updates.ts` 17/22-23/27/32 are the partially taken `if ('error' in merge)` sides; `init-flow.ts` 45-48 is the prompt confirmation, modules 2 and 24). Commit `pending`.
+**Result:** 17 tests across 7 files, green. Scoped coverage proxy (`init-flow.ts`, `init-config-updates.ts`, `init-config-state.ts`, `handoff-findings.ts`, `installation-builder.ts`, `snapshot-merge.ts`, `debug-mode-merge.ts`, `auto-restart-merge.ts`, `config-legacy-checks.ts`, `restart-install-extras.ts`, `configuration-sanitizer.ts`, `configuration-validator.ts`): lines 98.95% → 96.87%; branches 81.88% → 79.46%. The lines lost (`init-config-state.ts` 20-21, `configuration-sanitizer.ts` 30-31, `configuration-validator.ts` 19-20/34-37) were run by the deleted typo test (unrepairable config); `unit/configuration-sanitizer`, `unit/configuration-validator` and `integration/invalid-config` (module 32) cover all three files at 100% lines (checked with a scoped run). Every other uncovered line is the same before and after (`init-config-updates.ts` 17/22-23/27/32 are the partially taken `if ('error' in merge)` sides; `init-flow.ts` 45-48 is the prompt confirmation, modules 2 and 24). Commit `7653f63`.
 
 Every source is Glue reached through `init`/`doctor`/`remove` in process; the decisions are unit-tested in modules 10 (`configuration-*`, `config-legacy-checks`), 13 (`debug-mode-merge`, `snapshot-merge`), 14/15 (`auto-restart-merge`, `init-max-restarts-arguments`) and 17 (`installation-summary`). Each file keeps one test per business flow. No file is in `tests/test-lanes.ts`; no file renamed. Carry-forward reliances kept: `init-debug-mode` `rejects --debug with --no-debug and writes nothing` (module 1), `init-legacy-turn-limits` TC-20 second run byte-stable (module 10), `init-snapshot` TC-05 writes and re-reads `command` and `resumeCommand` (module 9).
 
@@ -1554,7 +1554,7 @@ Every source is Glue reached through `init`/`doctor`/`remove` in process; the de
   - `init-snapshot` `does not suggest creating a plan` (codereview_01 CR-02): a negative check on wording no source produces since prd-12 removed `plan init`; no plausible mutant. `says in the text output that only zone headers will be injected`: `unit/installation-summary` row 1 asserts the exact summary (same CR-02 identifier) and module 1 `prints the config summary…` asserts that `init` prints it.
   - `init-config-repair` `does not repair a file whose typo leaves a required key missing` (TC-04): the rule is `unit/configuration-sanitizer` `throws the error of the failing pass when another issue exists`; the CLI wiring (tolerant read throws → exit 2, file untouched) is the same `readTolerant` path as `invalid-config` IT-10 `blocks writes in init and remove with exit code 2…`. TC-04 stays on the merged repair test.
   - `init-max-restarts` `keeps the default of 2 without the flag`: `unit/auto-restart-merge` `applies the update…` asserts `{ kind: 'set' }` → `maxConsecutiveRestarts: 2`; the flag-to-config wiring is the TC-02 sequence.
-- **Merged (31 → 13):**
+- **Merged (29 → 12):**
   - `init-snapshot` fresh-repo `writes only…` + `previews the same paths with --dry-run` + `changes nothing on a second run` → one test (same fixture).
   - `init-snapshot` `writes the snapshot and resume commands` + `sets the trigger zone alone` + `clears both commands…` → one TC-05 sequence, as the TechSpec row reads; the trigger-alone-without-command case is also the `init-debug-mode` lifecycle and `unit/snapshot-merge`. `rejects a resume command without a snapshot command…` became the third row of the rejection `it.each` and now also asserts that nothing is written.
   - `init-debug-mode` `succeeds…records the debug mode` + `keeps the snapshot settings and the debug mode already on` + `turns the debug mode off with --no-debug` + `init-debug-mode-disable` `removes the debug key without touching the instruction files` → one lifecycle test. `previews the configuration change…` + `init-debug-mode-disable` `previews the debug removal only in the configuration…` → one preview test (CR-01 kept in the `describe`). `init-debug-mode-disable.test.ts` is deleted; only prd-08 done tasks and codereviews cite it, no TechSpec row.
@@ -1565,7 +1565,7 @@ Every source is Glue reached through `init`/`doctor`/`remove` in process; the de
   - `init-legacy-turn-limits` 4 → 2: `reports the retired defaults…` + `writes nothing on --dry-run` (pre-migration state); `removes the four turn fields…` + `changes nothing on a second run…` (TC-20). Two tests rather than one keep each at three CLI runs or fewer (prd-02.2 recorded this file timing out under full-suite load).
 - **Rewritten (assertions only):** the auto-restart target check asserts exit 64 instead of `not.toBe(0)`; the max-restarts `11` step asserts the stored limit stays 5.
 - **Created:** none.
-- **Kept (2):** `config-repair-errors` `remove proceeds past the keys…`, `init-debug-mode` `rejects --debug with --no-debug…`.
+- **Kept (5):** `config-repair-errors` `remove proceeds past the keys…`, `init-debug-mode` `rejects --debug with --no-debug…`, `init-auto-restart` `fails with a clear message…` (assertion tightened), and the two `--no-snapshot-command` rows of the snapshot rejection `it.each`.
 - **Fixture path (orchestrator, carried into this commit):** `init-exclusion-removal.test.ts` now resolves its fixture with the cwd-relative `join('tests/fixtures/harnesses', ...)` used by the suite instead of `import.meta.dirname`, closing module 25's note.
 
 ### Production pending items
@@ -1575,6 +1575,50 @@ Every source is Glue reached through `init`/`doctor`/`remove` in process; the de
 - Module 31: `light-mode-lifecycle` `installs the minimal footprint…` and `accepts --debug and creates no instruction file` repeat the `init-snapshot` footprint and the `init-debug-mode` lifecycle assertions; their hook and doctor parts are their own.
 - Module 32: `invalid-config` IT-10 is now the only CLI-edge test of an unrepairable configuration on `init`; keep it.
 - Module 33: keep the default-bridge and opt-out-after-install tests of `statusline-default` (see the deletions above).
+
+### Questions `[?]`
+- None.
+
+## 27. integration/claude-auto-restart — done 2026-10-10
+
+**Baseline:** 31 runner tests across the 5 files, green. Stryker: n/a (Glue).
+**Result:** 23 tests across 5 files, green. Scoped coverage proxy (`claude-code/auto-restart-planner.ts`, `-diagnostics.ts`, `-ownership.ts`, `-settings.ts`, `-files.ts`): lines 98.13% → 98.13%; branches 91.48% → 91.48%. The uncovered lines are the same before and after: defensive `catch` blocks (`auto-restart-diagnostics.ts` 56-57, `auto-restart-ownership.ts` 21-22) and the `INVALID_HARNESS_CONFIG` branch of `settingsBase` (`auto-restart-planner.ts` 55-56; the invalid local settings path is module 33 `statusline-install-invalid`). Commit `<hash>`.
+
+All five sources are Glue reached through `init`/`doctor`/`remove` in process (`statusline-world` and `runInProcessCli`); no unit test covers them and no other test file imports them (`doctor-remove-restart`, `init-auto-restart`, `init-gitignore-lifecycle`, `harness-adapters` reach them only through the CLI and stay green). `planClaudeRemove` calls `planAutoRestart(..., false)`, so `remove` deletes the mod files through the removal service (`assetPaths`) while `init --no-auto-restart` deletes them through `removalChanges`; each path keeps its own edited-file test. No file is in `tests/test-lanes.ts`; no file renamed or moved.
+
+### Flows → Glue
+
+| Flow | Mutant (wiring) | Test |
+|---|---|---|
+| mandated byte-for-byte: install with a user local settings file holding a comment, second run plans nothing and leaves the tree identical, doctor JSON validates and reports `AUTO_RESTART_NOT_LOADED` with a matching exit code, `remove` restores every file byte for byte | non-idempotent settings merge; comment lost; mod files or keys left after `remove`; doctor finding not wired | lifecycle `installs the mod, changes nothing the second time, reports it, and restores the repository` (FR-07, FR-08, FR-09, TC-17, TC-23, TC-25) |
+| install writes the four mod files, both settings keys next to the bridge's `statusLine`, the config block; a second run plans nothing for those paths | `installChanges` dropped; `kept` filter drops the base local change (loses `statusLine`); marketplace path not the real `MOD_ROOT` | planner `writes the marketplace, the plugin files, the two settings keys next to the status line, and the config block, then plans nothing` (TC-17) |
+| plain init adds nothing | `wanted = context.autoRestart === true` → `!== false` | planner `leaves the mod files, the settings keys and the config block out` (TC-18) |
+| user marketplaces and plugins kept through install and switch-off | `withoutModKeys` removes the whole group; `pruneEmpty` drops a non-empty group | planner `keeps the other marketplaces and plugins through install and removal, byte for byte` (TC-20) |
+| bridge opt-out that deletes the bridge-created local file becomes an update carrying the loader keys | `deletesLocal` branch removed (file deleted, mod unloadable) | planner `updates the file with the two loader keys instead of deleting it…` (DEC-08, CR-01) |
+| switch-off deletes a local file the install created, and the ownership record | `drop` → `false`; `ownershipRemoval` skipped | planner `leaves no local settings file after %s` (2 rows: remove, opt-out of both; codereview_02 CR-01) |
+| switch-off keeps a user-created local file (`{}` or comment only), bridge on/off, remove/opt-out | `owned` → `true`; `isCreatedByBridge` ignoring `createdLocalFile: false`; `isEmptySettings` regex | user-settings `keeps $file with the bridge $bridge after $off` (8 rows; codereview_03 CR-01 repros s3, s4, s6, s8) |
+| `init --no-auto-restart` deletes the unedited mod files, keys and config block, keeps an edited mod file and reports `MODIFIED` | `isModified` → `false`; config `autoRestart` not removed | removal `deletes the other mod files, the settings keys and the config block, and keeps an edited mod file and says so` (TC-19) |
+| `remove` keeps an edited mod file and reports it | `MOD_FILES` dropped from `assetPaths` in `planClaudeRemove` | removal `keeps a mod file the user edited and reports it` (TC-19) |
+| doctor: off, not loaded, outdated by session version, outdated by missing file, Claude too old, ready, last skip ok/warning | each `diagnoseAutoRestart` guard removed or reordered; `!== 'RESTARTED'` → `true`; `startsWith('ERROR_')` severity | doctor 6 tests (FR-08, DEC-10, TC-22) |
+
+### Actions
+- **Deleted (5):**
+  - lifecycle `keeps the loader keys when the opt-out removes the bridge-created local settings, then changes nothing` (DEC-08, CR-01): planner `updates the file with the two loader keys instead of deleting it, and plans nothing on the next run` runs the same flow and also asserts the change kind is `update`, the exact CR-01 defect.
+  - lifecycle `restores the repository, local settings file included, after install and remove` (codereview_02 CR-01): planner `leaves no local settings file after remove` starts from the same no-local-file state and asserts the file and the ownership record are gone; the lifecycle test above proves the full-tree restore.
+  - lifecycle `leaves the user file in place after install and remove` (codereview_03 CR-01): identical to user-settings row `keeps 'an empty object' with the bridge 'on' after 'remove'`.
+  - removal `takes the mod files and the settings keys back` (TC-19): the lifecycle test's `remove` step restores the tree to its pre-install bytes, which proves the mod files and keys are gone.
+  - doctor `validates against the doctor report schema and carries an AUTO_RESTART finding` (TC-23): the lifecycle test parses the same `doctor --json --harness claude-code` output with `doctorReportSchema` and asserts the exact code; TC-23 moved to its `describe`.
+- **Merged (6 → 3):**
+  - doctor `reports ready without a warning once a session recorded the loaded header` + `adds the last skip code next to ready…` → one sequence on the same log file (RESTARTED alone → `READY` only; then a skip; then an error).
+  - planner `writes the marketplace, the plugin files…` + `plans nothing on the second run and keeps the status line bridge` → one TC-17 sequence.
+  - removal `deletes the files, the settings keys and the config block` + `leaves an edited mod file in place and says so` → one `--no-auto-restart` sequence (same arrangement; it now also asserts the three unedited files are deleted).
+- **Rewritten (assertions only):** planner TC-20 asserts the seeded local file is restored byte for byte (the TechSpec row says "kept byte for byte"; it compared parsed JSON) and uses a static `writeFile` import; doctor `not loaded` asserts code and severity plus one cause instead of four wording checks (`tests.md`: doctor formatting needs less depth).
+- **Created:** none.
+- **Kept (18 runner tests):** the lifecycle test (the module's mandated byte-for-byte test; only TC-17/TC-23 added to its `describe`), planner TC-18, CR-01 opt-out and the 2 switch-off rows, removal `remove` edited-file test, doctor off/outdated×2/too-old, and all 8 user-settings rows (each dimension takes a different path: file content → `isEmptySettings`; bridge on/off → base change from the status line planner vs disk read; remove vs opt-out → `deleteFiles=false` with `assetPaths` vs the init `deletesLocal` branch).
+- The lifecycle file keeps `FLOW_TIMEOUT_MILLISECONDS = 120_000` from prd-13's budget work; it now runs one flow.
+
+### Production pending items
+- None.
 
 ### Questions `[?]`
 - None.

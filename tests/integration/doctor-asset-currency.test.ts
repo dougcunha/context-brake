@@ -3,51 +3,25 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { runInit } from '../../src/cli/commands/init.js';
-import { diagnoseProject } from '../../src/core/services/doctor-service.js';
-import { buildHarnessContext, collectHarnessSources } from '../../src/cli/detection-collector.js';
-import { collectProjectSnapshots } from '../../src/cli/snapshot-helper.js';
-import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
-import { NodeManifestStore } from '../../src/infrastructure/storage/manifest-store.js';
-import { readPackageVersion } from '../../src/infrastructure/storage/package-metadata.js';
-import { ProjectConfigStore } from '../../src/infrastructure/storage/project-config-store.js';
-import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
+import { doctorReportSchema } from '../../src/core/contracts/diagnostics.js';
+import { runInProcessCli } from '../helpers/in-process-cli.js';
 
-function sha256(content: string): string {
-  return createHash('sha256').update(content).digest('hex');
-}
+const CURSOR_HOOK = '.cursor/hooks/context-brake.mjs';
+const COPILOT_HOOK = '.github/hooks/context-brake.mjs';
+const STALE_CONTENT = '// stale hook from an older ContextBrake package';
+const HARNESS_FLAGS = ['--harness', 'claude-code', '--harness', 'cursor', '--harness', 'github-copilot-cli'];
 
 async function setupInstalledRepo(root: string): Promise<void> {
-  await mkdir(join(root, '.claude'), { recursive: true });
-  await mkdir(join(root, '.cursor'), { recursive: true });
-  await mkdir(join(root, '.github'), { recursive: true });
-  const code = await runInit(
-    { command: 'init', dryRun: false, yes: true, json: true, harness: ['claude-code', 'cursor', 'github-copilot-cli'], excludeHarness: [] },
-    { projectRoot: root, runner: fakeProcessRunner },
-  );
-  expect(code).toBe(0);
+  for (const dir of ['.claude', '.cursor', '.github']) await mkdir(join(root, dir), { recursive: true });
+  expect((await runInProcessCli(['init', '--yes', '--json', ...HARNESS_FLAGS], root)).code).toBe(0);
 }
-
-async function corruptManifestAsset(root: string, path: string, shaValue: string): Promise<void> {
+async function recordStaleCursorHook(root: string): Promise<void> {
   const manifestPath = join(root, '.context-brake/manifest.json');
-  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
-  const asset = manifest.assets.find((a: { path: string }) => a.path === path);
-  asset.sha256 = shaValue;
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as { assets: { path: string; sha256: string }[] };
+  const asset = manifest.assets.find((entry) => entry.path === CURSOR_HOOK);
+  if (asset) asset.sha256 = createHash('sha256').update(STALE_CONTENT).digest('hex');
+  await writeFile(join(root, CURSOR_HOOK), STALE_CONTENT, 'utf8');
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
-}
-
-async function runDoctorReport(root: string) {
-  const config = await new ProjectConfigStore(join(root, 'context-brake.config.json')).read();
-  const manifest = await new NodeManifestStore(root).load();
-  const snapshots = await collectProjectSnapshots(root);
-  const adapters = getAllAdapters();
-  const context = buildHarnessContext({ projectRoot: root }, manifest);
-  const sources = await collectHarnessSources(adapters, context);
-  const packageVersion = await readPackageVersion();
-  return diagnoseProject({
-    projectRoot: root, config, adapters, context, sources,
-    manifest, allSnapshots: snapshots, packageVersion,
-  });
 }
 
 describe('doctor asset currency classification (FR-08, TC-03)', () => {
@@ -57,21 +31,11 @@ describe('doctor asset currency classification (FR-08, TC-03)', () => {
 
   it('reports current, outdated, and modified assets across three harnesses', async () => {
     await setupInstalledRepo(tempDir);
-    const cursorHookPath = join(tempDir, '.cursor/hooks/context-brake.mjs');
-    const copilotHookPath = join(tempDir, '.github/hooks/context-brake.mjs');
-    const staleContent = '// stale hook from an older ContextBrake package';
-    await writeFile(cursorHookPath, staleContent, 'utf8');
-    await corruptManifestAsset(tempDir, '.cursor/hooks/context-brake.mjs', sha256(staleContent));
-    await writeFile(copilotHookPath, '// hand-edited by the user', 'utf8');
-    const report = await runDoctorReport(tempDir);
-    const outdated = report.findings.filter((f) => f.code === 'ASSET_OUTDATED');
-    const modified = report.findings.filter((f) => f.code === 'ASSET_MODIFIED');
-    expect(outdated).toHaveLength(1);
-    expect(outdated[0]?.path).toBe('.cursor/hooks/context-brake.mjs');
-    expect(outdated[0]?.remediation).toBe('Run context-brake init --yes.');
-    expect(modified).toHaveLength(1);
-    expect(modified[0]?.path).toBe('.github/hooks/context-brake.mjs');
-    const claudeFindings = report.findings.filter((f) => f.harness === 'claude-code' && (f.code === 'ASSET_OUTDATED' || f.code === 'ASSET_MODIFIED'));
-    expect(claudeFindings).toHaveLength(0);
+    await recordStaleCursorHook(tempDir);
+    await writeFile(join(tempDir, COPILOT_HOOK), '// hand-edited by the user', 'utf8');
+    const report = doctorReportSchema.parse(JSON.parse((await runInProcessCli(['doctor', '--json'], tempDir)).stdout));
+    const assets = report.findings.filter((finding) => finding.code === 'ASSET_OUTDATED' || finding.code === 'ASSET_MODIFIED');
+    expect(assets.map((finding) => [finding.code, finding.path])).toEqual([['ASSET_MODIFIED', COPILOT_HOOK], ['ASSET_OUTDATED', CURSOR_HOOK]]);
+    expect(assets.find((finding) => finding.code === 'ASSET_OUTDATED')?.remediation).toBe('Run context-brake init --yes.');
   });
 });

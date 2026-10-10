@@ -29,15 +29,13 @@ describe('FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC
   beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-t07-')); await installBothThenExcludeCodex(root); });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('doctor reports the harness as excluded, never as missing (FR-06, NFR-04, TC-16)', async () => {
+  it('doctor reports the harness as excluded, never as missing, and doctor and init text show the excluded line (FR-06, NFR-04, TC-13, TC-16)', async () => {
     const report = await doctorReport(root);
-    expect(report.detections.find((item) => item.harness === 'codex-cli')?.state).toBe('excluded');
-    expect(report.integrations.map((integration) => integration.harness)).toEqual(['claude-code']);
-    expect(report.findings.some((finding) => finding.harness === 'codex-cli' && finding.code === 'INTEGRATION_MISSING')).toBe(false);
-  });
-  it('doctor and init text show the excluded line (FR-06, NFR-04, TC-13, TC-16)', async () => {
     const doctor = await runInProcessCli(['doctor'], root);
     const init = await runInProcessCli(['init', '--dry-run'], root);
+    expect(report.detections.find((item) => item.harness === 'codex-cli')?.state).toBe('excluded');
+    expect(report.integrations.map((integration) => integration.harness)).toEqual(['claude-code']);
+    expect(report.findings.filter((finding) => finding.harness === 'codex-cli')).toEqual([]);
     expect(doctor.stdout + doctor.stderr).toContain(EXCLUDED_LINE);
     expect(init.stdout + init.stderr).toContain(EXCLUDED_LINE);
   });

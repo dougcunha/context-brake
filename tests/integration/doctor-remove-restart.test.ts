@@ -9,7 +9,13 @@ let base = '';
 let root = '';
 let env: Record<string, string> = {};
 
-type Finding = { readonly code: string; readonly harness: string | null; readonly message: string; readonly impact: string | null };
+type Finding = { readonly code: string; readonly severity: string; readonly harness: string | null; readonly message: string };
+
+const PI_LOGS = [
+  { name: 'a skipped request', componentVersion: '1.0.0', records: [{ at: '2026-10-07T12:00:00.000Z', code: 'SKIP_HANDOFF_MISSING' }], expected: ['AUTO_RESTART_LAST_SKIP:ok', 'AUTO_RESTART_READY:ok'] },
+  { name: 'a rejected request', componentVersion: '1.0.0', records: [{ at: '2026-10-07T12:00:00.000Z', code: 'ERROR_RESTART_REJECTED' }], expected: ['AUTO_RESTART_LAST_SKIP:warning', 'AUTO_RESTART_READY:ok'] },
+  { name: 'another component version', componentVersion: '0.9.0', records: [], expected: ['AUTO_RESTART_OUTDATED_MOD:warning'] },
+];
 
 async function doctorFindings(): Promise<Finding[]> {
   const result = await runInProcessCli(['doctor', '--json'], root, env);
@@ -39,38 +45,20 @@ afterEach(async () => { await rm(base, { recursive: true, force: true, maxRetrie
 describe('doctor reports restart per harness (prd-14 FR-10, FR-11, DEC-13, TC-12)', () => {
   it('reports the automatic harness as not loaded, the semi-automatic one as ready, and a pending handoff', async () => {
     await writeHandoffs();
-    const findings = await doctorFindings();
-    expect(findings).toEqual(expect.arrayContaining([
-      expect.objectContaining({ code: 'AUTO_RESTART_NOT_LOADED', harness: 'pi' }),
-      expect.objectContaining({ code: 'AUTO_RESTART_READY', harness: 'codex-cli', message: 'Semi-automatic restart is ready on codex-cli.' }),
-      expect.objectContaining({ code: 'AUTO_RESTART_HANDOFF', message: expect.stringContaining('A handoff is pending') }),
-    ]));
-  });
-  it('reports ready and the last skip reason from the Pi restart log', async () => {
-    await mkdir(join(root, '.context-brake/runtime/restart/pi'), { recursive: true });
-    const log = { v: 2, harness: 'pi', componentVersion: '1.0.0', harnessVersion: 'unknown', records: [{ at: '2026-10-07T12:00:00.000Z', code: 'SKIP_HANDOFF_MISSING' }] };
-    await writeFile(join(root, '.context-brake/runtime/restart/pi/s1.json'), JSON.stringify(log), 'utf8');
-    const pi = (await doctorFindings()).filter((finding) => finding.harness === 'pi' && finding.code.startsWith('AUTO_RESTART'));
-    expect(pi.map((finding) => finding.code).sort()).toEqual(['AUTO_RESTART_LAST_SKIP', 'AUTO_RESTART_READY']);
-    expect(pi.find((finding) => finding.code === 'AUTO_RESTART_LAST_SKIP')?.message).toContain('SKIP_HANDOFF_MISSING');
-    expect(pi.find((finding) => finding.code === 'AUTO_RESTART_READY')?.impact).toBe('Automatic restart: a valid reset signal opens a new session by itself.');
+    const restart = (await doctorFindings()).filter((finding) => finding.code.startsWith('AUTO_RESTART'));
+    expect(restart.map((finding) => `${finding.code}:${finding.harness ?? 'project'}`).sort()).toEqual(['AUTO_RESTART_HANDOFF:project', 'AUTO_RESTART_NOT_LOADED:pi', 'AUTO_RESTART_READY:codex-cli']);
+    expect(restart.find((finding) => finding.harness === 'codex-cli')?.message).toBe('Semi-automatic restart is ready on codex-cli.');
+    expect(restart.find((finding) => finding.harness === null)?.message).toContain('A handoff is pending');
   });
 });
 
-describe('doctor reports outdated and adapter-owned restart findings (prd-14 FR-11, TC-12)', () => {
-  it('reports an outdated running restart module when the Pi log names another component version (TC-12)', async () => {
+describe('doctor reports the Pi restart log (prd-14 FR-11, TC-12)', () => {
+  it.each(PI_LOGS)('reports the restart findings for $name', async ({ componentVersion, records, expected }) => {
     await mkdir(join(root, '.context-brake/runtime/restart/pi'), { recursive: true });
-    const log = { v: 2, harness: 'pi', componentVersion: '0.9.0', harnessVersion: 'unknown', records: [] };
+    const log = { v: 2, harness: 'pi', componentVersion, harnessVersion: 'unknown', records };
     await writeFile(join(root, '.context-brake/runtime/restart/pi/s1.json'), JSON.stringify(log), 'utf8');
     const pi = (await doctorFindings()).filter((finding) => finding.harness === 'pi' && finding.code.startsWith('AUTO_RESTART'));
-    expect(pi.map((finding) => finding.code)).toEqual(['AUTO_RESTART_OUTDATED_MOD']);
-  });
-  it('reports only the adapter finding for Oh-My-Pi, without a semi-automatic ready finding', async () => {
-    await mkdir(join(root, '.omp'), { recursive: true });
-    await writeFile(join(root, '.omp', 'config.yml'), 'theme: dark\n', 'utf8');
-    await runInProcessCli(['init', '--yes', '--json', '--auto-restart'], root, env);
-    const omp = (await doctorFindings()).filter((finding) => finding.harness === 'oh-my-pi' && finding.code.startsWith('AUTO_RESTART'));
-    expect(omp.map((finding) => finding.code)).toEqual(['AUTO_RESTART_NOT_LOADED']);
+    expect(pi.map((finding) => `${finding.code}:${finding.severity}`)).toEqual(expected);
   });
 });
 

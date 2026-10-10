@@ -43,7 +43,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 3 | cli/assistant-terminal | assistant-output, clack-prompt-port, equivalent-command, terminal | src/cli/assistant, src/cli | C | 35 → 29 | done |
 | 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 → 35 | done |
 | 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 → 40 | done |
-| 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 | pending |
+| 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 → 13 | done |
 | 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 36 | pending |
 | 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 21 | pending |
 | 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 | pending |
@@ -355,7 +355,7 @@ Date arithmetic would make it Critical in the `ts-tests` triage, but it only fil
 ## 5. doctor/support-versions — done 2026-10-10
 
 **Baseline:** 25 runner tests across the 6 files, green. Stryker: n/a (Common).
-**Result:** 40 tests across 6 files, green. Scoped coverage proxy (`support-service.ts`, `version-service.ts`, `harnesses/common/version-probes.ts`, `diagnostics/p95.ts`, `diagnostics/in-process-sampler.ts`, `diagnostics/sample-failure.ts`): lines 89.74% → 98.97%; branches 84.11% → 93.54% (`version-service.ts` 75% → 100%, `version-probes.ts` 87.5% → 100%, `sample-failure.ts` lines 29.41% → 100%). Remaining gaps: `support-service.ts` 26-27 and `p95.ts` 7 are unreachable (see pending items); `in-process-sampler.ts` 80 (an asset whose default export is not a function) and `sample-failure.ts` 25/31 (a non-`Error` throw, a `SampleError` passed through by `process-sampler.ts`) run only in `tests/bench/overhead-measurer.test.ts`. Commit pending.
+**Result:** 40 tests across 6 files, green. Scoped coverage proxy (`support-service.ts`, `version-service.ts`, `harnesses/common/version-probes.ts`, `diagnostics/p95.ts`, `diagnostics/in-process-sampler.ts`, `diagnostics/sample-failure.ts`): lines 89.74% → 98.97%; branches 84.11% → 93.54% (`version-service.ts` 75% → 100%, `version-probes.ts` 87.5% → 100%, `sample-failure.ts` lines 29.41% → 100%). Remaining gaps: `support-service.ts` 26-27 and `p95.ts` 7 are unreachable (see pending items); `in-process-sampler.ts` 80 (an asset whose default export is not a function) and `sample-failure.ts` 25/31 (a non-`Error` throw, a `SampleError` passed through by `process-sampler.ts`) run only in `tests/bench/overhead-measurer.test.ts`. Commit `066d102`.
 
 Layout: `adapter-version-probes`, `adapter-diagnostics`, `in-process-sampler`, and `overhead-p95` import `src/infrastructure/` and moved to `tests/integration/` unchanged (decision 3, move-only step), keeping their names because the TechSpecs cite them. None is listed in `tests/test-lanes.ts` or carries a process marker, so the lanes file is unchanged (`test-lanes.test.ts` green after the move). `support-service-version-gating.test.ts` merged into `support-service.test.ts` (one file per source); the new `tests/unit/version-service.test.ts` owns the version parsing.
 
@@ -425,6 +425,46 @@ Layout: `adapter-version-probes`, `adapter-diagnostics`, `in-process-sampler`, a
 ### Notes for later modules
 - The prd-01.1 TechSpec TC-08 row cites `tests/unit/support-service-version-gating.test.ts`, now merged into `support-service.test.ts`; the TechSpec citations of the four moved files say `tests/unit/`.
 - `integration/node-process-runner.test.ts` (module 32) runs `versionFromProcess` through a real process; the parsing rows now live in `version-service.test.ts`, so module 32 can keep only the process-boundary assertions.
+
+### Questions `[?]`
+- None.
+
+## 6. doctor/integration — done 2026-10-10
+
+**Baseline:** 21 runner tests across the 8 files, green. Stryker: n/a (Glue).
+**Result:** 13 tests across 6 files, green. Scoped coverage proxy (`commands/doctor.ts`, `handoff-findings.ts`, `restart-doctor-findings.ts`, `runtime-error-checks.ts`, `no-harness-finding.ts`, `asset-currency.ts`, `active-sessions.ts`, `harnesses/common/restart-diagnostics.ts`, `runtime/runtime-state-reader.ts`): lines 96.03% → 94.2%; branches 81.06% → 79.74% (`restart-diagnostics.ts` branches 66.66% → 76%). The lines lost were executed without assertions by deleted tests and stay covered by the related suites: `doctor.ts` 27-30 (the invalid-config read, asserted by `integration/invalid-config.test.ts` and `integration/config-repair-errors.test.ts`) and `asset-currency.ts` 77-79 (`protectModifiedAssets` on a re-init that adds a harness, run by the deleted Oh-My-Pi test; `multi-harness-install`, `init-idempotency`, `init-exclusion`, and `omp-restart` run it). Commit pending.
+
+Every file is Glue: integration through the CLI edge (`runCli`/`runInProcessCli`) or, where a fixed clock is needed, `diagnoseProject` fed by the real runtime reader. The decisions live in units cleaned in modules 4–5 (`doctor-service`, `report-service`, `active-sessions`, `asset-currency`), so each file keeps one test per business flow and asserts what only the wiring can break. No surviving file was renamed (TechSpecs cite them); none is listed in `tests/test-lanes.ts`.
+
+### Flows → Glue
+
+| Flow | Mutant (wiring) | Test |
+|---|---|---|
+| doctor lists recent sessions newest first, unknown usage after a reset, in JSON and text | reader drops ledgers; `renderActiveSessionsText` template or `usage === null` branch | `shows only recent sessions, newest first, with unknown usage after a reset, in JSON and text` |
+| no recent session → no `activeSessions` key, no text block | `length === 0` omission in `report-service.ts` 81 removed | `adds nothing without recent sessions` |
+| current / outdated / modified assets across three harnesses | `assetCurrencyFindings` not called; classification swapped | `reports current, outdated, and modified assets across three harnesses` (exact code/path list) |
+| an excluded harness is `excluded`, has no integration or finding, and both texts show it | exclusion filter removed from targets; `detection-text.ts` excluded line dropped | `doctor reports the harness as excluded, never as missing, and doctor and init text show the excluded line` |
+| `remove` deletes the config with the exclusion; a second remove is clean | exclusion left in a leftover config | `remove deletes the configuration, exclusion included…` (TC-16) |
+| only excluded harnesses → the excluded `NO_PROJECT_HARNESS` text | `hasExcluded` ternary inverted | `explains that every detected harness is excluded` |
+| the configured snapshot (YELLOW) reaches the report; the CLI uses the injected measurer | `triggerZone` not read from config; `env.overheadMeasurer ??` fallback taken | `reports the configured snapshot and the injected overhead measurement…` |
+| restart per harness: automatic not loaded, semi-automatic ready, pending handoff | `reportsRestart` or `semiAutomaticReady` guard; `handoffPending` ignored | `reports the automatic harness as not loaded…` (exact AUTO_RESTART list) |
+| Pi restart log: skip → ok, `ERROR_` → warning, other component version → outdated | `startsWith('ERROR_')` severity; version comparison | `reports the restart findings for $name` (3 rows) |
+| `remove` keeps the handoffs and names them | `keptHandoffFindings` dropped from remove | `deletes every restart artifact, keeps the handoffs, and names them` (TC-14) |
+| the runtime reader returns null without a runtime directory, then keeps only the last 24 hours of errors | `isDirectory` guard; reader clock not passed to `selectRecentErrors` | `reads no runtime state without a runtime directory, then reports only the errors of the last 24 hours` |
+
+### Actions
+- **Deleted (5):** `doctor-context-window-schema.test.ts` (2): the `doctor --json` context window wiring and schema parse are `integration/statusline-bridge-lifecycle.test.ts` (`…reports it in doctor…`, `…the report follows the schema`), the ceiling fallback with no recorded window is `unit/statusline-context-window.test.ts` `falls back to the ceiling when no ledger has a window`; the published-file test read a generated artifact (`schemas:generate`/`schemas:check` derive it from `doctorReportSchema`, whose optional `contextWindow` every parse of a report without claude-code exercises, and `unit/schemas.test.ts` asserts `schemaVersion.const` 1). `doctor-manual-removal.test.ts` (1, IT-11/CA-14): asserted only exit 2 on a hand-written config; `INTEGRATION_MISSING` → exit 2 is UT-13 in `unit/doctor-service.test.ts` (the prd-01 code reviews map CA-14 to UT-13 too), the claude-code adapter finding is `integration/adapter-diagnostics.test.ts`, and a CLI-level doctor exit 2 is `integration/invalid-config.test.ts`. doctor-light-mode `reports zone headers only and no removed finding…`: the default snapshot is `light-mode-lifecycle.test.ts` line 57, and none of the removed codes exists in `src/`, so that assertion kills nothing. doctor-remove-restart `reports only the adapter finding for Oh-My-Pi…`: same `diagnoseInProcessRestart` path as pi in the first restart test (omp is filtered by `reportsRestart` before `semiAutomaticReady`); installing omp's restart file belongs to module 29.
+- **Merged:** active-sessions `reports unknown usage after a reset…` (OI-03) into the window/order test (one more seeded session, both text lines asserted). doctor-exclusion's JSON and text tests into one (same setup). doctor-light-mode's configured-snapshot and injected-measurer tests into one (same `LIGHT_INIT` + `doctor --json`; TC-13 and TC-09 kept). The Pi skip and outdated tests into one `it.each`. doctor-runtime-errors' no-runtime test into the errors test (the reader returns null before seeding).
+- **Rewritten (4):** asset currency now runs `init` and `doctor --json` through `runInProcessCli` (the hand-wired `diagnoseProject` call duplicated `runDoctor`, and the direct `runInit` passed no `overheadMeasurer`) and asserts the exact outdated/modified list. The restart-per-harness test asserted `arrayContaining`; it now asserts the exact AUTO_RESTART list. The runtime-errors test asserts the exact finding list; its text/JSON parity loop went (finding lines are `unit/cli-output-text.test.ts`) and so did its removed-code filter (no such code in `src/`). The exclusion test asserts no codex-cli finding at all instead of no `INTEGRATION_MISSING`.
+- **Created (1 row):** Pi log `a rejected request`: `restart-diagnostics.ts` 43 (`ERROR_` → warning, which changes the exit code) had no assertion; it shares the `it.each` arrangement.
+- **Kept:** the no-recent-sessions test, the two remaining exclusion tests, the TC-14 remove test.
+
+### Production pending items
+- None.
+
+### Notes for later modules
+- The prd-02.2 TechSpec TC-18 row cites `tests/integration/doctor-state-schema.test.ts`, which does not exist; its scenario (`doctor --json` parses at `schemaVersion: 1`) lives in `integration/init-remove-footprint.test.ts` E2E-08 and `statusline-bridge-lifecycle.test.ts`.
+- `asset-currency.ts` 77-79 and 82-84 (`protectModifiedAssets`) run in the init suites (module 24) and `asset-currency-lifecycle.test.ts` (module 32); keep one of them asserting `MODIFIED_OWNED_ASSET`.
 
 ### Questions `[?]`
 - None.

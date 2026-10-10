@@ -18,18 +18,9 @@ describe('status line payload mapping (FR-03, DEC-04, CMP-03)', () => {
   });
 
   it.each([
-    ['a null current_usage', { current_usage: null }],
-    ['zero total input tokens', { total_input_tokens: 0 }],
-    ['negative total input tokens', { total_input_tokens: -5 }],
-    ['non-numeric total input tokens', { total_input_tokens: '15500' }],
-  ])('maps input tokens to null for %s', (_case, overrides) => {
-    expect(mapStatuslinePayload(withWindow(overrides))?.line.inputTokens).toBeNull();
-  });
-
-  it.each([
-    ['a zero window', { context_window_size: 0 }, 'windowTokens'],
+    ['a null current_usage', { current_usage: null }, 'inputTokens'],
+    ['zero total input tokens', { total_input_tokens: 0 }, 'inputTokens'],
     ['a fractional window', { context_window_size: 1.5 }, 'windowTokens'],
-    ['a null percentage', { used_percentage: null }, 'usedPercentage'],
     ['a percentage above 100', { used_percentage: 101 }, 'usedPercentage'],
   ] as const)('maps %s to null', (_case, overrides, field) => {
     expect(mapStatuslinePayload(withWindow(overrides))?.line[field]).toBeNull();
@@ -46,7 +37,6 @@ describe('status line payload edge cases (FR-03, NFR-02, CMP-03)', () => {
   });
 
   it.each([
-    ['null', null],
     ['a missing session_id', { context_window: FIXTURE.context_window }],
     ['an empty session_id', { session_id: '' }],
     ['a non-object context window', { session_id: 's', context_window: 5 }],

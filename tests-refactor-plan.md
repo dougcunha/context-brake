@@ -56,7 +56,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 16 | storage/capabilities | link-capability, process-capability, git-capability | tests/helpers (link-, process-, git-capability) | C | 19 → 9 | done |
 | 17 | install/services | detection-service, installation-summary, removal-service, integration/removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 22 → 21 | done |
 | 18 | harness/registration | integration/harness-registry, -adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 38 → 32 | done |
-| 19 | claude/statusline-planner | statusline-context-window, statusline-default, statusline-payload, statusline-planner, statusline-shell | src/infrastructure/harnesses/claude-code | C | 29 | pending |
+| 19 | claude/statusline-planner | integration/statusline-context-window, statusline-default-conflicts, statusline-payload, statusline-planner, statusline-shell-resolution | src/infrastructure/harnesses/claude-code | C | 47 → 38 | done |
 | 20 | claude/statusline-diagnostics | statusline-diagnostics, -shell, -symlink | src/infrastructure/harnesses/claude-code | C | 15 | pending |
 | 21 | runtime/claude-codex | runtime-claude, runtime-claude-measured, claude-runtime-session-key, runtime-codex, runtime-codex-measured | harnesses/claude-code, harnesses/codex-cli | C | 25 | pending |
 | 22 | runtime/process-harnesses | runtime-antigravity, runtime-copilot, runtime-cursor, runtime-assets, harness-schemas-process | harnesses/antigravity-cli, github-copilot-cli, cursor, common | C | 26 | pending |
@@ -1074,7 +1074,7 @@ The `.gitignore` fixture in `removal-service.test.ts` carries the pre-prd-17 `# 
 ## 18. harness/registration — done 2026-10-10
 
 **Baseline:** 38 runner tests across the 6 files, green (the plan's 27 was the grep count). Stryker: n/a (Common).
-**Result:** 32 tests across the same 6 files, green. Scoped coverage proxy (`registry.ts`, `common/hook-event-cleanup.ts`, `common/runtime-assets.ts`, `common/*-hooks-updater.ts`, `*/planner*.ts`): identical before and after (lines 83.11%, branches 73.44%; `registry.ts` 100%, `hook-event-cleanup.ts` 100% lines and 91.17% branches). The remaining gaps are defensive: `hook-event-cleanup.ts` 7 and 26-27 (non-object item, missing event node), `runtime-assets.ts` 21-24. The partial planner and hooks-updater rows (legacy migration, invalid config) belong to module 43 (`harness/config-preservation`) and module 17's `removal-conflicts`. Commit `<pending>`.
+**Result:** 32 tests across the same 6 files, green. Scoped coverage proxy (`registry.ts`, `common/hook-event-cleanup.ts`, `common/runtime-assets.ts`, `common/*-hooks-updater.ts`, `*/planner*.ts`): identical before and after (lines 83.11%, branches 73.44%; `registry.ts` 100%, `hook-event-cleanup.ts` 100% lines and 91.17% branches). The remaining gaps are defensive: `hook-event-cleanup.ts` 7 and 26-27 (non-object item, missing event node), `runtime-assets.ts` 21-24. The partial planner and hooks-updater rows (legacy migration, invalid config) belong to module 43 (`harness/config-preservation`) and module 17's `removal-conflicts`. Commit `0a79ac8`.
 
 Layout: all six files import `src/infrastructure/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). Names are kept because the prd-01 and prd-02 tasks and code reviews cite them. None is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). The module 9 carry-forward TC-02 (exact support level, capability states and limitation text for all 8 harnesses) is unchanged at `tests/integration/harness-adapters.test.ts`.
 
@@ -1116,6 +1116,81 @@ Unchanged (7 tests): each case kills its own mutant: last entry drops the event 
 - **Created:** none.
 - **Kept (25 runner tests):** TC-02 (8), the registry benchmark-fixture test (`integration/benchmark-fixtures.test.ts` parses the payloads but never asserts `event` or `targetMilliseconds`), the unknown-id test, TC-26, the hook assets (5), Antigravity, UT-04, and `hook-event-cleanup` (7).
 - **Moved:** the six files `tests/unit/` → `tests/integration/`.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.
+
+## 19. claude/statusline-planner — done 2026-10-10
+
+**Baseline:** 47 runner tests across the 5 files, green (the plan's 29 was the grep count). Stryker: n/a (Common).
+**Result:** 38 tests across 5 files, green. Scoped coverage proxy (`statusline-context-window.ts`, `statusline-default.ts`, `statusline-payload.ts`, `statusline-settings.ts`, `statusline-state.ts`, `statusline-shell.ts`): identical before and after (lines 86.28%, branches 94.54%, functions 80.64%). The uncovered lines belong to other modules: `statusline-default.ts` 13-26 (opt-out record, `integration/statusline-default.test.ts`, module 33), `statusline-context-window.ts` 40-48 (`lastRecordedShell`, doctor shell diagnostics, module 20), `statusline-settings.ts` 31-33 and 41-42 (unreadable settings and `statuslineOf`, the planner and diagnostics paths), `statusline-shell.ts` 32-34 (the real `stat` host, `integration/statusline-bridge-previous.test.ts`). Commit `<pending>`.
+
+Layout: all five files import `src/infrastructure/harnesses/claude-code/` and moved from `tests/unit/` to `tests/integration/` with `git mv` before any rewrite (decision 3). `statusline-context-window`, `statusline-payload` and `statusline-planner` keep their names because the prd-02.2 tasks cite them. Two names were taken in `tests/integration/` (module 33's process-lane `statusline-shell.test.ts` and its `statusline-default.test.ts`), so these moved as `statusline-shell-resolution.test.ts` (prd-10 TC-03) and `statusline-default-conflicts.test.ts` (prd-09 CR-01). None of the five is in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). `statusline-planner.test.ts` tests `statusline-settings.ts` and `statusline-state.ts`, not `statusline-planner.ts`; the name stays for the same traceability reason. Module 6 carry-forward: `falls back to the ceiling when no ledger has a window` is unchanged, now at `tests/integration/statusline-context-window.test.ts`.
+
+Mandated scenario (user file changes): these sources only read the Claude settings. The writer is `statusline-planner.ts`, and the byte-for-byte and second-run assertions are `integration/statusline-install.test.ts` TC-12 (`wraps the local status line, stays unchanged on reruns, and restores the file byte for byte`) and `integration/statusline-default.test.ts` (`…plans no change on the next one`, malformed local file left untouched), module 33. Both ran green as related suites.
+
+### statusline-context-window.ts → Common (`readClaudeContextWindow`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| no state file → bridge `absent`; no ledger → ceiling | `state === null` guard removed; `source` ternary swapped | `reports an absent bridge and the ceiling without state or ledgers` |
+| state matches the local command → `installed`; newest ledger wins | `===` → `!==`; sort comparator reversed | `reports an installed bridge and the window of the most recently modified ledger` |
+| local command differs → `inactive` | ternary returns `installed` always | `reports an inactive bridge when the local command differs` |
+| a newer ledger without a window is skipped | `windowTokens !== null` check removed (returns the first ledger) | `skips a newer ledger without a window… (codereview_01/OI-01)` |
+| ledgers without any window fall back to the ceiling | loop result or `source` mapping changed for ledgers present but empty | `falls back to the ceiling when no ledger has a window` (module 6 relies on it) |
+
+### statusline-default.ts → Common (`softenDefaultConflict`, prd-09 CR-01)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| unsupported-path conflict → warning, conflicts cleared | code ternary swapped; `conflicts: []` dropped | `turns the unsupported-path conflict into a warning…` |
+| unparseable settings → exact `STATUSLINE_SETTINGS_INVALID` finding | message, impact, remediation or code changed | `turns an unparseable settings conflict into a STATUSLINE_SETTINGS_INVALID warning…` |
+| a plan without conflicts passes through, so its bridge changes survive | `length === 0` guard removed | `returns a plan without conflicts unchanged` |
+
+### statusline-payload.ts → Common (harness input, FR-03, NFR-02)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| documented payload maps to the session key and the four values | any field mapping or `agentId` changed | `maps the documented example…` |
+| invalid values map to null | `current_usage === null` guard removed; `> 0` → `>= 0`; `isSafeInteger` removed; `<= 100` removed | `maps %s to null` (4 rows: null `current_usage`, zero input tokens, fractional window, percentage above 100) |
+| missing window and model do not throw | `?? {}` or `?.` removed | `maps a missing context window and model to null values` |
+| model id length limit | length check removed | `maps a model id longer than 200 characters to null` |
+| no record without a session or for a non-object window | `!result.success`, `=== undefined` or `=== ''` guard removed | `returns no record for %s` (3 rows) |
+
+### statusline-settings.ts and statusline-state.ts → Common (prd-02.2 TC-10, TC-11, DEC-07)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| precedence local → project → user, skipping the bridge and non-command values | loop order or first match changed; `!isBridgeStatusline` removed; `type` or `trim` check removed | `picks $name` (3 rows: local over project and user; project when local is the bridge; user when local and project are not command objects) |
+| no command anywhere → none | final `return null` changed | `returns none when no scope has a command status line` |
+| only numeric `padding`/`refreshInterval` are copied | filter removed; `?? {}` removed | `copies padding and refreshInterval and ignores other keys and non-numbers` |
+| bridge command is the quoted script with no shell operator (prd-10 TC-01) | operator or `--pipe` re-added | `is only the quoted bridge script…` |
+| roots with `"`, `$`, backtick or a backslash are refused, also after POSIX conversion | a character dropped from the class; `toCommandRoot` converts on a POSIX separator | `refuses the POSIX root %s` (4 rows) |
+| a Windows root with spaces and accents becomes forward slashes and is quoted | separator ternary inverted; split/join removed | `converts a Windows root with spaces and accents to forward slashes and quotes it` |
+| state file round-trips and invalid content reads as absent | `try` removed; `strictObject` → `object`; version literal changed; parse always returns null | `round-trips through serialization`, `treats %s as absent` (3 rows) |
+
+### statusline-shell.ts → Common (`resolveStatuslineShell`, prd-10 TC-03, DEC-02)
+
+Unchanged (5 tests): each covers a TC-03 case and kills its own mutant: the platform check, the `EXEPATH` candidate, the `SHELL` then `CLAUDE_CODE_GIT_BASH_PATH` order, the `MSYSTEM` guard with the PowerShell encoding, and the `isFile` and `bash.exe` basename checks.
+
+### Actions
+- **Deleted (9 runner tests):**
+  - payload `maps input tokens to null for negative total input tokens`: the zero row kills `> 0` → `>= 0`; the negative row only adds `> 0` → `!== 0`.
+  - payload `…non-numeric total input tokens`: `typeof` and `isSafeInteger` each reject the string alone, so removing either still returns null; the fractional-window row kills the `isSafeInteger` removal.
+  - payload `maps a zero window to null`: same `positiveInteger` as the zero-input-tokens row; the call-site mutant (raw `context_window_size`) is killed by the fractional-window row.
+  - payload `maps a null percentage to null`: kills nothing (`null >= 0 && null <= 100` is true in JS, and a raw pass-through is null too). The percentage boundaries 0 and 100 get no test: `usedPercentage` only reaches the fallback status line text and the ledger schema.
+  - payload `returns no record for null`: the `non-object context window` row kills the same `!result.success` guard removal.
+  - settings `picks project when local is absent` and `picks user when only user has one`: the fall-through to project and to user is killed by the `local is the bridge` and `not command objects` rows; TC-10's local, project, user and none scopes stay covered.
+  - settings `quotes a root with spaces and accents`: the Windows test asserts `bridgeCommand` on `D:/Meus Projetos/ação`; its title now carries the spaces and accents (TC-11).
+  - settings `keeps a POSIX root unchanged`: with no backslash in the root, no mutant of the separator ternary changes the result. The backslash row of `refuses the POSIX root %s` now goes through `toCommandRoot(root, '/')`, which kills "always convert" (it would turn `re\po` into an accepted `re/po`) and keeps the POSIX branch covered.
+- **Merged (2 `it.each` → 1):** the payload input-token table and the window/percentage table → one `maps %s to null` table with the field per row.
+- **Rewritten (1):** `refuses the root %s` → `refuses the POSIX root %s` through `toCommandRoot`.
+- **Created:** none.
+- **Kept (38):** context window (5), default conflicts (3), payload example, missing window, model length, null table (4) and no-record table (3), settings and state (15), shell (5).
+- **Moved:** the five files `tests/unit/` → `tests/integration/`, two renamed (above).
 
 ### Production pending items
 - None.

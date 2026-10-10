@@ -11,8 +11,6 @@ const SCRIPT = '.claude/hooks/context-brake-statusline.mjs';
 describe('previous status line resolution (FR-02, DEC-09, TC-10)', () => {
   it.each([
     { name: 'local over project and user', scopes: [LOCAL, PROJECT, USER], expected: { source: 'local', command: 'local.sh' } },
-    { name: 'project when local is absent', scopes: [undefined, PROJECT, USER], expected: { source: 'project', command: 'project.sh' } },
-    { name: 'user when only user has one', scopes: [undefined, undefined, USER], expected: { source: 'user', command: '~/.claude/statusline.sh' } },
     { name: 'project when local is the bridge itself', scopes: [BRIDGE, PROJECT, USER], expected: { source: 'project', command: 'project.sh' } },
     { name: 'user when local and project are not command objects', scopes: [{ type: 'static' }, { type: 'command', command: '  ' }, USER], expected: { source: 'user', command: '~/.claude/statusline.sh' } },
   ])('picks $name', ({ scopes: [local, project, user], expected }) => {
@@ -38,22 +36,14 @@ describe('previous status line resolution (FR-02, DEC-09, TC-10)', () => {
 });
 
 describe('bridge command roots (FR-01, NFR-06, DEC-02, TC-11)', () => {
-  it.each(['/tmp/re"po', '/tmp/re$po', '/tmp/re`po', '/tmp/re\\po'])('refuses the root %s', (root) => {
-    expect(bridgeCommand(root)).toBeNull();
+  it.each(['/tmp/re"po', '/tmp/re$po', '/tmp/re`po', '/tmp/re\\po'])('refuses the POSIX root %s', (root) => {
+    expect(bridgeCommand(toCommandRoot(root, '/'))).toBeNull();
   });
 
-  it('quotes a root with spaces and accents', () => {
-    expect(bridgeCommand('/home/dev/Meus Projetos/ação')).toBe(`node "/home/dev/Meus Projetos/ação/${SCRIPT}"`);
-  });
-
-  it('converts a Windows root to forward slashes before quoting', () => {
+  it('converts a Windows root with spaces and accents to forward slashes and quotes it', () => {
     const root = toCommandRoot('D:\\Meus Projetos\\ação', '\\');
     expect(root).toBe('D:/Meus Projetos/ação');
     expect(bridgeCommand(root)).toBe(`node "D:/Meus Projetos/ação/${SCRIPT}"`);
-  });
-
-  it('keeps a POSIX root unchanged', () => {
-    expect(toCommandRoot('/home/dev/repo', '/')).toBe('/home/dev/repo');
   });
 });
 

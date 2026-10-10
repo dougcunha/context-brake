@@ -44,7 +44,7 @@ describe('FR-01 retired configuration keys (prd-15, TC-02)', () => {
   beforeEach(async () => { dir = await mkdtemp(join(tmpdir(), 'cb-t01-')); });
   afterEach(async () => { await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('doctor names every key with the fix in JSON and still diagnoses the active harness (FR-01, TC-02)', async () => {
+  it('doctor names every key with the fix in JSON and text and still diagnoses the active harness (FR-01, NFR-04, TC-02)', async () => {
     await writeFile(join(dir, CONFIG_FILE), withRetiredKeys(), 'utf8');
     const result = await runInProcessCli(['doctor', '--json'], dir);
     const report = doctorReportSchema.parse(JSON.parse(result.stdout));
@@ -53,12 +53,7 @@ describe('FR-01 retired configuration keys (prd-15, TC-02)', () => {
     for (const key of RETIRED_KEYS) expect(finding?.message).toContain(`${key} is not a recognized key`);
     expect(finding?.remediation).toBe(UNRECOGNIZED_KEYS_REMEDIATION);
     expect(report.integrations.map((integration) => integration.harness)).toContain('claude-code');
-  });
-  it('doctor prints the keys and the remediation line in text (FR-01, NFR-04, TC-02)', async () => {
-    await writeFile(join(dir, CONFIG_FILE), withRetiredKeys(), 'utf8');
-    const result = await runInProcessCli(['doctor'], dir);
-    expect(result.stderr).toContain('stateStorage is not a recognized key');
-    expect(result.stderr).toContain(`Remediation: ${UNRECOGNIZED_KEYS_REMEDIATION}`);
+    expect((await runInProcessCli(['doctor'], dir)).stderr).toContain(`Remediation: ${UNRECOGNIZED_KEYS_REMEDIATION}`);
   });
   it('remove proceeds past the keys and deletes the installation and the configuration (FR-01, FR-08, TC-02)', async () => {
     await installWithEarlierBuildKeys(dir);

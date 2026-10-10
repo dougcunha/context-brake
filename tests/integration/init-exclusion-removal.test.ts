@@ -9,7 +9,7 @@ const CODEX_HOOK = '.codex/hooks/context-brake.mjs';
 const CODEX_CONFIG = '.codex/hooks.json';
 const CLAUDE_HOOK = '.claude/hooks/context-brake.mjs';
 const CLAUDE_SETTINGS = '.claude/settings.json';
-const USER_HOOKS_FIXTURE = join(import.meta.dirname, '../fixtures/harnesses/codex-cli/user-hooks.json');
+const USER_HOOKS_FIXTURE = join('tests/fixtures/harnesses/codex-cli/user-hooks.json');
 
 async function exists(path: string): Promise<boolean> {
   return stat(path).then(() => true).catch(() => false);

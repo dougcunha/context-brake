@@ -20,28 +20,23 @@ beforeEach(async () => {
 afterEach(async () => { await removeProject(root); });
 
 describe('init migrates legacy turn limits (TC-20, FR-09, US-04)', () => {
-  it('writes nothing on --dry-run', async () => {
+  it('reports the retired defaults in doctor and writes nothing on --dry-run', async () => {
+    const doctor = await runCli(root, ['doctor', '--json']);
+    expect(doctor.stdout).toContain('LEGACY_TURN_LIMITS');
+    expect(doctor.stdout).toContain('retired defaults (7, 10, 12)');
     expect((await runCli(root, ['init', '--dry-run', '--json'])).code).toBe(0);
     expect(await readProjectFile(root, CONFIG_PATH)).toBe(LEGACY_TEXT);
   });
-  it('removes the four turn fields and keeps the other keys', async () => {
+  it('removes the four turn fields keeping the other keys, changes nothing on a second run, and leaves doctor without the finding', async () => {
     expect((await runCli(root, ['init', '--yes', '--json'])).code).toBe(0);
     const config = await readConfig(root);
     const telemetry = config['telemetry'] as Record<string, unknown>;
     expect(telemetry).not.toHaveProperty('turnCeiling');
     expect(telemetry['zones']).toEqual({ greenMaxPercentage: 49, yellowMaxPercentage: 65, criticalPercentage: 75 });
     expect(config['activeHarnesses']).toEqual(LEGACY_CONFIG.activeHarnesses);
-  });
-  it('changes nothing on a second run and doctor reports no legacy finding', async () => {
-    await runCli(root, ['init', '--yes', '--json']);
-    const before = await readProjectFile(root, CONFIG_PATH);
+    const migrated = await readProjectFile(root, CONFIG_PATH);
     expect((await runCli(root, ['init', '--yes', '--json'])).code).toBe(0);
-    expect(await readProjectFile(root, CONFIG_PATH)).toBe(before);
+    expect(await readProjectFile(root, CONFIG_PATH)).toBe(migrated);
     expect((await runCli(root, ['doctor', '--json'])).stdout).not.toContain('LEGACY_TURN_LIMITS');
-  });
-  it('reports the retired defaults in doctor before migration', async () => {
-    const doctor = await runCli(root, ['doctor', '--json']);
-    expect(doctor.stdout).toContain('LEGACY_TURN_LIMITS');
-    expect(doctor.stdout).toContain('retired defaults (7, 10, 12)');
   });
 });

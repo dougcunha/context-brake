@@ -6,6 +6,7 @@ import { installReportSchema } from '../../src/core/contracts/diagnostics.js';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
 const CODEX_HOOKS = '{\n  "hooks": {}\n}\n';
+const USAGE_EXIT = 64;
 const KEPT_MESSAGE = 'Session handoffs were kept: .context-brake/handoff.md, .context-brake/handoffs/.';
 let base = '';
 let root = '';
@@ -30,8 +31,20 @@ beforeEach(async () => {
 });
 afterEach(async () => { await rm(base, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
+async function seedRestartState(): Promise<void> {
+  await mkdir(join(root, '.context-brake', 'runtime', 'restart', 'pi'), { recursive: true });
+  await mkdir(join(root, '.context-brake', 'handoffs'), { recursive: true });
+  await writeFile(join(root, '.context-brake', 'runtime', 'restart', 'pi', 's1.json'), '{}', 'utf8');
+  await writeFile(join(root, '.context-brake', 'runtime', 'keep.json'), '{}', 'utf8');
+  await writeFile(join(root, '.context-brake', 'handoff.md'), '# Goal\n', 'utf8');
+}
+
+function deletedPaths(report: Awaited<ReturnType<typeof init>>['report']): string[] | undefined {
+  return report?.plan.changes.filter((change) => change.kind === 'delete').map((change) => change.path);
+}
+
 describe('init --auto-restart on harnesses without Claude Code (prd-14 FR-07, FR-08, NFR-04, DEC-11, DEC-12, TC-13)', () => {
-  it('reports the restart mode per harness and installs the restart file and the ignore file', async () => {
+  it('reports the restart mode per harness, installs the restart file and the ignore file, and changes nothing on a second run', async () => {
     const first = await init(['--auto-restart']);
     expect(first.code).toBe(0);
     const modes = first.report?.findings.filter((finding) => finding.code === 'AUTO_RESTART_MODE').map((finding) => [finding.harness, finding.message]);
@@ -39,43 +52,24 @@ describe('init --auto-restart on harnesses without Claude Code (prd-14 FR-07, FR
     await expect(readFile(join(root, '.context-brake', '.gitignore'), 'utf8')).resolves.toBe('handoff.md\nhandoffs/\n');
     await expect(readFile(join(root, '.pi', 'extensions', 'context-brake-restart.js'), 'utf8')).resolves.toContain('context-brake-restart');
     await expect(readFile(join(root, '.codex', 'hooks.json'), 'utf8')).resolves.toContain('"hooks"');
-  });
-  it('changes nothing on a second run', async () => {
-    await init(['--auto-restart']);
-    const second = await init(['--auto-restart']);
-    expect(second.report?.plan.changes).toEqual([]);
-  });
-  it('removes the restart file and the ignore file with --no-auto-restart', async () => {
-    await init(['--auto-restart']);
-    const off = await init(['--no-auto-restart']);
-    expect(off.code).toBe(0);
-    const deleted = off.report?.plan.changes.filter((change) => change.kind === 'delete').map((change) => change.path);
-    expect(deleted).toEqual(expect.arrayContaining(['.context-brake/.gitignore', '.pi/extensions/context-brake-restart.js']));
+    expect((await init(['--auto-restart'])).report?.plan.changes).toEqual([]);
   });
 });
 
-describe('init --no-auto-restart keeps the handoffs (prd-14 FR-13, DEC-14, TC-14)', () => {
-  it('deletes the restart logs and leaves other runtime state (DEC-14, codereview_03 CR-02)', async () => {
+describe('init --no-auto-restart keeps the handoffs (prd-14 FR-07, FR-13, DEC-14, TC-14, codereview_03 CR-02)', () => {
+  it('previews and applies the deletion of the restart file, ignore file, and restart logs, keeping other runtime state and naming the kept handoffs', async () => {
     await init(['--auto-restart']);
-    await mkdir(join(root, '.context-brake', 'runtime', 'restart', 'pi'), { recursive: true });
-    await writeFile(join(root, '.context-brake', 'runtime', 'restart', 'pi', 's1.json'), '{}', 'utf8');
-    await writeFile(join(root, '.context-brake', 'runtime', 'keep.json'), '{}', 'utf8');
-    const planned = (await init(['--no-auto-restart', '--dry-run'])).report?.plan.changes.filter((change) => change.kind === 'delete').map((change) => change.path);
-    expect(planned).toContain('.context-brake/runtime/restart/pi/s1.json');
-    const applied = await init(['--no-auto-restart']);
-    expect(applied.code).toBe(0);
-    expect(applied.report?.status).toBe('success');
-    await expect(readFile(join(root, '.context-brake', 'runtime', 'restart', 'pi', 's1.json'), 'utf8')).rejects.toThrow();
-    await expect(readdir(join(root, '.context-brake', 'runtime', 'restart'))).rejects.toThrow();
-    await expect(readFile(join(root, '.context-brake', 'runtime', 'keep.json'), 'utf8')).resolves.toBe('{}');
-  });
-  it('names the kept handoffs in the dry run and when applied', async () => {
-    await init(['--auto-restart']);
-    await mkdir(join(root, '.context-brake', 'handoffs'), { recursive: true });
-    await writeFile(join(root, '.context-brake', 'handoff.md'), '# Goal\n', 'utf8');
+    await seedRestartState();
     const kept = expect.arrayContaining([expect.objectContaining({ code: 'AUTO_RESTART_HANDOFF_KEPT', message: KEPT_MESSAGE })]);
-    expect((await init(['--no-auto-restart', '--dry-run'])).report?.findings).toEqual(kept);
-    expect((await init(['--no-auto-restart'])).report?.findings).toEqual(kept);
+    const preview = await init(['--no-auto-restart', '--dry-run']);
+    expect(deletedPaths(preview.report)).toEqual(expect.arrayContaining(['.context-brake/.gitignore', '.pi/extensions/context-brake-restart.js', '.context-brake/runtime/restart/pi/s1.json']));
+    expect(preview.report?.findings).toEqual(kept);
+    const applied = await init(['--no-auto-restart']);
+    expect([applied.code, applied.report?.status]).toEqual([0, 'success']);
+    expect(applied.report?.findings).toEqual(kept);
+    await expect(readdir(join(root, '.context-brake', 'runtime', 'restart'))).rejects.toThrow();
+    await expect(readFile(join(root, '.pi', 'extensions', 'context-brake-restart.js'), 'utf8')).rejects.toThrow();
+    await expect(readFile(join(root, '.context-brake', 'runtime', 'keep.json'), 'utf8')).resolves.toBe('{}');
     await expect(readFile(join(root, '.context-brake', 'handoff.md'), 'utf8')).resolves.toBe('# Goal\n');
   });
 });
@@ -87,7 +81,7 @@ describe('init --auto-restart target check (prd-14 DEC-11, TC-13)', () => {
     await mkdir(join(root, '.agents'), { recursive: true });
     await writeFile(join(root, '.agents', 'hooks.json'), '{}\n', 'utf8');
     const result = await runInProcessCli(['init', '--yes', '--json', '--auto-restart'], root, env);
-    expect(result.code).not.toBe(0);
+    expect(result.code).toBe(USAGE_EXIT);
     expect(result.stdout + result.stderr).toContain('--auto-restart needs at least one active harness with a restart mode');
   });
 });

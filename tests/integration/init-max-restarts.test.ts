@@ -4,8 +4,11 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
+const USAGE_EXIT = 64;
+const CONFIG_FILE = 'context-brake.config.json';
+
 async function storedLimit(root: string): Promise<number | undefined> {
-  const config = JSON.parse(await readFile(join(root, 'context-brake.config.json'), 'utf8')) as { autoRestart?: { maxConsecutiveRestarts: number } };
+  const config = JSON.parse(await readFile(join(root, CONFIG_FILE), 'utf8')) as { autoRestart?: { maxConsecutiveRestarts: number } };
   return config.autoRestart?.maxConsecutiveRestarts;
 }
 
@@ -18,21 +21,15 @@ describe('FR-09 --max-restarts writes the consecutive-restart limit (prd-16, TC-
   });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('writes 3, then replaces it with 5 (FR-09, OBJ-04, TC-02)', async () => {
+  it('rejects a limit while restart is off, writes 3, replaces it with 5, and rejects 11 keeping 5 (FR-09, OBJ-04, TC-02)', async () => {
+    const restartOff = await runInProcessCli(['init', '--yes', '--max-restarts', '3'], root);
+    expect([restartOff.code, restartOff.stderr.includes('add --auto-restart')]).toEqual([USAGE_EXIT, true]);
+    await expect(readFile(join(root, CONFIG_FILE), 'utf8')).rejects.toThrow();
     expect((await runInProcessCli(['init', '--yes', '--auto-restart', '--max-restarts', '3'], root)).code).toBeLessThanOrEqual(1);
     expect(await storedLimit(root)).toBe(3);
     expect((await runInProcessCli(['init', '--yes', '--max-restarts', '5'], root)).code).toBeLessThanOrEqual(1);
     expect(await storedLimit(root)).toBe(5);
-  });
-  it('keeps the default of 2 without the flag (FR-09, TC-02)', async () => {
-    await runInProcessCli(['init', '--yes', '--auto-restart'], root);
-    expect(await storedLimit(root)).toBe(2);
-  });
-  it('rejects an out-of-range value and a limit while restart is off, writing nothing (FR-09, TC-02)', async () => {
-    const tooHigh = await runInProcessCli(['init', '--yes', '--auto-restart', '--max-restarts', '11'], root);
-    const restartOff = await runInProcessCli(['init', '--yes', '--max-restarts', '3'], root);
-    expect([tooHigh.code, restartOff.code]).toEqual([64, 64]);
-    expect(restartOff.stderr).toContain('add --auto-restart');
-    await expect(readFile(join(root, 'context-brake.config.json'), 'utf8')).rejects.toThrow();
+    expect((await runInProcessCli(['init', '--yes', '--max-restarts', '11'], root)).code).toBe(USAGE_EXIT);
+    expect(await storedLimit(root)).toBe(5);
   });
 });

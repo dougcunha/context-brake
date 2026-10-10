@@ -72,7 +72,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 32 | integration/hooks-lifecycle-misc | retired-hook-events, -copilot, -harnesses, linked-project-root, -lifecycle, asset-currency-lifecycle, cli-shells, support-limitations, invalid-config, remove-invalid-config, node-process-runner | src/cli/commands, src/infrastructure/process | G | 40 → 25 | done |
 | 33 | integration/statusline | statusline-bridge, -bridge-lifecycle, -bridge-previous, statusline-default, -install, -install-invalid, statusline-shell, runtime-statusline-ledger | harnesses/claude-code, src/infrastructure/runtime | G | 40 → 36 | done |
 | 34 | telemetry/zones | zone-classifier, zone-guidance, telemetry-block, telemetry-block-budget | src/core/services | K | 64 → 43 | done |
-| 35 | telemetry/session-zone-usage | session-zone, session-zone-statusline, session-zone-reset-window, usage-resolver, window-origin, window-trust | src/core/services | K | 42 | pending |
+| 35 | telemetry/session-zone-usage | session-zone, session-zone-statusline (absorbed session-zone-reset-window), usage-resolver, window-origin, window-trust | src/core/services | K | 50 → 34 | done |
 | 36 | brake/engine-failure-policy | brake-engine-debug, brake-engine-lifecycle, failure-policy, failure-policy-snapshot-reset, injection-policy, reset-notice | src/core/services | K | 35 | pending |
 | 37 | runtime/hosts | hook-deadline, in-process-host, in-process-host-deadline, in-process-runtime, process-hook-host, process-hook-host-deadline, runtime-composition, runtime-paths | src/infrastructure/runtime | K | 38 | pending |
 | 38 | storage/json-editing | json-document-editor, json-span-safety | src/infrastructure/storage | K | 23 | pending |
@@ -1974,7 +1974,7 @@ Mandated rows: user-file byte preservation including a second run is TC-12 and T
 ## 34. telemetry/zones — done 2026-10-10
 
 **Baseline:** 64 runner tests across the 4 files, green (the table's 34 was the grep count; `zone-classifier` 20, `zone-guidance` 21, `telemetry-block` 10, `telemetry-block-budget` 13). Stryker on `zone-classifier.ts`, `zone-guidance.ts`, `telemetry-block.ts` with these 4 files: **94.83%** (110 killed, 4 survived, 2 no coverage); per file 98.21% / 88.64% / 100%. Coverage proxy: lines 96.92%, branches 100% (`zone-guidance.ts` lines 26-27 uncovered).
-**Result:** 43 tests, green. Stryker on the same scope: **95.69%** (111 killed, 3 survived, 2 no coverage); per file 100% / 88.64% / 100%. Coverage proxy unchanged (lines 96.92%, branches 100%, same uncovered lines 26-27). Related suites green: `unit/session-zone`, `unit/brake-engine-debug`, `integration/package-contents`. Commit `<hash>`.
+**Result:** 43 tests, green. Stryker on the same scope: **95.69%** (111 killed, 3 survived, 2 no coverage); per file 100% / 88.64% / 100%. Coverage proxy unchanged (lines 96.92%, branches 100%, same uncovered lines 26-27). Related suites green: `unit/session-zone`, `unit/brake-engine-debug`, `integration/package-contents`. Commit `6e1908a`.
 
 Deletions were checked against a `--disableBail` Stryker run (the default run records only the first killing test per mutant): every mutant killed before still has a killer among the kept tests.
 
@@ -2045,3 +2045,77 @@ Mandated rows: every usage boundary (49/50/65/66/74/75/130) and turn boundary (5
 
 ### Questions `[?]`
 - None.
+
+## 35. telemetry/session-zone-usage — done 2026-10-10
+
+**Baseline:** 50 runner tests across the 6 files, green (the table's 42 was the grep count; `session-zone` 11, `session-zone-statusline` 11, `session-zone-reset-window` 4, `usage-resolver` 14, `window-origin` 8, `window-trust` 2). Stryker (`--disableBail`) on `session-zone.ts`, `usage-resolver.ts`, `window-trust.ts` with these 6 files: **95.95%** (71 killed, 3 survived, 0 no coverage); per file 93.33% / 100% / 90.91%. Coverage proxy: lines 100%, branches 94.59% (`session-zone.ts` 90%, lines 21 and 28).
+**Result:** 34 tests in 5 files, green. Stryker on the same scope: **98.65%** (73 killed, 1 survived, 0 no coverage); per file 96.67% / 100% / 100%. Coverage proxy: lines 100%, branches 97.29% (`session-zone.ts` 95.23%, line 21 only). Related suites green: `unit/brake-engine-*`, `unit/statusline-summary`, `unit/in-process-host`; `npm run typecheck` green.
+
+Every deletion was checked against the `--disableBail` kill map: before the cleanup only 3 tests killed an exclusive mutant (the `at the reset` row, the `resolveUsageWithConfig` test, `uses the declared window…`), and all are kept.
+
+### session-zone.ts → Critical (readings and windows feeding the zone, recovery after a reset)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the engine injects the block `readZone` produces (DEC-20) | engine passes other inputs to `readZone` | `renders the same block the engine injects for critical usage over many turns` |
+| below the activation threshold the engine stays neutral (CA-12) | neutral branch removed | `renders a block below the activation threshold…` (module 30 relies on it) |
+| pending characters add to the ledger's; the pending turn, not the ledger's, meets the turn limits (prd-02.1 FR-02) | `+` → `-` on characters; `inputs.turns` → `summary.turns` | `classifies $label` (2 rows, exact estimate/percentage/zone) |
+| a transcript measurement at or before the reset is stale (FR-06, DEC-09, TC-11) | `<=` ↔ `<`/`>`; `isStale` guard removed | `reads a measurement taken $moment the reset as $source` (3 rows) |
+| status line window feeds the percentage, also after a reset (prd-02.2 FR-04, FR-06, TC-03) | `?? statusline.windowTokens` removed | `computes the percentage over the recorded window…`, `keeps the recorded window after a reset` |
+| bridge tokens after the reset measure; at or before it they don't (TC-04) | bridge `isStale` skipped (`?? undefined` → `&& undefined`) | `measures from status line tokens…`, `estimates when the status line tokens were $label` (2 rows) |
+| transcript beats bridge; a stale transcript falls back to the bridge | `??` operands swapped; stale transcript kept | `prefers transcript tokens…`, `falls back to status line tokens…` |
+| no bridge: measured tokens over the ceiling, with percentage, zone and the parallel estimate (TC-05) | `estimate` taken from the reading; percentage over the wrong window | `classifies measured tokens over contextWindowCeiling…` (full `ZoneReading`) |
+| harness window wins over the status line window, even from a stale reading (TC-05, TC-22) | `transcript?.contextWindow` instead of `inputs.measured?.contextWindow`; operands swapped | `lets a Pi-reported window win…`, `keeps a harness window from a stale reading…` |
+| estimate over the recorded window after a compaction (TC-22, recovery) | window dropped with the usage | `estimates over the status line window after a compaction…` |
+
+### usage-resolver.ts → Critical (estimate formula, source and window origin)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| baseline + ceil(chars/4) + turns × per-turn (RF6–RF8, CA-10, TC-28) | arithmetic operators; `ceil` → `floor`/`round` | `adds baseline, quarter of observed characters, and turns`, `rounds observed characters up` |
+| harness tokens and window, source `measured` (CA-09) | `tokens !== null` inverted; origin literal | `uses the harness tokens and window…` |
+| null tokens fall back to the estimate over the harness window or the ceiling (PRD 2.2 DEC-06, TC-22) | `measured &&` → `\|\|`; `?? null` removed | `falls back to the estimate over window $expected.windowOrigin…` (2 rows) |
+| a measurement without a window uses the configured ceiling (FR-07, DEC-10, TC-10) | ceiling hardcoded | `uses the configured ceiling as the window of a measurement without one` |
+| declared window and its origin (prd-09 TC-01) | `!== undefined` → `false`; origin literal | `window-origin` `uses the declared window on a harness without a window source` |
+| `resolveUsageWithConfig` passes the config ceiling | body emptied | `uses the configured window ceiling when the harness supplies no window` (dead code, see pending) |
+
+### window-trust.ts → Critical (declared window gate)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| declared window only when `context_usage` is `unsupported` (prd-09 FR-05) | `=== 'unsupported'` → `true`/`!==`; `entry.id === 'context_usage'` → `true` | `accepts the declared window only when the harness reports no context usage` (+1 assertion), `window-origin` `ignores the declared window when context_usage is %s` (2 rows) |
+
+Survivor, equivalent: `session-zone.ts` 35:37 (`lastResetAt === null` → `false`): `Date.parse(null)` is `NaN` and `x <= NaN` is false, so the guard changes nothing observable. The baseline survivors 28:26 (bridge usage never stale-checked) and `window-trust.ts` 4:39 (first capability taken regardless of id) are now killed: the first by an `it.each` row with a status line line appended after the reset line but timestamped at the reset (the race between the bridge process and the reset), the second by one assertion with another capability listed first.
+
+### Actions
+- **Deleted (14):**
+  - `session-zone` `uses the no-plan action from the plan guidance for a yellow session without a plan file`: cites prd-02.1 FR-08/DEC-05/TC-07 (plan and no-plan variants) and prd-02 DEC-HIL-04 (an acceptance gate), all superseded by prd-12's single mode; the YELLOW action text is pinned exactly by `zone-guidance` (module 34).
+  - `session-zone` `keeps a timestamped measurement when the session has no reset`: its only mutant (35:37) is equivalent; the measured reading with no reset is asserted by `classifies measured tokens over contextWindowCeiling…`.
+  - `session-zone-statusline` `renders tokens=200000/1000000 in the telemetry block`: same arrangement as `computes the percentage over the recorded window…`, which asserts TC-03's 20%, tokens/window and source on the reading; the block format is module 34's exact-string tests.
+  - `session-zone-statusline` `ignores a statusline line without a window`: null windows are dropped by `summarizeStatusline` (`statusline-summary` `does not let null values overwrite…`, module 12); the resulting path is the no-bridge test.
+  - `session-zone-reset-window` `renders the recorded window in the telemetry block of an estimated reading`: same reading as `estimates over the status line window after a compaction…` (exact `toEqual`), rendered by module 34's code.
+  - `session-zone-reset-window` `estimates over contextWindowCeiling without any window source`: the stale-transcript rows cover the estimate, and the `usage-resolver` null-token row with window `null` covers the ceiling.
+  - `usage-resolver` `resolves the empty-estimate baseline for the first event of a session`: the exact formula test kills the same mutants.
+  - `usage-resolver` `applies a window change reported mid-session`: `resolveUsage` is stateless; each call's window is pinned by `uses the harness tokens and window…`.
+  - `usage-resolver` `keeps the parallel estimate available for measured sessions`: repeated two other tests' values; the parallel `estimate` of a measured reading is now asserted on `readZone` (the full `ZoneReading` in the no-bridge test).
+  - `usage-resolver` `returns the resolver reading for %s` (4 rows): compared `readZone` with `resolveUsage` (oracle from the implementation) and killed nothing exclusive; each row has a literal counterpart (no measurement: `classifies $label`; transcript tokens: the no-bridge test; harness window: `window-origin` `uses the harness window…`; null tokens: the resolver `it.each`). TC-05 stays in the statusline describe.
+  - `window-trust` `costs at most 10 tokens for the window field (NFR-02)`: encoded a string literal, not code output; prd-09 TC-06 assigns NFR-02 to the block tests, and `telemetry-block-budget` (describe cites prd-09 NFR-02) measures the worst case with `window=declared`.
+- **Merged:**
+  - `session-zone` `renders the same block the engine injects for %s` 3 rows → 1 (critical over many turns): the yellow and red rows killed the same mutants.
+  - `session-zone` `prefers measured usage when the harness reports it` + `session-zone-statusline` `uses contextWindowCeiling when the ledger has no statusline lines` → `classifies measured tokens over contextWindowCeiling when the ledger has no statusline lines` (asserts the reading, estimate 15150, percentage 78 and CRITICAL).
+  - `session-zone-statusline` `estimates when the status line tokens were recorded before the last reset` + `…share the reset timestamp` → `estimates when the status line tokens were $label` (2 rows); the second row now places the line after the reset line, which kills survivor 28:26 (before, both rows were dropped by the summary's position rule).
+  - `usage-resolver` `falls back to the estimate over the harness window…` + `estimates over the configured ceiling when the harness reports neither…` → one `it.each` with full `toEqual` on both rows.
+- **Rewritten (1):** `session-zone` `counts pending characters and turns on top of the ledger` (asserted `toBeGreaterThan` and two zones) → `classifies $label` with exact estimate, percentage and zone. Stale `it.each` titles now name the moment and the source instead of printing the timestamp.
+- **Created:** 1 `it.each` row in `classifies $label`: turn limits 59/99 and a pending turn of 100 over a ledger turn of 1 → RED at 23% usage. It is the mandated prd-02.1 FR-02 row for how the event's turn reaches the classifier (`inputs.turns` → `summary.turns` is a mutant Stryker does not generate). Plus 2 assertions (`window-trust` capability order; the full `ZoneReading` in the no-bridge test).
+- **Moved:** the 2 remaining `session-zone-reset-window` tests into `session-zone-statusline.test.ts` (same fixtures and helpers; 75 non-blank lines), file removed. `session-zone.test.ts` (59) + `session-zone-statusline.test.ts` (75) exceed 100 lines, so the split by concern stays. No lane entries.
+- **Kept:** everything else, including the module 21 (`window-origin` harness and `unknown`), module 30 (`session-zone` CA-12 neutral `PreInvocation`, now line 35) and module 10 (`window-origin` `keeps declaredContextWindow through a config rewrite…`) carry-forwards; `leaves it out by default` stays (prd-09 TC-05 "absent by default"; its second assertion protects `normalizeTurnLimits` omitting the key).
+
+Mandated rows: stale-reading boundaries before/at/after the reset (FR-06, DEC-09), bridge tokens before/at/after the reset, the recorded and harness windows after a reset, and the turn reaching the classifier with limits (FR-02) are asserted; the usage and turn boundaries themselves are module 34's `zone-classifier` tables.
+
+### Production pending items
+- `usage-resolver.ts` `resolveUsageWithConfig` has no production caller: remove it and its test together.
+- `session-zone.ts` 35: the `lastResetAt === null` operand is redundant (equivalent mutant); optional cleanup.
+- `session-zone.ts` 21: `reading.usedTokens ?? 0` is unreachable (`resolveUsage` never returns a null `usedTokens`); it exists because `UsageReading.usedTokens` is `number | null`.
+
+### Questions `[?]`
+- The `session-zone` engine describe cites `TC-16`, which matches no row for this behavior (prd-02 TC-16 is the allowlist; DEC-20 is prd-04's `readZone` extraction, from the superseded runner). Left as is.

@@ -5,7 +5,6 @@ import type { LedgerLine } from '../../src/core/contracts/session-ledger.js';
 import type { StatuslineLine } from '../../src/core/contracts/statusline-line.js';
 import { summarizeLedger } from '../../src/core/services/session-counters.js';
 import { readZone, type MeasuredUsage } from '../../src/core/services/session-zone.js';
-import { renderSessionTelemetry } from '../helpers/session-telemetry.js';
 
 const RESET_AT = '2026-09-25T12:00:00.000Z';
 const BEFORE = '2026-09-25T11:59:00.000Z';
@@ -29,14 +28,6 @@ describe('zone over the status line window (FR-04, DEC-06, TC-03)', () => {
     expect(result.zone).toBe('GREEN');
   });
 
-  it('renders tokens=200000/1000000 in the telemetry block', () => {
-    const summary = summarizeLedger([statusline(BEFORE, 1000000, null)]);
-    const block = renderSessionTelemetry(SETTINGS, { summary, turns: 1, observedCharacters: 0, measured: { tokens: 200000, contextWindow: null } }, () => 'keep working');
-    expect(block).toContain('usage=20%');
-    expect(block).toContain('tokens=200000/1000000');
-    expect(block).toContain('source=measured');
-  });
-
   it('keeps the recorded window after a reset (FR-06)', () => {
     const result = zoneFor([statusline(BEFORE, 1000000, 500000), RESET], { tokens: 30000, contextWindow: null, at: AFTER });
     expect(result.reading.windowTokens).toBe(1000000);
@@ -51,14 +42,11 @@ describe('status line tokens as the fallback measurement (FR-05, FR-06, TC-04)',
     expect(result.zone).toBe('RED');
   });
 
-  it('estimates when the status line tokens were recorded before the last reset', () => {
-    const result = zoneFor([statusline(BEFORE, 1000000, 650000), RESET]);
-    expect(result.reading.source).toBe('estimated');
-  });
-
-  it('estimates when status line tokens share the reset timestamp', () => {
-    const result = zoneFor([statusline(RESET_AT, 1000000, 650000), RESET]);
-    expect(result.reading.source).toBe('estimated');
+  it.each([
+    { label: 'recorded before the reset line', lines: [statusline(BEFORE, 1000000, 650000), RESET] },
+    { label: 'appended after the reset line with the reset timestamp', lines: [RESET, statusline(RESET_AT, 1000000, 650000)] },
+  ])('estimates when the status line tokens were $label', ({ lines }) => {
+    expect(zoneFor(lines).reading.source).toBe('estimated');
   });
 
   it('falls back to status line tokens when the transcript measurement is stale', () => {
@@ -73,18 +61,27 @@ describe('status line tokens as the fallback measurement (FR-05, FR-06, TC-04)',
 });
 
 describe('zone without the bridge and with a harness window (OBJ-03, FR-04, TC-05)', () => {
-  it('uses contextWindowCeiling when the ledger has no statusline lines', () => {
+  it('classifies measured tokens over contextWindowCeiling when the ledger has no statusline lines', () => {
     const result = zoneFor([], { tokens: 100000, contextWindow: null });
-    expect(result.reading).toEqual({ source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000, windowOrigin: 'config' });
+    expect(result).toEqual({ reading: { source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000, windowOrigin: 'config' }, estimate: 15150, percentage: 78, zone: 'CRITICAL' });
   });
 
   it('lets a Pi-reported window win over the status line window', () => {
     const result = zoneFor([statusline(BEFORE, 1000000, null)], { tokens: 100000, contextWindow: 272000 });
     expect(result.reading.windowTokens).toBe(272000);
   });
+});
 
-  it('ignores a statusline line without a window', () => {
-    const result = zoneFor([statusline(BEFORE, null, null)], { tokens: 100000, contextWindow: null });
-    expect(result.reading.windowTokens).toBe(128000);
+describe('estimated readings keep the recorded window after a reset (FR-06, OBJ-01, DEC-06, TC-22)', () => {
+  it('estimates over the status line window after a compaction with a stale transcript reading', () => {
+    const result = zoneFor([statusline(BEFORE, 1000000, 500000), RESET, statusline(AFTER, 1000000, null)], { tokens: 900000, contextWindow: null, at: BEFORE });
+    expect(result.reading).toEqual({ source: 'estimated', usedTokens: 15150, windowTokens: 1000000, measuredTokens: 15150, windowOrigin: 'harness' });
+    expect(result.percentage).toBe(1);
+    expect(result.zone).toBe('GREEN');
+  });
+
+  it('keeps a harness window from a stale reading over the status line window', () => {
+    const result = zoneFor([statusline(BEFORE, 1000000, null), RESET], { tokens: 100000, contextWindow: 272000, at: BEFORE });
+    expect(result.reading).toMatchObject({ source: 'estimated', windowTokens: 272000 });
   });
 });

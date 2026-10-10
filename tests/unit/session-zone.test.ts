@@ -12,6 +12,7 @@ const AT = '2026-09-23T12:00:00.000Z';
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
 const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
 const SETTINGS = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG };
+const TURN_LIMITS = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 59, yellowMaxTurn: 99 } } };
 function ACTION_FOR(zone: Parameters<typeof zoneAction>[0]): string {
   return zoneAction(zone, DEFAULT_CONFIG.snapshot);
 }
@@ -25,12 +26,8 @@ function engineFor(lines: readonly LedgerLine[]) {
 }
 
 describe('session zone extraction matches the brake engine (TC-16, DEC-20)', () => {
-  it.each([
-    ['yellow usage', [200000]],
-    ['red usage over several turns', [120000, 90000, 60000]],
-    ['critical usage over many turns', Array.from({ length: 12 }, () => 30000)],
-  ])('renders the same block the engine injects for %s', async (_case, characters) => {
-    const lines = toolLines(characters);
+  it('renders the same block the engine injects for critical usage over many turns', async () => {
+    const lines = toolLines(Array.from({ length: 12 }, () => 30000));
     const decision = await engineFor(lines).handle({ kind: 'pre_invocation', session: KEY });
     const summary = summarizeLedger(lines);
     expect(decision).toEqual({ kind: 'context', block: renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, ACTION_FOR) });
@@ -44,30 +41,14 @@ describe('session zone extraction matches the brake engine (TC-16, DEC-20)', () 
   });
 });
 
-describe('session telemetry plan-aware actions (FR-08, DEC-05, DEC-HIL-04, TC-07)', () => {
-  it('uses the no-plan action from the plan guidance for a yellow session without a plan file', () => {
-    const summary = summarizeLedger(toolLines([200000]));
-    const block = renderSessionTelemetry(SETTINGS, { summary, turns: summary.turns, observedCharacters: 0 }, ACTION_FOR);
-    expect(block).toContain('zone=YELLOW action=keep working; finish the current unit before large new explorations');
-  });
-});
-
-describe('session zone readings (DEC-20)', () => {
-  it('counts pending characters and turns on top of the ledger', () => {
+describe('session zone readings (DEC-20, prd-02.1 FR-02)', () => {
+  it.each([
+    { label: 'pending characters on top of the ledger', config: DEFAULT_CONFIG, turns: 2, observedCharacters: 400000, expected: { estimate: 115550, percentage: 90, zone: 'CRITICAL' } },
+    { label: 'the pending turn, not the ledger turn, against the turn limits', config: TURN_LIMITS, turns: 100, observedCharacters: 0, expected: { estimate: 30250, percentage: 23, zone: 'RED' } },
+  ])('classifies $label', ({ config, turns, observedCharacters, expected }) => {
     const summary = summarizeLedger(toolLines([1000]));
-    const before = readZone(SETTINGS, { summary, turns: 1, observedCharacters: 0 });
-    const after = readZone(SETTINGS, { summary, turns: 2, observedCharacters: 400000 });
-    expect(after.estimate).toBeGreaterThan(before.estimate);
-    expect(after.zone).toBe('CRITICAL');
-    expect(before.zone).toBe('GREEN');
-  });
-
-  it('prefers measured usage when the harness reports it', () => {
-    const summary = summarizeLedger([]);
-    const reading = readZone(SETTINGS, { summary, turns: 0, observedCharacters: 0, measured: { tokens: 100000, contextWindow: 128000 } });
-    expect(reading.reading.source).toBe('measured');
-    expect(reading.percentage).toBe(78);
-    expect(reading.zone).toBe('CRITICAL');
+    const { estimate, percentage, zone } = readZone({ descriptor: DESCRIPTOR, config }, { summary, turns, observedCharacters });
+    expect({ estimate, percentage, zone }).toEqual(expected);
   });
 });
 
@@ -75,15 +56,11 @@ describe('session zone stale measurements after a reset (FR-06, DEC-09, TC-11)',
   const summary = summarizeLedger([...toolLines([1000]), { v: 1, type: 'reset', at: AT, reason: 'compact' }]);
 
   it.each([
-    ['before the reset', '2026-09-23T11:59:59.999Z', 'estimated'],
-    ['at the reset', AT, 'estimated'],
-    ['after the reset', '2026-09-23T12:00:00.001Z', 'measured'],
-  ])('reads a measurement taken %s as %s', (_case, at, source) => {
+    { moment: 'before', at: '2026-09-23T11:59:59.999Z', source: 'estimated' },
+    { moment: 'at', at: AT, source: 'estimated' },
+    { moment: 'after', at: '2026-09-23T12:00:00.001Z', source: 'measured' },
+  ])('reads a measurement taken $moment the reset as $source', ({ at, source }) => {
     const reading = readZone(SETTINGS, { summary, turns: 0, observedCharacters: 0, measured: { tokens: 100000, contextWindow: null, at } });
     expect(reading.reading.source).toBe(source);
-  });
-  it('keeps a timestamped measurement when the session has no reset', () => {
-    const reading = readZone(SETTINGS, { summary: summarizeLedger([]), turns: 0, observedCharacters: 0, measured: { tokens: 100000, contextWindow: null, at: AT } });
-    expect(reading.reading).toEqual({ source: 'measured', usedTokens: 100000, windowTokens: 128000, measuredTokens: 100000, windowOrigin: 'config' });
   });
 });

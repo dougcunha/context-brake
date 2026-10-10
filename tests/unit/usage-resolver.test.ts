@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import type { EstimationConstants } from '../../src/core/contracts/runtime.js';
-import { summarizeLedger } from '../../src/core/services/session-counters.js';
-import { readZone } from '../../src/core/services/session-zone.js';
 import { estimatedTokens, resolveUsage, resolveUsageWithConfig } from '../../src/core/services/usage-resolver.js';
 
 const constants: EstimationConstants = { baselineTokens: 15000, tokensPerTurn: 150 };
@@ -23,10 +21,6 @@ describe('usage resolver estimation (RF6, RF7, RF8, CA-10, TC-28)', () => {
     const reading = resolveUsageWithConfig({ estimated: { observedCharacters: 0, turns: 0 }, constants }, DEFAULT_CONFIG);
     expect(reading.windowTokens).toBe(128000);
   });
-  it('resolves the empty-estimate baseline for the first event of a session', () => {
-    const reading = resolveUsage({ estimated: { observedCharacters: 0, turns: 1 }, constants, contextWindowCeiling: ceiling });
-    expect(reading.usedTokens).toBe(15150);
-  });
 });
 
 describe('usage resolver measured readings (RF5, RF7, CA-09, TC-11)', () => {
@@ -34,41 +28,15 @@ describe('usage resolver measured readings (RF5, RF7, CA-09, TC-11)', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 999999, turns: 9 }, measured: { tokens: 54000, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
     expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 200000, measuredTokens: 54000, windowOrigin: 'harness' });
   });
-  it('falls back to the estimate over the harness window when the harness reports null tokens (PRD 2.2 DEC-06, TC-22)', () => {
-    const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: null, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
-    expect(reading).toEqual({ source: 'estimated', usedTokens: 16060, windowTokens: 200000, measuredTokens: 16060, windowOrigin: 'harness' });
-  });
-  it('estimates over the configured ceiling when the harness reports neither tokens nor window', () => {
-    const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: null, contextWindow: null }, constants, contextWindowCeiling: ceiling });
-    expect(reading.windowTokens).toBe(128000);
-  });
-  it('applies a window change reported mid-session', () => {
-    const first = resolveUsage({ estimated: { observedCharacters: 0, turns: 1 }, measured: { tokens: 10000, contextWindow: 128000 }, constants, contextWindowCeiling: ceiling });
-    const second = resolveUsage({ estimated: { observedCharacters: 0, turns: 2 }, measured: { tokens: 10000, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
-    expect(first.windowTokens).toBe(128000);
-    expect(second.windowTokens).toBe(200000);
+  it.each([
+    { window: 200000, expected: { windowTokens: 200000, windowOrigin: 'harness' } },
+    { window: null, expected: { windowTokens: 128000, windowOrigin: 'config' } },
+  ])('falls back to the estimate over window $expected.windowOrigin when the harness reports null tokens and window $window (PRD 2.2 DEC-06, TC-22)', ({ window, expected }) => {
+    const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: null, contextWindow: window }, constants, contextWindowCeiling: ceiling });
+    expect(reading).toEqual({ source: 'estimated', usedTokens: 16060, measuredTokens: 16060, ...expected });
   });
   it('uses the configured ceiling as the window of a measurement without one (FR-07, DEC-10, TC-10)', () => {
     const reading = resolveUsage({ estimated: { observedCharacters: 0, turns: 1 }, measured: { tokens: 54000, contextWindow: null }, constants, contextWindowCeiling: 150000 });
     expect(reading).toEqual({ source: 'measured', usedTokens: 54000, windowTokens: 150000, measuredTokens: 54000, windowOrigin: 'config' });
-  });
-  it('keeps the parallel estimate available for measured sessions', () => {
-    const reading = resolveUsage({ estimated: { observedCharacters: 1840, turns: 4 }, measured: { tokens: 54000, contextWindow: 200000 }, constants, contextWindowCeiling: ceiling });
-    expect(reading.measuredTokens).toBe(54000);
-    expect(estimatedTokens({ observedCharacters: 1840, turns: 4 }, constants)).toBe(16060);
-  });
-});
-
-describe('zone reading without status line lines matches the resolver (OBJ-03, PRD 2.2 TC-05)', () => {
-  const settings = { descriptor: { estimation: constants, capabilities: [] }, config: DEFAULT_CONFIG };
-  it.each([
-    ['no measurement', undefined],
-    ['null tokens', { tokens: null, contextWindow: null }],
-    ['transcript tokens', { tokens: 90000, contextWindow: null }],
-    ['a harness window', { tokens: 90000, contextWindow: 272000 }],
-  ])('returns the resolver reading for %s', (_case, measured) => {
-    const estimated = { observedCharacters: 400, turns: 2 };
-    const reading = readZone(settings, { summary: summarizeLedger([]), turns: 2, observedCharacters: 400, measured }).reading;
-    expect(reading).toEqual(resolveUsage({ estimated, measured, constants, contextWindowCeiling: ceiling }));
   });
 });

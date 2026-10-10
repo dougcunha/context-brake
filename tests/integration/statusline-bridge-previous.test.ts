@@ -84,8 +84,9 @@ describe('bridge fallback line (FR-03, DEC-04, TC-04)', () => {
     const result = await runPreviousStatusline({ shell: { label: 'sh', executables: [join(root, 'missing-shell')], args: ['-c', 'true'] }, stdin: Buffer.from('') });
     expect(result).toEqual({ kind: 'failed', reason: 'not started' });
   });
-  it('omits the reading when neither the ledger nor the payload has one', () => {
-    expect(renderFallbackLine({ reason: 'no output', ledger: [{ v: 1, type: 'reset', at: 'x', reason: 'clear' }], payload: null })).toBe('ContextBrake · previous status line failed (no output) · run context-brake doctor\n');
+  it('omits the reading when the only tool reading precedes a reset and the payload has none', () => {
+    const tool = { v: 1, type: 'tool', at: 'x', toolUseId: 't1', observedCharacters: 0, turn: 3, usedTokens: 96000, windowTokens: 128000, estimatedTokens: 0, source: 'measured', zone: 'CRITICAL' } as const;
+    expect(renderFallbackLine({ reason: 'no output', ledger: [tool, { v: 1, type: 'reset', at: 'x', reason: 'clear' }], payload: null })).toBe('ContextBrake · previous status line failed (no output) · run context-brake doctor\n');
   });
 });
 

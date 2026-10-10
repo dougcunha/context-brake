@@ -52,9 +52,6 @@ beforeAll(async () => {
 afterAll(async () => { if (base !== '') await rm(base, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('installed status line command in every shell (FR-01, FR-02, NFR-01, DEC-01, DEC-02, TC-02)', () => {
-  it('has no shell operator', () => {
-    expect(installed).toMatch(/^node "[^"]+\/\.claude\/hooks\/context-brake-statusline\.mjs"$/);
-  });
   it.each(shells.map((shell): [string, ShellCandidate] => [`${shell.label} (${shell.executable})`, shell]))('prints the previous status line unchanged through %s', async (_name, shell) => {
     for (const previous of [QUOTED_PREVIOUS, ANSI_PREVIOUS, COMMENTED_PREVIOUS]) {
       await usePrevious(previous);

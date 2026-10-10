@@ -21,11 +21,6 @@ describe('status line bridge by default (prd-09 FR-04, DEC-08, TC-09)', () => {
     await runJson(world, PLAIN);
     expect([await readWorldFile(world, LOCAL_PATH), await readWorldFile(world, STATE_PATH)]).toEqual(installed);
   });
-  it('keeps the bridge off with --no-statusline-bridge (FR-09, TC-13)', async () => {
-    expect((await runJson(world, [...PLAIN, '--no-statusline-bridge'])).exitCode).toBe(0);
-    expect(await exists(LOCAL_PATH)).toBe(false);
-    expect(await exists(STATE_PATH)).toBe(false);
-  });
 });
 
 describe('default bridge with unparseable local settings (prd-09 DEC-08, TC-09, codereview_01 CR-01)', () => {
@@ -37,10 +32,6 @@ describe('default bridge with unparseable local settings (prd-09 DEC-08, TC-09, 
     expect(await readWorldFile(world, '.claude/settings.json')).toContain('context-brake');
     expect(await readWorldFile(world, LOCAL_PATH)).toBe(MALFORMED);
     expect(await exists(STATE_PATH)).toBe(false);
-  });
-  it('keeps the conflict when the bridge is requested explicitly', async () => {
-    expect((await runJson(world, INSTALL)).exitCode).toBe(2);
-    expect(await readWorldFile(world, LOCAL_PATH)).toBe(MALFORMED);
   });
 });
 
@@ -56,9 +47,9 @@ describe('status line bridge opt-out memory (prd-09 FR-04, DEC-09, TC-09)', () =
     expect(await exists(LOCAL_PATH)).toBe(true);
     expect(await exists(STATUSLINE_OPT_OUT_FILE)).toBe(false);
   });
-  it('forgets the opt-out on remove', async () => {
-    await runJson(world, OPT_OUT);
-    expect(await exists(STATUSLINE_OPT_OUT_FILE)).toBe(true);
+  it('keeps the bridge off with --no-statusline-bridge and forgets the opt-out on remove (FR-09, TC-13)', async () => {
+    expect((await runJson(world, OPT_OUT)).exitCode).toBe(0);
+    expect([await exists(LOCAL_PATH), await exists(STATE_PATH), await exists(STATUSLINE_OPT_OUT_FILE)]).toEqual([false, false, true]);
     await runJson(world, ['remove', '--yes', '--json']);
     expect(await exists(STATUSLINE_OPT_OUT_FILE)).toBe(false);
   });

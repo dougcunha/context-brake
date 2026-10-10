@@ -12,9 +12,10 @@ beforeEach(async () => { world = await createStatuslineWorld(); });
 afterEach(async () => { await removeStatuslineWorld(world); });
 
 describe('status line bridge with unparseable settings (DEC-09, TC-14)', () => {
-  it('reports a conflict and writes nothing when the local settings do not parse', async () => {
+  it('reports a conflict with exit code 2 and writes nothing when the local settings do not parse (prd-09 DEC-08, TC-09, CR-01)', async () => {
     await writeFile(join(world.root, LOCAL_PATH), '{ "statusLine": ', 'utf8');
     const report = await run(INSTALL);
+    expect(report.exitCode).toBe(2);
     expect(report.findings.map((finding) => finding.code)).toContain('INVALID_HARNESS_CONFIG');
     expect(await read(LOCAL_PATH)).toBe('{ "statusLine": ');
     expect(await exists(STATE_PATH)).toBe(false);
@@ -31,6 +32,6 @@ describe('status line bridge with unparseable settings (DEC-09, TC-14)', () => {
     await writeFile(join(world.home, '.claude', 'settings.json'), '{ broken', 'utf8');
     const report = await run(INSTALL);
     expect(report.findings.map((finding) => finding.code)).toContain('STATUSLINE_USER_SETTINGS_INVALID');
-    expect(localStatusline(await read(LOCAL_PATH))['command']).not.toContain('--pipe');
+    expect(localStatusline(await read(LOCAL_PATH))['command']).toMatch(/^node ".+\/context-brake-statusline\.mjs"$/);
   });
 });

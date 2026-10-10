@@ -50,7 +50,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 34 → 29 | done |
 | 11 | config/schemas-stores | schemas, changes-schema, integration/project-config-store, integration/manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 18 → 11 | done |
 | 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 36 → 29 | done |
-| 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 21 | pending |
+| 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 28 → 28 | done |
 | 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 32 | pending |
 | 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 30 | pending |
 | 16 | storage/capabilities | link-capability, process-capability, git-capability | src/infrastructure (git, process, storage) | C | 19 | pending |
@@ -737,7 +737,7 @@ Layout: `project-config-store.test.ts` and `manifest-store.test.ts` import `src/
 ## 12. telemetry/counters-statusline — done 2026-10-10
 
 **Baseline:** 36 runner tests across the 4 files, green (the plan's 29 was the grep count). Stryker: n/a (Common).
-**Result:** 29 tests across the same 4 files, green. Scoped coverage proxy (`session-counters.ts`, `session-reset-handler.ts`, `statusline-summary.ts`, `contracts/statusline-line.ts`, `contracts/session-ledger.ts`): lines 98.13% → 98.13%; branches 87.5% → 89.09% (`session-reset-handler.ts` 81.81% → 86.36%: the compaction guard on line 28 is now covered). Remaining gaps: the `hooks.onPhase?.` calls (`session-reset-handler.ts` 23-25, 29) run in `hook-deadline.test.ts` and `integration/handoff-deadline.test.ts`; the invalid-JSON `catch` of `parseLedgerLine` (`session-ledger.ts` 67-68) belongs to the ledger store tests. Commit `<hash>`.
+**Result:** 29 tests across the same 4 files, green. Scoped coverage proxy (`session-counters.ts`, `session-reset-handler.ts`, `statusline-summary.ts`, `contracts/statusline-line.ts`, `contracts/session-ledger.ts`): lines 98.13% → 98.13%; branches 87.5% → 89.09% (`session-reset-handler.ts` 81.81% → 86.36%: the compaction guard on line 28 is now covered). Remaining gaps: the `hooks.onPhase?.` calls (`session-reset-handler.ts` 23-25, 29) run in `hook-deadline.test.ts` and `integration/handoff-deadline.test.ts`; the invalid-JSON `catch` of `parseLedgerLine` (`session-ledger.ts` 67-68) belongs to the ledger store tests. Commit `07ca62a`.
 
 Layout unchanged: one file per source, keeping the names the TechSpecs cite (prd-02.1 TC-12, prd-02.2 TC-01 and TC-02, prd-14 TC-02). `statusline-line.test.ts` covers `contracts/statusline-line.ts` and the ledger union in `contracts/session-ledger.ts`. No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
 
@@ -783,6 +783,66 @@ Layout unchanged: one file per source, keeping the names the TechSpecs cite (prd
 - **Rewritten:** the empty-ledger test asserts the whole summary; the count test asserts `lastReading` by identity. The fake handoff store no longer empties itself after a claim (only the deleted test needed it).
 - **Created (2 rows):** snapshot mode `compact` on `codex-cli` (resume text) and on `cursor` (neutral): line 28 (`COMPACTION_BOOT_HARNESSES`) had no killing test anywhere, and prd-12 FR-05 requires the resume instruction after compaction on a harness with session-start injection.
 - **Kept:** dedup and last-reset counters, null-overwrite summary, all statusline-line rejection rows and both parse tests (TC-01), the claim rows, the deadline and no-pending tests.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.
+
+## 13. brake/errors-merges — done 2026-10-10
+
+**Baseline:** 28 runner tests across the 4 files, green (the plan's 21 was the grep count). Stryker: n/a (Common).
+**Result:** 28 tests across the same 4 files, green. Scoped coverage proxy (`runtime-error-checks.ts`, `debug-mode-merge.ts`, `snapshot-merge.ts`, `contracts/session-ledger.ts`): lines 80.64% → 80.64% (services 100% → 100%; `session-ledger.ts` 54-71 are the ledger parsers that module 12 and the ledger store tests own); branches 93.87% → 94% (`snapshot-merge.ts` 90.9% → 91.3%: the clear path without a section now runs). Remaining gaps: the singular `error` branch of `runtimeErrorFindings` (line 28) is asserted exactly by `integration/doctor-runtime-errors.test.ts`; the `?? []` and `?? 'is invalid'` fallbacks of `snapshot-merge.ts` (22-23) are unreachable because a failed Zod parse always carries an issue. Commit `<hash>`.
+
+Layout unchanged: one file per source (`runtime-error-line.test.ts` covers `errorLineSchema` in `contracts/session-ledger.ts` and keeps the name prd-10 TC-17 cites). No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
+
+### runtime-error-checks.ts → Common (doctor finding, reduced depth for wording)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the finding carries the count and the distinct codes in sorted order | `new Set` removed; `.sort()` removed; any field changed | `warns about recorded runtime errors with the count and their distinct codes in order` |
+| no errors, no finding | `length === 0` guard removed | `emits no finding when there are no errors` |
+| the 24-hour window includes its boundary | `>=` → `>`; `-` → `+`; window constant changed | `keeps only errors inside the 24-hour window through the injected clock` |
+
+### contracts/session-ledger.ts `errorLineSchema` → Common (prd-10 FR-11, TC-17)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| lines without the phase fields still parse | `z.optional` dropped from `phase` or `elapsedMs` | `accepts lines written before the phase fields existed` |
+| phase and elapsed milliseconds are accepted | field dropped from the strict object | `accepts the phase and elapsed milliseconds of a deadline` |
+| unknown phase and negative duration rejected | enum widened; `nonnegative` removed | `rejects an unknown phase and a negative duration` |
+| doctor reads old and new lines alike (TC-17 scenario) | none exclusive (the window test kills the filter family) | `selects recent old and new lines alike for doctor` (kept for TC-17) |
+
+### debug-mode-merge.ts → Common (prd-08 TC-01, FR-01, FR-04)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| `--debug` sets the mode when it is absent or off | `current === true` → `current !== undefined` | `sets the mode with --debug when it is off` |
+| no flag keeps, with or without the mode; `--debug` keeps the mode on; `--no-debug` without the key keeps | `if (flags.noDebug)`/`if (flags.debug)` inverted; `current === true`/`=== undefined` guards removed | `keeps the configuration for %s` (4 rows) |
+| `--no-debug` removes an existing key | `current === undefined` → `!current` | `removes an existing key with --no-debug` |
+| both flags are a conflict with the exact message | `&&` → `\|\|`; guard removed | `rejects --debug together with --no-debug` (module 1 relies on it) |
+| apply: set writes `true`, remove drops the key, keep returns the same object | kind check removed or swapped | `writes debug true on set…`, `returns the same object on keep` |
+| in effect only for `debug: true` | `=== true` → `!== undefined` or `!== false`; `?.` removed | `is in effect for %s: %s` (4 rows) |
+
+### snapshot-merge.ts → Common, mandated snapshot settings (prd-12 FR-04, TC-05)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| no snapshot flag keeps the section | keep guard removed or `!flags.clearCommand` dropped | `keeps the section without snapshot flags` |
+| success: trigger alone, override of given fields, clear keeps the trigger, clear without a section falls back to `RED` | `{ ...current }` → `{}`; clear base keeps commands; `current?.triggerZone` → `current.triggerZone` (crash on a fresh `init --no-snapshot-command`) | `sets $name` (4 rows) |
+| failure: clearing with a command flag is the conflict error | guard removed; `\|\|` → `&&`; message swapped for the schema error | `rejects clearing together with a command flag` |
+| failure: invalid trigger names `snapshot.triggerZone` | `SECTION_PATH` or the issue path dropped | `reports an invalid trigger with the section path` |
+| apply writes the section, keep returns the same object | kind check removed | `applies a set update and leaves the config alone on keep` |
+
+Recovery and the remaining failure cases run end to end in `integration/init-snapshot.test.ts`: `clears both commands and keeps the trigger zone with --no-snapshot-command`, `rejects --no-snapshot-command together with %s and writes nothing` (both flags), and `rejects a resume command without a snapshot command and names the key`.
+
+### Actions
+- **Deleted (1):** debug-mode-merge row `removes an existing key (true) with --no-debug`: every plausible mutant of `current === undefined ? KEEP : remove` is killed by the `false` row or by the `--no-debug without the key` keep row; `--no-debug` after `--debug` runs end to end in `integration/init-debug-mode.test.ts` `turns the debug mode off with --no-debug`.
+- **Merged (3 → 1 `it.each`):** snapshot-merge `sets a trigger zone without a command`, `overrides only the given fields`, `clears both commands and keeps the trigger zone` → `sets $name` (same arrangement and assertion).
+- **Rewritten (3):** runtime-error-checks finding test: `toContain` and `toBeTruthy` became a whole-finding `toEqual` with codes fed out of order (the dedup and sort mutants survived before); the `RUNTIME_ERROR_WINDOW_HOURS` constant assertion was dropped (Trivial; the exact-boundary row kills a changed window). snapshot-merge conflict test: `toHaveProperty('error')` → the exact conflict message, which tells it apart from the schema error a removed `resumeCommand` check would produce.
+- **Created (1 row):** snapshot-merge `the default trigger zone when clearing without a section`: production calls `mergeSnapshot(undefined, …)` on a fresh `init` (`init-config-updates.ts`), and no test ran the clear path without a section, so dropping `?.` would crash `init --no-snapshot-command` unnoticed. It replaces the deleted debug row, so the module stays at 28.
+- **Kept:** the empty-finding and window tests, all four `runtime-error-line` tests (the last for TC-17), the debug set, keep, conflict, apply, and effect tests, and the snapshot keep, invalid-trigger, and apply tests.
 
 ### Production pending items
 - None.

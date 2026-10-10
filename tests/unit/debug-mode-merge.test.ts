@@ -19,8 +19,8 @@ describe('debug mode merge (TC-01, FR-01, FR-04, DEC-02)', () => {
   ])('keeps the configuration for %s', (_, current, flags) => {
     expect(mergeDebugMode(current, flags)).toEqual({ update: { kind: 'keep' } });
   });
-  it.each([true, false])('removes an existing key (%s) with --no-debug', (current) => {
-    expect(mergeDebugMode(current, NO_DEBUG)).toEqual({ update: { kind: 'remove' } });
+  it('removes an existing key with --no-debug', () => {
+    expect(mergeDebugMode(false, NO_DEBUG)).toEqual({ update: { kind: 'remove' } });
   });
   it('rejects --debug together with --no-debug', () => {
     expect(mergeDebugMode(undefined, { debug: true, noDebug: true })).toEqual({ error: '--debug cannot be combined with --no-debug.' });

@@ -71,7 +71,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 31 | integration/runtime-policies | runtime-failure-policy, copilot-failure-policy, runtime-invalid-config, runtime-light-mode, light-mode-lifecycle, runtime-parallel-turns, runtime-retention, runtime-session-ledger, runtime-state-removal, brake-lifecycle, debug-mode-lifecycle, simulated-usage | src/infrastructure/runtime | G | 50 → 30 | done |
 | 32 | integration/hooks-lifecycle-misc | retired-hook-events, -copilot, -harnesses, linked-project-root, -lifecycle, asset-currency-lifecycle, cli-shells, support-limitations, invalid-config, remove-invalid-config, node-process-runner | src/cli/commands, src/infrastructure/process | G | 40 → 25 | done |
 | 33 | integration/statusline | statusline-bridge, -bridge-lifecycle, -bridge-previous, statusline-default, -install, -install-invalid, statusline-shell, runtime-statusline-ledger | harnesses/claude-code, src/infrastructure/runtime | G | 40 → 36 | done |
-| 34 | telemetry/zones | zone-classifier, zone-guidance, telemetry-block, telemetry-block-budget | src/core/services | K | 34 | pending |
+| 34 | telemetry/zones | zone-classifier, zone-guidance, telemetry-block, telemetry-block-budget | src/core/services | K | 64 → 43 | done |
 | 35 | telemetry/session-zone-usage | session-zone, session-zone-statusline, session-zone-reset-window, usage-resolver, window-origin, window-trust | src/core/services | K | 42 | pending |
 | 36 | brake/engine-failure-policy | brake-engine-debug, brake-engine-lifecycle, failure-policy, failure-policy-snapshot-reset, injection-policy, reset-notice | src/core/services | K | 35 | pending |
 | 37 | runtime/hosts | hook-deadline, in-process-host, in-process-host-deadline, in-process-runtime, process-hook-host, process-hook-host-deadline, runtime-composition, runtime-paths | src/infrastructure/runtime | K | 38 | pending |
@@ -1921,7 +1921,7 @@ Mandated rows: user-file byte preservation including a second run is the TC-06 f
 ## 33. integration/statusline — done 2026-10-10
 
 **Baseline:** 40 runner tests across the 8 files, green (the table's 34 was the grep count; the TC-08 `it.each` counts 3 rows, the TC-04 `it.each` 3, and the TC-02 `it.each` one row per shell found: `git-bash`, `pwsh.exe` and `powershell.exe` on this machine, so the `statusline-shell` count varies by machine). Stryker: n/a (Glue).
-**Result:** 36 tests across the same 8 files, green. Scoped coverage proxy (`claude-code/statusline-bridge.ts`, `-output.ts`, `-previous.ts`, `-planner.ts`, `-restore.ts`, `-default.ts`, `runtime/node-session-ledger.ts`): lines 89.58% → 89.58% with the same uncovered lines in every file; branches 86.7% → 86.7% overall. Per file the only differences are V8 block ranges split differently (`statusline-default.ts` 73.33% → 75%, `statusline-planner.ts` 91.07% → 90.9%: a per-branch comparison of `coverage-final.json` shows no branch that was hit before and is missed after). The built bridge (`statusline-bridge`, `-lifecycle`, `-shell`) runs the bundle in `dist/`, so only the in-process tests count toward `statusline-bridge.ts` (87.5% lines; the uncovered lines are the stdin read error, `parseJson` failure and the ledger-write failure, which the built TC-08 tests exercise). `node-session-ledger.ts` at 57.89% is expected: the rest is module 31's `runtime-session-ledger` and module 37. Commit `<hash>`.
+**Result:** 36 tests across the same 8 files, green. Scoped coverage proxy (`claude-code/statusline-bridge.ts`, `-output.ts`, `-previous.ts`, `-planner.ts`, `-restore.ts`, `-default.ts`, `runtime/node-session-ledger.ts`): lines 89.58% → 89.58% with the same uncovered lines in every file; branches 86.7% → 86.7% overall. Per file the only differences are V8 block ranges split differently (`statusline-default.ts` 73.33% → 75%, `statusline-planner.ts` 91.07% → 90.9%: a per-branch comparison of `coverage-final.json` shows no branch that was hit before and is missed after). The built bridge (`statusline-bridge`, `-lifecycle`, `-shell`) runs the bundle in `dist/`, so only the in-process tests count toward `statusline-bridge.ts` (87.5% lines; the uncovered lines are the stdin read error, `parseJson` failure and the ledger-write failure, which the built TC-08 tests exercise). `node-session-ledger.ts` at 57.89% is expected: the rest is module 31's `runtime-session-ledger` and module 37. Commit `d0007e9`.
 
 Every source is reached through the real edge: `init`/`remove`/`doctor` in process (`statusline-world`), the built bridge script through real processes and shells (process lane), or `runClaudeStatuslineBridge` in process with real child shells. The decisions are unit-tested elsewhere: payload mapping (module 19 `statusline-payload`), settings precedence, command quoting and state parsing (module 19 `statusline-planner`, `-shell-resolution`), the default-conflict softening (module 19 `statusline-default-conflicts`), the doctor findings (module 20), the ledger line schema (`unit/statusline-line`, TC-01). No file moved, renamed or deleted: all eight already live in `tests/integration/`, and the prd-02.2 TechSpec names `statusline-bridge.test.ts` (TC-06 to TC-09) and `statusline-install.test.ts` (TC-12 to TC-14), prd-10 names `statusline-install` (TC-05) and the bridge flows (TC-02, TC-04, TC-07). `statusline-bridge`, `-bridge-lifecycle`, `-bridge-previous` and `statusline-shell` stay in `PROCESS_LANE_FILES` (unchanged; all still spawn; `unit/test-lanes` green). Observation: the TechSpecs cite `tests/e2e/e2e-statusline-bridge.test.ts` (prd-02.2 TC-21, prd-10 TC-07) and `tests/e2e/e2e-statusline-…` (prd-10 TC-02); those flows now live in `statusline-bridge-lifecycle.test.ts` and `statusline-shell.test.ts`.
 
@@ -1967,6 +1967,81 @@ Mandated rows: user-file byte preservation including a second run is TC-12 and T
 
 ### Production pending items
 - None.
+
+### Questions `[?]`
+- None.
+
+## 34. telemetry/zones — done 2026-10-10
+
+**Baseline:** 64 runner tests across the 4 files, green (the table's 34 was the grep count; `zone-classifier` 20, `zone-guidance` 21, `telemetry-block` 10, `telemetry-block-budget` 13). Stryker on `zone-classifier.ts`, `zone-guidance.ts`, `telemetry-block.ts` with these 4 files: **94.83%** (110 killed, 4 survived, 2 no coverage); per file 98.21% / 88.64% / 100%. Coverage proxy: lines 96.92%, branches 100% (`zone-guidance.ts` lines 26-27 uncovered).
+**Result:** 43 tests, green. Stryker on the same scope: **95.69%** (111 killed, 3 survived, 2 no coverage); per file 100% / 88.64% / 100%. Coverage proxy unchanged (lines 96.92%, branches 100%, same uncovered lines 26-27). Related suites green: `unit/session-zone`, `unit/brake-engine-debug`, `integration/package-contents`. Commit `<hash>`.
+
+Deletions were checked against a `--disableBail` Stryker run (the default run records only the first killing test per mutant): every mutant killed before still has a killer among the kept tests.
+
+### zone-classifier.ts → Critical (zone classification, 3+ branches, mandated boundaries)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| default usage boundaries 49/50/65/66/74/75 and 130%, turns ignored without limits (prd-02 TC-01, prd-02.1 FR-01/TC-01) | `>` ↔ `>=` on each percentage; `>= critical` → `true`; turn operand forced | `classifies usage $usage% as $zone regardless of turns` (7 rows, turns 1 and 500) |
+| optional turn limits 59/60/99/100/10000 raise the zone up to RED (prd-02.1 FR-02/TC-02) | `>` ↔ `>=` on each turn limit; `\|\|` → `&&` | `classifies $turns turns at 10% usage as $zone` (5 rows) |
+| highest zone wins when usage and turns disagree (prd-02 TC-01 combined conditions, DEC-03) | usage YELLOW checked before turn RED | `takes the highest zone when usage and turns disagree` |
+| turn limits and RED start exist only when both limits are set | either `=== undefined` operand → `false`; `+ 1` → `- 1` | `reports the turn limits and the RED start only when both are set` (+1 assertion) |
+| usage percentage is the floored ratio; non-positive window is 100% (DEC-03, TC-28) | `Math.floor` removed or `ceil`; `*` → `/`; `<=` → `<` | `floors the ratio…`, `guards against a zero or negative window` |
+| custom percentages and turns from the configuration (RF9, CA-04) | ceiling or limit hardcoded to the default | `classifies with custom percentages and turns` |
+| a legacy `criticalTurn` is ignored (prd-02.1 FR-09) | turn-based CRITICAL reintroduced | `ignores the deprecated critical turn of a legacy configuration (FR-09)` |
+
+### zone-guidance.ts → Critical (zone actions and snapshot settings, mandated)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| exact action per zone with a snapshot command and the RED trigger, `now` only in CRITICAL (prd-12 FR-05, TC-07) | any action literal; `=== 'CRITICAL'` inverted; `>=` → `>` in `isAtOrAbove` | `uses the RED trigger in %s` (4 rows) |
+| a YELLOW trigger starts the snapshot step at YELLOW (TC-07 "each zone and trigger") | trigger hardcoded to RED | `starts at YELLOW when the trigger is YELLOW` |
+| without a command and restart off, generic RED/CRITICAL actions and no reset marker (prd-12 FR-06; prd-14 TC-01 restart off) | `mode !== 'handoff'` → `false`; generic literals | `uses the generic action in %s without the reset marker` (2 rows) |
+| restart on: handoff text in RED and CRITICAL without a command, snapshot step with one (prd-14 FR-01, TC-01) | handoff branch removed; command check moved after the mode check | `asks in $zone with restart mode $mode…` (3 rows) |
+| exact RED block in handoff mode (prd-14 TC-01, NFR-05) | handoff path or marker literal | `renders the exact RED block in handoff mode` |
+| exact resume text, absent without `resumeCommand` (prd-12 FR-05) | prefix or template literal; `=== undefined` inverted | `names the resume command when configured`, `is absent without a resume command` |
+
+### telemetry-block.ts → Critical (exact agent-facing text and the 60-token budget, mandated)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| exact v3 block, estimated reading (RF12, RF15, CA-10, TC-06) | any template literal; field order | `renders the documented example line` |
+| exact block with a measured reading and harness window (CA-09) | `source`/`windowOrigin` printed as a constant | `marks a measured reading with the same value the harness reported` |
+| debug line appended with the block's own values (prd-08 FR-06, DEC-07) | `debug ?` inverted; debug literal | `appends the prefilled line…` (literal expected) |
+| null usage renders as 0 in the block and the debug line | `?? 0` → `&& 0` or removed | `renders a null usage as zero tokens in the block and the debug line` |
+| turn alone without limits, `turn/redStart` with limits (prd-02.1 FR-03, TC-05) | `=== null` inverted; separator literal | `renders the turn with RED start %s as %s` (2 rows) |
+| worst-case block ≤ 60 tokens and ≤ 220 characters in every zone and action variant (CA-13, NFR-04, TC-06) | (budget, not a mutant) | `keeps the worst-case %s block within the token and character budget…` (4 rows × 3 configurations) |
+| debug line adds ≤ 40 tokens (prd-08 NFR-03) | (budget) | `adds at most 40 tokens for the debug line` |
+| CRITICAL block with a 200-character command stays under 400 characters (prd-06 NFR-05) | (budget) | `keeps the CRITICAL block with a 200-character snapshot command under 400 characters` |
+
+Survivors, all equivalent: `zone-guidance.ts` 15:86 (default `mode = 'off'` → `''`: only `'handoff'` is ever compared); 16:7 and 16:16 (`zone === 'GREEN'` → `false`/`''`: `SNAPSHOT_TRIGGER_ZONES` is `['YELLOW', 'RED']`, so `!isAtOrAbove('GREEN', trigger)` already returns the generic action). The two no-coverage mutants are `handoffResumeText` (lines 25-27), asserted exactly by `unit/session-reset-handler.test.ts` and `unit/restart-flow.test.ts` (modules 12 and 15), outside this Stryker scope. The baseline survivor `zone-classifier.ts` 12:7 (left operand `greenMaxTurn === undefined` → `false`) is now killed by one assertion folded into an existing test; the schema's `checkTurnPair` rejects a lone `yellowMaxTurn`, so this protects the guard rather than a reachable configuration.
+
+### Actions
+- **Deleted (12):**
+  - `zone-classifier` `never reaches CRITICAL by turns alone with the default configuration`: its 74%/500 turns and 75%/1 turn cases are rows 74 and 75 of the boundary `it.each` (asserted with turns 1 and 500); 30%/10,000 turns is covered by row 49 at 500 turns. FR-01/TC-01 stays in that describe.
+  - `zone-classifier` `inherits the ceiling from the configuration instead of constants`: a hardcoded ceiling is killed by `classifies with custom percentages and turns` (59% → CRITICAL with a 59% ceiling).
+  - `zone-guidance` `uses the generic action in GREEN/YELLOW without the reset marker` (2 rows): same calls and literals as the GREEN and YELLOW rows of `uses the RED trigger in %s` (below the trigger the command is never read).
+  - `zone-guidance` `never mentions a plan, checkpoint, or blocked tools`: every action text is pinned exactly by the per-zone rows, so added wording fails them; it killed no mutant.
+  - `zone-guidance` `asks for the handoff from the RED trigger in GREEN/YELLOW` (2 rows): below the trigger the mode is never read; same literals as the GREEN/YELLOW rows above.
+  - `zone-guidance` `asks for the handoff from YELLOW when the trigger is YELLOW`: same trigger guard (line 16) as `starts at YELLOW when the trigger is YELLOW`; prd-14 TC-01 lists only RED and CRITICAL.
+  - `zone-guidance` `keeps the generic action with restart off and no snapshot command`: identical calls to the RED/CRITICAL rows of the restart-off `it.each` (default mode `'off'`); prd-14 TC-01 "restart off" moved to that describe's title.
+  - `telemetry-block` `declares version 3`: a constant test (Trivial); `[ContextBrake v3]` is in every exact string.
+  - `telemetry-block` `keeps the byte order of the fields`: the exact-string tests pin the order.
+  - `telemetry-block` `keeps the block without the debug mode byte-identical to the documented line`: same shape as `marks a measured reading…` (measured, harness, debug off, exact).
+- **Merged:**
+  - `zone-guidance` `keeps the snapshot command action when a command is configured` (RED and CRITICAL with mode `'snapshot'`) → the CRITICAL row of the restart-on `it.each`, which keeps prd-14 TC-01's "restart on with a skill" case; its RED call duplicated `uses the RED trigger in RED`.
+  - `telemetry-block` `renders a null usage without a token value as zero` and `renders a null reading as zero inside the debug line` → one exact-string test of the debug block with a null usage (both `tokens()` call sites).
+  - `telemetry-block` `omits the ceiling when the default configuration has no turn limits` (which also asserted that `DEFAULT_CONFIG` has no turn limit, a constant check) and `shows the turn where RED starts…` → one `it.each` with both TC-05 rows.
+  - `telemetry-block-budget` worst-case `it.each`, 12 rows (zone × configuration) → 4 rows (one per zone) that check all three configurations with a labeled assertion; the three GREEN rows rendered the same action.
+- **Rewritten (1):** `appends the prefilled line with the values of that same block` built its expected value from `renderTelemetryBlock({ debug: false })` (recomputing the implementation); it now asserts the full literal.
+- **Moved (1):** `keeps a 200-character command block under 400 characters` from `zone-guidance` to `telemetry-block-budget` (a block budget), titled with its requirement prd-06 NFR-05 and rendered with the worst-case values.
+- **Created:** none (one assertion added to `reports the turn limits and the RED start only when both are set` for the 12:7 survivor).
+- **Kept:** everything else above.
+
+Mandated rows: every usage boundary (49/50/65/66/74/75/130) and turn boundary (59/60/99/100/10,000) stays; the exact block, debug line and resume text stay as literal assertions; the 60-token/220-character budget still checks every zone and action variant.
+
+### Production pending items
+- `zone-guidance.ts` line 16: the `zone === 'GREEN' ||` guard is redundant while `SNAPSHOT_TRIGGER_ZONES` excludes GREEN (two equivalent mutants). Optional cleanup; keep it if GREEN may become a trigger.
 
 ### Questions `[?]`
 - None.

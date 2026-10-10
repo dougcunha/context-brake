@@ -22,15 +22,6 @@ describe('usage-only zone classification boundaries (FR-01, TC-01)', () => {
     expect(classifyZone({ usagePercentage: usage, turns: 1 }, ZONES)).toBe(zone);
     expect(classifyZone({ usagePercentage: usage, turns: 500 }, ZONES)).toBe(zone);
   });
-  it('never reaches CRITICAL by turns alone with the default configuration', () => {
-    expect(classifyZone({ usagePercentage: 74, turns: 500 }, ZONES)).toBe('RED');
-    expect(classifyZone({ usagePercentage: 30, turns: 10000 }, ZONES)).toBe('GREEN');
-    expect(classifyZone({ usagePercentage: 75, turns: 1 }, ZONES)).toBe('CRITICAL');
-  });
-  it('inherits the ceiling from the configuration instead of constants', () => {
-    const custom: typeof ZONES = { ...ZONES, criticalPercentage: 90 };
-    expect(classifyZone({ usagePercentage: 75, turns: 12 }, custom)).toBe('RED');
-  });
 });
 
 describe('optional turn limits raise the zone up to RED (FR-02, TC-02)', () => {
@@ -54,6 +45,7 @@ describe('optional turn limits raise the zone up to RED (FR-02, TC-02)', () => {
     expect(turnLimits(TURN_LIMITS)).toEqual({ greenMaxTurn: 59, yellowMaxTurn: 99 });
     expect(redStartTurn(TURN_LIMITS)).toBe(100);
     expect(turnLimits({ ...ZONES, greenMaxTurn: 5 })).toBeNull();
+    expect(turnLimits({ ...ZONES, yellowMaxTurn: 9 })).toBeNull();
   });
 });
 

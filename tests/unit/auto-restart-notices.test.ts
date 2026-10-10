@@ -7,6 +7,7 @@ import { appendLogRecord, buildLogRecord, renderRestartNotice, seedText } from '
 const encoding = getEncoding('o200k_base');
 const SEED_TOKEN_BUDGET = 60;
 const LIGHT_SEED = 'ContextBrake: this session was restarted automatically. Continue the previous work from the state it recorded.';
+const NEWEST_AT = '2026-10-04T22:00:00.000Z';
 
 function recordsFilledToTheLimit() {
   return Array.from({ length: MOD_LOG_MAX_RECORDS }, (_, index) => buildLogRecord('RESTARTED', `2026-10-04T21:00:${String(index).padStart(2, '0')}.000Z`));
@@ -30,7 +31,6 @@ describe('notices (FR-10, TC-07)', () => {
 describe('seed text (FR-02, prd-12 FR-10)', () => {
   it('builds the exact generic seed without mentioning the boot', () => {
     expect(seedText()).toBe(LIGHT_SEED);
-    expect(seedText().toLowerCase()).not.toContain('boot');
   });
 
   it('keeps the seed inside the token budget', () => {
@@ -39,16 +39,11 @@ describe('seed text (FR-02, prd-12 FR-10)', () => {
 });
 
 describe('log records (FR-10, NFR-02, TC-07)', () => {
-  it('builds records with only a timestamp and a code', () => {
-    const record = buildLogRecord('RESTARTED', '2026-10-04T21:00:00.000Z');
-    expect(Object.keys(record).sort()).toEqual(['at', 'code']);
-  });
-
-  it('keeps the newest 50 records without mutating the input', () => {
+  it('keeps the newest 50 records of only a timestamp and a code, without mutating the input', () => {
     const records = recordsFilledToTheLimit();
-    const next = appendLogRecord(records, buildLogRecord('PAUSED_LOOP_GUARD', '2026-10-04T22:00:00.000Z'));
+    const next = appendLogRecord(records, buildLogRecord('PAUSED_LOOP_GUARD', NEWEST_AT));
     expect(next).toHaveLength(MOD_LOG_MAX_RECORDS);
-    expect(next.at(-1)?.code).toBe('PAUSED_LOOP_GUARD');
+    expect(next.at(-1)).toEqual({ at: NEWEST_AT, code: 'PAUSED_LOOP_GUARD' });
     expect(next[0]?.at).toBe(records[1]?.at);
     expect(records).toHaveLength(MOD_LOG_MAX_RECORDS);
   });

@@ -14,9 +14,14 @@ const CORE_RESTART_FILES = [
 ];
 const HARNESS_NAMES = /claude|codex|cursor|copilot|antigravity|opencode|oh-my-pi|\bpi\b|\/clear\b|DISABLE_AUTO_COMPACT/i;
 
+async function namesAHarness(path: string): Promise<boolean> {
+  return HARNESS_NAMES.test(await readFile(path, 'utf8'));
+}
+
 describe('harness-neutral restart core (prd-14 FR-05, TC-06)', () => {
-  it.each(CORE_RESTART_FILES)('names no harness in %s', async (path) => {
-    expect(await readFile(path, 'utf8')).not.toMatch(HARNESS_NAMES);
+  it('names no harness in the core restart contracts and services', async () => {
+    const matches = await Promise.all(CORE_RESTART_FILES.map(namesAHarness));
+    expect(CORE_RESTART_FILES.filter((_, index) => matches[index])).toEqual([]);
   });
   it('names no harness in the notices or the seed', () => {
     const texts = [seedText(), ...RESTART_REASON_CODES.map((code) => renderRestartNotice(code) ?? '')];

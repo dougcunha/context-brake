@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { restartLogSchema } from '../../src/core/contracts/restart-log.js';
 import { configurationSchema, DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
@@ -21,7 +20,7 @@ describe('autoRestart configuration block (FR-07, DEC-09, TC-08)', () => {
     expect(parseWith({ maxConsecutiveRestarts: 10 }).success).toBe(true);
   });
 
-  it.each([0, 11, 1.5, '2'])('rejects the limit %s', (value) => {
+  it.each([0, 11, 1.5])('rejects the limit %s', (value) => {
     expect(parseWith({ maxConsecutiveRestarts: value }).success).toBe(false);
   });
 
@@ -30,18 +29,11 @@ describe('autoRestart configuration block (FR-07, DEC-09, TC-08)', () => {
   });
 });
 
-describe('compatibility and published schema (NFR-03, TC-24)', () => {
-  it('keeps configurations without the block valid at schema version 1', () => {
+describe('compatibility (NFR-03, TC-24)', () => {
+  it('keeps configurations without the block valid', () => {
     const result = configurationSchema.safeParse(DEFAULT_CONFIG);
     expect(result.success).toBe(true);
-    expect(result.data?.schemaVersion).toBe(1);
     expect(result.data?.autoRestart).toBeUndefined();
-  });
-
-  it('publishes the optional block in the generated schema', async () => {
-    const document = JSON.parse(await readFile('schemas/context-brake.config.schema.json', 'utf8')) as { properties: Record<string, unknown>; required?: string[] };
-    expect(document.properties.autoRestart).toBeDefined();
-    expect(document.required ?? []).not.toContain('autoRestart');
   });
 });
 

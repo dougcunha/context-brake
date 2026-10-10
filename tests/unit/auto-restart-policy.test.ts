@@ -20,7 +20,7 @@ function guarded(consecutive: number, toolCallsSinceSeed: number | undefined): R
 }
 
 describe('restart signal (FR-01, TC-01, TC-02)', () => {
-  it('restarts on the signal alone (prd-12 FR-10)', () => {
+  it('restarts on the signal alone and ignores the handoff in snapshot mode (prd-12 FR-10, prd-14 TC-04)', () => {
     expect(decideRestart(READY)).toEqual(RESTART);
   });
 
@@ -31,15 +31,13 @@ describe('restart signal (FR-01, TC-01, TC-02)', () => {
 });
 
 describe('loop guards (FR-04, FR-05, TC-04, TC-05)', () => {
-  it('pauses the third consecutive restart with the limit at 2', () => {
+  it('pauses the third consecutive restart with the limit at 2, before the no-progress guard', () => {
     expect(decideRestart(guarded(1, 3))).toEqual(RESTART);
-    expect(skipCode(guarded(2, 3))).toBe('PAUSED_LOOP_GUARD');
-    expect(decideRestart(guarded(0, undefined))).toEqual(RESTART);
+    expect(skipCode(guarded(2, 0))).toBe('PAUSED_LOOP_GUARD');
   });
 
   it('refuses a signal from a seeded session that did no tool call', () => {
     expect(skipCode(guarded(1, 0))).toBe('SKIP_NO_PROGRESS');
-    expect(decideRestart(guarded(1, 3))).toEqual(RESTART);
   });
 
   it('does not apply the no-progress guard to a session that was never seeded', () => {
@@ -54,13 +52,6 @@ describe('stand-down conditions (FR-06, TC-06)', () => {
   ] as const)('stands down for the %s', (_name, standDown, code) => {
     expect(skipCode({ ...READY, standDown })).toBe(code);
   });
-
-  it('orders the stand-down reasons before the guards', () => {
-    const hostile = guarded(5, 0);
-    expect(skipCode({ ...hostile, standDown: { disabledByEnv: true, interactive: false } })).toBe('SKIP_DISABLED_ENV');
-    expect(skipCode({ ...hostile, standDown: { disabledByEnv: false, interactive: false } })).toBe('SKIP_NON_INTERACTIVE');
-    expect(skipCode(hostile)).toBe('PAUSED_LOOP_GUARD');
-  });
 });
 
 describe('handoff gate (prd-14 FR-04, DEC-04, TC-04)', () => {
@@ -74,18 +65,16 @@ describe('handoff gate (prd-14 FR-04, DEC-04, TC-04)', () => {
   it('skips when the handoff predates the turn that asked for it', () => {
     expect(skipCode(withHandoff(TURN_START - 1))).toBe('SKIP_HANDOFF_STALE');
   });
-  it('restarts with a handoff written during the turn', () => {
+  it('restarts with a handoff written at the start of the turn', () => {
     expect(decideRestart(withHandoff(TURN_START))).toEqual(RESTART);
-    expect(decideRestart(withHandoff(TURN_START + 5))).toEqual(RESTART);
   });
   it('skips as stale when the turn start is unknown, since freshness cannot be proven (codereview_01 CR-01)', () => {
-    expect(skipCode({ ...READY, handoff: { required: true, writtenAt: 1, turnStartedAt: undefined } })).toBe('SKIP_HANDOFF_STALE');
+    expect(skipCode(withHandoff(1, undefined))).toBe('SKIP_HANDOFF_STALE');
   });
-  it('ignores the handoff in snapshot mode (prd-12 FR-10)', () => {
-    expect(decideRestart({ ...READY, handoff: { required: false, writtenAt: null, turnStartedAt: TURN_START } })).toEqual(RESTART);
-  });
-  it('orders the handoff gate after the stand-down reasons and before the guards', () => {
-    expect(skipCode({ ...withHandoff(null), standDown: { disabledByEnv: true, interactive: true } })).toBe('SKIP_DISABLED_ENV');
-    expect(skipCode({ ...withHandoff(null), guards: { consecutive: 5, maxConsecutive: 2, toolCallsSinceSeed: 0 } })).toBe('SKIP_HANDOFF_MISSING');
+  it('orders the stand-down reasons, then the handoff gate, then the guards (FR-06, TC-06)', () => {
+    const hostile = { ...withHandoff(null), guards: { consecutive: 5, maxConsecutive: 2, toolCallsSinceSeed: 0 } };
+    expect(skipCode({ ...hostile, standDown: { disabledByEnv: true, interactive: false } })).toBe('SKIP_DISABLED_ENV');
+    expect(skipCode({ ...hostile, standDown: { disabledByEnv: false, interactive: false } })).toBe('SKIP_NON_INTERACTIVE');
+    expect(skipCode(hostile)).toBe('SKIP_HANDOFF_MISSING');
   });
 });

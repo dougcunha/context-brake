@@ -51,7 +51,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 11 | config/schemas-stores | schemas, changes-schema, integration/project-config-store, integration/manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 18 → 11 | done |
 | 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 36 → 29 | done |
 | 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 28 → 28 | done |
-| 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 32 | pending |
+| 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 42 → 31 | done |
 | 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 30 | pending |
 | 16 | storage/capabilities | link-capability, process-capability, git-capability | src/infrastructure (git, process, storage) | C | 19 | pending |
 | 17 | install/services | detection-service, installation-summary, removal-service, removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 19 | pending |
@@ -793,7 +793,7 @@ Layout unchanged: one file per source, keeping the names the TechSpecs cite (prd
 ## 13. brake/errors-merges — done 2026-10-10
 
 **Baseline:** 28 runner tests across the 4 files, green (the plan's 21 was the grep count). Stryker: n/a (Common).
-**Result:** 28 tests across the same 4 files, green. Scoped coverage proxy (`runtime-error-checks.ts`, `debug-mode-merge.ts`, `snapshot-merge.ts`, `contracts/session-ledger.ts`): lines 80.64% → 80.64% (services 100% → 100%; `session-ledger.ts` 54-71 are the ledger parsers that module 12 and the ledger store tests own); branches 93.87% → 94% (`snapshot-merge.ts` 90.9% → 91.3%: the clear path without a section now runs). Remaining gaps: the singular `error` branch of `runtimeErrorFindings` (line 28) is asserted exactly by `integration/doctor-runtime-errors.test.ts`; the `?? []` and `?? 'is invalid'` fallbacks of `snapshot-merge.ts` (22-23) are unreachable because a failed Zod parse always carries an issue. Commit `<hash>`.
+**Result:** 28 tests across the same 4 files, green. Scoped coverage proxy (`runtime-error-checks.ts`, `debug-mode-merge.ts`, `snapshot-merge.ts`, `contracts/session-ledger.ts`): lines 80.64% → 80.64% (services 100% → 100%; `session-ledger.ts` 54-71 are the ledger parsers that module 12 and the ledger store tests own); branches 93.87% → 94% (`snapshot-merge.ts` 90.9% → 91.3%: the clear path without a section now runs). Remaining gaps: the singular `error` branch of `runtimeErrorFindings` (line 28) is asserted exactly by `integration/doctor-runtime-errors.test.ts`; the `?? []` and `?? 'is invalid'` fallbacks of `snapshot-merge.ts` (22-23) are unreachable because a failed Zod parse always carries an issue. Commit `88d4648`.
 
 Layout unchanged: one file per source (`runtime-error-line.test.ts` covers `errorLineSchema` in `contracts/session-ledger.ts` and keeps the name prd-10 TC-17 cites). No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply.
 
@@ -843,6 +843,66 @@ Recovery and the remaining failure cases run end to end in `integration/init-sna
 - **Rewritten (3):** runtime-error-checks finding test: `toContain` and `toBeTruthy` became a whole-finding `toEqual` with codes fed out of order (the dedup and sort mutants survived before); the `RUNTIME_ERROR_WINDOW_HOURS` constant assertion was dropped (Trivial; the exact-boundary row kills a changed window). snapshot-merge conflict test: `toHaveProperty('error')` → the exact conflict message, which tells it apart from the schema error a removed `resumeCommand` check would produce.
 - **Created (1 row):** snapshot-merge `the default trigger zone when clearing without a section`: production calls `mergeSnapshot(undefined, …)` on a fresh `init` (`init-config-updates.ts`), and no test ran the clear path without a section, so dropping `?.` would crash `init --no-snapshot-command` unnoticed. It replaces the deleted debug row, so the module stays at 28.
 - **Kept:** the empty-finding and window tests, all four `runtime-error-line` tests (the last for TC-17), the debug set, keep, conflict, apply, and effect tests, and the snapshot keep, invalid-trigger, and apply tests.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.
+
+## 14. restart/policy — done 2026-10-10
+
+**Baseline:** 42 runner tests across the 5 files, green (the plan's 32 was the grep count). Stryker: n/a (Common).
+**Result:** 31 tests across the same 5 files, green. Scoped coverage proxy (`auto-restart-policy.ts`, `auto-restart-notices.ts`, `restart-mode.ts`, `contracts/auto-restart.ts`, `contracts/restart-log.ts`): lines 100% → 100%; branches 97.14% → 96.96% (same per-file figures; the total moved with the branch count of the deleted rows). The one gap, `seedText(resume)` (`auto-restart-notices.ts` 21), is asserted exactly by `restart-flow.test.ts` `carries the resume text in the seed…` (prd-14 TC-05). Commit `<hash>`.
+
+Layout unchanged: one file per source, keeping the names the TechSpecs cite (prd-11 TC-01/02/04/05/06 → `auto-restart-policy.test.ts`, TC-07 → `auto-restart-notices.test.ts`, TC-08 → `auto-restart-contract.test.ts`; prd-14 TC-04 → `auto-restart-policy.test.ts`, TC-06 → `restart-neutrality.test.ts`). No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply. prd-11 TC-03 (checkpoint gate) and the runner-id and `DISABLE_AUTO_COMPACT` cases of TC-06 were superseded by prd-12/prd-14 (the neutrality test forbids `DISABLE_AUTO_COMPACT` in core) and were not recreated.
+
+### auto-restart-policy.ts → Common, mandated zone action (prd-11 FR-01, FR-04–FR-06; prd-14 FR-04, DEC-04)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the signal alone restarts; snapshot mode ignores the handoff | `!handoff.required` guard removed; return literal | `restarts on the signal alone and ignores the handoff in snapshot mode (prd-12 FR-10, prd-14 TC-04)` |
+| no signal skips silently, before any stand-down | `!facts.signal` inverted or moved after `standDownCode` | `skips silently without the signal…` (TC-02) |
+| env switch and non-interactive stand down | either branch of `standDownCode` removed or swapped | `stands down for the %s` (2 rows, TC-06) |
+| limit 2 pauses the third restart, before the no-progress guard | `>=` → `>`; guard order in `guardCode` swapped; `=== 0` operand dropped | `pauses the third consecutive restart with the limit at 2, before the no-progress guard` (TC-04) |
+| a seeded session with no tool call is refused; an unseeded one is not | `consecutive > 0` → `>= 0`; `&&` → `\|\|` | `refuses a signal from a seeded session…`, `does not apply the no-progress guard…` (TC-05) |
+| handoff missing, stale, fresh at the turn start, unknown turn start | `=== null` inverted; `<` → `<=`; `turnStartedAt === undefined` dropped | the four handoff tests (prd-14 TC-04, codereview_01 CR-01) |
+| env → non-interactive → handoff → guards | `??` chain reordered | `orders the stand-down reasons, then the handoff gate, then the guards (FR-06, TC-06)` |
+
+### auto-restart-notices.ts → Common (`seedText`, `appendLogRecord`); `renderRestartNotice` and `buildLogRecord` → Trivial (data table, 1:1 builder)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| one single-line notice per code, none for `SKIP_NO_SIGNAL` | a notice dropped or made multi-line | `has a one-line notice for every code except the silent one` (TC-07) |
+| skip notices name the way out (reduced depth) | wording of the pause or switch notice | `names the cause and the way out in the skip notices` |
+| exact seed, under the 60-token budget (prd-11 TechSpec: agent-facing text) | seed literal changed | `builds the exact generic seed…`, `keeps the seed inside the token budget` |
+| newest 50 records of `{ at, code }`, input untouched | `slice(-N)` → `slice(0, N)`; push mutates; field added | `keeps the newest 50 records of only a timestamp and a code, without mutating the input` (NFR-02, TC-07) |
+
+### restart-mode.ts → Common (prd-14 FR-01, DEC-01)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| off without `autoRestart`, with or without a command | `=== undefined` inverted; checks reordered | `is off without automatic restart…` |
+| snapshot with a command, handoff without | ternary swapped | `uses the snapshot skill…`, `uses the markdown handoff…` |
+
+### contracts/auto-restart.ts and contracts/restart-log.ts → Common (prd-11 FR-07, DEC-09, DEC-10, NFR-02, NFR-03)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| the block defaults the limit to 2 and accepts 1 and 10 | default literal; `minimum`/`maximum` bounds | `accepts the block and defaults…`, `accepts the documented range 1 to 10` |
+| rejects 0, 11, fractions, unknown keys | bound removed; `z.int` → `z.number`; `strictObject` → `object` | `rejects the limit %s` (3 rows), `rejects unknown keys inside the block` (TC-08) |
+| configurations without the block stay valid | `z.optional` removed | `keeps configurations without the block valid` (NFR-03, TC-24) |
+| the log holds only coded records | enum widened; `strictObject` → `object` | `accepts a log of coded records`, `rejects unknown codes and any free-text field` (DEC-10) |
+
+### restart-neutrality → architecture rule (prd-14 FR-05, TC-06)
+Kept as a grep over the seven core restart files plus the rendered notices and seed.
+
+### Actions
+- **Deleted (4):** contract `rejects the limit '2'` row (`z.int()` rejects a string just as it rejects `1.5`; no mutant separates them); contract `publishes the optional block in the generated schema` (reads the committed JSON, so no production mutant reaches it; TC-24's own suite is `npm run schemas:check`, which regenerates every published schema from `configurationSchema` and diffs it, and `keeps configurations without the block valid` kills the `z.optional` removal); notices `builds records with only a timestamp and a code` (Trivial 1:1 builder; the append test now asserts the whole newest record with `toEqual({ at, code })`, which kills the added-field mutant, and TC-07 stays in its describe); policy `ignores the handoff in snapshot mode` (same arrangement as `READY`, whose test kills the `!handoff.required` removal; its identifiers moved into that title).
+- **Merged:** neutrality 7-row `names no harness in %s` → one `it` asserting that the list of offending files is empty (same protection, the file is named on failure; −6 runner tests). Policy `orders the stand-down reasons before the guards` and `orders the handoff gate after the stand-down reasons and before the guards` → one precedence test over a fact set where every gate would fire (−1).
+- **Rewritten (assertions trimmed):** the `guarded(0, undefined)` assertion (identical to `READY`), the repeated `guarded(1, 3)` assertion in the no-progress test, the `TURN_START + 5` handoff assertion (`TURN_START` already kills `<` → `<=`), the seed `not.toContain('boot')` (implied by exact equality), and the config `schemaVersion` assertion (Trivial, owned by the config tests). The pause assertion now uses `guarded(2, 0)`, which kills a reordered `guardCode` that the dropped `hostile → PAUSED` assertion used to kill.
+- **Created:** none.
+- **Kept:** the rest of the policy, notice, seed, budget, append, restart-mode, schema, and log-schema tests.
 
 ### Production pending items
 - None.

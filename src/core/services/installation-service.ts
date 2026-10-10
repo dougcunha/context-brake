@@ -78,7 +78,7 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const preservedAssets = (input.previousManifest?.assets ?? []).filter((a) => modifiedPaths.has(a.path));
   const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets, ...extras.assets];
   const allAssets = buildManagedAssets(cfg.change.content ?? '', adapterAssets);
-  const manifestChanges = active.length === 0 && !input.previousManifest ? [] : [planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) })];
+  const manifestChanges = active.length === 0 && !input.previousManifest ? [] : [planManifestChange({ root: input.projectRoot, assets: allAssets, entries: ap.entries, configOrigins: ap.configOrigins, prev: input.previousManifest ?? null, pkgVer: input.packageVersion, snapshot: input.allSnapshots.find((s) => s.path === MANIFEST_RELATIVE_PATH) })];
   const plannedChanges: PlannedChange[] = [cfg.change, ...manifestChanges, ...protection.changes, ...extras.changes, ...removals.changes];
   const ignore = planGitIgnoreForInstall({ root: input.projectRoot, enabled: cfg.config.gitIgnore !== false, insideGit: input.insideGit ?? false, hasInstall: manifestChanges.length > 0, assetPaths: allAssets.map((asset) => asset.path), changes: plannedChanges, snapshots: input.allSnapshots });
   const conflicts = [...ap.conflicts, ...protection.conflicts, ...ignore.conflicts];

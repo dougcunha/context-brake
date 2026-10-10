@@ -6,6 +6,7 @@ import { type CapabilityProfile, type DetectionEvidence, type VersionProbe } fro
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
+import { applyConfigOrigin, attachConfigOrigin } from '../common/config-origin.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { CURSOR_CAPABILITIES } from './capabilities.js';
@@ -28,12 +29,12 @@ export class CursorAdapter implements HarnessAdapter {
     return probeExecutableVersion(context.runner, CURSOR_EXECUTABLES);
   }
 
-  planInstall(context: HarnessContext) {
-    return planCursorInstall(context.projectRoot);
+  async planInstall(context: HarnessContext) {
+    return attachConfigOrigin(await planCursorInstall(context.projectRoot), { path: CURSOR_CONFIG_FILE, manifest: context.manifest });
   }
 
-  planRemove(context: HarnessContext) {
-    return planCursorRemove(context.projectRoot);
+  async planRemove(context: HarnessContext) {
+    return applyConfigOrigin(await planCursorRemove(context.projectRoot), { path: CURSOR_CONFIG_FILE, manifest: context.manifest, defaults: { version: 1 } });
   }
 
   async diagnose(context: HarnessContext): Promise<readonly DiagnosticFinding[]> {

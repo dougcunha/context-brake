@@ -6,6 +6,7 @@ import { type CapabilityProfile, type DetectionEvidence, type VersionProbe } fro
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
+import { applyConfigOrigin, attachConfigOrigin } from '../common/config-origin.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { diagnoseAutoRestart } from './auto-restart-diagnostics.js';
@@ -31,12 +32,12 @@ export class ClaudeAdapter implements HarnessAdapter {
     return probeExecutableVersion(context.runner, CLAUDE_EXECUTABLES);
   }
 
-  planInstall(context: HarnessContext) {
-    return planClaudeInstall(context);
+  async planInstall(context: HarnessContext) {
+    return attachConfigOrigin(await planClaudeInstall(context), { path: CLAUDE_CONFIG_FILE, manifest: context.manifest });
   }
 
-  planRemove(context: HarnessContext) {
-    return planClaudeRemove(context.projectRoot);
+  async planRemove(context: HarnessContext) {
+    return applyConfigOrigin(await planClaudeRemove(context.projectRoot), { path: CLAUDE_CONFIG_FILE, manifest: context.manifest });
   }
 
   async diagnose(context: HarnessContext): Promise<readonly DiagnosticFinding[]> {

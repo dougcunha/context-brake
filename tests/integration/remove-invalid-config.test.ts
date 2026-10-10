@@ -5,6 +5,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { installReportSchema, type InstallReport } from '../../src/core/contracts/diagnostics.js';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
+const CODEX_USER = '{\n  "hooks": {}\n}\n';
+const CURSOR_USER = '{\n  "version": 1\n}\n';
+
 async function exists(p: string): Promise<boolean> {
   return stat(p).then(() => true).catch(() => false);
 }
@@ -22,7 +25,7 @@ function assertFinding(report: InstallReport): void {
 async function assertPreservedState(root: string, corruptContent: string): Promise<void> {
   expect(await readFile(join(root, '.codex/hooks.json'), 'utf8')).toBe(corruptContent);
   expect(await exists(join(root, '.codex/hooks/context-brake.mjs'))).toBe(true);
-  expect(await readFile(join(root, '.cursor/hooks.json'), 'utf8')).not.toContain('context-brake.mjs');
+  expect(await readFile(join(root, '.cursor/hooks.json'), 'utf8')).toBe(CURSOR_USER);
   expect(await exists(join(root, '.cursor/hooks/context-brake.mjs'))).toBe(false);
   expect(await exists(join(root, '.context-brake/manifest.json'))).toBe(true);
   expect(await exists(join(root, 'context-brake.config.json'))).toBe(true);
@@ -30,7 +33,7 @@ async function assertPreservedState(root: string, corruptContent: string): Promi
 
 async function assertCleanState(root: string): Promise<void> {
   expect(await exists(join(root, '.codex/hooks/context-brake.mjs'))).toBe(false);
-  expect(await readFile(join(root, '.codex/hooks.json'), 'utf8')).not.toContain('context-brake.mjs');
+  expect(await readFile(join(root, '.codex/hooks.json'), 'utf8')).toBe(CODEX_USER);
   expect(await exists(join(root, '.context-brake/manifest.json'))).toBe(false);
   expect(await exists(join(root, 'context-brake.config.json'))).toBe(false);
 }
@@ -43,8 +46,8 @@ describe('E2E: Remove with invalid harness config isolates conflict (CR-06)', ()
   it('preserves conflicted harness while removing valid harness, then succeeds on rerun', async () => {
     await mkdir(join(tempDir, '.codex'), { recursive: true });
     await mkdir(join(tempDir, '.cursor'), { recursive: true });
-    await writeFile(join(tempDir, '.codex/hooks.json'), '{\n  "hooks": {}\n}\n', 'utf8');
-    await writeFile(join(tempDir, '.cursor/hooks.json'), '{\n  "version": 1\n}\n', 'utf8');
+    await writeFile(join(tempDir, '.codex/hooks.json'), CODEX_USER, 'utf8');
+    await writeFile(join(tempDir, '.cursor/hooks.json'), CURSOR_USER, 'utf8');
     expect((await runInProcessCli(['init', '--yes'], tempDir)).code).toBe(0);
 
     const validCodex = await readFile(join(tempDir, '.codex/hooks.json'), 'utf8');

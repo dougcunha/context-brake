@@ -17,11 +17,18 @@ export type ManagedEntry = {
   identity: string;
 };
 
+export type ConfigOrigin = {
+  path: string;
+  created: boolean;
+  addedKeys: readonly string[];
+};
+
 export type InstallationManifest = {
   schemaVersion: 1;
   packageVersion: string;
   assets: readonly ManagedAsset[];
   entries: readonly ManagedEntry[];
+  configOrigins?: readonly ConfigOrigin[] | undefined;
 };
 
 export interface ManifestStore {
@@ -43,9 +50,16 @@ export const managedEntrySchema = z.object({
   identity: z.string().min(1),
 }).strict();
 
+export const configOriginSchema = z.object({
+  path: z.string(),
+  created: z.boolean(),
+  addedKeys: z.array(z.string().min(1)),
+}).strict();
+
 export const installationManifestSchema = z.object({
   schemaVersion: z.literal(MANIFEST_SCHEMA_VERSION),
   packageVersion: z.string().min(1),
   assets: z.array(managedAssetSchema),
   entries: z.array(managedEntrySchema),
+  configOrigins: z.array(configOriginSchema).optional(),
 }).strict();

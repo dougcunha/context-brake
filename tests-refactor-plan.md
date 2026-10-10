@@ -2578,7 +2578,7 @@ Survivors, equivalent or out of scope: the `typeof … === 'object'`/`null` guar
 
 **Confirmed production defects (no red tests committed; see modules 32, 38, 43):**
 1. The JSON editor does not undo its own expansion on remove: `{\n  "hooks": {}\n}\n` → add + remove → `{\n  "hooks": {\n  }\n}\n` (Codex case, same root as OI-07). **Fixed** in `fix(storage): restore emptied containers and report unreadable targets` (2026-10-10).
-2. The Cursor and Codex updaters never remove a `hooks` key that install created: Cursor `{"version":1}` comes back with `"hooks": {}`.
+2. The Cursor and Codex updaters never remove a `hooks` key that install created: Cursor `{"version":1}` comes back with `"hooks": {}`. **Fixed** in `fix(harnesses): give back the config files and keys init created` (2026-10-10): the manifest records each config file's origin (`configOrigins`), and remove deletes the keys and files init created. Installs recorded before this change keep the old behavior.
 3. Two removals produce invalid JSON: `{"a":1 /*x*/,"b":2}` minus `a` → `{ /*x*/,"b":2}`; removing the last array item followed by a comment line leaves the comma. **Fixed** in `fix(storage): keep JSON valid when removing an item next to a comment` (2026-10-10).
 4. `checkPrecondition` (change applier): a non-ENOENT read error rejects the whole `apply` after earlier changes were already written (partial apply). **Fixed** in the same commit: the change now fails with `FILE_UNREADABLE` and the others are still reported.
 

@@ -12,6 +12,7 @@ import {
   createInvalidConfigFinding,
   createLimitationFinding,
 } from '../common/diagnostic-helpers.js';
+import { applyConfigOrigin, attachConfigOrigin } from '../common/config-origin.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { CODEX_CAPABILITIES } from './capabilities.js';
@@ -58,12 +59,12 @@ export class CodexAdapter implements HarnessAdapter {
     return probeExecutableVersion(context.runner, CODEX_EXECUTABLES);
   }
 
-  planInstall(context: HarnessContext) {
-    return planCodexInstall(context.projectRoot);
+  async planInstall(context: HarnessContext) {
+    return attachConfigOrigin(await planCodexInstall(context.projectRoot), { path: CODEX_CONFIG_FILE, manifest: context.manifest });
   }
 
-  planRemove(context: HarnessContext) {
-    return planCodexRemove(context.projectRoot);
+  async planRemove(context: HarnessContext) {
+    return applyConfigOrigin(await planCodexRemove(context.projectRoot), { path: CODEX_CONFIG_FILE, manifest: context.manifest });
   }
 
   async diagnose(context: HarnessContext): Promise<readonly DiagnosticFinding[]> {

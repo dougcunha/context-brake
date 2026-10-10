@@ -6,7 +6,7 @@ import type {
   HarnessId,
   VersionProbe,
 } from './harness.js';
-import type { InstallationManifest, ManagedAsset, ManagedEntry } from './manifest.js';
+import type { ConfigOrigin, InstallationManifest, ManagedAsset, ManagedEntry } from './manifest.js';
 import type { ProcessRunner } from './processes.js';
 
 export type StatuslineBridgeRequest = 'install' | 'remove' | 'default';
@@ -27,6 +27,7 @@ export type AdapterPlan = {
   readonly entries: readonly ManagedEntry[];
   readonly assets?: readonly ManagedAsset[];
   readonly assetPaths?: readonly string[];
+  readonly configOrigins?: readonly ConfigOrigin[];
   readonly findings?: readonly DiagnosticFinding[];
 };
 

@@ -80,7 +80,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 40 | gitignore/core | gitignore-block, gitignore-merge, gitignore-plan (now also gitignore-plan-install) | src/core/services/gitignore-* | K | 39 → 40 | done |
 | 41 | gitignore/integration | init-gitignore, -lifecycle, -tracked, -default-runner, remove-gitignore | src/cli/commands, gitignore-* | K | 20 → 13 | done |
 | 42 | handoff/store | node-handoff-store, -expiry, -lock, handoff-deadline, handoff-deadline-hosts | src/infrastructure/storage, src/infrastructure/runtime | K | 21 → 18 | done |
-| 43 | harness/config-preservation | antigravity-lifecycle, antigravity-registration, claude-preservation, codex-cursor-user-hooks, codex-hook-command-shells, codex-hook-migration, codex-hook-root, legacy-user-hooks, minified-config, minified-config-lifecycle, user-hook-preservation, symlinked-harness-config, symlinked-harness-lifecycle | src/infrastructure/harnesses | K | 29 → 29 | done |
+| 43 | harness/config-preservation | antigravity-lifecycle, antigravity-registration, claude-preservation, codex-cursor-user-hooks, codex-hook-command-shells, codex-hook-migration, codex-hook-root, legacy-user-hooks, minified-config, minified-config-lifecycle, user-hook-preservation, symlinked-harness-config, symlinked-harness-lifecycle (antigravity-lifecycle, codex-cursor-user-hooks, codex-hook-migration, minified-config-lifecycle removed) | src/infrastructure/harnesses | K | 29 → 29 | done |
 
 Unit files under `tests/unit/` are prefixed implicitly; files marked `integration/` live in `tests/integration/`. Assistant question gitignore (`assistant-questions-gitignore`) stays with module 2 because it tests the assistant flow, not the block.
 
@@ -2517,7 +2517,7 @@ Survivors, equivalent or unreachable: `node-handoff-store.ts` 13:51 (`() => unde
 ## 43. harness/config-preservation — done 2026-10-10
 
 **Baseline:** 29 runner tests across the 13 files, green (`codex-hook-command-shells` runs 3 shell rows on Windows and 2 on POSIX, so the count is platform-dependent). Stryker (`--disableBail`) on `common/codex-hooks-updater.ts`, `common/cursor-hooks-updater.ts`, `common/antigravity-hooks-updater.ts`, `common/hook-event-cleanup.ts`, `claude-code/claude-hooks-config.ts`, `claude-code/claude-merger.ts` and the four `planner.ts` (claude-code, antigravity-cli, codex-cli, cursor): **51.82%** (458 killed + 11 timeout, 255 survived, 181 no coverage); per file, in that order, 52.60 / 72.92 / 46.60 / 13.24 / 75.00 / 61.33 / 53.41 / 47.31 / 54.87 / 50.51. The dry run worked with the local config (the sandbox copies `dist/assets/runtime`, which the process-lane files and `init` need); 15 to 18 minutes per run. Coverage proxy (same 10 sources): lines 88.01%, branches 76.79%.
-**Result:** 29 tests across 9 files, green. Stryker on the same sources and flags: **62.87%** (558 killed + 11 timeout, 200 survived, 136 no coverage); per file 72.73 / 81.25 / 58.25 / 13.24 / 93.75 / 66.67 / 67.05 / 55.91 / 67.26 / 58.59 (no file dropped, no mutant went from killed to survived, 97 gained). Coverage proxy: lines 89.98%, branches 80.42% (planners: cursor 50 → 66.66, antigravity 42.85 → 62.5, codex 69.23 → 78.57; updaters: antigravity 82.6 → 93.33, codex 78.94 → 79.48, cursor lines 96.49 → 100 and branches 84.37 → 83.33, the denominator grew with the newly covered `version` branch; `claude-code/planner.ts` branches 70 → 66.66 with the same uncovered lines 39-40, 45-46, 63-64, a v8 denominator change). Related suites green: `integration/hook-event-cleanup`, `idempotent-adapter-merge`, `adapter-planners`, `hook-registration-paths`, `retired-hook-events`, `-copilot`, `-harnesses`, `harness-adapters`, `removal-conflicts`, `init-install`, `unit/test-lanes`; `npm run typecheck` green.
+**Result:** 29 tests across 9 files, green. Stryker on the same sources and flags: **62.87%** (558 killed + 11 timeout, 200 survived, 136 no coverage); per file 72.73 / 81.25 / 58.25 / 13.24 / 93.75 / 66.67 / 67.05 / 55.91 / 67.26 / 58.59 (no file dropped, no mutant went from killed to survived, 97 gained). Coverage proxy: lines 89.98%, branches 80.42% (planners: cursor 50 → 66.66, antigravity 42.85 → 62.5, codex 69.23 → 78.57; updaters: antigravity 82.6 → 93.33, codex 78.94 → 79.48, cursor lines 96.49 → 100 and branches 84.37 → 83.33, the denominator grew with the newly covered `version` branch; `claude-code/planner.ts` branches 70 → 66.66 with the same uncovered lines 39-40, 45-46, 63-64, a v8 denominator change). Related suites green: `integration/hook-event-cleanup`, `idempotent-adapter-merge`, `adapter-planners`, `hook-registration-paths`, `retired-hook-events`, `-copilot`, `-harnesses`, `harness-adapters`, `removal-conflicts`, `init-install`, `unit/test-lanes`; `npm run typecheck` green. Commit `b8f928b`.
 
 Central finding: most baseline tests asserted `toContain`/`toBeDefined` on the planned config, and only the CLI flow in `user-hook-preservation` reached the planners' plan objects (73 exclusive kills). The module now asserts exact bytes for every family (install, second install, remove), the exact parsed structure for every legacy migration, and the exact conflict for every planner's unparsable file.
 
@@ -2551,7 +2551,7 @@ Central finding: most baseline tests asserted `toContain`/`toBeDefined` on the p
 - **Kept unchanged:** `codex-hook-command-shells` (3) and `codex-hook-root` (2). `codex-hook-root`'s process test overlaps the cmd.exe shell row (0 exclusive kills), but it is the prd-13 TechSpec process row (codereview_01 CR-02, NFR-04 shell coverage), and its CR-07 test is module 5's carry-forward. No `tests/test-lanes.ts` change.
 - **Moved:** none.
 
-Growth: 29 → 29 runner tests. The 6 created rows replace 7 deleted tests and 4 files.
+Growth: 29 → 29 runner tests. The 7 created rows (3 malformed, 2 migration, 2 current-registration) replace the 7 deleted tests and 4 files.
 
 Mandated rows: byte for byte plus a second run for every family (Codex, Cursor, Claude Code, Antigravity; LF with comments, minified, CRLF), through the CLI and through the planners; linked config (T10.4, T10.5; skipped with the reason when links cannot be created); refuse-unparsable for every planner; legacy migration for every harness that has a legacy form. Carry-forward kept: CR-07 exact finding (module 5); legacy and two-form Codex migration (modules 18, 24, 25).
 
@@ -2565,3 +2565,30 @@ Survivors, equivalent or out of scope: the `typeof … === 'object'`/`null` guar
 
 ### Questions `[?]`
 - None.
+
+## Closing — 2026-10-10
+
+**Result:** all 43 modules `done`. Runner tests across the modules: 1450 → 1163 (−287, −20%). Full suite after the refactor: 240 files, 1171 tests (including the e2e smoke set), green.
+
+**Final checks (Decisions 1 and 5):**
+- `npm run coverage`: lines 95.55%, branches 92.62%, functions 96.44%, statements 95.55% (gate 80%). The module 11 dead-code deletions did not trip the gate, so nothing was restored.
+- `npm run test:budget`: 87.6 s wall (budget 180 s).
+- `npm run lint` and `npm run typecheck`: clean.
+- Stryker (local only, Decision 2) on the Critical modules 34–43: every module's total score went up; see each section.
+
+**Confirmed production defects (no red tests committed; see modules 32, 38, 43):**
+1. The JSON editor does not undo its own expansion on remove: `{\n  "hooks": {}\n}\n` → add + remove → `{\n  "hooks": {\n  }\n}\n` (Codex case, same root as OI-07).
+2. The Cursor and Codex updaters never remove a `hooks` key that install created: Cursor `{"version":1}` comes back with `"hooks": {}`.
+3. Two removals produce invalid JSON: `{"a":1 /*x*/,"b":2}` minus `a` → `{ /*x*/,"b":2}`; removing the last array item followed by a comment line leaves the comma.
+4. `checkPrecondition` (change applier): a non-ENOENT read error rejects the whole `apply` after earlier changes were already written (partial apply).
+
+**Production pending items (dead or unreachable code):** `askValidated` string overload; `support-service.ts` 26-27; `p95.ts` 7; `scripts/check-package.ts` runs on import and keeps its own required-files list; `changes.ts` zod schemas; `NodeManifestStore.planSave/save/delete`; `RuntimeEvent.tool` / every adapter's `toolOf`; ~25 unused harness schema exports; `mapOmpEvent` `message_end`; in-process catches that skip `errors.jsonl`; `zone-guidance.ts` 16; `resolveUsageWithConfig`; `FailureResolutionInput.ledger`; catches around `resolveFailure`; `arePathsEqual`; `fileIdentity`; `change-target.ts` duplicating `path-boundary.ts`; `git-context.ts` 23; `node-handoff-store.ts` 37; planner catches around the updaters. Details are in each module's section.
+
+**Open questions `[?]`:**
+- `process-capability.test.ts` starts child processes through its helper but is not in `PROCESS_LANE_FILES` (module 16).
+- prd-14 TC-09 should point to `in-process-restart*.test.ts` (module 29); many TechSpec and task rows cite moved, renamed or deleted test files (modules 3, 5, 8, 9, 18–23, 30, 33).
+- prd-02 TC-08 asks for 20 parallel rounds; the built test runs 5 (module 31).
+- `atomic-writer.ts` temp-file cleanup on a failed rename (18-21) has no test (module 39).
+- Identifiers that match no spec row: TC-16 on the session-zone engine-match describe (module 35); prd-08 TC-09/TC-10 on `brake-engine-debug` (module 36).
+
+**Notes:** module 24 landed as two commits (`7b97ba9` deletion only, `42bafe3` the rest) and module 41 as two (`9714cd5`, `2eef160` realpath fix). Stryker files (`stryker.config.json`, `vitest.stryker.config.ts`, `.stryker-tmp/`, `reports/`) are git-excluded through `.git/info/exclude`; the `@stryker-mutator/*` packages are installed with `--no-save`.

@@ -54,7 +54,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 42 → 31 | done |
 | 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 61 → 41 | done |
 | 16 | storage/capabilities | link-capability, process-capability, git-capability | tests/helpers (link-, process-, git-capability) | C | 19 → 9 | done |
-| 17 | install/services | detection-service, installation-summary, removal-service, removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 19 | pending |
+| 17 | install/services | detection-service, installation-summary, removal-service, integration/removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 22 → 21 | done |
 | 18 | harness/registration | harness-registry, harness-adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 27 | pending |
 | 19 | claude/statusline-planner | statusline-context-window, statusline-default, statusline-payload, statusline-planner, statusline-shell | src/infrastructure/harnesses/claude-code | C | 29 | pending |
 | 20 | claude/statusline-diagnostics | statusline-diagnostics, -shell, -symlink | src/infrastructure/harnesses/claude-code | C | 15 | pending |
@@ -976,7 +976,7 @@ Layout: one file per source. The new `tests/unit/auto-restart-merge.test.ts` is 
 ## 16. storage/capabilities — done 2026-10-10
 
 **Baseline:** 19 runner tests across the 3 files, green. Stryker: n/a (Common).
-**Result:** 9 tests (`link-capability` 4, `process-capability` 5), green; `git-capability.test.ts` and its helper removed. Scoped coverage proxy on the helpers (`coverage.include` is `src/**/*.ts`, so these helpers do not count toward the 80% gate; the proxy is informational): `link-capability.ts` lines 92.59% → 92.59%, branches 76.47% → 75% (same uncovered lines 20 and 35; v8 split one executed range of `linkPolicy` into two blocks before, both branches of the `fail`/`skip` ternary are still executed); `process-capability.ts` lines 91.48% → 91.48%, branches 95% → 100% (the `code === 0` side of the `close` handler is now asserted); `git-capability.ts` 61.76% → removed. Remaining gaps: `attemptLink` success (line 20, executed by the link integration suites), `requireLink`'s created-but-missing guard (line 35, defensive), `attemptGitProcess`/`attemptShellProcess` (48-53, one-line wrappers). Commit pending.
+**Result:** 9 tests (`link-capability` 4, `process-capability` 5), green; `git-capability.test.ts` and its helper removed. Scoped coverage proxy on the helpers (`coverage.include` is `src/**/*.ts`, so these helpers do not count toward the 80% gate; the proxy is informational): `link-capability.ts` lines 92.59% → 92.59%, branches 76.47% → 75% (same uncovered lines 20 and 35; v8 split one executed range of `linkPolicy` into two blocks before, both branches of the `fail`/`skip` ternary are still executed); `process-capability.ts` lines 91.48% → 91.48%, branches 95% → 100% (the `code === 0` side of the `close` handler is now asserted); `git-capability.ts` 61.76% → removed. Remaining gaps: `attemptLink` success (line 20, executed by the link integration suites), `requireLink`'s created-but-missing guard (line 35, defensive), `attemptGitProcess`/`attemptShellProcess` (48-53, one-line wrappers). Commit `6669794`.
 
 The three files test test infrastructure (`tests/helpers/*-capability.ts`, the `tests.md` Platforms rule: skip locally with the reason, fail in CI), not `src/infrastructure/`, so decision 3 does not apply and they stay in `tests/unit/`. The plan row's Source column was corrected. No file is in `tests/test-lanes.ts`.
 
@@ -1014,3 +1014,59 @@ Its only consumer was IT-18 (prd-01 TechSpec, `git status --porcelain` over plan
 ### Questions `[?]`
 - `process-capability.test.ts` starts child processes (`attemptExecutable` spawns `node` and a missing binary) but is not in `PROCESS_LANE_FILES`; the lane test only scans test-file source for `node:child_process`, and the spawn lives in the helper. Move it to the process lane, or accept it in the parallel lane (3 short probes, ~0.3 s)?
 - The `CI === '1'` operand of `ciRequiresLinks`/`ciRequiresProcesses` has no killer; GitHub Actions sets `CI=true`, so it was left untested.
+
+## 17. install/services — done 2026-10-10
+
+**Baseline:** 22 runner tests across the 5 files, green (the plan's 19 was the grep count). Stryker: n/a (Common).
+**Result:** 21 tests across the same 5 files, green. Scoped coverage proxy (`detection-service.ts`, `harness-exclusion.ts`, `harness-removal.ts`, `installation-adapters.ts`, `installation-builder.ts`, `installation-findings.ts`, `installation-service.ts`, `removal-helper.ts`, `removal-service.ts`): lines 72.17% → 72.17%; branches 80.95% → 80.68%. The branch delta is v8 block accounting in `removal-service.ts` (83.33% → 82.14%): a per-branch dump shows the same 5 uncovered branches (lines 31, 34, 40 ×2, 59) out of 30 blocks before and 28 after, because the rewritten tests execute fewer distinct ranges. The 0% rows are Glue run only through `init` (module 24): `installation-service.ts`, `installation-adapters.ts`, `installation-findings.ts` (no test imports them). Other gaps: `harness-removal.ts` 26-29 (`guardModifiedAssets`, reached only with `protection` from `installation-service`, asserted by `integration/asset-currency-lifecycle.test.ts`); `installation-builder.ts` 73-76 and its debug/gitignore/auto-restart/dropped summary parts (wording, asserted by the init integrations and modules 13/14); `removal-service.ts` 40 (`removalAdapters` filter) and 59 (the `.gitignore` block change, prd-17, owned by module 41). Commit `<pending>`.
+
+Layout: `removal-conflicts.test.ts` calls `getAdapter(h).planRemove` on four real adapters against a temp directory, so it moved to `tests/integration/` unchanged (decision 3, move-only, name kept because codereview_07 task_27 cites it); it is not in `tests/test-lanes.ts` (`test-lanes.test.ts` green after the move). The other four files stay in `tests/unit/`, one per source.
+
+### detection-service.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| shared instructions are not harness evidence | `kind !== SHARED_INSTRUCTION_EVIDENCE` → `true` | `ignores shared instructions as harness evidence (UT-01, CA-03)` |
+| machine-only evidence is a versioned candidate | `hasSignal` → `false`; `versionFields` dropped | `keeps machine-only evidence as a versioned candidate (UT-03, CA-03)` |
+| explicit include/exclude after deduplication | `included \|\|` removed; `excluded` check moved below; dedup `seen` removed | `applies explicit inclusion and exclusion after deduplication (UT-02, CA-04)` |
+| include and exclude of one id throws, naming it | `throw` removed; wrong harness | `rejects a harness included and excluded together (UT-02, CA-04)` |
+
+### harness-exclusion.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| excluded = (configured − include) ∪ exclude, sorted, unique; selection carries include and exclude | `!included.has` inverted; `sort`/`Set` removed; either selection spread dropped | `$name` (3 rows: FR-06, FR-05, FR-07, TC-10) |
+| detection reports a configured exclusion as `excluded` | selection not forwarded | `feeds detection so an excluded harness is reported as excluded (FR-06, TC-10)` (TechSpec TC-10 names it) |
+| lists compare as sets | `length ===` removed; `every` → `some` | `compares harness lists as sets (TC-10)` |
+| write, keep, or omit `excludedHarnesses` | `undefined` guard removed; `length === 0` inverted | `writes, keeps, or omits the configuration key (FR-05, TC-10)` |
+
+### installation-builder.ts (`configSummary`/`snapshotSummary`) → Common, human-readable (reduced depth)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| no command says only zone headers; command with and without resume; unchanged section still reported from the written config | `command === undefined` inverted; `resumeCommand === undefined` inverted; `config.snapshot ??` → `DEFAULT_SNAPSHOT` | `$name` (4 rows, exact summary, CR-02) |
+
+### removal-service.ts, removal-helper.ts → Common; harness-removal.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| removal deletes only owned files (asset, manifest, runtime, config), never protocol, instruction, `.gitignore`, or plan files | `planCoreDeletions` push removed; owner literals swapped; runtime filter → all | `deletes only the owned asset, runtime files, manifest, and configuration…` (FR-08, DEC-04, TC-12) |
+| a modified asset is kept with the manifest and config, and becomes a generic finding | `assetPlan.conflicts.length > 0` dropped from `hasConflicts`; `sha256 !==` inverted; generic `createRemovalFinding` branch | `keeps a modified asset, the manifest, and the configuration, and reports the conflict as a finding` |
+| an unparsable harness config is a conflict for every adapter | adapter parse `catch` → throw or empty plan | `isolates unparsable config for %s as conflict` (4 rows, CR-06, integration) |
+| a conflicted harness keeps its assets, the manifest, and the config; the finding names the harness | `createRemovalFinding(conflict, adapter.id)` → `null`; `assetPaths` loop removed; `excludedAssetPaths.add` removed | `keeps manifest and config and skips conflicted runtime assets` (CR-06, integration) |
+
+### Actions
+- **Deleted:** none.
+- **Merged (2 → 1):** removal-service `deletes the owned asset and runtime files and never touches…` and `marks every runtime file as an owned runtime-state deletion` (same arrangement) → one test asserting the exact `[path, kind, owner]` list.
+- **Rewritten (13 runner tests):** the merged removal test asserted `arrayContaining`, so dropping the manifest or config deletion survived; its fixture now holds manifest and config snapshots (the change plan drops deletions of absent files) and the list is exact. The modified-asset test asserted `conflicts.some`; it now asserts the exact changes (runtime only, so a `hasConflicts` mutant that deletes the manifest is killed), the conflict, and the generic finding (`harness: null`, impact), the only killer of that `createRemovalFinding` branch. The three `resolveHarnessExclusion` tests became one `it.each` asserting `{ excluded, selection }` (the no-flag row asserted only `excluded`). `hasSameHarnesses(['cursor'], [])` became `([], ['cursor'])`: with a non-empty left, dropping the length check still returned `false`. The four summary tests became one `it.each` asserting the exact summary instead of `toContain`/`toMatch`.
+- **Created:** none.
+- **Kept (10):** the four detection tests, `feeds detection…`, `writes, keeps, or omits…`, and `removal-conflicts.test.ts` (5) unchanged. Its service test is not redundant with `integration/remove-invalid-config.test.ts`: that file never asserts `finding.harness`.
+- **Moved:** `tests/unit/removal-conflicts.test.ts` → `tests/integration/removal-conflicts.test.ts`.
+
+The `.gitignore` fixture in `removal-service.test.ts` carries the pre-prd-17 `# CONTEXTBRAKE:START` markers, which `planGitIgnore` does not recognize, so it stays a plain user file; removing the managed block on `remove` belongs to module 41 (`remove-gitignore`).
+
+### Production pending items
+- `planConfigChange` accepts `string | ConfigChangeInput` plus two positional parameters, but its only caller (`installation-service.ts` 73) passes the object: the string overload and its `typeof` ternaries could go.
+
+### Questions `[?]`
+- None.

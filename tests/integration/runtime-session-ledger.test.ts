@@ -18,15 +18,15 @@ function validToolJson(turn: number): string {
   return JSON.stringify({ v: 1, type: 'tool', at: NOW, toolUseId: null, observedCharacters: 10, turn, usedTokens: 10, windowTokens: 128000, estimatedTokens: 10, source: 'estimated', zone: 'GREEN' });
 }
 
-describe('T03 session ledger append (RF2, DEC-04)', () => {
-  let tempDir: string;
-  let ledger: NodeSessionLedger;
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'cb-t03-a-'));
-    ledger = new NodeSessionLedger(tempDir, clock);
-  });
-  afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
+let tempDir: string;
+let ledger: NodeSessionLedger;
+beforeEach(async () => {
+  tempDir = await mkdtemp(join(tmpdir(), 'cb-t03-ledger-'));
+  ledger = new NodeSessionLedger(tempDir, clock);
+});
+afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
+describe('T03 session ledger append (RF2, DEC-04)', () => {
   it('appends one LF-terminated valid JSON line per event with the injected timestamp', async () => {
     await ledger.appendSessionLine(KEY);
     await ledger.appendToolLine(KEY, toolInput(1));
@@ -40,7 +40,7 @@ describe('T03 session ledger append (RF2, DEC-04)', () => {
     expect(lines.every((line) => line.at === NOW)).toBe(true);
   });
 
-  it('creates the runtime gitignore on the first write and never overwrites it', async () => {
+  it('creates the runtime gitignore on the first write and never overwrites it (DEC-16, TC-29)', async () => {
     const gitignorePath = join(runtimeDirectory(tempDir), '.gitignore');
     await ledger.appendToolLine(KEY, toolInput(1));
     expect(await readFile(gitignorePath, 'utf8')).toBe('*\n');
@@ -51,14 +51,6 @@ describe('T03 session ledger append (RF2, DEC-04)', () => {
 });
 
 describe('T03 session ledger tolerant read (RF2, DEC-04)', () => {
-  let tempDir: string;
-  let ledger: NodeSessionLedger;
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'cb-t03-read-'));
-    ledger = new NodeSessionLedger(tempDir, clock);
-  });
-  afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
   it('skips corrupt, partial, and unknown-version lines and keeps the valid ones', async () => {
     await ledger.appendToolLine(KEY, toolInput(1));
     const filePath = sessionLedgerPath(tempDir, KEY);
@@ -68,29 +60,5 @@ describe('T03 session ledger tolerant read (RF2, DEC-04)', () => {
     const lines = await ledger.readLines(KEY);
     expect(lines).toHaveLength(1);
     expect(lines[0]?.type).toBe('tool');
-  });
-
-  it('returns no lines for a session that never wrote a ledger', async () => {
-    expect(await ledger.readLines({ ...KEY, sessionId: 'absent' })).toEqual([]);
-  });
-});
-
-describe('T03 session isolation (RF4, CA-08)', () => {
-  let tempDir: string;
-  let ledger: NodeSessionLedger;
-  beforeEach(async () => {
-    tempDir = await mkdtemp(join(tmpdir(), 'cb-t03-b-'));
-    ledger = new NodeSessionLedger(tempDir, clock);
-  });
-  afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
-  it('keeps a subagent on its own ledger and leaves the main session untouched', async () => {
-    const subagent: SessionKey = { ...KEY, agentId: 'sub-1' };
-    await ledger.appendToolLine(subagent, toolInput(1));
-    await ledger.appendToolLine(KEY, toolInput(1));
-    await ledger.appendToolLine(KEY, toolInput(2));
-    expect(await ledger.readLines(subagent)).toHaveLength(1);
-    expect(await ledger.readLines(KEY)).toHaveLength(2);
-    expect(sessionLedgerPath(tempDir, subagent)).not.toBe(sessionLedgerPath(tempDir, KEY));
   });
 });

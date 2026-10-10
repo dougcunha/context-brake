@@ -14,7 +14,6 @@ export const TOKENS_PER_TURN = 150;
 export const SEEDED_TURNS = 11;
 export const NEAR_CRITICAL_USAGE_TARGET = 0.749;
 export const IN_PROCESS_SEED_USAGE_TARGET = 0.745;
-export const WORK_FILE = 'src/feature.ts';
 export type SimulatedOutput = { readonly kind: OutputKind; readonly characters: number };
 export type SimulatedCall =
   | { readonly id: string; readonly tool: 'read' | 'write'; readonly path: string; readonly content: string; readonly output: SimulatedOutput }
@@ -44,15 +43,6 @@ export function measureTokens(text: string): number {
 export function takeTokens(text: string, count: number): string {
   const encoded = encoding.encode(text);
   return encoded.length <= count ? text : encoding.decode(encoded.slice(0, count));
-}
-export function readCall(id: string, path: string): SimulatedCall {
-  return { id, tool: 'read', path, content: '', output: { kind: 'code', characters: 240 } };
-}
-export function writeCall(id: string, path: string, content: string): SimulatedCall {
-  return { id, tool: 'write', path, content, output: { kind: 'code', characters: 240 } };
-}
-export function shellCall(id: string, command: string, argv: readonly string[]): SimulatedCall {
-  return { id, tool: 'shell', command, argv, executable: 'git', output: { kind: 'log', characters: 320 } };
 }
 export function corpusText(output: SimulatedOutput, variant: number): string {
   const text = CORPUS_SOURCES[output.kind];

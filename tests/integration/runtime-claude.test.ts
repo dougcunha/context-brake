@@ -1,24 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
+import { RecordingErrors } from '../helpers/recording-ledger.js';
 import { mapClaudeEvent, mapClaudeInput, renderClaudeDecision } from '../../src/infrastructure/harnesses/claude-code/runtime.js';
 
 const SESSION = { harness: 'claude-code', sessionId: 'session-claude-1', agentId: null };
+const FIXTURE_CHARACTERS = 208;
 
 describe('Claude Code runtime tool events (RF12, RF14, TC-14, TC-33)', () => {
-  it('maps the documented PostToolUse fixture to a classified post-tool event and ignores PreToolUse (prd-12 TC-09)', async () => {
-    const event = mapClaudeEvent('PostToolUse', await loadHarnessPayload('claude-code', 'post-tool-use.json'));
-    expect(event).toMatchObject({ kind: 'post_tool', session: SESSION, tool: { name: 'Bash', category: 'shell', paths: [], command: 'git status' } });
-    expect(mapClaudeEvent('PreToolUse', { session_id: 's', tool_name: 'Bash' })).toBeNull();
-  });
-
-  it('maps the documented PostToolUse fixture with its tool_use_id and tool_response', async () => {
+  it('maps the documented PostToolUse fixture with its tool_use_id, counts its input and response characters, and ignores PreToolUse (prd-12 TC-09)', async () => {
     const payload = await loadHarnessPayload('claude-code', 'post-tool-use.json');
-    const event = mapClaudeEvent('PostToolUse', payload) as { kind: string; toolUseId: string | null };
-    expect(event.kind).toBe('post_tool');
-    expect(event.toolUseId).toBe('toolu_claude_1');
-    const fixture = payload as { tool_input: unknown; tool_response: unknown };
-    const input = await mapClaudeInput('PostToolUse', payload, { append: async () => Promise.resolve() });
-    expect(input.observedCharacters).toBe(JSON.stringify(fixture.tool_input).length + JSON.stringify(fixture.tool_response).length);
+    expect(mapClaudeEvent('PostToolUse', payload)).toEqual({ kind: 'post_tool', session: SESSION, tool: { name: 'Bash', category: 'shell', paths: [], command: 'git status' }, toolUseId: 'toolu_claude_1' });
+    expect(await mapClaudeInput('PostToolUse', payload, new RecordingErrors())).toEqual({ observedCharacters: FIXTURE_CHARACTERS });
+    expect(mapClaudeEvent('PreToolUse', { session_id: 's', tool_name: 'Bash' })).toBeNull();
   });
 
   it('classifies every documented file tool and tolerates unknown fields', () => {
@@ -51,16 +44,10 @@ describe('Claude Code runtime lifecycle events (RF3, RF22, TC-21)', () => {
 });
 
 describe('Claude Code response rendering (RF14, RF17, RF22, TC-14, TC-21)', () => {
-  it('renders context in the documented hookSpecificOutput fields and nothing on PreToolUse', () => {
-    expect(renderClaudeDecision({ kind: 'neutral' }, 'PreToolUse')).toBeNull();
+  it('renders context in hookSpecificOutput, the reset notice as systemMessage, and nothing for a neutral decision', () => {
     const context = renderClaudeDecision({ kind: 'context', block: 'telemetry' }, 'PostToolUse');
     expect(JSON.parse(context ?? '')).toEqual({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: 'telemetry' } });
-  });
-
-  it('renders the reset notice as systemMessage and stays silent otherwise', () => {
-    const notice = renderClaudeDecision({ kind: 'notify_user', text: 'notice' }, 'Stop');
-    expect(JSON.parse(notice ?? '')).toEqual({ systemMessage: 'notice' });
-    expect(renderClaudeDecision({ kind: 'neutral' }, 'PreToolUse')).toBeNull();
-    expect(renderClaudeDecision({ kind: 'neutral' }, 'SessionStart')).toBeNull();
+    expect(JSON.parse(renderClaudeDecision({ kind: 'notify_user', text: 'notice' }, 'Stop') ?? '')).toEqual({ systemMessage: 'notice' });
+    expect(renderClaudeDecision({ kind: 'neutral' }, 'PostToolUse')).toBeNull();
   });
 });

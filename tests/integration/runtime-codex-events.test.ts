@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { RuntimeEvent } from '../../src/core/contracts/runtime.js';
-import type { RuntimeErrorLog } from '../../src/core/contracts/session-ledger.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
+import { RecordingErrors } from '../helpers/recording-ledger.js';
 import { mapCodexEvent, mapCodexInput, renderCodexDecision } from '../../src/infrastructure/harnesses/codex-cli/runtime.js';
 
 const SESSION = { harness: 'codex-cli', sessionId: 'codex-sess-1', agentId: null };
-const NO_ERRORS: RuntimeErrorLog = { append: async () => undefined };
+const FIXTURE_CHARACTERS = 77;
 
 function toolOf(event: RuntimeEvent | null): unknown {
   return event !== null && 'tool' in event ? event.tool : null;
@@ -25,31 +25,37 @@ describe('Codex CLI runtime event mapping (RF1, RF12, DEC-12, TC-33)', () => {
     expect(toolOf(event)).toEqual({ name: 'apply_patch', category: 'file_write', paths: ['src/app.ts', 'src/new.ts', 'src/old.ts', 'src/moved.ts'], command: null });
   });
 
-  it('maps the documented PostToolUse fixture and Stop fixture', async () => {
-    const post = mapCodexEvent('PostToolUse', await loadHarnessPayload('codex-cli', 'post-tool-use.json')) as { kind: string; toolUseId: string | null };
-    expect(post.kind).toBe('post_tool');
-    expect(post.toolUseId).toBe('exec-codex-1');
-    const stop = mapCodexEvent('Stop', await loadHarnessPayload('codex-cli', 'stop.json'));
-    expect(stop).toEqual({ kind: 'response_end', session: SESSION, text: '[REQUEST_SESSION_RESET]' });
-  });
-
-  it('resets on startup, clear, and compact but not on resume', () => {
-    expect(mapCodexEvent('SessionStart', { session_id: 'codex-sess-1', source: 'compact' })).toMatchObject({ kind: 'session_reset', reason: 'compact' });
-    expect(mapCodexEvent('SessionStart', { session_id: 'codex-sess-1', source: 'resume' })).toBeNull();
-  });
-
   it('counts the documented tool input and output characters', async () => {
     const payload = await loadHarnessPayload('codex-cli', 'post-tool-use.json');
-    const fixture = payload as { tool_input: unknown; tool_response: string };
-    expect((await mapCodexInput('PostToolUse', payload, NO_ERRORS)).observedCharacters).toBe(JSON.stringify(fixture.tool_input).length + fixture.tool_response.length);
-    expect((await mapCodexInput('PreToolUse', payload, NO_ERRORS)).observedCharacters).toBeUndefined();
+    expect((await mapCodexInput('PostToolUse', payload, new RecordingErrors())).observedCharacters).toBe(FIXTURE_CHARACTERS);
+    expect((await mapCodexInput('PreToolUse', payload, new RecordingErrors())).observedCharacters).toBeUndefined();
+  });
+});
+
+describe('Codex CLI runtime lifecycle events (RF3, RF22, DEC-13)', () => {
+  it.each([
+    ['startup', 'new'],
+    ['clear', 'clear'],
+    ['compact', 'compact'],
+  ])('maps a SessionStart with source %s to a %s reset', (source, reason) => {
+    expect(mapCodexEvent('SessionStart', { session_id: 'codex-sess-1', source })).toEqual({ kind: 'session_reset', session: SESSION, reason });
+  });
+
+  it('never resets on a resumed or forked session', () => {
+    expect(mapCodexEvent('SessionStart', { session_id: 'codex-sess-1', source: 'resume' })).toBeNull();
+    expect(mapCodexEvent('SessionStart', { session_id: 'codex-sess-1', source: 'fork' })).toBeNull();
+  });
+
+  it('maps the documented Stop fixture to the response text', async () => {
+    const stop = mapCodexEvent('Stop', await loadHarnessPayload('codex-cli', 'stop.json'));
+    expect(stop).toEqual({ kind: 'response_end', session: SESSION, text: '[REQUEST_SESSION_RESET]' });
   });
 });
 
 describe('Codex CLI response rendering (RF14, RF17, RF22, TC-14, TC-21)', () => {
-  it('renders context and notice in documented JSON fields and nothing else', () => {
+  it('renders context in hookSpecificOutput, the reset notice as systemMessage, and nothing for a neutral decision', () => {
     expect(JSON.parse(renderCodexDecision({ kind: 'context', block: 'telemetry' }, 'PostToolUse') ?? '')).toEqual({ hookSpecificOutput: { hookEventName: 'PostToolUse', additionalContext: 'telemetry' } });
     expect(JSON.parse(renderCodexDecision({ kind: 'notify_user', text: 'notice' }, 'Stop') ?? '')).toEqual({ systemMessage: 'notice' });
-    expect(renderCodexDecision({ kind: 'neutral' }, 'PreToolUse')).toBeNull();
+    expect(renderCodexDecision({ kind: 'neutral' }, 'PostToolUse')).toBeNull();
   });
 });

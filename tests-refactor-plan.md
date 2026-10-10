@@ -46,7 +46,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 → 13 | done |
 | 7 | repo/release-packaging | release-workflow, check-release-tag, package-metadata, asset-bundler, runtime-bundle-imports, integration/package-assets, integration/package-contents | scripts/, src/infrastructure/storage/package-metadata | G/C | 64 → 51 | done |
 | 8 | repo/test-infra | test-budget, test-lanes, e2e-smoke-set, bench-config, benchmark-fixtures | tests/test-lanes.ts, scripts/check-test-budget.ts, vitest configs | C | 22 → 21 | done |
-| 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 | pending |
+| 9 | repo/docs-drift | readme-config-example, readme-gitignore, readme-light-example, readme-support-table, integration/docs-auto-restart | README.md, docs/ | T | 24 → 0 | done |
 | 10 | config/validation | configuration, configuration-sanitizer, configuration-snapshot, configuration-validator, config-legacy-checks | src/core/validation, src/core/services/config-legacy-checks | C | 29 | pending |
 | 11 | config/schemas-stores | schemas, changes-schema, project-config-store, manifest-store | src/core/contracts schemas, src/infrastructure/storage | C | 16 | pending |
 | 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 29 | pending |
@@ -539,7 +539,7 @@ The file pins literals of the workflow; every test kills the "literal edited out
 ## 8. repo/test-infra — done 2026-10-10
 
 **Baseline:** 22 runner tests across the 5 files, green (the plan's 21 was the grep count). Stryker: n/a (Common/Trivial).
-**Result:** 21 tests across 5 files, green. Scoped coverage proxy (`scripts/test-budget.ts`, `tests/test-lanes.ts`, `vitest.config.ts`, `vitest.bench.config.ts`): unchanged, lines 98.67% → 98.67%, branches 100% → 100%. The only gap is `tests/test-lanes.ts` 41-42 (`isSerialLaneFile`), unreachable from the marker test because `SERIAL_LANE_FILES` is a subset of `PROCESS_LANE_FILES`, so `isProcessLaneFile` short-circuits it. Commit `<hash>`.
+**Result:** 21 tests across 5 files, green. Scoped coverage proxy (`scripts/test-budget.ts`, `tests/test-lanes.ts`, `vitest.config.ts`, `vitest.bench.config.ts`): unchanged, lines 98.67% → 98.67%, branches 100% → 100%. The only gap is `tests/test-lanes.ts` 41-42 (`isSerialLaneFile`), unreachable from the marker test because `SERIAL_LANE_FILES` is a subset of `PROCESS_LANE_FILES`, so `isProcessLaneFile` short-circuits it. Commit `f58ed30`.
 
 Layout: `benchmark-fixtures.test.ts` imports every harness adapter from `src/infrastructure/harnesses/` and moved unchanged to `tests/integration/` (decision 3, `git mv` only; no process marker, not in `tests/test-lanes.ts`, so the lanes file is unchanged and `test-lanes.test.ts` stays green). The other files keep their names. The prd-13 TechSpec cites `test-lanes.test.ts` for TC-03 and TC-05, which live in `bench-config.test.ts` and `e2e-smoke-set.test.ts`. Merging them into `test-lanes.test.ts` would push it past 100 lines, so the split stays. These tests guard the `tests.md` Time Budget and Processes rules (process lane, smoke set, bench runner, 180 s budget), so the rules they pin count as mandated behavior even where the source is a config object.
 
@@ -588,6 +588,39 @@ Layout: `benchmark-fixtures.test.ts` imports every harness adapter from `src/inf
 ### Notes for later modules
 - prd-12 `task_05.md` and prd-01 codereview_08 `task_33.md` list `tests/unit/benchmark-fixtures.test.ts`, now in `tests/integration/`.
 - `tests/test-lanes.ts` 41-42 (`isSerialLaneFile`) runs only if a serial file ever leaves `PROCESS_LANE_FILES`. It is test infrastructure, not production code.
+
+### Questions `[?]`
+- None.
+
+## 9. repo/docs-drift — done 2026-10-10
+
+**Baseline:** 24 runner tests across the 5 files, green (the plan's 24 matched). Stryker: n/a (Trivial).
+**Result:** 0 tests; the 5 files were deleted (Decision 4). Module coverage proxy before (`configuration.ts`, `harness.ts`, `registry.ts`): lines 98.11%, branches 57.57%; after: n/a, the module is empty. Combined proxy on those sources plus every `harnesses/*/adapter.ts`, run with the related suites (`unit/harness-adapters`, `unit/configuration`, `unit/configuration-snapshot`, `unit/support-service`, `integration/init-snapshot`, `unit/test-lanes`, `unit/e2e-smoke-set`): identical before and after the deletion, lines 53.82% → 53.82%, branches 94.11% → 94.11%, so no line or branch was executed only by these files. Commit `<hash>`.
+
+No test file lists these files: `git grep` outside `tasks/` finds no reference, so `tests/test-lanes.ts` and `e2e-smoke-set.test.ts` are unchanged (both green). ESLint is n/a, since no touched test file remains.
+
+### README.md, docs/telemetry-block.md, docs/research/harness-integrations.md, .agents/rules/file-changes.md, AGENTS.md → Trivial (Decision 4)
+
+Every assertion reads a Markdown file and checks its wording, so each test kills only the "documentation edited" mutant. None of the assertions is in the `tests.md` Required Scenarios: the agent-facing text scenario covers the text the code emits, which is asserted elsewhere (`integration/light-mode-lifecycle.test.ts` pins the exact `action=run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]` and the `[ContextBrake resume v1] Run "/sdd-resume"…` resume text; `integration/runtime-statusline-ledger.test.ts` pins the `"type":"statusline"` ledger line). The sources these files import (`src/core/contracts/configuration.ts`, `src/core/contracts/harness.ts`, `src/infrastructure/harnesses/registry.ts`) belong to modules 10, 11, and 18.
+
+| Assertion that touches code | Code behavior | Test that covers it |
+|---|---|---|
+| readme-support-table: one row per harness with the adapter's `supportLevel`; Oh-My-Pi `full`; Antigravity `partial` with `PreInvocation` | `capabilityProfile().supportLevel` per harness, limitation text | `unit/harness-adapters.test.ts` `matches the approved table for $id` (TC-02, 8 rows: exact level, capability states, and limitation text, including Antigravity's `PreInvocation` limitation) |
+| readme-config-example: the README config JSON parses with `configurationSchema` | the schema accepts the canonical config shape | `unit/configuration.test.ts` `parses the canonical defaults`; the README example is `DEFAULT_CONFIG` with `activeHarnesses: ["claude-code"]`, which every init integration test writes |
+| readme-light-example: `{ triggerZone: 'RED', command, resumeCommand }` merged into the defaults parses | the snapshot schema accepts both commands | `integration/init-snapshot.test.ts` (writes and re-reads exactly that object through init's validation); `unit/configuration-snapshot.test.ts` `requires a snapshot command for a resume command` (TC-04) for the refinement |
+
+The only check with no equivalent is the README-to-adapter consistency itself (README level = code level), which is documentation drift under Decision 4.
+
+### Actions
+- **Deleted (24):** `readme-config-example` (11): one schema parse of the README example, see the table, plus 10 README/telemetry-doc wording checks; `readme-gitignore` (3): README, `file-changes.md`, and `AGENTS.md` wording, no source imported; `readme-light-example` (2): see the table, plus the README literal; `readme-support-table` (5): see the table, plus README wording (Oh-My-Pi extension path, no instruction pointer, managed block); `integration/docs-auto-restart` (3): README, telemetry-doc, and research-file wording, no source imported.
+- **Merged, rewritten, created, moved:** none.
+
+### Production pending items
+- None.
+
+### Notes for later modules
+- TechSpec rows that now cite deleted files (`tasks/` not edited): prd-01.1 DEC-08 (and line 20); prd-02 DEC-14, TC-31, TC-34, the line-19 note, and the drift table at lines 403-404; prd-02.1 TC-22; prd-02.2 TC-19; prd-06 TC-15; prd-07 TC-14; prd-09 TC-14 (and line 88); prd-10 TC-18; prd-11 TC-26 (and line 185); prd-12 line 291; prd-17 TC-10. Done task files and code reviews under `tasks/` also name them (e.g. prd-01 `codereview_01/done/task_09.md`, `codereview_08/done/task_34.md`).
+- With these files gone, nothing checks README or docs against the code. If the user wants that kept, it belongs in a release or docs check, not in `npm test`.
 
 ### Questions `[?]`
 - None.

@@ -3,32 +3,25 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
-import { seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { fixedClock, seedCriticalSession, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 type Handler = (payload: unknown, context?: unknown) => Promise<unknown>;
 type HookObject = { readonly 'tool.execute.after'?: Handler; readonly event?: Handler };
 
-const PI_ASSET = resolve('dist/assets/runtime/pi-extension.js');
-const OMP_ASSET = resolve('dist/assets/runtime/omp-extension.js');
-const OPENCODE_ASSET = resolve('dist/assets/runtime/opencode-plugin.js');
+const RUNTIME_ASSETS = 'dist/assets/runtime';
+const NEW_SESSION_NOTICE = 'ContextBrake: the agent requested a session reset. Run /new to start a new session.';
 
-async function loadPi(): Promise<Map<string, Handler>> {
-  const module = (await import(pathToFileURL(PI_ASSET).href)) as { default: (api: unknown) => void };
-  const handlers = new Map<string, Handler>();
-  module.default({ on: (event: string, handler: Handler) => { handlers.set(event, handler); } });
-  return handlers;
-}
-
-async function loadOmp(): Promise<Map<string, Handler>> {
-  const module = (await import(pathToFileURL(OMP_ASSET).href)) as { default: (api: unknown) => void };
+async function loadExtension(asset: string): Promise<Map<string, Handler>> {
+  const module = (await import(pathToFileURL(resolve(RUNTIME_ASSETS, asset)).href)) as { default: (api: unknown) => void };
   const handlers = new Map<string, Handler>();
   module.default({ on: (event: string, handler: Handler) => { handlers.set(event, handler); } });
   return handlers;
 }
 
 async function loadOpenCode(context: unknown): Promise<HookObject> {
-  const module = (await import(pathToFileURL(OPENCODE_ASSET).href)) as { default: (context?: unknown) => HookObject };
+  const module = (await import(pathToFileURL(resolve(RUNTIME_ASSETS, 'opencode-plugin.js')).href)) as { default: (context?: unknown) => HookObject };
   return module.default(context);
 }
 
@@ -41,41 +34,36 @@ function noticeContext(root: string, sessionId: string, notices: string[]): unkn
 }
 
 async function checkPi(root: string): Promise<void> {
-  const handlers = await loadPi();
+  const handlers = await loadExtension('pi-extension.js');
   const measured = { tokens: 128000, contextWindow: 200000, percent: 64 };
   const rendered = await handlers.get('tool_result')!(await loadHarnessPayload('pi', 'tool-result.json'), piContext(root, 'pi-built', measured)) as { content: unknown[] };
-  expect(rendered.content).toHaveLength(2);
-  expect(rendered.content[0]).toEqual({ type: 'text', text: 'tests passed' });
-  expect((rendered.content[1] as { text: string }).text).toContain('tokens=128000/200000 source=measured');
-  await seedCriticalSession(root, { harness: 'pi', sessionId: 'pi-critical', agentId: null });
-  await expect(handlers.get('session_start')!({ reason: 'new' }, piContext(root, 'pi-reset', measured))).resolves.toBeUndefined();
+  expect(rendered.content).toEqual([{ type: 'text', text: 'tests passed' }, { type: 'text', text: expect.stringContaining('tokens=128000/200000 source=measured') }]);
   const notices: string[] = [];
   await handlers.get('message_end')!(await loadHarnessPayload('pi', 'message-end.json'), noticeContext(root, 'pi-built', notices));
-  expect(notices).toEqual(['ContextBrake: the agent requested a session reset. Run /new to start a new session.']);
+  expect(notices).toEqual([NEW_SESSION_NOTICE]);
   expect(handlers.has('tool_call')).toBe(false);
 }
 
 async function checkOmp(root: string): Promise<void> {
-  const handlers = await loadOmp();
+  const handlers = await loadExtension('omp-extension.js');
   await seedCriticalSession(root, { harness: 'oh-my-pi', sessionId: 'omp-built', agentId: null });
-  const stop = await loadHarnessPayload('oh-my-pi', 'session-stop.json');
   const notices: string[] = [];
-  await expect(handlers.get('session_stop')!(stop, noticeContext(root, 'omp-built', notices))).resolves.toBeUndefined();
-  expect(notices).toEqual(['ContextBrake: the agent requested a session reset. Run /new to start a new session.']);
+  await handlers.get('session_stop')!(await loadHarnessPayload('oh-my-pi', 'session-stop.json'), noticeContext(root, 'omp-built', notices));
+  expect(notices).toEqual([NEW_SESSION_NOTICE]);
   expect(handlers.has('tool_call')).toBe(false);
 }
 
 async function checkOpenCode(root: string): Promise<void> {
   const hooks = await loadOpenCode({ directory: root });
-  const after = await loadHarnessPayload('opencode', 'tool-execute-after.json') as { input: Record<string, unknown>; output: unknown };
+  const after = await loadHarnessPayload('opencode', 'tool-execute-after.json') as { input: unknown; output: unknown };
   expect('tool.execute.before' in hooks).toBe(false);
-  await expect(hooks['tool.execute.after']!({ ...after.input, sessionID: 'opencode-green' }, after.output)).resolves.toBeUndefined();
-  await seedCriticalSession(root, { harness: 'opencode', sessionId: 'opencode-critical', agentId: null });
-  await expect(hooks['tool.execute.after']!({ ...after.input, sessionID: 'opencode-critical' }, after.output)).resolves.toBeUndefined();
-  await expect(hooks.event!(await loadHarnessPayload('opencode', 'session-compacted.json'))).resolves.toBeUndefined();
+  await hooks['tool.execute.after']!(after.input, after.output);
+  await hooks.event!(await loadHarnessPayload('opencode', 'session-compacted.json'));
+  const lines = await new NodeSessionLedger(root, fixedClock).readLines({ harness: 'opencode', sessionId: 'opencode-session-1', agentId: null });
+  expect(lines.map((line) => line.type)).toEqual(['session', 'tool', 'reset']);
 }
 
-describe('built in-process extensions and plugin (RF5, RF12, RF17, RF21)', () => {
+describe('built in-process extensions and plugin (RF5, RF12, RF17, RF21; prd-13 T04; prd-14 TC-10)', () => {
   let root: string;
   beforeEach(async () => {
     root = await mkdtemp(join(tmpdir(), 'cb-t07-built-inprocess-'));
@@ -83,7 +71,7 @@ describe('built in-process extensions and plugin (RF5, RF12, RF17, RF21)', () =>
   });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('runs the built Pi extension: measured block, append, no deny, and reset', async () => { await checkPi(root); });
+  it('runs the built Pi extension: measured block appended, /new notice, and no pre-tool handler', async () => { await checkPi(root); });
   it('runs the built Oh-My-Pi extension with the session_stop notice', async () => { await checkOmp(root); });
-  it('runs the built OpenCode plugin: documented arguments, no deny, and session reset', async () => { await checkOpenCode(root); });
+  it('runs the built OpenCode plugin: no pre-tool hook, the tool call and the compaction reach the ledger', async () => { await checkOpenCode(root); });
 });

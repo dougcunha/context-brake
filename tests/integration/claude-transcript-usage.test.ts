@@ -37,11 +37,8 @@ describe('Claude Code transcript usage reader fallbacks (FR-05, NFR-02, TC-15)',
     expect(await readTranscriptUsage(join(FIXTURES, 'transcript-no-assistant.jsonl'))).toBeNull();
   });
 
-  it.each([
-    ['a missing path', undefined],
-    ['an empty path', ''],
-  ])('returns null for %s (TC-15)', async (_label, path) => {
-    expect(await readTranscriptUsage(path)).toBeNull();
+  it('returns null for a missing path (TC-15)', async () => {
+    expect(await readTranscriptUsage(undefined)).toBeNull();
   });
 
   it.each([

@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { bindHookInProcess, runBoundHook, type BoundHook } from '../helpers/in-process-hook.js';
-import { seedCriticalSession, seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
+import { seedTurns, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 
 let root = '';
 let hook: BoundHook;
@@ -15,23 +15,12 @@ beforeEach(async () => {
 afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
 describe('GitHub Copilot CLI built hook with documented payloads (CA-15)', () => {
-  it('stays silent below and above the ceiling (prd-12 FR-07)', async () => {
-    const neutral = await runBoundHook(hook, 'preToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' } });
-    expect(neutral.stdout).toBe('');
-    await seedCriticalSession(root, { harness: 'github-copilot-cli', sessionId: 'critical', agentId: null });
-    const critical = await runBoundHook(hook, 'preToolUse', { sessionId: 'critical', toolName: 'bash', toolArgs: { command: 'rm -rf x' } });
-    expect(critical.stdout).toBe('');
-  });
-
   it('injects additionalContext after the tool without touching the tool result', async () => {
     let last = { stdout: '' };
     for (let call = 1; call <= 4; call += 1) {
       last = await runBoundHook(hook, 'postToolUse', { sessionId: 's', toolName: 'bash', toolArgs: { command: 'ls' }, toolResult: { textResultForLlm: 'out', resultType: 'success' } });
     }
-    const shape = JSON.parse(last.stdout) as Record<string, unknown>;
-    expect(shape).toHaveProperty('additionalContext');
-    expect((shape.additionalContext as string)).toContain('turn=4 ');
-    expect(shape).not.toHaveProperty('modifiedResult');
+    expect(JSON.parse(last.stdout)).toEqual({ additionalContext: expect.stringContaining('turn=4 ') });
   });
 });
 

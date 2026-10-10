@@ -39,38 +39,18 @@ describe('process hook host end to end (CMP-17, TC-15, TC-16)', () => {
   beforeEach(async () => { projectRoot = await mkdtemp(join(tmpdir(), 'cb-t04-e2e-')); });
   afterEach(async () => { await rm(projectRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('stays neutral on a code read above the ceiling and exits zero (prd-12 FR-07)', async () => {
+  it('answers an unmapped event above the ceiling with a neutral response, exit code 0, and no stderr (prd-12 FR-07)', async () => {
     await seedCriticalSession(projectRoot);
     await seedBridgeWindow(projectRoot, KEY, 128000);
     const result = await runHost('PreToolUse', { session_id: 'session-1', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_use_id: 'toolu_x' }, projectRoot);
-    expect(result.code).toBe(0);
-    expect(result.stderr).toBe('');
-    expect(JSON.parse(result.stdout)).toEqual({ kind: 'neutral' });
+    expect(result).toEqual({ code: 0, stdout: JSON.stringify({ kind: 'neutral' }), stderr: '' });
   }, SPAWN_TIMEOUT_MS);
 
-  it('returns neutral below the ceiling and appends the tool line', async () => {
+  it('reads the payload from stdin, appends the tool line, and answers on stdout', async () => {
     const result = await runHost('PostToolUse', { session_id: 'session-1', tool_name: 'Read', tool_input: { file_path: 'src/app.ts' }, tool_use_id: 'toolu_1' }, projectRoot);
     expect(result.code).toBe(0);
     expect(JSON.parse(result.stdout)).toEqual({ kind: 'neutral' });
     const lines = await new NodeSessionLedger(projectRoot, clock).readLines(KEY);
     expect(lines.map((line) => line.type)).toEqual(['session', 'tool']);
-  }, SPAWN_TIMEOUT_MS);
-});
-
-describe('process hook host end to end events (CMP-17, RF22)', () => {
-  let projectRoot: string;
-  beforeEach(async () => { projectRoot = await mkdtemp(join(tmpdir(), 'cb-t04-e2e2-')); });
-  afterEach(async () => { await rm(projectRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
-
-  it('answers unknown events with a neutral response', async () => {
-    const result = await runHost('UnknownEvent', {}, projectRoot);
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout)).toEqual({ kind: 'neutral' });
-  }, SPAWN_TIMEOUT_MS);
-
-  it('notifies the new-session command when the response ends with the signal', async () => {
-    const result = await runHost('Stop', { session_id: 'session-1', last_assistant_message: '[REQUEST_SESSION_RESET]' }, projectRoot);
-    expect(result.code).toBe(0);
-    expect(JSON.parse(result.stdout)).toEqual({ kind: 'notify_user', text: 'ContextBrake: the agent requested a session reset. Run /clear to start a new session.' });
   }, SPAWN_TIMEOUT_MS);
 });

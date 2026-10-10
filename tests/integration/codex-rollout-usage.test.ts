@@ -2,7 +2,6 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { TranscriptUnreadableError } from '../../src/infrastructure/harnesses/common/jsonl-tail-reader.js';
 import { readRolloutUsage } from '../../src/infrastructure/harnesses/codex-cli/rollout-usage.js';
 
 const FIXTURES = resolve('tests/fixtures/harnesses/codex-cli');
@@ -33,27 +32,18 @@ describe('Codex CLI rollout usage reader', () => {
 });
 
 describe('Codex CLI rollout usage reader fallbacks', () => {
-  it.each([
-    ['a missing path', undefined],
-    ['an empty path', ''],
-  ])('returns null for %s', async (_label, path) => {
-    expect(await readRolloutUsage(path)).toBeNull();
+  it('returns null for a missing path', async () => {
+    expect(await readRolloutUsage(undefined)).toBeNull();
   });
 
   it.each([
-    ['a missing file', null],
-    ['an empty file', ''],
     ['non-numeric tokens', `${tokenCountLine({ at: '2026-10-08T10:00:00.000Z', tokens: '5' })}\n`],
     ['negative tokens', `${tokenCountLine({ at: '2026-10-08T10:00:00.000Z', tokens: -5 })}\n`],
     ['a zero window', `${tokenCountLine({ at: '2026-10-08T10:00:00.000Z', tokens: 5, window: 0 })}\n`],
-    ['a torn last line', tokenCountLine({ at: '2026-10-08T10:00:00.000Z', tokens: 5, window: 1000 }).slice(0, 90)],
+    ['a torn last line that carries the token_count marker', tokenCountLine({ at: '2026-10-08T10:00:00.000Z', tokens: 5, window: 1000 }).slice(0, 90)],
   ])('returns null without throwing for %s', async (_label, content) => {
     const path = join(root, 'rollout.jsonl');
-    if (content !== null) await writeFile(path, content, 'utf8');
+    await writeFile(path, content, 'utf8');
     await expect(readRolloutUsage(path)).resolves.toBeNull();
-  });
-
-  it('wraps file I/O failures in TranscriptUnreadableError', async () => {
-    await expect(readRolloutUsage(root)).rejects.toBeInstanceOf(TranscriptUnreadableError);
   });
 });

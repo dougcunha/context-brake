@@ -72,6 +72,7 @@ describe('neutral restart flow failures and skips (prd-14 FR-04, FR-09, NFR-01, 
     const host = new FakeHost({ guards: { consecutive: 2, toolCallsSinceSeed: 4 } });
     await handleTurnEnd(host, { text: MARKER_REPLY, settings: SNAPSHOT });
     expect(host.codes).toEqual(['PAUSED_LOOP_GUARD']);
+    expect(host.requests).toEqual([]);
   });
   it('reports an internal error when logging fails, without throwing', async () => {
     const host = new FakeHost();

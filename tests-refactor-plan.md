@@ -52,7 +52,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 | 12 | telemetry/counters-statusline | session-counters, session-reset-handler, statusline-summary, statusline-line | src/core/services | C | 36 → 29 | done |
 | 13 | brake/errors-merges | runtime-error-checks, runtime-error-line, debug-mode-merge, snapshot-merge | src/core/services | C | 28 → 28 | done |
 | 14 | restart/policy | auto-restart-policy, auto-restart-contract, auto-restart-notices, restart-mode, restart-neutrality | src/core/services (auto-restart-*, restart-mode) | C | 42 → 31 | done |
-| 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 30 | pending |
+| 15 | restart/flow-arguments | auto-restart-arguments, restart-flow, runner-reset-signal, init-max-restarts-arguments | src/core/services/restart-flow, src/cli | C | 61 → 41 | done |
 | 16 | storage/capabilities | link-capability, process-capability, git-capability | src/infrastructure (git, process, storage) | C | 19 | pending |
 | 17 | install/services | detection-service, installation-summary, removal-service, removal-conflicts, harness-exclusion | src/core/services (detection, installation-*, removal-*, harness-exclusion) | C | 19 | pending |
 | 18 | harness/registration | harness-registry, harness-adapters, adapter-planners, hook-registration-paths, hook-event-cleanup, idempotent-adapter-merge | src/infrastructure/harnesses, harnesses/common | C | 27 | pending |
@@ -853,7 +853,7 @@ Recovery and the remaining failure cases run end to end in `integration/init-sna
 ## 14. restart/policy — done 2026-10-10
 
 **Baseline:** 42 runner tests across the 5 files, green (the plan's 32 was the grep count). Stryker: n/a (Common).
-**Result:** 31 tests across the same 5 files, green. Scoped coverage proxy (`auto-restart-policy.ts`, `auto-restart-notices.ts`, `restart-mode.ts`, `contracts/auto-restart.ts`, `contracts/restart-log.ts`): lines 100% → 100%; branches 97.14% → 96.96% (same per-file figures; the total moved with the branch count of the deleted rows). The one gap, `seedText(resume)` (`auto-restart-notices.ts` 21), is asserted exactly by `restart-flow.test.ts` `carries the resume text in the seed…` (prd-14 TC-05). Commit `<hash>`.
+**Result:** 31 tests across the same 5 files, green. Scoped coverage proxy (`auto-restart-policy.ts`, `auto-restart-notices.ts`, `restart-mode.ts`, `contracts/auto-restart.ts`, `contracts/restart-log.ts`): lines 100% → 100%; branches 97.14% → 96.96% (same per-file figures; the total moved with the branch count of the deleted rows). The one gap, `seedText(resume)` (`auto-restart-notices.ts` 21), is asserted exactly by `restart-flow.test.ts` `carries the resume text in the seed…` (prd-14 TC-05). Commit `7350d49`.
 
 Layout unchanged: one file per source, keeping the names the TechSpecs cite (prd-11 TC-01/02/04/05/06 → `auto-restart-policy.test.ts`, TC-07 → `auto-restart-notices.test.ts`, TC-08 → `auto-restart-contract.test.ts`; prd-14 TC-04 → `auto-restart-policy.test.ts`, TC-06 → `restart-neutrality.test.ts`). No file imports `src/infrastructure/` and all run in the parallel lane, so decision 3 and `tests/test-lanes.ts` do not apply. prd-11 TC-03 (checkpoint gate) and the runner-id and `DISABLE_AUTO_COMPACT` cases of TC-06 were superseded by prd-12/prd-14 (the neutrality test forbids `DISABLE_AUTO_COMPACT` in core) and were not recreated.
 
@@ -909,3 +909,66 @@ Kept as a grep over the seven core restart files plus the rendered notices and s
 
 ### Questions `[?]`
 - None.
+
+## 15. restart/flow-arguments — done 2026-10-10
+
+**Baseline:** 61 runner tests across the 4 files, green (the plan's 30 was the grep count). Stryker: n/a (Common).
+**Result:** 41 tests (`auto-restart-merge` 9, `init-max-restarts-arguments` 23, `restart-flow` 7, plus 2 added to `init-arguments.test.ts`, which goes from 21 to 23), green. Scoped coverage proxy (`restart-flow.ts`, `init-arguments.ts`, `init-option-rules.ts`, `auto-restart-merge.ts`, `reset-notice.ts`): lines 94.44% → 96.91%; branches 90.81% → 95.41% (`auto-restart-merge.ts` branches 96.66% → 100%: the `keep` branch of `applyAutoRestart` is now asserted; `init-arguments.ts` 93.65% → 100% because the after-run includes `init-arguments.test.ts`, which holds the bridge-target tests). Remaining gaps: `restart-flow.ts` 36-37 (the `guarded` catch around `markSeeded`/`rollbackConsecutive`, a defensive guard, uncovered before too); `init-option-rules.ts` 20 (`--gitignore` with `--no-gitignore`, owned by module 40's `gitignore-merge.test.ts`); `reset-notice.ts` 8-10 (`renderResetNotice`, asserted by `reset-notice.test.ts`, module 36). Commit pending.
+
+Layout: one file per source. The new `tests/unit/auto-restart-merge.test.ts` is the file the prd-16 TechSpec TC-01 names (prd-16 codereview_02 CR-03 flagged that the cases lived elsewhere); it holds the merge tests from `auto-restart-arguments.test.ts` and `init-max-restarts-arguments.test.ts`. The auto restart command-line tests went to `init-arguments.test.ts` (the file prd-11 TC-21 names; 70 non-blank lines). `init-max-restarts-arguments.test.ts` keeps the `--max-restarts`, `--interactive`, and `hasConfigurationFlag` tests and the two titles module 3 cites. `assertAutoRestartTarget` takes `getAllAdapters()` as collaborator data for the restart modes, as in module 2, so decision 3 does not apply; no file is in `tests/test-lanes.ts`.
+
+### auto-restart-merge.ts → Common (prd-11 FR-07, DEC-09; prd-16 FR-08, FR-09)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| `--auto-restart` sets an absent block, keeps a present one | `current === undefined` inverted | `sets the block only when it is absent…` |
+| `--no-auto-restart` removes only a present block | same, in the remove branch | `removes the block only when it is present` |
+| no flag keeps; both flags give the exact conflict error | `&&` → `\|\|`; error literal | `keeps everything without a flag and rejects both flags together` |
+| a limit is stored on enable or change, kept when unchanged, refused while off | `!autoRestart` / `current === undefined &&` dropped; `=== limit` → `false` | the four `mergeAutoRestart with a limit` tests |
+| apply: default 2, explicit limit, keep untouched, remove, no mutation | `?? DEFAULT` → `DEFAULT`; `kind === 'keep'` guard removed | `applies the update to a configuration without mutating it` |
+| wanted when set, or kept and present | `&&` → `\|\|`; `=== 'set'` → `false` | `wants the feature…` |
+
+### init-option-rules.ts → Common (boundary validator `parseMaxRestarts`, compatibility asserts)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| 1 and 10 accepted; 0, 11, 2.5 rejected with the rule | `>=` → `>`; `<=` → `<`; either regex anchor removed | `accepts %s` (2 rows), `rejects %j naming the 1 to 10 rule` (3 rows) |
+| `--max-restarts` with `--no-auto-restart` refused | `&&` → `\|\|`; throw removed | `rejects --max-restarts with --no-auto-restart` |
+| `--interactive` refuses `--yes` and `--json`, accepts `--dry-run` | either throw removed; guard inverted | `rejects --interactive with %s…` (2 rows), `accepts --interactive with --dry-run` |
+
+### init-arguments.ts → Common (`hasConfigurationFlag`, `assertAutoRestartTarget`)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| each configuration flag counts | any operand of the `flags` list or the `\|\|` chain dropped | `counts %j as a configuration flag (FR-01, TC-03)` (12 rows) |
+| no flag and `--dry-run` do not count | `.length > 0` → `>= 0`; `some(Boolean)` → `true` | `does not count %j (FR-01, TC-03)` (2 rows) |
+| `--auto-restart` needs a project harness with a restart mode; semi-automatic counts; `--no-auto-restart` is never checked | `hasRestartMode` → `true`/`false`; `state === 'project'` dropped; `!args.autoRestart` guard removed | `requires one harness active in the project with a restart mode (prd-14 DEC-11, TC-13)` |
+| the conflict reaches the CLI as a `CliArgumentError` with the message | `'error' in merge` guard or `CliArgumentError` wrapping removed | `rejects both flags together with a message that names them` |
+
+### restart-flow.ts → Common (prd-14 FR-04, FR-05, FR-09, NFR-01, TC-05)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a reply without the marker does nothing | `!endsWithResetSignal` → `false` | `ignores a reply that does not end with the marker` |
+| restart: guard bump, `RESTARTED`, generic seed, seeded on open | `bumpConsecutive`/`markSeeded` removed; seed changed | `bumps the guard, logs the restart…` |
+| the resume text rides in the seed | `seedText(resume)` → `seedText()` | `carries the resume text in the seed…` (exact; module 14 relies on it) |
+| rejection rolls back and reports | `rollbackConsecutive` or report removed | `rolls the guard back and reports…` |
+| a skip logs its code and opens nothing; the settings reach the policy | `kind === 'skip'` return removed; `mode === 'handoff'` or `maxConsecutive` mapping changed | `skips with a reason…`, `stops at the consecutive limit` |
+| a logging failure becomes the internal-error notice | `try/catch` in `reportRestart` removed | `reports an internal error when logging fails…` |
+
+### Actions
+- **Deleted (20 runner tests):** `runner-reset-signal.test.ts` (9): prd-04 RF3/DEC-05/TC-10 is the runner signal that prd-12 superseded, and every non-equivalent mutant of `endsWithResetSignal` (`trimEnd` removed, `endsWith` → `includes`, `at(-1)` → `at(0)`) is killed by `reset-notice.test.ts` `reset signal detection (RF22, prd-14 FR-12, TC-11)`; the `split`/`at(-1)` step is equivalent to `endsWith` on the trimmed text, so the CRLF and blank-line rows kill nothing more. `keeps the old behavior without a limit (FR-08, TC-01)` (same two calls as `sets the block only when it is absent…`, which now carries FR-08). `parses both flags` (the `autoRestart` mapping is killed by the target test, `noAutoRestart` by the conflict test). `accepts runs without the flags whatever the harnesses are` (codex has a restart mode, so it passed with or without the guard; the guard is killed by the `--no-auto-restart` antigravity case). `--max-restarts` rows `3` (between the `1`/`10` boundaries), `abc`, `-1`, `''` (out of range with or without the pattern; `2.5` kills the anchors). `hasConfigurationFlag` rows `--no-statusline-bridge` (same `statuslineBridge !== undefined` operand as `--statusline-bridge`) and `--yes`, `--json`, `--interactive` in `does not count` (`hasConfigurationFlag` is used only by `shouldRunAssistant`, which checks those three flags before it, so counting them changes nothing observable).
+- **Moved:** the merge tests into the new `auto-restart-merge.test.ts`; the conflict and target tests into `init-arguments.test.ts`; `auto-restart-arguments.test.ts` removed.
+- **Rewritten (4):** both merge errors assert the exact string (one asserted `toHaveProperty('error')`); the conflict test asserts the error class and message in one `toThrow`; the target test drops the bare `parseInit(...).not.toThrow()` and reuses the parsed args; the `hasConfigurationFlag` row `--auto-restart --max-restarts 3` became `--max-restarts 3`, since `autoRestart` masked the `maxRestarts !== undefined` operand.
+- **Created (assertions, no new tests):** `applyAutoRestart` with `keep` (a flagless `init` would otherwise reset a stored limit to 2) and with an explicit limit (`?? DEFAULT` dropped); a `candidate` codex detection in the target test (the `state === 'project'` filter had no killer); `host.requests` empty in `stops at the consecutive limit` (a session opened after a skip survived).
+- **Kept:** the seven `restart-flow` tests, the `--interactive` tests, the remaining matrix rows.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.
+
+### Notes for later modules
+- Module 36: `reset-notice.test.ts` `reset signal detection` is now the only test of `endsWithResetSignal`; keep it in `tests/unit/` when decision 3 moves the per-harness notice tests.
+- Module 3's citations of `counts %j…` / `does not count %j…` still resolve to `init-max-restarts-arguments.test.ts`; the `--max-restarts` row is now `["--max-restarts","3"]`, the `--dry-run` row is unchanged.

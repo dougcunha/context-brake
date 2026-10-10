@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { CliArgumentError } from '../../src/cli/argument-validator.js';
 import type { HarnessDetection } from '../../src/core/contracts/harness.js';
-import { assertStatuslineBridgeTarget, parseInit } from '../../src/cli/init-arguments.js';
+import { assertAutoRestartTarget, assertStatuslineBridgeTarget, parseInit } from '../../src/cli/init-arguments.js';
 import { parseCliArgs } from '../../src/cli/argument-parser.js';
+import { planConfigUpdates } from '../../src/cli/init-config-updates.js';
+import { getAllAdapters } from '../../src/infrastructure/harnesses/registry.js';
 
 describe('init status line bridge flags (FR-01, FR-08, DEC-08, TC-15)', () => {
   it.each([
@@ -58,5 +60,20 @@ describe('removed mode flags (prd-12 FR-02, TC-06)', () => {
   it('maps the snapshot flags', () => {
     expect(parseInit(['--snapshot-command', '/s', '--snapshot-trigger', 'YELLOW', '--resume-command', '/r']).snapshot).toEqual({ command: '/s', triggerZone: 'YELLOW', resumeCommand: '/r', clearCommand: false });
     expect(parseInit(['--no-snapshot-command']).snapshot?.clearCommand).toBe(true);
+  });
+});
+
+describe('auto restart command line (prd-11 FR-07, TC-21)', () => {
+  it('rejects both flags together with a message that names them', () => {
+    expect(() => planConfigUpdates(null, parseInit(['--auto-restart', '--no-auto-restart']))).toThrow(new CliArgumentError('--auto-restart cannot be combined with --no-auto-restart.'));
+  });
+
+  it('requires one harness active in the project with a restart mode (prd-14 DEC-11, TC-13)', () => {
+    const autoRestart = parseInit(['--auto-restart', '--exclude-harness', 'claude-code']);
+    expect(() => assertAutoRestartTarget(autoRestart, [detection('antigravity-cli', 'project'), detection('opencode', 'project')], getAllAdapters())).toThrow('--auto-restart needs at least one active harness with a restart mode');
+    expect(() => assertAutoRestartTarget(autoRestart, [detection('codex-cli', 'candidate')], getAllAdapters())).toThrow(CliArgumentError);
+    expect(() => assertAutoRestartTarget(autoRestart, [detection('codex-cli', 'project')], getAllAdapters())).not.toThrow();
+    expect(() => assertAutoRestartTarget(autoRestart, [detection('pi', 'project')], getAllAdapters())).not.toThrow();
+    expect(() => assertAutoRestartTarget(parseInit(['--no-auto-restart']), [detection('antigravity-cli', 'project')], getAllAdapters())).not.toThrow();
   });
 });

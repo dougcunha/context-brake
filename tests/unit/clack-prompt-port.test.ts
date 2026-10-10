@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { askValidated, confirmSpec } from '../../src/cli/assistant/ask.js';
 import { ClackPromptPort, type Clack } from '../../src/cli/assistant/clack-prompt-port.js';
-import { confirmWithPort, ReadlinePromptPort } from '../../src/cli/assistant/prompt-port.js';
-import { createPromptPort, PLAIN_PROMPTS_VARIABLE } from '../../src/cli/assistant/prompt-factory.js';
 import type { UiPrompt } from '../../src/cli/assistant/ui-prompt.js';
 
 const CANCELLED = Symbol('cancel');
@@ -28,14 +26,16 @@ describe('ClackPromptPort maps the rich prompts to the line answers the question
     expect(await port.askUi(MULTI, null)).toBe('none');
     expect(next).toHaveBeenCalledWith(expect.objectContaining({ initialValues: ['1'], required: false }));
   });
-  it('maps confirm to y or n, passes select and text values through (DEC-11)', async () => {
-    const { clack } = fakeClack([true, false, 'RED', '/sdd-snapshot']);
+  it('maps confirm to y or n, passes select and text values through, and logs nothing without an error or context (DEC-11)', async () => {
+    const { clack, log } = fakeClack([true, false, 'RED', '/sdd-snapshot']);
     const port = new ClackPromptPort(clack);
-    const confirm: UiPrompt = { kind: 'confirm', message: 'Debug?', initial: false };
+    const confirm: UiPrompt = { kind: 'confirm', message: 'Debug?', initial: false, context: [] };
     expect(await port.askUi(confirm, null)).toBe('y');
     expect(await port.askUi(confirm, null)).toBe('n');
     expect(await port.askUi({ kind: 'select', message: 'Zone', options: [{ value: 'RED', label: 'RED' }], initial: 'RED' }, null)).toBe('RED');
     expect(await port.askUi({ kind: 'text', message: 'Command', placeholder: 'none' }, null)).toBe('/sdd-snapshot');
+    expect(log.error).not.toHaveBeenCalled();
+    expect(log.info).not.toHaveBeenCalled();
   });
 });
 
@@ -60,7 +60,7 @@ describe('ClackPromptPort cancel and context (prd-16 amendment DEC-11)', () => {
   });
 });
 
-describe('askValidated and confirmWithPort use the rich prompt when the port has one (DEC-11)', () => {
+describe('askValidated uses the rich prompt when the port has one (DEC-11)', () => {
   it('re-asks through the rich prompt and passes the rule as the error (FR-04, DEC-11)', async () => {
     const answers = ['maybe', 'y'];
     const errors: (string | null)[] = [];
@@ -69,24 +69,5 @@ describe('askValidated and confirmWithPort use the rich prompt when the port has
     expect(result).toEqual({ value: true });
     expect(errors).toEqual([null, 'Answer y or n.']);
     expect(prompts.ask).not.toHaveBeenCalled();
-  });
-  it('confirms the plan through a rich confirm prompt (FR-07, DEC-11)', async () => {
-    const prompts = { ask: vi.fn(), askUi: vi.fn(async () => 'y') };
-    expect(await confirmWithPort(prompts, 'Apply?')).toBe(true);
-    expect(prompts.askUi).toHaveBeenCalledWith({ kind: 'confirm', message: 'Apply?', initial: false }, null);
-  });
-});
-
-describe('createPromptPort picks the prompt implementation (DEC-11)', () => {
-  it('falls back to the line prompts when asked to, or on a dumb terminal (DEC-11)', async () => {
-    const forced = await createPromptPort({ [PLAIN_PROMPTS_VARIABLE]: '1' });
-    const dumb = await createPromptPort({ TERM: 'dumb' });
-    expect(forced).toBeInstanceOf(ReadlinePromptPort);
-    expect(dumb).toBeInstanceOf(ReadlinePromptPort);
-    (forced as ReadlinePromptPort).close();
-    (dumb as ReadlinePromptPort).close();
-  });
-  it('uses the rich prompts otherwise (DEC-11)', async () => {
-    expect(await createPromptPort({})).toBeInstanceOf(ClackPromptPort);
   });
 });

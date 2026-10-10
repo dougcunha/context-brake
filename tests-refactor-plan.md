@@ -40,7 +40,7 @@ Level: G = Glue, T = Trivial, C = Common, K = Critical. Order: Glue/Trivial firs
 |---|--------|------------|--------|-------|-------|--------|
 | 1 | cli/args-output | init-arguments, main, exit-codes, cli-output-text, doctor-mode-text | src/cli, src/cli/output | G/C | 42 → 41 | done |
 | 2 | cli/assistant-questions | assistant-questions, -gitignore, -invalid, -state | src/cli/assistant | G/C | 28 → 30 | done |
-| 3 | cli/assistant-terminal | assistant-output, clack-prompt-port, equivalent-command, terminal | src/cli/assistant, src/cli | G/C | 23 | pending |
+| 3 | cli/assistant-terminal | assistant-output, clack-prompt-port, equivalent-command, terminal | src/cli/assistant, src/cli | C | 35 → 29 | done |
 | 4 | doctor/service | doctor-checks, doctor-service, diagnostics, report-service, active-sessions, asset-currency, doctor-context-window | src/core/services (doctor-*, report-service, active-sessions, asset-currency) | C | 29 | pending |
 | 5 | doctor/support-versions | support-service, support-service-version-gating, adapter-version-probes, adapter-diagnostics, in-process-sampler, overhead-p95 | src/core/services/support-service, version-service, src/infrastructure/diagnostics | C | 25 | pending |
 | 6 | doctor/integration | integration/doctor-* (8 files) | src/cli/commands, src/core/services | G | 21 | pending |
@@ -145,7 +145,7 @@ Kept as is: the three tests run the real entrypoint in process (no module mocks)
 ## 2. cli/assistant-questions — done 2026-10-10
 
 **Baseline:** 28 runner tests across the 4 files, green (the plan's 21 was the grep count). Stryker: n/a (Glue/Common).
-**Result:** 30 tests, green. Scoped coverage proxy (`assistant-questions.ts`, `ask.ts`, `questions-gitignore.ts`, `questions-harness.ts`, `questions-misc.ts`, `questions-restart.ts`, `questions-snapshot.ts`, `snapshot-specs.ts`): lines 100% → 100%; branches 94.57% → 96.98% (`questions-misc.ts` and the first-run fallbacks in `questions-harness.ts`/`questions-snapshot.ts` now covered; the remaining gaps are `ask.ts` 8 and 13, the `?? 'unknown'` adapter fallbacks in `questions-harness.ts` 19 and 29, unreachable with `getAllAdapters()`, `questions-restart.ts` 47, and `questions-snapshot.ts` 70). Commit pending.
+**Result:** 30 tests, green. Scoped coverage proxy (`assistant-questions.ts`, `ask.ts`, `questions-gitignore.ts`, `questions-harness.ts`, `questions-misc.ts`, `questions-restart.ts`, `questions-snapshot.ts`, `snapshot-specs.ts`): lines 100% → 100%; branches 94.57% → 96.98% (`questions-misc.ts` and the first-run fallbacks in `questions-harness.ts`/`questions-snapshot.ts` now covered; the remaining gaps are `ask.ts` 8 and 13, the `?? 'unknown'` adapter fallbacks in `questions-harness.ts` 19 and 29, unreachable with `getAllAdapters()`, `questions-restart.ts` 47, and `questions-snapshot.ts` 70). Commit `e7e79df`.
 
 Every test drives the flow through `runQuestions` (the public entry) with the scripted prompt port, so the layout stays one file per concern (order and applicability, defaults from state, invalid answers, the git ignore question) rather than one per question module. The files stay in `tests/unit/` (decision 3): no test imports `src/infrastructure/`; `tests/helpers/assistant-context.ts` uses `getAllAdapters()` as collaborator data for the support levels and restart modes, not as the unit under test.
 
@@ -213,3 +213,71 @@ Prompt text only; asserted through the prompts above.
 
 ### Notes for later modules
 - The two snapshot command rows (201 characters, two lines) are the only tests of the `agentCommand` length and single-line rules in `src/core/contracts/configuration.ts`; modules 10/11 should keep or move that protection.
+
+## 3. cli/assistant-terminal — done 2026-10-10
+
+**Baseline:** 35 runner tests across the 4 files, green (the plan's 23 was the grep count). Stryker: n/a (Common).
+**Result:** 29 tests across 5 files, green. Scoped coverage proxy (`summary.ts`, `equivalent-command.ts`, `clack-prompt-port.ts`, `prompt-port.ts`, `prompt-factory.ts`, `terminal.ts`): lines 97.2% → 97.2%; branches 93.06% → 99.04% (`summary.ts` 77.77% → 100%). The remaining gaps are by design: `detectTerminal` (`terminal.ts` 9-10) reads the real `process` streams, and the `catch` fallback of `createPromptPort` (`prompt-factory.ts` 15-16) is unreachable without a module mock of `@clack/prompts`. Commit pending.
+
+Layout: one file per source, keeping the names the prd-16 TechSpec cites (TC-04 → `terminal.test.ts`, TC-08 → `equivalent-command.test.ts`, TC-13 → `assistant-output.test.ts`). The new `prompt-port.test.ts` holds `ReadlinePromptPort`, both branches of `confirmWithPort`, and `createPromptPort`; `clack-prompt-port.test.ts` keeps the port plus the `askValidated` rich-path test. No test imports `src/infrastructure/` (decision 3 does not apply), and every file runs in the parallel lane, so `tests/test-lanes.ts` is unchanged.
+
+### terminal.ts → Common (`shouldRunAssistant`, `assertTerminalForAssistant`); `detectTerminal` → Trivial
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a terminal with no flags starts the assistant | return → `false`; `isInteractiveTerminal` → `false` | `starts on a terminal without flags` |
+| `--yes`, `--json`, or a configuration flag keeps it away | `!args.yes`, `!args.json`, or `!hasConfigurationFlag` removed | `does not start for %j` (3 rows) |
+| both streams must be terminals | either operand of `stdinIsTty && stdoutIsTty` dropped; `&&` → `\|\|` | `does not start without both streams as terminals: %j` (2 rows) |
+| `--interactive` forces it, even with a configuration flag | `interactive === true` early return removed | `--interactive forces the assistant even with a configuration flag` |
+| `--interactive` without a terminal throws the not-interactive message | throw removed; `!isInteractiveTerminal` inverted | `refuses %j with the not-interactive message` (2 rows) |
+| a terminal passes the gate; runs without `--interactive` never throw | `&&` → `\|\|`; `interactive === true` → `true` | `accepts a terminal and ignores runs without --interactive` |
+
+### equivalent-command.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| bare values stay unquoted on one line | `BARE_VALUE.test` → `false`; prefix changed | `prints bare values unquoted on one line` |
+| any other value is single-quoted | either anchor of `BARE_VALUE` removed; `+` → `*` | `single-quotes %j so no shell expands it` (spaces, `$HOME`, `''`) |
+| a single quote prints labeled POSIX and PowerShell lines that parse back | `some` → `every`; either escape replacement changed | `prints one labeled line per shell family when a value has a single quote` |
+
+### summary.ts → Common (human-readable output, reduced depth)
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| every choice, each harness restart mode, and a one-line command | any line template; `restartModes.map` removed; `'yes'` ternaries swapped | `lists the choices, the restart mode of each harness, and the command` (exact lines) |
+| null facts read as none or not applicable | each `=== null` branch inverted | `states the no-command and not-applicable cases in words` (exact lines) |
+| declined choices, no harness, no resume, default restart limit | `'no'` → `'yes'`; `'none'` dropped; `resumeCommand === null` inverted; `?? 'the default number of'` removed; debug ternary swapped | `states declined choices, no harness, and the default restart limit in words` |
+| a two-line command goes under its own header; no escape sequences (NO_COLOR) | `command.length === 1` → `true`; indent removed | `prints a two-line command under its own header…` |
+
+### clack-prompt-port.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| multiselect answers join by spaces, `none` when empty, preselected and optional | `length === 0` inverted; `join(' ')`; `initialValues`/`required` changed | `returns the chosen numbers joined by spaces, and none when nothing is marked` |
+| confirm maps to `y`/`n`; select and text pass through; no log without an error or context | ternary swapped; a `case` removed; `error !== null` → `true`; `length > 0` → `>= 0` | `maps confirm to y or n, passes select and text values through, and logs nothing…` |
+| the cancel symbol becomes null for every prompt | `typeof … === 'symbol'` guards removed; `settle` skipped in `ask` | `turns Ctrl+C (the cancel symbol) into null for every prompt kind` |
+| the error and context lines print before the prompt; `begin` opens the intro | `log.error`/`log.info`/`intro` calls removed; join separator | `shows the context lines and the previous error before the prompt…` |
+
+`ask.ts` (module 2's source): `re-asks through the rich prompt and passes the rule as the error (FR-04, DEC-11)` is the only test of the `askUi` branch of `askOnce` (line 8), the gap module 2's proxy reported; it stays in this file.
+
+### prompt-port.ts and prompt-factory.ts → Common
+
+| Behavior | Mutant | Test |
+|---|---|---|
+| a line port asks `[y/N]` and treats end of input as no | hint text; `answer !== null &&` removed | `answers from a scripted port and returns null when the script ends` |
+| a rich port gets a confirm prompt defaulting to no | `initial: false` → `true`; branch inverted | `confirms the plan through a rich confirm prompt` |
+| readline returns the line, then null at and after end of input | `close` listener or `isClosed` check removed | `reads a line through readline and returns null at end of input` |
+| plain prompts when forced or on a dumb terminal, rich otherwise | `\|\|` → `&&`; either condition removed | `falls back to the line prompts…`, `uses the rich prompts otherwise` |
+
+### Actions
+- **Deleted (7):** `starts on a terminal for ["--dry-run"]` (kills only what the `[]` row kills; `--dry-run` not counting as a configuration flag is `does not count %j (FR-01, TC-03)` in `init-max-restarts-arguments.test.ts`); `does not start for ["--max-restarts","3","--auto-restart"]` and `["--debug"]` (kill only the `!hasConfigurationFlag` removal, already killed by `--harness cursor`; each flag is a row of `counts %j as a configuration flag (FR-01, TC-03)` in `init-max-restarts-arguments.test.ts`, and end to end in `integration/init-interactive-gate.test.ts` TC-12); the both-streams-piped row (the `PIPED_INPUT` and `PIPED_OUTPUT` rows kill every operand mutant); the `a"b` and `x;y` rows of the quoting `it.each` (same "character outside the bare class" mutant as `$HOME`); `round-trips quoted values through parseInit (FR-06, TC-08)` (the exact-string rows pin the same `quotePosix` output, the single-quote test keeps the in-file TC-08 parse-back check, and `integration/init-assistant-equivalence.test.ts` TC-10 replays spaced and dash values through a real `init`).
+- **Moved (5):** the scripted and readline prompt tests from `terminal.test.ts`, and the rich `confirmWithPort` and both `createPromptPort` tests from `clack-prompt-port.test.ts`, into the new `prompt-port.test.ts`, unchanged.
+- **Rewritten (6):** `--interactive forces the assistant` passed `['--interactive']` on a terminal, which `shouldRunAssistant` returns `true` for even without the early return, so it killed nothing; it now adds `--harness cursor`, so only the early return makes it pass. `starts on a terminal for %j` became a plain `it` after its second row went. The clack confirm test now passes `context: []` (what `confirmSpec` builds) and asserts that neither log is called. The three summary tests asserted a few lines with `toContain` (the bridge, debug, and excluded-suffix lines were unasserted); they now assert the exact lines, and the NO_COLOR test asserts the whole two-line block.
+- **Created (1):** `states declined choices, no harness, and the default restart limit in words (FR-06, TC-13)`: six branches of `summary.ts` had no test.
+- **Kept (17):** the remaining terminal rows, the clack multiselect, cancel, and context tests, the `askValidated` rich-path test, and the remaining equivalent-command tests.
+
+### Production pending items
+- None.
+
+### Questions `[?]`
+- None.

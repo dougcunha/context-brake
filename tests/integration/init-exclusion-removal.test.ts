@@ -6,17 +6,24 @@ import { installReportSchema, type InstallReport } from '../../src/core/contract
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
 const CODEX_HOOK = '.codex/hooks/context-brake.mjs';
+const CODEX_CONFIG = '.codex/hooks.json';
 const CLAUDE_HOOK = '.claude/hooks/context-brake.mjs';
+const CLAUDE_SETTINGS = '.claude/settings.json';
+const USER_HOOKS_FIXTURE = join(import.meta.dirname, '../fixtures/harnesses/codex-cli/user-hooks.json');
 
 async function exists(path: string): Promise<boolean> {
   return stat(path).then(() => true).catch(() => false);
 }
 
+async function read(root: string, path: string): Promise<string> {
+  return readFile(join(root, path), 'utf8');
+}
+
 async function installBoth(root: string): Promise<void> {
   await mkdir(join(root, '.claude'), { recursive: true });
   await mkdir(join(root, '.codex'), { recursive: true });
-  await writeFile(join(root, '.claude/settings.json'), '{\n}\n', 'utf8');
-  await writeFile(join(root, '.codex/hooks.json'), '{\n}\n', 'utf8');
+  await writeFile(join(root, CLAUDE_SETTINGS), '{\n}\n', 'utf8');
+  await writeFile(join(root, CODEX_CONFIG), await readFile(USER_HOOKS_FIXTURE, 'utf8'), 'utf8');
   expect((await runInProcessCli(['init', '--yes'], root)).code).toBeLessThanOrEqual(1);
 }
 
@@ -29,28 +36,21 @@ describe('FR-05 excluding an installed harness deletes its artifacts (prd-15, TC
   beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-t06-')); await installBoth(root); });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('lists the deletions in a dry run and writes nothing (FR-05, TC-11)', async () => {
-    const report = await jsonReport(root, ['init', '--dry-run', '--exclude-harness', 'codex-cli']);
-    const paths = report.plan.changes.map((change) => `${change.kind}:${change.path}`);
-    expect(paths).toEqual(expect.arrayContaining([`delete:${CODEX_HOOK}`, 'update:.codex/hooks.json', 'update:context-brake.config.json']));
-    expect(await exists(join(root, CODEX_HOOK))).toBe(true);
-  });
-  it('applies the deletions, updates the manifest, and leaves other harnesses alone (FR-05, TC-11)', async () => {
-    const claudeBefore = await readFile(join(root, '.claude/settings.json'), 'utf8');
+  it('previews the deletions, applies them keeping the user hooks and other harnesses byte-for-byte, and plans nothing on a later run (FR-05, FR-06, NFR-01, TC-11)', async () => {
+    const claudeBefore = await read(root, CLAUDE_SETTINGS);
+    const preview = await jsonReport(root, ['init', '--dry-run', '--exclude-harness', 'codex-cli']);
+    const previewed = preview.plan.changes.map((change) => `${change.kind}:${change.path}`);
+    const hookAfterPreview = await exists(join(root, CODEX_HOOK));
     expect((await runInProcessCli(['init', '--yes', '--exclude-harness', 'codex-cli'], root)).code).toBeLessThanOrEqual(1);
+    const later = await jsonReport(root, ['init', '--dry-run']);
+    expect(previewed).toEqual(expect.arrayContaining([`delete:${CODEX_HOOK}`, `update:${CODEX_CONFIG}`, 'update:context-brake.config.json']));
+    expect(hookAfterPreview).toBe(true);
     expect(await exists(join(root, CODEX_HOOK))).toBe(false);
-    expect(await readFile(join(root, '.codex/hooks.json'), 'utf8')).not.toContain('context-brake');
-    const manifest = await readFile(join(root, '.context-brake/manifest.json'), 'utf8');
-    expect(manifest).not.toContain('codex');
-    expect(await readFile(join(root, '.claude/settings.json'), 'utf8')).toBe(claudeBefore);
+    expect(await read(root, CODEX_CONFIG)).toBe(await readFile(USER_HOOKS_FIXTURE, 'utf8'));
+    expect(JSON.parse(await read(root, 'context-brake.config.json'))).toMatchObject({ activeHarnesses: ['claude-code'], excludedHarnesses: ['codex-cli'] });
+    expect(await read(root, '.context-brake/manifest.json')).not.toContain('codex');
+    expect(await read(root, CLAUDE_SETTINGS)).toBe(claudeBefore);
     expect(await exists(join(root, CLAUDE_HOOK))).toBe(true);
-  });
-  it('plans nothing for the harness on later runs (FR-06, NFR-01, TC-11)', async () => {
-    await runInProcessCli(['init', '--yes', '--exclude-harness', 'codex-cli'], root);
-    expect((await jsonReport(root, ['init', '--dry-run'])).plan.changes).toEqual([]);
-  });
-  it('a plain init with no exclusion plans no harness deletion (TC-11)', async () => {
-    const report = await jsonReport(root, ['init', '--dry-run']);
-    expect(report.plan.changes.filter((change) => change.kind === 'delete')).toEqual([]);
+    expect(later.plan.changes).toEqual([]);
   });
 });

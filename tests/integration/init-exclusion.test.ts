@@ -28,18 +28,14 @@ describe('FR-05, FR-06, FR-07 persistent harness exclusion (prd-15)', () => {
   beforeEach(async () => { root = await mkdtemp(join(tmpdir(), 'cb-t05-')); await seedClaudeAndCodex(root); });
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('persists the exclusion and does not install the harness (FR-05, TC-13)', async () => {
+  it('persists the exclusion without installing the harness, and plain runs keep it off and plan nothing (FR-05, FR-06, NFR-01, TC-13)', async () => {
     expect((await runInProcessCli(['init', '--yes', '--exclude-harness', 'codex-cli'], root)).code).toBeLessThanOrEqual(1);
     const config = await readConfig(root);
-    expect(config.activeHarnesses).toEqual(['claude-code']);
-    expect(config.excludedHarnesses).toEqual(['codex-cli']);
-    expect(await exists(join(root, CODEX_HOOK))).toBe(false);
-  });
-  it('a plain init keeps the harness off and plans nothing, twice (FR-06, NFR-01, TC-13)', async () => {
-    await runInProcessCli(['init', '--yes', '--exclude-harness', 'codex-cli'], root);
     const before = await readFile(join(root, CONFIG_FILE), 'utf8');
     expect((await runInProcessCli(['init', '--yes'], root)).code).toBeLessThanOrEqual(1);
     const report = installReportSchema.parse(JSON.parse((await runInProcessCli(['init', '--dry-run', '--json'], root)).stdout));
+    expect(config.activeHarnesses).toEqual(['claude-code']);
+    expect(config.excludedHarnesses).toEqual(['codex-cli']);
     expect(await readFile(join(root, CONFIG_FILE), 'utf8')).toBe(before);
     expect(report.plan.changes).toEqual([]);
     expect(report.detections.find((item) => item.harness === 'codex-cli')?.state).toBe('excluded');

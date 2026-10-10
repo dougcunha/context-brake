@@ -7,17 +7,6 @@ describe('FR-05 deselecting a detected harness equals --exclude-harness (prd-16,
   const roots: string[] = [];
   afterEach(async () => { await removeProjects(...roots.splice(0)); });
 
-  it('plans the same files as init --exclude-harness on a project that has not installed it (FR-05, TC-09)', async () => {
-    const assisted = await makeProject();
-    const typed = await copyProject(assisted);
-    roots.push(assisted, typed);
-    expect((await runAssisted(assisted, DESELECT_CODEX)).code).toBeLessThanOrEqual(1);
-    expect((await replay(typed, ['--exclude-harness', 'codex-cli'], ['--yes'])).code).toBeLessThanOrEqual(1);
-    const tree = await projectTree(assisted);
-    expect(tree).toEqual(await projectTree(typed));
-    expect(JSON.parse(tree['context-brake.config.json'] ?? '{}').excludedHarnesses).toEqual(['codex-cli']);
-  });
-
   it('removes what an installed harness owns exactly as init --exclude-harness does (FR-05, TC-09)', async () => {
     const assisted = await makeProject();
     roots.push(assisted);

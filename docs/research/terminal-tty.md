@@ -1,6 +1,6 @@
 # Terminal TTY probe for the init assistant
 
-Purpose: record what Node.js reports as `process.stdin.isTTY` and `process.stdout.isTTY` in the terminals ContextBrake users run `context-brake init` from, so the assistant's trigger is known to behave on each of them. The requirement is `prd-16` FR-10 and the technical decision is DEC-09 in `tasks/prd-16-configuracao-guiada-assistente-no-init/techspec.md`.
+Purpose: record what Node.js reports as `process.stdin.isTTY` and `process.stdout.isTTY` in the terminals ContextBrake users run `context-brake init` from, so the assistant's trigger is known to behave on each of them. The requirement is `prd-16` FR-10 and the technical decision is DEC-09 of the same feature.
 
 ## What the assistant does with the result
 

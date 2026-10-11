@@ -65,7 +65,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 | Oh-My-Pi (`oh-my-pi`) | Extensions in `.omp/extensions/` | Full | Restart takes one Enter on the prefilled `/context-brake-restart` |
 | Antigravity CLI (`antigravity-cli`) | Hooks in `.agents/hooks.json` | Partial | Telemetry is injected through `PreInvocation`, and `PostToolUse` accepts only empty output |
 
-Aider is not supported because it has no hook mechanism. The full capability matrix and its sources are in the [installation PRD](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md).
+Aider is not supported because it has no hook mechanism. The hook and plugin APIs behind each row, with their sources, are in the [harness research](./docs/research/harness-integrations.md).
 
 ---
 
@@ -312,32 +312,6 @@ Each hook call has an internal deadline of 1.5 seconds; the session start event 
 | `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive`, `--gitignore`, `--no-gitignore` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. In a terminal with no other option, or with `--interactive`, it asks the [setup questions](#interactive-setup). |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, snapshot settings, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json` | Uninstalls the integrations and deletes the configuration, the manifest, and the runtime files. |
-
----
-
-## 🧭 Roadmap
-
-| PRD | Scope | Status |
-| :--- | :--- | :--- |
-| [Installation, detection, and diagnostics](./tasks/prd-01-instalacao-deteccao-diagnostico/prd.md) | `init`, `doctor`, `remove`, harness support levels | Implemented |
-| [Installation follow-ups](./tasks/prd-01.1-pendencias-da-instalacao/prd.md) | Capabilities, overhead measurement, manifest, and installed assets | Implemented |
-| [Telemetry, zones, and brake](./tasks/prd-02-telemetria-zonas-e-freio/prd.md) | Turn counting, context measurement, zones | Implemented; the tool-call deny was removed by the single mode |
-| [Brake by measured usage](./tasks/prd-02.1-freio-por-uso-medido/prd.md) | Usage-only `CRITICAL`, optional turn limits, measured usage in Claude Code | Implemented |
-| [Claude Code context window](./tasks/prd-02.2-janela-de-contexto-do-claude-code/prd.md) | Status line bridge | Implemented |
-| [Plan, checkpoint, and boot](./tasks/prd-03-plano-checkpoint-e-boot/prd.md) | State files and boot summary | Superseded by the single mode |
-| [Automatic reset runner](./tasks/prd-04-runner-de-reinicio-automatico/prd.md) | Post-MVP runner | Superseded by the single mode |
-| [Release automation](./tasks/prd-05-automacao-de-release-e-publicacao/prd.md) | Automated release and npm publishing | Implemented |
-| [Delegated snapshot mode](./tasks/prd-06-modo-snapshot-delegado/prd.md) | Snapshot command without a task plan | Superseded by the single mode |
-| [Light mode](./tasks/prd-07-modo-leve/prd.md) | Telemetry only, and active-session usage in `doctor` | Superseded by the single mode |
-| [Debug mode](./tasks/prd-08-modo-debug/prd.md) | Usage line printed by the agent | Implemented |
-| [Brake with a trusted window](./tasks/prd-09-freio-com-janela-confiavel/prd.md) | Window origin and declared window | Implemented |
-| [Status line under PowerShell](./tasks/prd-10-statusline-powershell-e-modo-light/prd.md) | Shell-neutral bridge and debug line | Implemented |
-| [Automatic restart in Claude Code](./tasks/prd-11-reinicio-automatico-no-claude-code/prd.md) | Claude Code mod that clears and resumes the session | Implemented |
-| [Single mode](./tasks/prd-12-refatoracao-modo-leve-modo-unico/prd.md) | One mode with optional snapshot and resume commands, advisory brake | In progress |
-| [Fast test suite](./tasks/prd-13-refatoracao-modo-leve-testes-rapidos/prd.md) | Test budget | Planned |
-| [Restart and handoff across harnesses](./tasks/prd-14-refatoracao-modo-leve-reinicio-multi-harness/prd.md) | Automatic restart and markdown handoff beyond Claude Code | In progress |
-
-The PRDs are written in Portuguese, except the later ones.
 
 ---
 

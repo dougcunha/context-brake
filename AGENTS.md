@@ -6,11 +6,11 @@ ContextBrake is a TypeScript CLI (Node.js 20+, npm package `context-brake`) that
 
 ## Specifications and research
 
-- Feature requirements live in `tasks/prd-<NN>-<slug>/prd.md`, numbered in implementation order; that feature's TechSpec and task list belong in the same folder.
+- Feature requirements live in `tasks/prd-<NN>-<slug>/prd.md`, numbered in implementation order; that feature's TechSpec and task list belong in the same folder. The folder of a finished feature is removed (the `commit` skill offers it, moving ADRs to `docs/adr/`), so `tasks/` holds only features in progress and the code, tests, README, and `docs/research/` are the record of the rest.
 - Before changing code, read the PRD and, when present, the TechSpec of the feature involved, and reference the PRD and TechSpec identifiers the change implements (`FR`/`NFR`, `DEC`, `TC`; PRDs still written in Portuguese use `RF`/`CA`).
-- MVP PRDs: `prd-01-instalacao-deteccao-diagnostico` (init, detection, doctor) and `prd-02-telemetria-zonas-e-freio` (zones and telemetry). `prd-12-refatoracao-modo-leve-modo-unico` supersedes the plan, checkpoint, and boot of `prd-03-plano-checkpoint-e-boot`, the runner and `wrap` of `prd-04-runner-de-reinicio-automatico`, and the tool-call deny of prd-02: one mode remains, with an optional snapshot command.
+- One mode remains: zone headers with an advisory action and an optional snapshot command. The earlier plan, checkpoint, boot, runner, `wrap`, and tool-call deny no longer exist.
 - The SDD skills in `.agents/skills/` run this flow; `sdd-orchestrate-flow` drives a feature from PRD to acceptance with human checkpoints and keeps its resumable state in the feature's `checkpoint.json`. SDD stages write artifacts and code in the session that runs them, use subagents only as read-only explorers, pause between units so the user can continue or start a new session, and carry distilled context between sessions in the feature's `context-snapshot.md`. Review and QA run in a session that did not write the code they judge.
-- Supporting research is indexed in `docs/research/README.md`; PRDs win when they conflict with it. Before implementing or changing a harness adapter, read that harness's section in `docs/research/harness-integrations.md`, re-check the vendor docs it links, and update the section when behavior differs.
+- Supporting research is indexed in `docs/research/README.md`; an open PRD wins when they conflict. Before implementing or changing a harness adapter, read that harness's section in `docs/research/harness-integrations.md`, re-check the vendor docs it links, and update the section when behavior differs.
 
 ## Coding rules
 

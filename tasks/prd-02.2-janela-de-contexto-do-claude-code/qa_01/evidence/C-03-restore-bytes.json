@@ -1,5 +1,0 @@
-{
-  "before": "{ \"statusLine\": { \"type\": \"command\", \"command\": \"echo local # trailing note\" } }\n",
-  "after": "{ \"statusLine\": {\"type\":\"command\",\"command\":\"echo local # trailing note\"} }\n",
-  "byteEqual": false
-}

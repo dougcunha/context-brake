@@ -1,16 +1,16 @@
 import { realpath } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import type { HarnessContext } from '../../../core/contracts/adapter.js';
 import type { PlannedChange } from '../../../core/contracts/changes.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
 import { setJsonProperty } from '../../storage/json-document-editor.js';
 import { resolveChangeTarget } from '../common/change-target.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
-import { getUserHome } from '../common/path-helpers.js';
 import { asRecord } from '../common/runtime-support.js';
 import { clearStatuslineOptOut, hasStatuslineOptOut, planStatuslineOptOut, softenDefaultConflict } from './statusline-default.js';
 import { planStatuslineRestore, statuslinePlanConflict, type StatuslinePlan } from './statusline-restore.js';
 import { bridgeCommand, CLAUDE_LOCAL_SETTINGS_FILE, CLAUDE_SETTINGS_FILE, firstPreviousStatusline, isBridgeStatusline, readSettings, STATUSLINE_BRIDGE_FILE, STATUSLINE_KEY, statuslineOf, statuslineOptions, toCommandRoot, type SettingsRead, type StatuslineObject } from './statusline-settings.js';
+import { claudeUserSettingsPath } from './user-settings.js';
 import { readStatuslineState, serializeStatuslineState, STATUSLINE_STATE_FILE, type StatuslineState } from './statusline-state.js';
 
 const EMPTY_SETTINGS_TEXT = '{\n}\n';
@@ -56,7 +56,7 @@ async function planStatuslineEntry(context: HarnessContext, isRequested: boolean
 async function resolveOrigin(context: HarnessContext, local: SettingsRead, state: StatuslineState | null): Promise<Origin | StatuslinePlan> {
   const project = await readSettings(resolve(context.projectRoot, CLAUDE_SETTINGS_FILE));
   if (project.kind === 'invalid') return statuslinePlanConflict(CLAUDE_SETTINGS_FILE, project.detail);
-  const user = await readSettings(join(getUserHome(context.userHome), CLAUDE_SETTINGS_FILE));
+  const user = await readSettings(claudeUserSettingsPath(context.userHome));
   const localValue = local.kind === 'valid' && !isBridgeStatusline(local.statusLine) ? local.statusLine : undefined;
   const previous = firstPreviousStatusline([{ source: 'local', value: localValue }, { source: 'project', value: statuslineOf(project) }, { source: 'user', value: statuslineOf(user) }]);
   const previousLocal = asRecord(localValue);

@@ -1,14 +1,14 @@
 import { readFile, realpath, stat } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { relative, resolve } from 'node:path';
 import type { HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
 import { resolveChangeTarget } from '../common/change-target.js';
 import { NodeProcessRunner } from '../../process/node-process-runner.js';
 import { normalizeSeparators } from '../../storage/path-boundary.js';
-import { getUserHome } from '../common/path-helpers.js';
 import { STATUSLINE_PIPE_FLAG } from './statusline-bridge.js';
 import { lastRecordedShell, localStatuslineCommand } from './statusline-context-window.js';
 import { CLAUDE_LOCAL_SETTINGS_FILE, CLAUDE_SETTINGS_FILE, firstPreviousStatusline, readSettings, STATUSLINE_BRIDGE_FILE, statuslineOf } from './statusline-settings.js';
+import { claudeUserSettingsPath } from './user-settings.js';
 import { parseStatuslineState, STATUSLINE_STATE_FILE, type StatuslineState } from './statusline-state.js';
 
 const GIT_TIMEOUT_MILLISECONDS = 2000;
@@ -53,7 +53,7 @@ async function isScriptPresent(state: StatuslineState): Promise<boolean> {
 
 async function currentPreviousCommand(context: HarnessContext, state: StatuslineState): Promise<string | null> {
   const project = await readSettings(resolve(context.projectRoot, CLAUDE_SETTINGS_FILE));
-  const user = await readSettings(join(getUserHome(context.userHome), CLAUDE_SETTINGS_FILE));
+  const user = await readSettings(claudeUserSettingsPath(context.userHome));
   const previous = firstPreviousStatusline([{ source: 'local', value: state.previousLocal ?? undefined }, { source: 'project', value: statuslineOf(project) }, { source: 'user', value: statuslineOf(user) }]);
   return previous?.command ?? null;
 }

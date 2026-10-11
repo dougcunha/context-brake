@@ -23,12 +23,12 @@ export async function removeStatuslineWorld(world: StatuslineWorld): Promise<voi
   await removeProject(world.root);
   await rm(world.home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
-export async function runJson(world: StatuslineWorld, argv: readonly string[]): Promise<InstallReportView> {
+export async function runJson(world: StatuslineWorld, argv: readonly string[], home: string | null = world.home): Promise<InstallReportView> {
   const stdout: string[] = [];
   vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => { stdout.push(String(chunk)); return true; });
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
   try {
-    await dispatchCommand(parseCliArgs(argv), { projectRoot: world.root, userHome: world.home, overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
+    await dispatchCommand(parseCliArgs(argv), { projectRoot: world.root, ...(home === null ? {} : { userHome: home }), overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
   } finally {
     vi.restoreAllMocks();
   }

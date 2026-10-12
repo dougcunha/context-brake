@@ -6,7 +6,7 @@ import type { AssistantFacts } from '../../src/cli/assistant/types.js';
 const FACTS: AssistantFacts = {
   selected: ['claude-code', 'codex-cli'], excluded: ['opencode'], snapshotCommand: '/sdd-snapshot', triggerZone: 'RED', resumeCommand: '/sdd-orchestrate-flow',
   restartOn: true, restartLimit: 3, restartModes: [{ harness: 'claude-code', mode: 'automatic' }, { harness: 'codex-cli', mode: 'semi-automatic' }],
-  statuslineBridge: true, debug: false, gitIgnore: true,
+  statuslineBridge: true, contextSource: 'bridge', debug: false, gitIgnore: true,
 };
 const ESCAPE = String.fromCharCode(27);
 const CHOICES_SUMMARY = [
@@ -62,5 +62,13 @@ describe('assistant summary (prd-16 FR-06, NFR-01, NFR-02, TC-13)', () => {
     const lines = renderSummary(FACTS, formatEquivalentCommand(['--snapshot-command', "it's"]));
     expect(lines.join('\n')).not.toContain(ESCAPE);
     expect(lines.slice(-3)).toEqual(TWO_LINE_COMMAND);
+  });
+});
+
+describe('assistant summary of the context source (DEC-09, TC-15)', () => {
+  it('names the mod and says the status line is left alone', () => {
+    const lines = renderSummary({ ...FACTS, statuslineBridge: null, contextSource: 'mod' }, ['context-brake init']);
+    expect(lines).toContain('  Context source: mod (your status line is left alone)');
+    expect(lines.some((line) => line.includes('Status line bridge'))).toBe(false);
   });
 });

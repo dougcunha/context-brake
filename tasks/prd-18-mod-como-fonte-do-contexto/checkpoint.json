@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "generation": 17,
+  "feature": "prd-18-mod-como-fonte-do-contexto",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "completed",
+  "status": "completed",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "mode": "monitored",
+  "decision_log": null,
+  "objective": "Claude Code mod becomes the source of the context reading via $.session.usage(); init leaves statusLine alone when mods are supported; the status line bridge stays as fallback.",
+  "constraints": [
+    "sdd-lean chosen by the human against the sdd-full rubric (D-01)",
+    "no statusLine edit in mod-first mode; file-changes rules apply",
+    "mod bundle uses no Node module and no sync I/O",
+    "probe first: usage() minimum version, mod versus hook order, freshness, session id match"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "5796f9eec7ad349f867881c1147bf1c9f236b93271dbb5117139ba1e9ae563e5",
+      "decision_id": "D-09"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "98b94697c01253ba21bfba94cf10cc307c75820b54df15df15e0c18b67661e16",
+      "decision_id": "D-17"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "a6934ff8a1f479881090477b444b3366bb97c90d591e799ba895e6fea7205f8b",
+      "decision_id": "D-15"
+    }
+  ],
+  "decisions_to_read": [
+    "D-01",
+    "D-09",
+    "D-11",
+    "D-16",
+    "D-17",
+    "D-21"
+  ],
+  "git_base": "63fd5cb5a4855d6147690fdefc016e0b3a23a408",
+  "worktree_evidence": "workflow.md#W-01; at the re-review start HEAD 63fd5cb with uncommitted paths (git status --porcelain)",
+  "active_work": [],
+  "pending_hil": null,
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "close",
+    "instruction": "Feature accepted at HIL 3; commit only if the user asks (commit skill offers removing the artifacts).",
+    "read": []
+  }
+}

@@ -7,7 +7,9 @@ import { setJsonProperty } from '../../storage/json-document-editor.js';
 import { resolveChangeTarget } from '../common/change-target.js';
 import { loadRuntimeAsset } from '../common/runtime-assets.js';
 import { asRecord } from '../common/runtime-support.js';
+import type { ContextSource } from './context-source.js';
 import { clearStatuslineOptOut, hasStatuslineOptOut, planStatuslineOptOut, softenDefaultConflict } from './statusline-default.js';
+import { planModFirstStatusline } from './statusline-migration.js';
 import { planStatuslineRestore, statuslinePlanConflict, type StatuslinePlan } from './statusline-restore.js';
 import { bridgeCommand, CLAUDE_LOCAL_SETTINGS_FILE, CLAUDE_SETTINGS_FILE, firstPreviousStatusline, isBridgeStatusline, readSettings, STATUSLINE_BRIDGE_FILE, STATUSLINE_KEY, statuslineOf, statuslineOptions, toCommandRoot, type SettingsRead, type StatuslineObject } from './statusline-settings.js';
 import { claudeUserSettingsPath } from './user-settings.js';
@@ -18,7 +20,8 @@ const EMPTY_PLAN: StatuslinePlan = { changes: [], conflicts: [], findings: [] };
 
 type Origin = Omit<StatuslineState, 'v' | 'installedCommand'> & { readonly options: StatuslineObject; readonly findings: readonly DiagnosticFinding[] };
 
-export async function planStatuslineInstall(context: HarnessContext): Promise<StatuslinePlan> {
+export async function planStatuslineInstall(context: HarnessContext, source: ContextSource): Promise<StatuslinePlan> {
+  if (source === 'mod') return planModFirstStatusline(context);
   const plan = context.statuslineBridge === 'remove' ? await planStatuslineOptOut(context.projectRoot) : await requestedEntry(context);
   return { ...plan, changes: [await bridgeAssetChange(context.projectRoot), ...plan.changes] };
 }

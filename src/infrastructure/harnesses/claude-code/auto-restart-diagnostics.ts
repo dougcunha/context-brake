@@ -36,7 +36,7 @@ export async function diagnoseAutoRestart(input: AutoRestartDiagnosis): Promise<
   if (!input.wanted) return [finding(OFF)];
   const normalized = input.version?.normalized ?? null;
   if (normalized !== null && semver.lt(normalized, MODS_MINIMUM_CLAUDE_VERSION)) return [finding(tooOld(normalized))];
-  if (!(await isInstalled(input.projectRoot))) return [finding(FILES_DRIFTED)];
+  if (!(await isModInstalled(input.projectRoot))) return [finding(FILES_DRIFTED)];
   const log = await latestRestartLog(input.projectRoot, 'claude-code');
   if (log === null) return [finding(NOT_LOADED)];
   if (log.componentVersion !== MOD_VERSION) return [finding(sessionDrifted(log.componentVersion))];
@@ -45,7 +45,7 @@ export async function diagnoseAutoRestart(input: AutoRestartDiagnosis): Promise<
   return [finding(READY), ...skip];
 }
 
-async function isInstalled(projectRoot: string): Promise<boolean> {
+export async function isModInstalled(projectRoot: string): Promise<boolean> {
   const present = await Promise.all(MOD_FILES.map((path) => pathExists(resolve(projectRoot, path))));
   if (present.includes(false)) return false;
   const settings = await readFile(resolve(projectRoot, CLAUDE_LOCAL_SETTINGS_FILE), 'utf8').catch(() => null);

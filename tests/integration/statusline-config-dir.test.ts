@@ -35,7 +35,7 @@ afterEach(async () => {
 
 describe('status line bridge with a custom Claude Code config directory', () => {
   it('wraps the status line from CLAUDE_CONFIG_DIR instead of ~/.claude', async () => {
-    await runJson(world, INSTALL, null);
+    await runJson(world, INSTALL, { home: null });
     expect(await recordedPreviousCommand()).toBe('personal.sh');
   });
 

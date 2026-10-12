@@ -11,7 +11,7 @@ const VERSION: VersionProbe = { status: 'resolved', display: '1.0.0', normalized
 
 const EXPECTED: Readonly<Record<HarnessId, Expectation>> = {
   'claude-code': { level: 'full', states: 'SS??', limitations: [
-    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the status line bridge, which init installs by default; without it, the window falls back to contextWindowCeiling.'],
+    ['context_usage', 'Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the mod that init installs on Claude Code 2.1.287 or later, or from the status line bridge on older versions; without either, it falls back to contextWindowCeiling.'],
     ['auto_restart', 'Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.'],
   ] },
   'codex-cli': { level: 'full', states: 'SS?U', limitations: [

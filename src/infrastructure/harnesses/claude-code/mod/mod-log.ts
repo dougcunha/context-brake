@@ -26,6 +26,10 @@ async function writeLog($: ModHost, path: string, log: RestartLog): Promise<void
   await $.fs.write(path, `${JSON.stringify(log, null, 2)}\n`);
 }
 
+export async function lastRecordedCode($: ModHost): Promise<RestartReasonCode | undefined> {
+  return (await readLog($, await logPath($))).records.at(-1)?.code;
+}
+
 export async function recordLoaded($: ModHost): Promise<void> {
   const path = await logPath($);
   const log = await readLog($, path);

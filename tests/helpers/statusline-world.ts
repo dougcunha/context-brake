@@ -2,6 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { vi } from 'vitest';
+import type { ProcessRunner } from '../../src/core/contracts/processes.js';
 import { parseCliArgs } from '../../src/cli/argument-parser.js';
 import { dispatchCommand } from '../../src/cli/composition-root.js';
 import { createClaudeProject, removeProject } from './delegated-world.js';
@@ -23,12 +24,14 @@ export async function removeStatuslineWorld(world: StatuslineWorld): Promise<voi
   await removeProject(world.root);
   await rm(world.home, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
 }
-export async function runJson(world: StatuslineWorld, argv: readonly string[], home: string | null = world.home): Promise<InstallReportView> {
+export type RunOptions = { readonly home?: string | null; readonly runner?: ProcessRunner };
+export async function runJson(world: StatuslineWorld, argv: readonly string[], options: RunOptions = {}): Promise<InstallReportView> {
+  const home = options.home === undefined ? world.home : options.home;
   const stdout: string[] = [];
   vi.spyOn(process.stdout, 'write').mockImplementation((chunk: unknown) => { stdout.push(String(chunk)); return true; });
   vi.spyOn(process.stderr, 'write').mockImplementation(() => true);
   try {
-    await dispatchCommand(parseCliArgs(argv), { projectRoot: world.root, ...(home === null ? {} : { userHome: home }), overheadMeasurer: fakeOverheadMeasurer, runner: fakeProcessRunner });
+    await dispatchCommand(parseCliArgs(argv), { projectRoot: world.root, ...(home === null ? {} : { userHome: home }), overheadMeasurer: fakeOverheadMeasurer, runner: options.runner ?? fakeProcessRunner });
   } finally {
     vi.restoreAllMocks();
   }

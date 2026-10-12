@@ -1,6 +1,7 @@
 import type { HarnessAdapter } from '../../core/contracts/adapter.js';
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { HarnessDetection, HarnessId } from '../../core/contracts/harness.js';
+import type { ContextSource } from '../../infrastructure/harnesses/claude-code/context-source.js';
 import type { HarnessRestartMode } from '../../core/services/restart-install-extras.js';
 
 export type AssistantContext = {
@@ -8,6 +9,7 @@ export type AssistantContext = {
   readonly detections: readonly HarnessDetection[];
   readonly adapters: readonly HarnessAdapter[];
   readonly hasStatuslineOptOut: boolean;
+  readonly contextSource: ContextSource;
   readonly insideGit: boolean;
 };
 
@@ -22,6 +24,7 @@ export type AssistantFacts = {
   readonly restartLimit: number | null;
   readonly restartModes: readonly HarnessRestartFact[];
   readonly statuslineBridge: boolean | null;
+  readonly contextSource: ContextSource | null;
   readonly debug: boolean;
   readonly gitIgnore: boolean | null;
 };

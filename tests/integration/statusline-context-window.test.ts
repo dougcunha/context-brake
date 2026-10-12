@@ -25,7 +25,7 @@ afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetrie
 
 describe('doctor context window section (FR-07, DEC-10, TC-17)', () => {
   it('reports an absent bridge and the ceiling without state or ledgers', async () => {
-    expect(await readClaudeContextWindow(root)).toEqual({ bridge: 'absent', source: 'contextWindowCeiling', lastWindowTokens: null });
+    expect(await readClaudeContextWindow(root)).toEqual({ bridge: 'absent', mod: 'absent', source: 'contextWindowCeiling', lastWindowTokens: null });
   });
 
   it('reports an installed bridge and the window of the most recently modified ledger', async () => {
@@ -33,7 +33,7 @@ describe('doctor context window section (FR-07, DEC-10, TC-17)', () => {
     await write('.claude/settings.local.json', { statusLine: { type: 'command', command: COMMAND } });
     await ledger('older', statuslineLine(200000), 1_000);
     await ledger('newer', statuslineLine(1000000) + statuslineLine(null), 2_000);
-    expect(await readClaudeContextWindow(root)).toEqual({ bridge: 'installed', source: 'statusline', lastWindowTokens: 1000000 });
+    expect(await readClaudeContextWindow(root)).toEqual({ bridge: 'installed', mod: 'absent', source: 'statusline', lastWindowTokens: 1000000 });
   });
 
   it('reports an inactive bridge when the local command differs', async () => {

@@ -6,8 +6,8 @@ import type { DoctorReport } from '../../src/core/contracts/diagnostics.js';
 import { diagnoseProject } from '../../src/core/services/doctor-service.js';
 import { fakeDoctorAdapter } from '../helpers/fake-doctor-adapter.js';
 
-const WINDOW: ContextWindowReport = { bridge: 'installed', source: 'statusline', lastWindowTokens: 1000000 };
-const ABSENT: ContextWindowReport = { bridge: 'absent', source: 'contextWindowCeiling', lastWindowTokens: null };
+const WINDOW: ContextWindowReport = { bridge: 'installed', mod: 'absent', source: 'statusline', lastWindowTokens: 1000000 };
+const ABSENT: ContextWindowReport = { bridge: 'absent', mod: 'absent', source: 'contextWindowCeiling', lastWindowTokens: null };
 
 function diagnose(id: HarnessAdapter['id'], contextWindow: ContextWindowReport = WINDOW): Promise<DoctorReport> {
   return diagnoseProject({

@@ -42,7 +42,7 @@ describe('E2E status line bridge on a path with spaces and accents (NFR-06, TC-2
     const payload = await readFile(resolve('tests/fixtures/harnesses/claude-code/statusline.json'), 'utf8');
     expect((await runStatuslinePipeline(join(root, BRIDGE), { bridgeArgs: [], previousArgs: null, stdin: payload })).bridgeCode).toBe(0);
     const doctor = await runInProcessCli(['doctor', '--json', '--harness', 'claude-code'], root, env);
-    expect((JSON.parse(doctor.stdout) as { contextWindow: unknown }).contextWindow).toEqual({ bridge: 'installed', source: 'statusline', lastWindowTokens: 200000 });
+    expect((JSON.parse(doctor.stdout) as { contextWindow: unknown }).contextWindow).toEqual({ bridge: 'installed', mod: 'absent', source: 'statusline', lastWindowTokens: 200000 });
     expect((await runInProcessCli(['remove', '--yes', '--json'], root, env)).code).toBe(0);
     expect(await readFile(join(root, LOCAL), 'utf8')).toBe(LOCAL_BEFORE);
     expect(await exists(STATE)).toBe(false);

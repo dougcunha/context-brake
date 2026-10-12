@@ -1,10 +1,13 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import type { ContextReading } from '../../../core/contracts/context-reading.js';
 import type { ContextWindowReport } from '../../../core/contracts/context-window-report.js';
 import { parseLedgerLines } from '../../../core/contracts/session-ledger.js';
 import type { StatuslineShell } from '../../../core/contracts/statusline-line.js';
 import { summarizeStatusline } from '../../../core/services/statusline-summary.js';
 import { LEDGER_FILE_EXTENSION, sessionsDirectory } from '../../runtime/runtime-paths.js';
+import { isModInstalled } from './auto-restart-diagnostics.js';
+import { latestContextReading } from './context-readings-scan.js';
 import { CLAUDE_LOCAL_SETTINGS_FILE, commandOf, readSettings } from './statusline-settings.js';
 import { readStatuslineState } from './statusline-state.js';
 
@@ -13,8 +16,19 @@ const ALL_LINES = -1;
 type LedgerFile = { readonly path: string; readonly modifiedMilliseconds: number };
 
 export async function readClaudeContextWindow(projectRoot: string): Promise<ContextWindowReport> {
-  const lastWindowTokens = await lastRecordedWindow(projectRoot);
-  return { bridge: await bridgeState(projectRoot), source: lastWindowTokens === null ? 'contextWindowCeiling' : 'statusline', lastWindowTokens };
+  const reading = await latestContextReading(projectRoot);
+  const lastWindowTokens = reading?.windowTokens ?? await lastRecordedWindow(projectRoot);
+  return { bridge: await bridgeState(projectRoot), mod: await modState(projectRoot, reading), source: sourceOf(reading, lastWindowTokens), lastWindowTokens };
+}
+
+function sourceOf(reading: ContextReading | null, lastWindowTokens: number | null): ContextWindowReport['source'] {
+  if (reading !== null) return 'mod';
+  return lastWindowTokens === null ? 'contextWindowCeiling' : 'statusline';
+}
+
+async function modState(projectRoot: string, reading: ContextReading | null): Promise<ContextWindowReport['mod']> {
+  if (reading !== null) return 'reporting';
+  return (await isModInstalled(projectRoot)) ? 'installed' : 'absent';
 }
 
 export async function localStatuslineCommand(projectRoot: string): Promise<string | null> {

@@ -1,3 +1,6 @@
+export type ModUsageContext = { readonly tokens?: number | undefined; readonly window?: number | undefined; readonly percent?: number | undefined };
+export type ModUsage = { readonly context: ModUsageContext };
+
 export type ModHost = {
   readonly fs: {
     read(path: string): Promise<unknown>;
@@ -16,6 +19,7 @@ export type ModHost = {
     root(): Promise<string>;
     surfaces(): Promise<readonly string[]>;
     version(): Promise<{ readonly version: string }>;
+    usage(): Promise<ModUsage>;
   };
   readonly command: { run(input: { readonly command: string }): Promise<unknown> };
   readonly prompt: { submit(input: { readonly text: string }): Promise<unknown> };

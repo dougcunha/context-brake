@@ -12,6 +12,7 @@ import { probeExecutableVersion } from '../common/version-probes.js';
 import { diagnoseAutoRestart } from './auto-restart-diagnostics.js';
 import { CLAUDE_CAPABILITIES } from './capabilities.js';
 import { isTargetGroup } from './claude-merger.js';
+import { detectContextSource } from './context-source.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
 import { CLAUDE_CONFIG_FILE, CLAUDE_HOOK_FILE, planClaudeInstall, planClaudeRemove } from './planner.js';
 import { diagnoseStatusline } from './statusline-diagnostics.js';
@@ -33,7 +34,7 @@ export class ClaudeAdapter implements HarnessAdapter {
   }
 
   async planInstall(context: HarnessContext) {
-    return attachConfigOrigin(await planClaudeInstall(context), { path: CLAUDE_CONFIG_FILE, manifest: context.manifest });
+    return attachConfigOrigin(await planClaudeInstall(context, await detectContextSource(context)), { path: CLAUDE_CONFIG_FILE, manifest: context.manifest });
   }
 
   async planRemove(context: HarnessContext) {

@@ -1,6 +1,6 @@
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import type { ModHost } from '../../src/infrastructure/harnesses/claude-code/mod/host.js';
+import type { ModHost, ModUsage } from '../../src/infrastructure/harnesses/claude-code/mod/host.js';
 
 type Deferred = { readonly promise: Promise<unknown>; settle(outcome: 'resolve' | 'reject'): void };
 
@@ -12,6 +12,7 @@ export type HostState = {
   readonly store: Map<string, unknown>;
   readonly env: Map<string, string>;
   surfaces: readonly string[];
+  usage: ModUsage | Error;
   now: number;
   readFailure: boolean;
   seedFailure: boolean;
@@ -73,7 +74,7 @@ function actionPorts(state: HostState): Pick<ModHost, 'command' | 'prompt' | 'ui
 }
 
 export function createHostState(now: number): HostState {
-  return { clears: [], seeds: [], logs: [], accessed: [], store: new Map(), env: new Map(), surfaces: ['terminal'], now, readFailure: false, seedFailure: false, storeWriteFailure: false, clear: undefined };
+  return { clears: [], seeds: [], logs: [], accessed: [], store: new Map(), env: new Map(), surfaces: ['terminal'], usage: { context: { window: 1_000_000 } }, now, readFailure: false, seedFailure: false, storeWriteFailure: false, clear: undefined };
 }
 
 export function createHost(root: string, state: HostState): ModHost {
@@ -82,7 +83,7 @@ export function createHost(root: string, state: HostState): ModHost {
     store: storePort(state),
     ...actionPorts(state),
     env: { async get(name) { return state.env.get(name); } },
-    session: { async id() { return 'session-1'; }, async root() { return root; }, async surfaces() { return state.surfaces; }, async version() { return { version: '2.1.289' }; } },
+    session: { async id() { return 'session-1'; }, async root() { return root; }, async surfaces() { return state.surfaces; }, async version() { return { version: '2.1.289' }; }, async usage() { if (state.usage instanceof Error) throw state.usage; return state.usage; } },
     clock: { async now() { return state.now; } },
   };
 }

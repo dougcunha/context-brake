@@ -56,7 +56,7 @@ Support levels come from each vendor's documentation, checked in September 2026.
 
 | Harness | Integration point | Support level | Main limitation |
 | :--- | :--- | :--- | :--- |
-| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; the context window comes from the status line bridge, which `init` installs by default |
+| Claude Code (`claude-code`) | Hooks in `.claude/settings.json` | Full | Context usage is read from the session transcript, whose format is undocumented, with an estimate as fallback; the context window comes from the [mod](#claude-code-context-source) that `init` installs on Claude Code 2.1.287 or later, or from the status line bridge on older versions |
 | Codex CLI (`codex-cli`) | Hooks in `.codex/hooks.json` | Full | Context usage and window are read from the session rollout file, whose format is undocumented; falls back to an estimate |
 | Cursor (`cursor`) | Hooks in `.cursor/hooks.json` | Full | Context usage is only sent before compaction |
 | GitHub Copilot CLI (`github-copilot-cli`) | Hooks in `.github/hooks/*.json` | Full | Context usage is not exposed to hooks, so ContextBrake estimates it |
@@ -119,7 +119,7 @@ npx context-brake init --yes --snapshot-command "/sdd-snapshot" --resume-command
 ### What `context-brake init` does:
 
 1. **Detects coding-agent harnesses:** Identifies Claude Code, Cursor, Codex CLI, GitHub Copilot CLI, Antigravity CLI, OpenCode, Pi, and Oh-My-Pi from repository signals and machine configuration.
-2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments, and installs the [status line bridge](#claude-code-status-line-bridge) for Claude Code.
+2. **Registers integrations safely:** Injects the appropriate hooks/plugins in each harness's own configuration, preserving user settings and comments, and, for Claude Code, installs the [mod that reads the context](#claude-code-context-source) or, on versions without mods, the [status line bridge](#claude-code-status-line-bridge).
 3. **Initializes config:** Creates `context-brake.config.json` with the telemetry limits and the `snapshot` section, and records the installed files in `.context-brake/manifest.json`.
 
 It does not touch instruction files such as `CLAUDE.md` and `AGENTS.md`. The only change it makes to your `.gitignore` is the marked block described in [Keeping ContextBrake Out of Git](#keeping-contextbrake-out-of-git). Runtime state lives in `.context-brake/runtime/`, which carries its own `.gitignore`.
@@ -194,7 +194,7 @@ The files `init` creates belong to your machine and `init` can regenerate them, 
 }
 ```
 
-`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it, and the telemetry block shows `window=config`. A more accurate window comes from the harness (`window=harness`: Pi and Oh-My-Pi, Codex through the session rollout file, and Claude Code through the [status line bridge](#claude-code-status-line-bridge), which `init` installs by default) or, for the harnesses that report none (Cursor, GitHub Copilot, Antigravity, OpenCode), from a window you declare in `telemetry.declaredContextWindow` (`window=declared`). A declared window is ignored by Claude Code, Codex, Pi, and Oh-My-Pi, whose window comes from the harness. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns.
+`contextWindowCeiling` is the session's context budget: when the harness does not report the active model's window, zone percentages are computed against it, and the telemetry block shows `window=config`. A more accurate window comes from the harness (`window=harness`: Pi and Oh-My-Pi, Codex through the session rollout file, and Claude Code through the [mod](#claude-code-context-source), or the [status line bridge](#claude-code-status-line-bridge) on versions without mods) or, for the harnesses that report none (Cursor, GitHub Copilot, Antigravity, OpenCode), from a window you declare in `telemetry.declaredContextWindow` (`window=declared`). A declared window is ignored by Claude Code, Codex, Pi, and Oh-My-Pi, whose window comes from the harness. The optional `zones.greenMaxTurn` and `zones.yellowMaxTurn` must be set together, with `greenMaxTurn` lower; they raise the zone up to `RED` by turns.
 
 ### Excluding a Harness
 
@@ -249,9 +249,13 @@ The agent copies that line instead of composing it. Nothing is written to instru
 
 `context-brake doctor` lists the repository's active sessions with their current context usage: percentage, tokens, window, zone, and whether the reading was measured or estimated. It also shows the time of each session's last activity. The data comes from the session ledger ContextBrake already keeps under `.context-brake/runtime/sessions/`, using the newest reading after the last reset, from the status line bridge or from the last tool call. ContextBrake cannot tell whether a harness process is still running. A session counts as active when its last recorded activity is within 30 minutes, and at most 10 sessions are listed. `doctor --json` reports them under `activeSessions`, and the list is omitted when no session is active.
 
+### Claude Code Context Source
+
+Claude Code sends the active model's context window only to the status line command and to mods, never to hooks. On Claude Code 2.1.287 or later, `init` installs a mod that publishes the window and the input tokens, so zones use the real window instead of `contextWindowCeiling` and `init` never touches your `statusLine`. The mod runs in the files under `.context-brake/claude-mod/` and registers itself in `.claude/settings.local.json`; it restarts nothing unless you also use `--auto-restart`. `init` reads the installed version with `claude --version`; when it cannot, or the version is older, it installs the status line bridge below instead. Running `init` again on a compatible version migrates an installed bridge: it restores the status line you had and removes the bridge script. `context-brake doctor` reports `contextWindow.source` (`mod`, `statusline`, or `contextWindowCeiling`) and `contextWindow.mod` (`absent`, `installed`, or `reporting`; `reporting` means a session of this repository has reported a reading at some point, with no freshness bound), and warns with `CONTEXT_MOD_SILENT` when the mod is installed but no session has reported yet (mods stay off under `disableAllHooks`, `--safe-mode`, `--bare`, an organization managed policy, and in Desktop WSL sessions).
+
 ### Claude Code Status Line Bridge
 
-Claude Code sends the active model's context window only to the status line command, never to hooks. The bridge reads it there, so zones in Claude Code use the real window instead of `contextWindowCeiling`. `init` installs it by default. To turn it back on after an opt-out:
+On Claude Code versions without mods, the bridge reads the context window from the status line command, so zones use the real window instead of `contextWindowCeiling`. `init` installs it there by default. To use it on any version, including after an opt-out:
 
 ```bash
 npx context-brake init --statusline-bridge

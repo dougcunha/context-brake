@@ -22,7 +22,7 @@ async function installChanges(root: string): Promise<PlannedChange[]> {
   };
   return Promise.all(MOD_FILES.map(async (path) => ({
     path, realPath: await resolveChangeTarget(root, path), kind: 'create' as const, owner: 'runtime_asset' as const,
-    content: contents[path] ?? '', preview: { summary: 'Install the automatic restart mod' },
+    content: contents[path] ?? '', preview: { summary: 'Install the ContextBrake mod' },
   })));
 }
 
@@ -34,7 +34,7 @@ async function isModified(context: HarnessContext, path: string): Promise<boolea
 }
 
 async function deletion(root: string, path: string): Promise<PlannedChange> {
-  return { path, realPath: await resolveChangeTarget(root, path), kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete the automatic restart mod' } };
+  return { path, realPath: await resolveChangeTarget(root, path), kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete the ContextBrake mod' } };
 }
 
 async function removalChanges(context: HarnessContext): Promise<AutoRestartPlan> {
@@ -61,7 +61,7 @@ async function settingsChange(root: string, base: SettingsBase, wanted: boolean)
   const text = wanted ? withModKeys(base.text, resolve(await realpath(root), MOD_ROOT)) : withoutModKeys(base.text);
   if (text === base.text && base.existing === undefined) return undefined;
   const drop = !wanted && base.owned && isEmptySettings(text);
-  const summary = wanted ? 'Register the automatic restart mod' : 'Unregister the automatic restart mod';
+  const summary = wanted ? 'Register the ContextBrake mod' : 'Unregister the ContextBrake mod';
   const kind = drop ? 'delete' : base.existing?.kind ?? (base.isNew ? 'create' : 'update');
   return { path: CLAUDE_LOCAL_SETTINGS_FILE, realPath: await resolveChangeTarget(root, CLAUDE_LOCAL_SETTINGS_FILE), kind, owner: 'harness_entry', content: drop ? null : text, preview: drop ? { summary: 'Delete the local settings left empty' } : base.existing?.preview ?? { summary } };
 }
@@ -76,9 +76,11 @@ function isLocalSettingsDeletion(change: PlannedChange): boolean {
   return change.path === CLAUDE_LOCAL_SETTINGS_FILE && change.kind === 'delete';
 }
 
-export async function planAutoRestart(context: HarnessContext, base: readonly PlannedChange[], deleteFiles = true): Promise<AutoRestartPlan> {
-  const wanted = context.autoRestart === true;
-  const files = await fileChanges(context, wanted, deleteFiles);
+export type AutoRestartOptions = { readonly deleteFiles?: boolean; readonly forModFirst?: boolean };
+
+export async function planAutoRestart(context: HarnessContext, base: readonly PlannedChange[], options: AutoRestartOptions = {}): Promise<AutoRestartPlan> {
+  const wanted = context.autoRestart === true || options.forModFirst === true;
+  const files = await fileChanges(context, wanted, options.deleteFiles ?? true);
   const deletesLocal = base.some(isLocalSettingsDeletion);
   if (deletesLocal && !wanted) return { changes: [...base, ...files.changes], conflicts: files.conflicts };
   const settings = deletesLocal ? { text: EMPTY_SETTINGS_TEXT, existing: undefined, isNew: false, owned: true } : await settingsBase(context.projectRoot, base);

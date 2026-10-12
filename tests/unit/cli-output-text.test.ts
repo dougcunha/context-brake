@@ -88,11 +88,11 @@ describe('CLI doctor text', () => {
     expect(renderFinding(finding(severity))).toBe(`  ${label} TEST_FINDING: finding message`);
   });
   it.each([
-    [1000000, '  - context window: statusline (bridge: installed, last window: 1000000)\n'],
-    [null, '  - context window: statusline (bridge: installed, last window: unknown)\n'],
+    [1000000, '  - context window: statusline (mod: absent, bridge: installed, last window: 1000000)\n'],
+    [null, '  - context window: statusline (mod: absent, bridge: installed, last window: unknown)\n'],
   ])('renders the context window line for last window %s (FR-07, DEC-10, TC-17)', (lastWindowTokens, expected) => {
     const streams = captureStreams();
-    renderDoctorText(doctorReport({ contextWindow: { bridge: 'installed', source: 'statusline', lastWindowTokens } }));
+    renderDoctorText(doctorReport({ contextWindow: { bridge: 'installed', mod: 'absent', source: 'statusline', lastWindowTokens } }));
     expect(streams.stdout()).toContain(expected);
   });
 });

@@ -2,11 +2,13 @@ import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, Tool
 import type { RuntimeErrorLog } from '../../../core/contracts/session-ledger.js';
 import type { MeasuredUsage, RuntimeInput } from '../../../core/services/brake-engine.js';
 import { failureDetail, recordRuntimeFailure } from '../../../core/services/failure-policy.js';
-import { asRecord, assetProjectRoot, characterLength, parsePayload, projectRootFromEnvironment, requireIdentifier, textValue } from '../common/runtime-support.js';
+import { asRecord, characterLength, parsePayload, requireIdentifier, textValue } from '../common/runtime-support.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../runtime/process-hook-host.js';
 import { CLAUDE_CAPABILITIES } from './capabilities.js';
+import { freshestMeasured, readContextReading } from './mod-reading.js';
+import { resolveClaudeProjectRoot } from './project-root.js';
 import { claudePayloadSchema, type ClaudePayload } from './schemas.js';
-import { readTranscriptUsage } from './transcript-usage.js';
+import { readTranscriptUsage, type TranscriptUsage } from './transcript-usage.js';
 
 const HARNESS = 'claude-code';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
@@ -51,19 +53,21 @@ export function mapClaudeEvent(eventName: string, payload: unknown): RuntimeEven
 export async function mapClaudeInput(eventName: string, payload: unknown, errors: RuntimeErrorLog): Promise<RuntimeInput> {
   if (eventName !== 'PostToolUse') return {};
   const data = parsePayload(claudePayloadSchema, payload);
-  const measured = data.agent_id === undefined ? await measuredUsage({ path: data.transcript_path, eventName, errors }) : undefined;
+  const measured = data.agent_id === undefined ? await measuredUsage({ path: data.transcript_path, sessionId: data.session_id, eventName, errors }) : undefined;
   const usage = measured === undefined ? {} : { measured };
   return { ...usage, observedCharacters: characterLength(data.tool_input) + characterLength(data.tool_response) };
 }
 
-type TranscriptRead = { readonly path: string | undefined; readonly eventName: string; readonly errors: RuntimeErrorLog };
+type TranscriptRead = { readonly path: string | undefined; readonly sessionId: string | undefined; readonly eventName: string; readonly errors: RuntimeErrorLog };
 async function measuredUsage(input: TranscriptRead): Promise<MeasuredUsage | undefined> {
+  return freshestMeasured(await transcriptUsage(input), await readContextReading(input.sessionId));
+}
+async function transcriptUsage(input: TranscriptRead): Promise<TranscriptUsage | null> {
   try {
-    const usage = await readTranscriptUsage(input.path);
-    return usage === null ? undefined : { tokens: usage.tokens, contextWindow: null, at: usage.at };
+    return await readTranscriptUsage(input.path);
   } catch (error) {
     await recordRuntimeFailure(input.errors, { harness: HARNESS, event: input.eventName, code: 'UNEXPECTED', detail: failureDetail(error) });
-    return undefined;
+    return null;
   }
 }
 
@@ -78,7 +82,7 @@ export const claudeAdapter: ProcessHarnessAdapter = {
   mapEvent: mapClaudeEvent,
   mapInput: mapClaudeInput,
   renderDecision: renderClaudeDecision,
-  resolveProjectRoot: async () => projectRootFromEnvironment(['CLAUDE_PROJECT_DIR']) ?? await assetProjectRoot(),
+  resolveProjectRoot: resolveClaudeProjectRoot,
 };
 
 export function runClaudeCodeHook(): Promise<number> {

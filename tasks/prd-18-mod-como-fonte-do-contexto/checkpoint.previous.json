@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "generation": 16,
+  "feature": "prd-18-mod-como-fonte-do-contexto",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": null,
+  "mode": "monitored",
+  "decision_log": null,
+  "objective": "Claude Code mod becomes the source of the context reading via $.session.usage(); init leaves statusLine alone when mods are supported; the status line bridge stays as fallback.",
+  "constraints": [
+    "sdd-lean chosen by the human against the sdd-full rubric (D-01)",
+    "no statusLine edit in mod-first mode; file-changes rules apply",
+    "mod bundle uses no Node module and no sync I/O",
+    "probe first: usage() minimum version, mod versus hook order, freshness, session id match"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_02/codereview.md",
+    "qa": null,
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": null,
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "5796f9eec7ad349f867881c1147bf1c9f236b93271dbb5117139ba1e9ae563e5",
+      "decision_id": "D-09"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "98b94697c01253ba21bfba94cf10cc307c75820b54df15df15e0c18b67661e16",
+      "decision_id": "D-17"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "a6934ff8a1f479881090477b444b3366bb97c90d591e799ba895e6fea7205f8b",
+      "decision_id": "D-15"
+    }
+  ],
+  "decisions_to_read": [
+    "D-01",
+    "D-09",
+    "D-11",
+    "D-16",
+    "D-17"
+  ],
+  "git_base": "63fd5cb5a4855d6147690fdefc016e0b3a23a408",
+  "worktree_evidence": "workflow.md#W-01; at the re-review start HEAD 63fd5cb with uncommitted paths (git status --porcelain)",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "Accept the current delivery (reservations of codereview_02 already accepted as open items)",
+    "ids": [
+      "codereview_02/CR-01",
+      "codereview_02/CR-02"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 1,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "Run the integrated validation summary and present HIL 3; no CLI QA. After acceptance mark the checkpoint completed and the snapshot closed; commit only if the user asks.",
+    "read": [
+      {
+        "path": "tasks/prd-18-mod-como-fonte-do-contexto/context-snapshot.md",
+        "section": "Open threads"
+      },
+      {
+        "path": "tasks/prd-18-mod-como-fonte-do-contexto/codereview_02/codereview.md",
+        "section": "Findings"
+      }
+    ]
+  }
+}

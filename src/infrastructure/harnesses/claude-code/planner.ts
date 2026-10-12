@@ -9,6 +9,7 @@ import { loadRuntimeAsset } from '../common/runtime-assets.js';
 import { MOD_FILES } from './auto-restart-files.js';
 import { planAutoRestart } from './auto-restart-planner.js';
 import { applyHooks } from './claude-hooks-config.js';
+import type { ContextSource } from './context-source.js';
 import { planStatuslineInstall, planStatuslineRemove } from './statusline-planner.js';
 import { STATUSLINE_BRIDGE_FILE } from './statusline-settings.js';
 
@@ -27,7 +28,7 @@ function invalidConfigPlan(detail: string): AdapterPlan {
   return { harness: 'claude-code', changes: [], conflicts: [{ path: CLAUDE_CONFIG_FILE, code: 'INVALID_HARNESS_CONFIG', detail }], entries: [] };
 }
 
-export async function planClaudeInstall(context: HarnessContext): Promise<AdapterPlan> {
+export async function planClaudeInstall(context: HarnessContext, source: ContextSource = 'bridge'): Promise<AdapterPlan> {
   const projectRoot = context.projectRoot;
   const realConfig = await resolveChangeTarget(projectRoot, CLAUDE_CONFIG_FILE);
   let content = '{\n}\n';
@@ -45,13 +46,13 @@ export async function planClaudeInstall(context: HarnessContext): Promise<Adapte
     return invalidConfigPlan(error instanceof Error ? error.message : String(error));
   }
   const assetContent = await loadRuntimeAsset('claude-code-hook.mjs');
-  const statusline = await planStatuslineInstall(context);
+  const statusline = await planStatuslineInstall(context, source);
   const changes: PlannedChange[] = [
     { path: CLAUDE_CONFIG_FILE, realPath: realConfig, kind: 'update', owner: 'harness_entry', content: updated, preview: { summary: 'Register Claude Code hooks' } },
     { path: CLAUDE_HOOK_FILE, realPath: await resolveChangeTarget(projectRoot, CLAUDE_HOOK_FILE), kind: 'create', owner: 'runtime_asset', content: assetContent, preview: { summary: 'Install ContextBrake hook script' } },
     ...statusline.changes,
   ];
-  const autoRestart = await planAutoRestart(context, changes);
+  const autoRestart = await planAutoRestart(context, changes, { forModFirst: source === 'mod' });
   return { harness: 'claude-code', changes: [...autoRestart.changes], conflicts: [...statusline.conflicts, ...autoRestart.conflicts], entries: buildClaudeEntries(), findings: statusline.findings };
 }
 
@@ -71,6 +72,6 @@ export async function planClaudeRemove(projectRoot: string): Promise<AdapterPlan
   changes.push({ path: CLAUDE_HOOK_FILE, realPath: realHook, kind: 'delete', owner: 'runtime_asset', content: null, preview: { summary: 'Delete ContextBrake hook script' } });
   const statusline = await planStatuslineRemove(projectRoot);
   changes.push(...statusline.changes);
-  const autoRestart = await planAutoRestart({ projectRoot, autoRestart: false }, changes, false);
+  const autoRestart = await planAutoRestart({ projectRoot, autoRestart: false }, changes, { deleteFiles: false });
   return { harness: 'claude-code', changes: [...autoRestart.changes], conflicts: [...statusline.conflicts, ...autoRestart.conflicts], entries: buildClaudeEntries(), assetPaths: [CLAUDE_HOOK_FILE, STATUSLINE_BRIDGE_FILE, ...MOD_FILES] };
 }

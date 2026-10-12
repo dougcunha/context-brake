@@ -43,3 +43,16 @@ describe('assistant questions: applicability and exclusion (prd-16 FR-02, FR-05,
     expect(result?.facts.excluded).toEqual(excluded);
   });
 });
+
+describe('assistant questions: context source (DEC-09, TC-15)', () => {
+  it('skips the bridge question and names the mod when the install will use the mod', async () => {
+    const { result, asked } = await runScripted(['', '/sdd-snapshot', '', '/sdd-orchestrate-flow', 'y', '3', ''], { ...BOTH, contextSource: 'mod' });
+    expect(asked.some((question) => question.includes('status line bridge'))).toBe(false);
+    expect(result?.flags.filter((flag) => flag.includes('statusline-bridge'))).toEqual([]);
+    expect(result?.facts).toMatchObject({ contextSource: 'mod', statuslineBridge: null });
+  });
+  it('names no source when Claude Code is not selected', async () => {
+    const { result } = await runScripted(['', '', ''], { detected: ['opencode'], contextSource: 'mod' });
+    expect(result?.facts.contextSource).toBeNull();
+  });
+});

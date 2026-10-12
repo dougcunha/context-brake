@@ -458,9 +458,18 @@
             "inactive"
           ]
         },
+        "mod": {
+          "type": "string",
+          "enum": [
+            "absent",
+            "installed",
+            "reporting"
+          ]
+        },
         "source": {
           "type": "string",
           "enum": [
+            "mod",
             "statusline",
             "contextWindowCeiling"
           ]
@@ -480,6 +489,7 @@
       },
       "required": [
         "bridge",
+        "mod",
         "source",
         "lastWindowTokens"
       ],

@@ -9,6 +9,7 @@ import { ClaudeAdapter } from '../../src/infrastructure/harnesses/claude-code/ad
 import { CursorAdapter } from '../../src/infrastructure/harnesses/cursor/adapter.js';
 import { NodeChangeApplier } from '../../src/infrastructure/storage/change-applier.js';
 import { snapshotFiles } from '../../src/infrastructure/storage/node-file-system.js';
+import { fakeProcessRunner } from '../helpers/fake-process-runner.js';
 import { attemptLink, requireLink } from '../helpers/link-capability.js';
 
 type LinkedHarness = { readonly adapter: HarnessAdapter; readonly link: string; readonly target: string; readonly config: string; readonly assets: readonly string[]; readonly original: string; readonly userEntry: string };
@@ -18,7 +19,7 @@ const CURSOR: LinkedHarness = { adapter: new CursorAdapter(), link: '.cursor', t
 
 async function planAgainstSnapshots(root: string, harness: LinkedHarness): Promise<ChangePlan> {
   const configPath = `${harness.link}/${harness.config}`;
-  const plan = await harness.adapter.planInstall({ projectRoot: root });
+  const plan = await harness.adapter.planInstall({ projectRoot: root, runner: fakeProcessRunner });
   const snapshots = await snapshotFiles(root, [configPath, ...harness.assets.map((asset) => `${harness.link}/${asset}`)]);
   expect(plan.changes.find((c) => c.path === configPath)?.realPath).toBe(snapshots.find((s) => s.path === configPath)?.realPath);
   return createChangePlan({ projectRoot: root, plannedChanges: plan.changes, snapshots });

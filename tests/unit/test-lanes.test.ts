@@ -54,6 +54,7 @@ const ALLOWED_PROCESS_FILES = [
   'tests/integration/cli-shells.test.ts',
   'tests/integration/codex-hook-command-shells.test.ts',
   'tests/integration/codex-hook-root.test.ts',
+  'tests/integration/mod-reading-git-status.test.ts',
   'tests/integration/node-process-runner.test.ts',
   'tests/integration/package-assets.test.ts',
   'tests/integration/package-contents.test.ts',

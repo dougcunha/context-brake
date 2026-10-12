@@ -12,6 +12,7 @@ function restartLines(facts: AssistantFacts): string[] {
 }
 
 function bridgeLine(facts: AssistantFacts): string {
+  if (facts.contextSource === 'mod') return 'Context source: mod (your status line is left alone)';
   if (facts.statuslineBridge === null) return 'Status line bridge: not applicable (Claude Code not selected)';
   return `Status line bridge: ${facts.statuslineBridge ? 'yes' : 'no'}`;
 }

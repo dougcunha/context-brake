@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import { RUNTIME_IGNORE_CONTENT } from '../../core/contracts/context-reading.js';
 import type { SessionKey } from '../../core/contracts/runtime.js';
 import { RUNTIME_STATE_RELATIVE_DIR } from '../storage/runtime-state-files.js';
 
-export const RUNTIME_GITIGNORE_CONTENT = '*\n';
+export const RUNTIME_GITIGNORE_CONTENT = RUNTIME_IGNORE_CONTENT;
 export const SESSIONS_DIR_NAME = 'sessions';
 export const LEDGER_FILE_EXTENSION = '.jsonl';
 export const SESSIONS_RELATIVE_PREFIX = `${RUNTIME_STATE_RELATIVE_DIR}/${SESSIONS_DIR_NAME}/`;

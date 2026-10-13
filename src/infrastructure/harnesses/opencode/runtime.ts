@@ -1,4 +1,5 @@
 import type { RuntimeDescriptor, RuntimeEvent, SessionKey } from '../../../core/contracts/runtime.js';
+import { OPENCODE_SKILL_INVOCATION } from './skill-invocation.js';
 import { createRuntimeResolver, runInProcessEvent, type InProcessRuntimeResolver } from '../common/in-process-support.js';
 import { asRecord, parsePayload, textValue } from '../common/runtime-support.js';
 import { OPENCODE_CAPABILITIES } from './capabilities.js';
@@ -11,7 +12,7 @@ const HARNESS = 'opencode';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 const FALLBACK_SESSION_ID = 'project';
 
-export const openCodeDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: OPENCODE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null };
+export const openCodeDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: OPENCODE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null, skillInvocation: OPENCODE_SKILL_INVOCATION };
 
 export type OpenCodePluginHooks = {
   readonly 'tool.execute.after'?: (input: unknown, output: unknown) => Promise<void>;

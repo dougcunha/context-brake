@@ -1,0 +1,47 @@
+### npm run lint
+
+> context-brake@1.0.0 lint
+> eslint .
+
+npm notice
+npm notice New major version of npm available! 11.19.0 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+exit=0
+### npm run typecheck
+
+> context-brake@1.0.0 typecheck
+> tsc -p tsconfig.check.json --noEmit
+
+exit=0
+### npm run schemas:check
+
+> context-brake@1.0.0 schemas:check
+> tsx scripts/check-schemas.ts
+
+exit=0
+### npm run dependencies:check
+
+> context-brake@1.0.0 dependencies:check
+> tsx scripts/check-install-scripts.ts
+
+Checked 9 runtime dependency package(s); no install scripts found.
+exit=0
+### npm test
+
+...(per-file vitest lines omitted)...
+ ✓ |serial| tests/integration/node-process-runner.test.ts (8 tests) 2913ms
+   ✓ Node executable discovery and tree termination (IT-13, CA-16) > returns a timed-out probe and stops descendants when the parent times out  2058ms
+
+ Test Files  268 passed (268)
+      Tests  1397 passed | 1 skipped (1398)
+   Start at  13:29:45
+   Duration  138.81s (transform 22.00s, setup 0ms, collect 208.13s, tests 382.99s, environment 114ms, prepare 63.92s)
+
+
+real	2m20.998s
+user	0m0.183s
+sys	0m0.571s
+exit=0
+DONE

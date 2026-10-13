@@ -1,4 +1,5 @@
 import { access, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -9,7 +10,7 @@ import { runProcessHook, type ProcessHarnessAdapter } from '../../src/infrastruc
 import { NodeHandoffStore } from '../../src/infrastructure/storage/node-handoff-store.js';
 
 const KEY: SessionKey = { harness: 'codex-cli', sessionId: 'host-deadline', agentId: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'codex-cli', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/new' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'codex-cli', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/new', skillInvocation: slashInvocation };
 const HANDOFF_CONFIG = { ...DEFAULT_CONFIG, autoRestart: { maxConsecutiveRestarts: 2 } };
 const START: RuntimeEvent = { kind: 'session_reset', session: KEY, reason: 'new' };
 const DEADLINE_MS = 40;

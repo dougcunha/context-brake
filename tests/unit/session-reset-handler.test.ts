@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../../src/core/contracts/configuration.js';
 import type { HandoffStore } from '../../src/core/contracts/handoff.js';
 import type { HarnessId } from '../../src/core/contracts/harness.js';
@@ -9,9 +10,9 @@ import { handleSessionReset } from '../../src/core/services/session-reset-handle
 
 const KEY: SessionKey = { harness: 'codex-cli', sessionId: 'session-1', agentId: null };
 const ARCHIVED = '.context-brake/handoffs/20261007T120000.000Z.md';
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'codex-cli', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/new' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'codex-cli', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/new', skillInvocation: slashInvocation };
 const HANDOFF_CONFIG: ContextBrakeConfig = { ...DEFAULT_CONFIG, autoRestart: { maxConsecutiveRestarts: 2 } };
-const SNAPSHOT_CONFIG: ContextBrakeConfig = { ...HANDOFF_CONFIG, snapshot: { triggerZone: 'RED', command: '/sdd-snapshot', resumeCommand: '/sdd-orchestrate-flow' } };
+const SNAPSHOT_CONFIG: ContextBrakeConfig = { ...HANDOFF_CONFIG, snapshot: { triggerZone: 'RED', command: 'sdd-snapshot', resumeCommand: 'sdd-orchestrate-flow' } };
 const RESUME = `[ContextBrake resume v1] Read "${ARCHIVED}" and continue the previous work from it.`;
 const RUN_RESUME = { kind: 'context', block: '[ContextBrake resume v1] Run "/sdd-orchestrate-flow" before continuing.' };
 

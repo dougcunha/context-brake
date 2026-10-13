@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import type { HookPhase } from '../../src/core/contracts/hook-phase.js';
 import type { RuntimeDescriptor, SessionKey } from '../../src/core/contracts/runtime.js';
@@ -8,7 +9,7 @@ import { handleSessionReset } from '../../src/core/services/session-reset-handle
 import { deadlineFor, deadlineTiming, HookDeadline } from '../../src/infrastructure/runtime/hook-deadline.js';
 
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'phase-session', agentId: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 const LIMITS = { event: 1500, sessionStart: 5000 };
 
 function sleep(milliseconds: number): Promise<void> {

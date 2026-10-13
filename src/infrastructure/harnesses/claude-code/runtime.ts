@@ -1,4 +1,5 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
+import { CLAUDE_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeErrorLog } from '../../../core/contracts/session-ledger.js';
 import type { MeasuredUsage, RuntimeInput } from '../../../core/services/brake-engine.js';
 import { failureDetail, recordRuntimeFailure } from '../../../core/services/failure-policy.js';
@@ -15,7 +16,7 @@ const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 const WRITE_TOOLS = ['Write', 'Edit', 'MultiEdit', 'NotebookEdit'];
 const SKILL_TOOL = 'Skill';
 
-export const claudeDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CLAUDE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/clear' };
+export const claudeDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CLAUDE_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/clear', skillInvocation: CLAUDE_SKILL_INVOCATION };
 
 function sessionOf(payload: ClaudePayload): SessionKey {
   return { harness: HARNESS, sessionId: requireIdentifier(payload.session_id), agentId: payload.agent_id ?? null };

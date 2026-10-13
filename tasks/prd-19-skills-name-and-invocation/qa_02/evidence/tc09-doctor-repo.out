@@ -1,0 +1,26 @@
+[WARN] ContextBrake doctor: warnings
+  - claude-code: installed (support: full, overhead: 138.5ms/100ms (fail))
+    * context_usage: Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the mod that init installs on Claude Code 2.1.287 or later, or from the status line bridge on older versions; without either, it falls back to contextWindowCeiling.
+    * auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+    * post_tool_telemetry: The minimum harness version is unverified, so version compatibility cannot be claimed.
+  - context window: statusline (mod: installed, bridge: installed, last window: 1000000)
+  - snapshot: sdd-snapshot at RED, resume: sdd-orchestrate-flow
+    - claude-code: /sdd-snapshot, resume: /sdd-orchestrate-flow
+  - debug mode: on
+  - active sessions:
+    * claude-code 1c9f61ff-302e-4770-876a-34a7f856705f: 20% (207007/1000000, GREEN, measured), last activity 0 min ago
+    * claude-code 1c9f61ff-302e-4770-876a-34a7f856705f: 47% (60839/128000, GREEN, estimated), last activity 1 min ago
+    * claude-code 1c9f61ff-302e-4770-876a-34a7f856705f: 49% (63359/128000, GREEN, estimated), last activity 11 min ago
+    * claude-code 1c9f61ff-302e-4770-876a-34a7f856705f: 68% (87606/128000, RED, estimated), last activity 21 min ago
+  [WARN] ASSET_OUTDATED: The runtime asset .claude/hooks/context-brake.mjs was installed by ContextBrake 1.0.0 and differs from the asset in the running 1.0.0.
+    Remediation: Run context-brake init --yes.
+  [WARN] ASSET_OUTDATED: The runtime asset .context-brake/claude-mod/context-brake-restart/hooks/register.mjs was installed by ContextBrake 1.0.0 and differs from the asset in the running 1.0.0.
+    Remediation: Run context-brake init --yes.
+  [WARN] STATUSLINE_PREVIOUS_CHANGED: The project or user status line changed after the bridge was installed.
+    Impact: The bridge still runs the status line command recorded at install.
+    Remediation: Run context-brake init --no-statusline-bridge, then context-brake init --statusline-bridge.
+  [WARN] VERSION_FLOOR_UNVERIFIED: The minimum verified version for claude-code is unknown, so version compatibility cannot be verified.
+    Impact: ContextBrake cannot guarantee that the detected claude-code version supports the registered integration mechanisms.
+    Remediation: Confirm the installed harness version and update ContextBrake once the adapter documents a verified minimum version.
+  [OK] AUTO_RESTART_READY: Automatic restart is on and Claude Code loaded the mod.
+  [OK] AUTO_RESTART_HANDOFF: Restart carries the work forward through the snapshot command "sdd-snapshot". No handoff is pending.

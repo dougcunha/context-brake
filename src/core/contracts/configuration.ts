@@ -1,6 +1,7 @@
 import { z } from 'zod/mini';
 import { autoRestartSchema } from './auto-restart.js';
 import { HARNESS_IDS } from './harness.js';
+import { skillNameSchema } from './skill-name.js';
 import { SNAPSHOT_TRIGGER_ZONES } from './zones.js';
 
 export const INJECTION_MODES = ['threshold_only', 'always'] as const;
@@ -17,15 +18,8 @@ function uniqueCheck<T>(message: string): (ctx: z.core.ParsePayload<T[]>) => voi
   return (ctx) => { if (!isUnique(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message }); };
 }
 
-export const MAX_AGENT_COMMAND_LENGTH = 200;
-const TRIMMED_RULE = 'must not have leading or trailing whitespace';
 const RESUME_REQUIRES_COMMAND_RULE = 'requires snapshot.command';
-const SINGLE_LINE_RULE = 'must be a single line';
-const agentCommand = z.string().check(z.minLength(1), z.maxLength(MAX_AGENT_COMMAND_LENGTH), (ctx) => {
-  if (ctx.value.trim() !== ctx.value) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: TRIMMED_RULE });
-  if (/[\r\n]/.test(ctx.value)) addIssue(ctx, { code: 'custom', path: [], input: ctx.value, message: SINGLE_LINE_RULE });
-});
-export const snapshotSchema = z.strictObject({ triggerZone: z._default(z.enum(SNAPSHOT_TRIGGER_ZONES), 'RED'), command: z.optional(agentCommand), resumeCommand: z.optional(agentCommand) }).check((ctx) => {
+export const snapshotSchema = z.strictObject({ triggerZone: z._default(z.enum(SNAPSHOT_TRIGGER_ZONES), 'RED'), command: z.optional(skillNameSchema), resumeCommand: z.optional(skillNameSchema) }).check((ctx) => {
   if (ctx.value.resumeCommand !== undefined && ctx.value.command === undefined) addIssue(ctx, { code: 'custom', path: ['resumeCommand'], input: ctx.value.resumeCommand, message: RESUME_REQUIRES_COMMAND_RULE });
 });
 export type SnapshotConfig = z.infer<typeof snapshotSchema>;

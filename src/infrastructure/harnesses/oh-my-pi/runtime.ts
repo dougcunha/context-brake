@@ -1,4 +1,5 @@
 import type { RuntimeDescriptor, RuntimeEvent, SessionKey } from '../../../core/contracts/runtime.js';
+import { OMP_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { createRuntimeResolver, measuredUsageFrom, runInProcessEvent, type InProcessRuntimeResolver, type MeasuredUsageInput } from '../common/in-process-support.js';
 import { requireIdentifier, textValue } from '../common/runtime-support.js';
@@ -10,7 +11,7 @@ export { mapOmpEvent, mapOmpInput, renderOmpToolResult } from './events.js';
 const HARNESS = 'oh-my-pi';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 
-export const ompDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: OMP_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/new' };
+export const ompDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: OMP_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/new', skillInvocation: OMP_SKILL_INVOCATION };
 
 export type OmpContext = {
   readonly cwd?: string | undefined;

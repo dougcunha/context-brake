@@ -3,7 +3,7 @@ import { PROTOCOL_PATH, readConfig, removeProject, USER_CLAUDE } from '../helper
 import { changedPaths, createLightProject, jsonReport, PLAIN_INIT, runCli, snapshotTree, USER_AGENTS } from '../helpers/light-world.js';
 
 const OWNED_PATHS = ['.claude/hooks/context-brake-statusline.mjs', '.claude/hooks/context-brake.mjs', '.claude/settings.json', '.claude/settings.local.json', '.context-brake/manifest.json', '.context-brake/runtime/claude-statusline.json', 'context-brake.config.json'];
-const COMMANDS = ['--snapshot-command', '/sdd-snapshot', '--resume-command', '/sdd-resume'];
+const COMMANDS = ['--snapshot-command', 'sdd-snapshot', '--resume-command', 'sdd-resume'];
 const CLEAR_CONFLICT = '--no-snapshot-command cannot be combined';
 let root: string;
 beforeEach(async () => { root = await createLightProject('cb-init-snapshot-'); });
@@ -26,16 +26,18 @@ describe('init on a fresh repository (prd-12 FR-04, FR-08)', () => {
 describe('snapshot flags (prd-12 FR-04, TC-05)', () => {
   it('writes both commands, moves the trigger zone alone keeping them, and clears them keeping the trigger zone', async () => {
     expect((await runCli(root, [...PLAIN_INIT, ...COMMANDS])).code).toBe(0);
-    expect((await readConfig(root))['snapshot']).toEqual({ triggerZone: 'RED', command: '/sdd-snapshot', resumeCommand: '/sdd-resume' });
+    expect((await readConfig(root))['snapshot']).toEqual({ triggerZone: 'RED', command: 'sdd-snapshot', resumeCommand: 'sdd-resume' });
     expect((await runCli(root, [...PLAIN_INIT, '--snapshot-trigger', 'YELLOW'])).code).toBe(0);
-    expect((await readConfig(root))['snapshot']).toEqual({ triggerZone: 'YELLOW', command: '/sdd-snapshot', resumeCommand: '/sdd-resume' });
+    expect((await readConfig(root))['snapshot']).toEqual({ triggerZone: 'YELLOW', command: 'sdd-snapshot', resumeCommand: 'sdd-resume' });
     expect((await runCli(root, [...PLAIN_INIT, '--no-snapshot-command'])).code).toBe(0);
     expect((await readConfig(root))['snapshot']).toEqual({ triggerZone: 'YELLOW' });
   });
   it.each([
-    [['--no-snapshot-command', '--snapshot-command', '/x'], CLEAR_CONFLICT],
-    [['--no-snapshot-command', '--resume-command', '/y'], CLEAR_CONFLICT],
-    [['--resume-command', '/resume'], 'snapshot.resumeCommand requires snapshot.command'],
+    [['--no-snapshot-command', '--snapshot-command', 'x'], CLEAR_CONFLICT],
+    [['--no-snapshot-command', '--resume-command', 'y'], CLEAR_CONFLICT],
+    [['--resume-command', 'resume'], 'snapshot.resumeCommand requires snapshot.command'],
+    [['--snapshot-command', '/sdd-snapshot'], 'use the bare name sdd-snapshot. Set it with --snapshot-command <skill> or in context-brake.config.json.'],
+    [['--snapshot-command', 'sdd-snapshot', '--resume-command', '$resume'], 'use the bare name resume. Set it with --resume-command <skill> or in context-brake.config.json.'],
   ])('rejects %j with exit 64 and writes nothing', async (flags, message) => {
     const before = await snapshotTree(root);
     const run = await runCli(root, [...PLAIN_INIT, ...flags]);

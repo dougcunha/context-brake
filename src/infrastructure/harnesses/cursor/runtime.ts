@@ -1,4 +1,5 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
+import { CURSOR_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { asRecord, assetProjectRoot, characterLength, parsePayload, projectRootFromEnvironment, requireIdentifier, textValue } from '../common/runtime-support.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../runtime/process-hook-host.js';
@@ -8,7 +9,7 @@ import { cursorPayloadSchema, type CursorPayload } from './schemas.js';
 const HARNESS = 'cursor';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 
-export const cursorDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CURSOR_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null };
+export const cursorDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CURSOR_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null, skillInvocation: CURSOR_SKILL_INVOCATION };
 
 function sessionOf(payload: CursorPayload): SessionKey {
   const sessionId = payload.session_id ?? payload.conversation_id;

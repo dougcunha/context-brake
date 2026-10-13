@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import type { RuntimeDescriptor, SessionKey } from '../../src/core/contracts/runtime.js';
 import type { LedgerLine, SessionLedger, ToolLine } from '../../src/core/contracts/session-ledger.js';
@@ -10,7 +11,7 @@ import { zoneAction } from '../../src/core/services/zone-guidance.js';
 
 const AT = '2026-09-23T12:00:00.000Z';
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 const SETTINGS = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG };
 const TURN_LIMITS = { ...DEFAULT_CONFIG, telemetry: { ...DEFAULT_CONFIG.telemetry, zones: { ...DEFAULT_CONFIG.telemetry.zones, greenMaxTurn: 59, yellowMaxTurn: 99 } } };
 function ACTION_FOR(zone: Parameters<typeof zoneAction>[0]): string {

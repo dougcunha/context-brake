@@ -1,4 +1,5 @@
 import type { CapabilityDefinition, HarnessId } from './harness.js';
+import type { SkillInvocationFormat } from './skill-invocation.js';
 
 export type SessionKey = {
   readonly harness: HarnessId;
@@ -37,4 +38,5 @@ export type RuntimeDescriptor = {
   readonly capabilities: readonly CapabilityDefinition[];
   readonly estimation: EstimationConstants;
   readonly newSessionCommand: string | null;
+  readonly skillInvocation: SkillInvocationFormat;
 };

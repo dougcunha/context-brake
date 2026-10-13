@@ -1,6 +1,8 @@
 import type { HarnessAdapter } from '../../core/contracts/adapter.js';
 import type { ContextBrakeConfig } from '../../core/contracts/configuration.js';
 import type { HarnessDetection, HarnessId } from '../../core/contracts/harness.js';
+import type { SkillCatalogReader } from '../../core/contracts/skill-catalog.js';
+import type { SkillInvocationResolver } from '../../core/contracts/skill-invocation.js';
 import type { ContextSource } from '../../infrastructure/harnesses/claude-code/context-source.js';
 import type { HarnessRestartMode } from '../../core/services/restart-install-extras.js';
 
@@ -11,8 +13,12 @@ export type AssistantContext = {
   readonly hasStatuslineOptOut: boolean;
   readonly contextSource: ContextSource;
   readonly insideGit: boolean;
+  readonly invocations: SkillInvocationResolver;
+  readonly projectRoot: string;
+  readonly catalog: SkillCatalogReader;
 };
 
+export type HarnessInvocationFact = { readonly harness: HarnessId; readonly command: string; readonly resumeCommand: string | null };
 export type HarnessRestartFact = { readonly harness: HarnessId; readonly mode: HarnessRestartMode };
 export type AssistantFacts = {
   readonly selected: readonly HarnessId[];
@@ -20,6 +26,7 @@ export type AssistantFacts = {
   readonly snapshotCommand: string | null;
   readonly triggerZone: string;
   readonly resumeCommand: string | null;
+  readonly invocations: readonly HarnessInvocationFact[];
   readonly restartOn: boolean;
   readonly restartLimit: number | null;
   readonly restartModes: readonly HarnessRestartFact[];

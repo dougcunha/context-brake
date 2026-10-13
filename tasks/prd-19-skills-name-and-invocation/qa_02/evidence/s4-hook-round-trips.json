@@ -1,0 +1,250 @@
+[
+  {
+    "harness": "claude-code",
+    "initCmd": "context-brake init --yes --harness claude-code --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow",
+    "initCode": 0,
+    "attempts": [
+      {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "zone": "RED",
+        "stderr": ""
+      },
+      {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      }
+    ],
+    "found": {
+      "RED": {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=RED action=run '/sdd-snapshot', then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[ContextBrake v3] turn=1 usage=73% tokens=17689/24000 source=estimated window=config zone=RED action=run \\\"/sdd-snapshot\\\", then end reply with [REQUEST_SESSION_RESET]\"}}",
+        "stderr": ""
+      },
+      "CRITICAL": {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=CRITICAL action=run '/sdd-snapshot' now, then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[ContextBrake v3] turn=1 usage=94% tokens=22689/24000 source=estimated window=config zone=CRITICAL action=run \\\"/sdd-snapshot\\\" now, then end reply with [REQUEST_SESSION_RESET]\"}}",
+        "stderr": ""
+      }
+    },
+    "resume": {
+      "code": 0,
+      "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"[ContextBrake resume v1] Run \\\"/sdd-orchestrate-flow\\\" before continuing.\"}}",
+      "stderr": ""
+    }
+  },
+  {
+    "harness": "codex-cli",
+    "initCmd": "context-brake init --yes --harness codex-cli --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow",
+    "initCode": 0,
+    "attempts": [
+      {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "zone": "RED",
+        "stderr": ""
+      },
+      {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      }
+    ],
+    "found": {
+      "RED": {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=RED action=run '$sdd-snapshot', then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[ContextBrake v3] turn=1 usage=73% tokens=17660/24000 source=estimated window=config zone=RED action=run \\\"$sdd-snapshot\\\", then end reply with [REQUEST_SESSION_RESET]\"}}",
+        "stderr": ""
+      },
+      "CRITICAL": {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=CRITICAL action=run '$sdd-snapshot' now, then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":\"[ContextBrake v3] turn=1 usage=94% tokens=22660/24000 source=estimated window=config zone=CRITICAL action=run \\\"$sdd-snapshot\\\" now, then end reply with [REQUEST_SESSION_RESET]\"}}",
+        "stderr": ""
+      }
+    },
+    "resume": {
+      "code": 0,
+      "stdout": "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"[ContextBrake resume v1] Run \\\"$sdd-orchestrate-flow\\\" before continuing.\"}}",
+      "stderr": ""
+    }
+  },
+  {
+    "harness": "cursor",
+    "initCmd": "context-brake init --yes --harness cursor --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow",
+    "initCode": 0,
+    "attempts": [
+      {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "zone": "RED",
+        "stderr": ""
+      },
+      {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      }
+    ],
+    "found": {
+      "RED": {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=RED action=run '/sdd-snapshot', then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"additional_context\":\"[ContextBrake v3] turn=1 usage=73% tokens=17656/24000 source=estimated window=declared zone=RED action=run \\\"/sdd-snapshot\\\", then end reply with [REQUEST_SESSION_RESET]\"}",
+        "stderr": ""
+      },
+      "CRITICAL": {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=CRITICAL action=run '/sdd-snapshot' now, then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"additional_context\":\"[ContextBrake v3] turn=1 usage=94% tokens=22656/24000 source=estimated window=declared zone=CRITICAL action=run \\\"/sdd-snapshot\\\" now, then end reply with [REQUEST_SESSION_RESET]\"}",
+        "stderr": ""
+      }
+    },
+    "resume": {
+      "code": 0,
+      "stdout": "{\"additional_context\":\"[ContextBrake resume v1] Run \\\"/sdd-orchestrate-flow\\\" before continuing.\"}",
+      "stderr": ""
+    }
+  },
+  {
+    "harness": "github-copilot-cli",
+    "initCmd": "context-brake init --yes --harness github-copilot-cli --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow",
+    "initCode": 0,
+    "attempts": [
+      {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "zone": "RED",
+        "stderr": ""
+      },
+      {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      }
+    ],
+    "found": {
+      "RED": {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=RED action=run '/sdd-snapshot', then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"additionalContext\":\"[ContextBrake v3] turn=1 usage=73% tokens=17668/24000 source=estimated window=declared zone=RED action=run \\\"/sdd-snapshot\\\", then end reply with [REQUEST_SESSION_RESET]\"}",
+        "stderr": ""
+      },
+      "CRITICAL": {
+        "pad": 30000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=CRITICAL action=run '/sdd-snapshot' now, then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"additionalContext\":\"[ContextBrake v3] turn=1 usage=94% tokens=22668/24000 source=estimated window=declared zone=CRITICAL action=run \\\"/sdd-snapshot\\\" now, then end reply with [REQUEST_SESSION_RESET]\"}",
+        "stderr": ""
+      }
+    },
+    "resume": {
+      "code": 0,
+      "stdout": "{\"additionalContext\":\"[ContextBrake resume v1] Run \\\"/sdd-orchestrate-flow\\\" before continuing.\"}",
+      "stderr": ""
+    }
+  },
+  {
+    "harness": "antigravity-cli",
+    "initCmd": "context-brake init --yes --harness antigravity-cli --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow",
+    "initCode": 0,
+    "attempts": [
+      {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "zone": "RED",
+        "stderr": ""
+      },
+      {
+        "pad": 10000,
+        "call": 2,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      },
+      {
+        "pad": 10000,
+        "call": 3,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      },
+      {
+        "pad": 10000,
+        "call": 4,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      },
+      {
+        "pad": 10000,
+        "call": 5,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      },
+      {
+        "pad": 10000,
+        "call": 6,
+        "code": 0,
+        "zone": "CRITICAL",
+        "stderr": ""
+      }
+    ],
+    "found": {
+      "RED": {
+        "pad": 10000,
+        "call": 1,
+        "code": 0,
+        "action": "zone=RED action=run 'use the sdd-snapshot skill', then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"injectSteps\":[{\"ephemeralMessage\":\"[ContextBrake v3] turn=1 usage=73% tokens=17655/24000 source=estimated window=declared zone=RED action=run \\\"use the sdd-snapshot skill\\\", then end reply with [REQUEST_SESSION_RESET]\"}]}",
+        "stderr": ""
+      },
+      "CRITICAL": {
+        "pad": 10000,
+        "call": 2,
+        "code": 0,
+        "action": "zone=CRITICAL action=run 'use the sdd-snapshot skill' now, then end reply with [REQUEST_SESSION_RESET]",
+        "stdout": "{\"injectSteps\":[{\"ephemeralMessage\":\"[ContextBrake v3] turn=2 usage=84% tokens=20309/24000 source=estimated window=declared zone=CRITICAL action=run \\\"use the sdd-snapshot skill\\\" now, then end reply with [REQUEST_SESSION_RESET]\"}]}",
+        "stderr": ""
+      }
+    },
+    "resume": {
+      "code": 0,
+      "stdout": "{\"injectSteps\":[]}",
+      "stderr": ""
+    }
+  }
+]

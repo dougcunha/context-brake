@@ -4,7 +4,7 @@ import { runScripted } from '../helpers/assistant-context.js';
 
 const CONFIGURED: Partial<ContextBrakeConfig> = {
   activeHarnesses: ['claude-code'],
-  snapshot: { triggerZone: 'YELLOW', command: '/snap', resumeCommand: '/resume' },
+  snapshot: { triggerZone: 'YELLOW', command: 'snap', resumeCommand: 'resume' },
   autoRestart: { maxConsecutiveRestarts: 4 },
   debug: true,
 };
@@ -17,7 +17,7 @@ describe('assistant questions: defaults from the current configuration (prd-16 F
   it('emits nothing when every answer keeps the current value (FR-03, TC-06)', async () => {
     const { result } = await runScripted(['', '', '', '', '', '', '', ''], { config: CONFIGURED });
     expect(result?.flags).toEqual(['--harness', 'claude-code']);
-    expect(result?.facts).toMatchObject({ snapshotCommand: '/snap', triggerZone: 'YELLOW', restartOn: true, restartLimit: 4, debug: true });
+    expect(result?.facts).toMatchObject({ snapshotCommand: 'snap', triggerZone: 'YELLOW', restartOn: true, restartLimit: 4, debug: true });
   });
   it('clears the snapshot command and skips its trigger and resume questions (FR-02, TC-06)', async () => {
     const { result, asked } = await runScripted(['', 'none', 'n', '', ''], { config: CONFIGURED });
@@ -29,9 +29,9 @@ describe('assistant questions: defaults from the current configuration (prd-16 F
     expect(result?.flags).toEqual(['--harness', 'claude-code', '--max-restarts', '7', '--no-debug']);
   });
   it('uses the flag defaults on a first run without a configuration (FR-03, DEC-03, TC-06)', async () => {
-    const { asked, result } = await runScripted(['', '/s', 'YELLOW', '', '', '', 'y'], { config: null });
+    const { asked, result } = await runScripted(['', 's', 'YELLOW', '', '', '', 'y'], { config: null });
     expect(asked.slice(2).map(lastBracket)).toEqual(['RED', 'none', 'y/N', 'Y/n', 'y/N']);
-    expect(result?.flags).toEqual(['--harness', 'claude-code', '--snapshot-command', '/s', '--snapshot-trigger', 'YELLOW', '--debug']);
+    expect(result?.flags).toEqual(['--harness', 'claude-code', '--snapshot-command', 's', '--snapshot-trigger', 'YELLOW', '--debug']);
   });
   it('honors a previous status line opt-out in the bridge default (FR-03, TC-06)', async () => {
     const { asked, result } = await runScripted(['', '', 'n', 'y', ''], { config: { ...DEFAULT_CONFIG }, optOut: true });

@@ -28,4 +28,13 @@ describe('built CLI init smoke (prd-13 FR-04, DEC-03)', () => {
     expect((await runBuiltCli(['init', '--yes'], root)).code).toBe(0);
     expect(await readOwned()).toEqual(installed);
   });
+  it('rejects the old command format without writing and stores the bare skill names (prd-19 FR-02, FR-05, TC-13)', async () => {
+    const rejected = await runBuiltCli(['init', '--yes', '--snapshot-command', '/sdd-snapshot'], root);
+    expect(rejected.code).toBe(64);
+    await expect(readFile(join(root, 'context-brake.config.json'), 'utf8')).rejects.toThrow();
+    const accepted = await runBuiltCli(['init', '--yes', '--snapshot-command', 'sdd-snapshot', '--resume-command', 'sdd-orchestrate-flow'], root);
+    expect(accepted.code).toBe(0);
+    const config = JSON.parse(await readFile(join(root, 'context-brake.config.json'), 'utf8')) as { snapshot: unknown };
+    expect(config.snapshot).toEqual({ triggerZone: 'RED', command: 'sdd-snapshot', resumeCommand: 'sdd-orchestrate-flow' });
+  });
 });

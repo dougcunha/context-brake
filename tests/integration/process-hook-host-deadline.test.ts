@@ -1,4 +1,5 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -10,7 +11,7 @@ import { defaultProcessHookContext, runProcessHook, type ProcessHarnessAdapter, 
 import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths.js';
 
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-deadline', agentId: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [{ id: 'session_boot', state: 'supported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 const EVENT_LIMIT = 100;
 const SESSION_START_LIMIT = 500;
 const WITHIN_SESSION_START = 250;

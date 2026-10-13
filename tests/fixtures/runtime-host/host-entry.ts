@@ -1,4 +1,5 @@
 import type { CapabilityDefinition } from '../../../src/core/contracts/harness.js';
+import { slashInvocation } from '../../../src/core/services/skill-invocation.js';
 import type { RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../src/core/contracts/runtime.js';
 import type { RuntimeInput } from '../../../src/core/services/brake-engine.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../../src/infrastructure/runtime/process-hook-host.js';
@@ -8,7 +9,7 @@ const CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'session_boot', state: 'supported' },
   { id: 'context_usage', state: 'unsupported', impact: 'The fixture host estimates usage.' },
 ];
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: CAPABILITIES, estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: CAPABILITIES, estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 
 function field(payload: unknown, key: string): unknown {
   return typeof payload === 'object' && payload !== null ? (payload as Record<string, unknown>)[key] : undefined;

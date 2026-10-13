@@ -27,7 +27,7 @@ export async function handleSessionReset(options: SessionResetOptions, event: Ru
   if (!options.descriptor.capabilities.some((entry) => entry.id === 'session_boot' && entry.state === 'supported')) return NEUTRAL;
   if (event.reason === 'compact' && !COMPACTION_BOOT_HARNESSES.includes(options.descriptor.harness)) return NEUTRAL;
   hooks.onPhase?.('guidance');
-  const text = resumeText(options.config.snapshot) ?? await claimHandoff(options, event.reason, hooks.deadline);
+  const text = resumeText(options.config.snapshot, options.descriptor.skillInvocation) ?? await claimHandoff(options, event.reason, hooks.deadline);
   return text === null ? NEUTRAL : { kind: 'context', block: text };
 }
 

@@ -1,4 +1,5 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
+import { CODEX_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeErrorLog } from '../../../core/contracts/session-ledger.js';
 import type { MeasuredUsage, RuntimeInput } from '../../../core/services/brake-engine.js';
 import { failureDetail, recordRuntimeFailure } from '../../../core/services/failure-policy.js';
@@ -12,7 +13,7 @@ const HARNESS = 'codex-cli';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 const PATCH_PATH_PREFIXES = ['*** Add File: ', '*** Update File: ', '*** Delete File: ', '*** Move to: '];
 
-export const codexDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CODEX_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/new' };
+export const codexDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: CODEX_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/new', skillInvocation: CODEX_SKILL_INVOCATION };
 
 function sessionOf(payload: CodexPayload): SessionKey {
   return { harness: HARNESS, sessionId: requireIdentifier(payload.session_id), agentId: payload.agent_id ?? null };

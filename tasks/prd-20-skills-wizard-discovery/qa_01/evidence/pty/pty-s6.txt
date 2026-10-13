@@ -1,0 +1,169 @@
+mode=plain exit=3 answersSent=7
+----
+Harnesses to configure:
+  1) [x] claude-code (detected, full support)
+  2) [ ] codex-cli (full support)
+  3) [ ] cursor (full support)
+  4) [ ] github-copilot-cli (full support)
+  5) [ ] opencode (partial support)
+  6) [ ] pi (full support)
+  7) [ ] oh-my-pi (full support)
+  8) [ ] antigravity-cli (partial support)
+Numbers separated by spaces, Enter to keep the marked ones, or none:
+Snapshot skill:
+  1) sdd-snapshot (recommended) — found in .claude/skills
+  2) sdd-orchestrate-flow — found in .claude/skills
+  3) sdd-triage — found in .claude/skills
+  4) type another — enter a skill name
+  5) none — no snapshot skill
+Number or skill name (Enter keeps [sdd-snapshot]):
+Snapshot trigger YELLOW or RED [RED]:
+Resume skill:
+  1) sdd-orchestrate-flow (recommended) — found in .claude/skills
+  2) sdd-orchestrate-prds — found in .claude/skills
+  3) sdd-orchestrate-tasks — found in .claude/skills
+  4) herdr-orchestration — found in .claude/skills
+  5) type another — enter a skill name
+Number or skill name (Enter keeps [sdd-orchestrate-flow]):
+Restart behavior of the selected harnesses:
+  claude-code: automatic - Opt-in through init --auto-restart; needs Claude Code
+ 2.1.287 or later with mods enabled. Run doctor to check that the mod loads.
+The reset resumes through your snapshot command.
+Restart sessions automatically? [y/N]:
+Print context usage to the agent (debug mode)? [y/N]:
+Summary of your choices:
+
+┌─ Harnesses
+│  claude-code  enabled, restart: automatic
+└─
+
+┌─ Snapshot
+│  Command         sdd-snapshot
+│  Trigger zone    RED
+│  Resume          sdd-orchestrate-flow
+│  In claude-code  /sdd-snapshot, resume: /sdd-orchestrate-flow
+└─
+
+┌─ Options
+│  Restart         off
+│  Context source  mod (your status line is left alone)
+│  Debug mode      off
+│  Git ignore      not applicable (not a Git repository)
+└─
+
+Equivalent command: context-brake init --harness claude-code --snapshot-command
+sdd-snapshot --resume-command sdd-orchestrate-flow
+[OK] ContextBrake init (dry_run)
+
+┌─ Harnesses
+│  claude-code  full support (planned)
+│               context_usage: Read from the session transcript, whose format is
+│               undocumented; falls back to an estimate. The context window come
+s from the
+│               mod that init installs on Claude Code 2.1.287 or later, or from
+the status
+│               line bridge on older versions; without either, it falls back to
+│               contextWindowCeiling.
+│               auto_restart: Opt-in through init --auto-restart; needs Claude C
+ode 2.1.287
+│               or later with mods enabled. Run doctor to check that the mod loa
+ds.
+└─
+
+┌─ Planned changes
+│  create  .claude/hooks/context-brake.mjs (runtime_asset)
+│  update  .claude/settings.json (harness_entry)
+│  create  .claude/settings.local.json (harness_entry)
+│  create  .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_as
+set)
+│  create  .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin
+.json (runtime_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (run
+time_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (r
+untime_asset)
+│  create  .context-brake/manifest.json (manifest)
+│  update  .context-brake/runtime/claude-mod-install.json (harness_entry)
+│  create  context-brake.config.json (config)
+│          Configure ContextBrake active harnesses and zones; snapshot command
+│          sdd-snapshot at RED, resume command sdd-orchestrate-flow
+└─
+
+┌─ Findings
+│  [OK]  GITIGNORE_NO_GIT: This folder is not inside a Git working tree, so Cont
+extBrake did not write a .gitignore block.
+│        Remediation: Run git init, then init again, to keep the ContextBrake fi
+les
+│        out of Git.
+└─
+Apply ContextBrake installation plan? [y/N] y
+[OK] ContextBrake init (applied)
+
+┌─ Harnesses
+│  claude-code  full support (planned)
+│               context_usage: Read from the session transcript, whose format is
+│               undocumented; falls back to an estimate. The context window come
+s from the
+│               mod that init installs on Claude Code 2.1.287 or later, or from
+the status
+│               line bridge on older versions; without either, it falls back to
+│               contextWindowCeiling.
+│               auto_restart: Opt-in through init --auto-restart; needs Claude C
+ode 2.1.287
+│               or later with mods enabled. Run doctor to check that the mod loa
+ds.
+└─
+
+┌─ Planned changes
+│  create  .claude/hooks/context-brake.mjs (runtime_asset)
+│  update  .claude/settings.json (harness_entry)
+│  create  .claude/settings.local.json (harness_entry)
+│  create  .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_as
+set)
+│  create  .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin
+.json (runtime_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (run
+time_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (r
+untime_asset)
+│  create  .context-brake/manifest.json (manifest)
+│  update  .context-brake/runtime/claude-mod-install.json (harness_entry)
+│  create  context-brake.config.json (config)
+│          Configure ContextBrake active harnesses and zones; snapshot command
+│          sdd-snapshot at RED, resume command sdd-orchestrate-flow
+└─
+
+┌─ Findings
+│  [OK]  GITIGNORE_NO_GIT: This folder is not inside a Git working tree, so Cont
+extBrake did not write a .gitignore block.
+│        Remediation: Run git init, then init again, to keep the ContextBrake fi
+les
+│        out of Git.
+└─
+[stderr]Assertion failed: ASSERT_CONDITION("wp != nullptr && cols[stderr] > 0 && rows > 0"), file src/libwinpty/winpty.cc, line 924
+
+----
+context-brake.config.json:
+{
+  "$schema": "https://unpkg.com/context-brake@1/schemas/context-brake.config.schema.json",
+  "schemaVersion": 1,
+  "activeHarnesses": [
+    "claude-code"
+  ],
+  "telemetry": {
+    "injectionMode": "threshold_only",
+    "activationThresholdPercentage": 50,
+    "contextWindowCeiling": 128000,
+    "zones": {
+      "greenMaxPercentage": 49,
+      "yellowMaxPercentage": 65,
+      "criticalPercentage": 75
+    }
+  },
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": "sdd-snapshot",
+    "resumeCommand": "sdd-orchestrate-flow"
+  }
+}
+

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import type { RuntimeDescriptor } from '../../src/core/contracts/runtime.js';
 import type { LedgerLine } from '../../src/core/contracts/session-ledger.js';
@@ -9,7 +10,7 @@ import { readZone, type MeasuredUsage } from '../../src/core/services/session-zo
 const RESET_AT = '2026-09-25T12:00:00.000Z';
 const BEFORE = '2026-09-25T11:59:00.000Z';
 const AFTER = '2026-09-25T12:01:00.000Z';
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 const SETTINGS = { descriptor: DESCRIPTOR, config: DEFAULT_CONFIG };
 const RESET: LedgerLine = { v: 1, type: 'reset', at: RESET_AT, reason: 'compact' };
 

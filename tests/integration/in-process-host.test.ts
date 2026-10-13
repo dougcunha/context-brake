@@ -1,4 +1,5 @@
 import { mkdir, mkdtemp, readFile, rm, stat, utimes } from 'node:fs/promises';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -12,7 +13,7 @@ import { runtimeDirectory, sessionLedgerPath } from '../../src/infrastructure/ru
 const KEY: SessionKey = { harness: 'opencode', sessionId: 'session-1', agentId: null };
 const SUBAGENT: SessionKey = { ...KEY, agentId: 'sub-1' };
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'opencode', capabilities: [{ id: 'context_usage', state: 'unsupported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: null };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'opencode', capabilities: [{ id: 'context_usage', state: 'unsupported' }], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: null, skillInvocation: slashInvocation };
 const clock: Clock = { now: () => new Date('2026-09-15T12:00:00.000Z') };
 const BEYOND_RETENTION = new Date('2026-08-01T00:00:00.000Z');
 

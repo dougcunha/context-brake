@@ -68,6 +68,8 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Skills:** verificado em 24/09/2026. O modelo invoca skills pela ferramenta `Skill` ([Tools reference](https://code.claude.com/docs/en/tools-reference)), que aparece como `tool_name` nos hooks de ferramenta. Regras de permissão casam o nome da skill com `Skill(name)` e `Skill(name *)` ([Skills](https://code.claude.com/docs/en/skills)). O hooks reference não documenta o formato de `tool_input` da `Skill`. O schema da ferramenta exposto ao modelo na versão atual é `{ "skill": string, "args"?: string }`, e o adapter lê `tool_input.skill` como nome da skill (fixture `pre-tool-use-skill.json`). Sem esse campo, a chamada vira `skill` sem nome e é negada acima do teto. O modo de snapshot delegado (PRD-06, DEC-07) usa esse mapeamento para liberar a skill configurada.
 - **Versão mínima:** não documentada (14/09/2026). O hooks reference e o changelog público (code.claude.com/docs/en/changelog e o CHANGELOG.md em github.com/anthropics/claude-code) só registram versões para refinamentos incrementais (por exemplo, 2.1.191 para separadores em matchers), não a versão que introduziu `PreToolUse`/`PostToolUse`/`SessionStart` e `hookSpecificOutput.permissionDecision`.
 - **Entradas aposentadas (PRD-15):** `init` e `remove` apagam as entradas de hook do ContextBrake em eventos que o adaptador não registra mais, por exemplo `PreToolUse`; a entrada é reconhecida pelo caminho `.claude/hooks/context-brake.mjs` no comando e nos argumentos (o script do status line, `context-brake-statusline.mjs`, não casa). Entradas de terceiros, inclusive no mesmo evento, ficam intactas.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([Skills](https://code.claude.com/docs/en/skills)). Pastas: `.claude/skills/<nome>/SKILL.md` e `.claude/commands/<nome>.md` no projeto; `~/.claude/skills` no usuário (`$CLAUDE_CONFIG_DIR/skills` quando a variável existe); `<plugin>/skills` em plugins. O nome da skill é o da pasta. O usuário invoca com `/nome`; skills de plugin com `/plugin:nome`. O ContextBrake guarda só o nome e o adaptador monta `/nome`.
+- **Skills no projeto, catálogo do assistente (PRD-20):** reverificado em 13/10/2026 ([Skills](https://code.claude.com/docs/en/skills)). Arquivos em `.claude/commands/` também criam `/nome` (formato antigo, ainda aceito); o catálogo lê só `.claude/skills/<nome>/SKILL.md` e ignora `.claude/commands/` (lacuna). Skills aninhadas em `<subdir>/.claude/skills` e plugins não são lidas.
 
 ## Codex CLI
 
@@ -92,6 +94,7 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Modo não interativo:** reverificado em 24/09/2026. `codex exec --json -` lê o prompt do stdin (o sentinela `-`; sem argumento de prompt o stdin também vira o prompt) e emite JSON Lines `thread.started` (`thread_id`, igual ao `session_id` dos hooks), `turn.started`, `item.started`/`item.updated`/`item.completed` (`item.type` `agent_message` com `text`), `turn.completed` (`usage.input_tokens`, que inclui `cached_input_tokens`, e `output_tokens`, que inclui `reasoning_output_tokens`), `turn.failed` (`error.message`) e `error` (`message`). O sandbox padrão do `exec` é somente leitura. Códigos de saída não são documentados; o runner trata saída diferente de zero ou evento de falha como erro do harness. O launcher usa esses campos (`src/infrastructure/harnesses/codex-cli/session-stream.ts`, fixtures `exec-*.jsonl`). Fontes: [Non-interactive mode](https://learn.chatgpt.com/docs/non-interactive-mode) e [`exec_events.rs`](https://github.com/openai/codex/blob/main/codex-rs/exec/src/exec_events.rs).
 - **Versão mínima:** não documentada (14/09/2026). Nenhuma das fontes consultadas traz notas de versão ou changelog identificando quando os hooks foram introduzidos.
 - **Entradas aposentadas (PRD-15):** `init` e `remove` apagam as entradas de hook do ContextBrake em eventos que o adaptador não registra mais, por exemplo `PreToolUse`; a entrada é reconhecida pelo caminho `.codex/hooks/context-brake.mjs` em `command` ou `commandWindows`. Entradas de terceiros, inclusive no mesmo evento, ficam intactas.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([Build skills](https://learn.chatgpt.com/docs/build-skills)). Pastas: `.agents/skills` de cada diretório do diretório de trabalho até a raiz do repositório; `$HOME/.agents/skills` no usuário; `/etc/codex/skills` para administradores. Invocação: `$nome` ou o seletor `/skills`; a página não descreve um slash por skill. O adaptador monta `$nome`.
 
 ## Cursor
 
@@ -114,6 +117,7 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Versão mínima:** não documentada (14/09/2026). A página de hooks só cita `cursor_version` como exemplo ilustrativo de payload, não como requisito; não há changelog referenciado.
 - **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): `agent -p --output-format stream-json` existe, mas a documentação não diz se os hooks do projeto rodam nesse modo nem garante um schema de eventos com o identificador de sessão. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 - **Entradas aposentadas (PRD-15):** `init` e `remove` apagam as entradas de hook do ContextBrake em eventos que o adaptador não registra mais, por exemplo `PreToolUse`; a entrada é reconhecida pelo caminho `.cursor/hooks/context-brake.mjs` no `command`. Entradas de terceiros, inclusive no mesmo evento, ficam intactas.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([Agent Skills](https://cursor.com/docs/skills)). Pastas: `.cursor/skills` e `.agents/skills` no projeto, além de `.claude/skills` e `.codex/skills` por compatibilidade; `~/.cursor/skills` e `~/.agents/skills` no usuário. Invocação: `/nome` no chat do agente. A página não diz se a CLI da Cursor invoca skills do mesmo modo (lacuna; o adaptador assume `/nome`).
 
 ## GitHub Copilot CLI
 
@@ -132,6 +136,7 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Versão mínima:** não documentada (14/09/2026). Nenhuma das páginas cita changelog ou versão mínima da CLI para hooks.
 - **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): `copilot -p --output-format json` existe, mas a documentação não diz se os hooks do projeto rodam nesse modo nem garante um schema de eventos com o identificador de sessão. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 - **Entradas aposentadas (PRD-15):** `init` e `remove` apagam as entradas de hook do ContextBrake em eventos que o adaptador não registra mais, por exemplo `PreToolUse`; `init` reescreve o arquivo próprio `.github/hooks/context-brake.json` inteiro, sem eventos aposentados, e `remove` apaga o arquivo. Entradas de terceiros, inclusive no mesmo evento, ficam intactas.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([Add skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills)). Pastas: `.github/skills`, `.claude/skills` e `.agents/skills` no projeto; `~/.copilot/skills` e `~/.agents/skills` no usuário. Invocação: o nome precedido de barra no prompt (`/nome`). O adaptador monta `/nome`.
 
 ## OpenCode
 
@@ -150,6 +155,7 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Payloads reais:** sem captura; a CLI do OpenCode não foi exercitada nesta máquina (16/09/2026). Os fixtures seguem a documentação e a classificação de ferramentas de arquivo fica condicionada a um payload real (OI-05).
 - **Versão mínima:** não documentada (14/09/2026). As páginas de plugins e TUI não citam changelog nem versão mínima.
 - **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): `opencode run --format json` existe, mas a documentação não diz se os plugins do projeto rodam nesse modo nem garante um schema de eventos com o identificador de sessão. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([Skills](https://opencode.ai/docs/skills)). Pastas: `.opencode/skills`, `.claude/skills` e `.agents/skills` no projeto (a busca sobe até a raiz do worktree git); `~/.config/opencode/skills`, `~/.claude/skills` e `~/.agents/skills` no usuário. Não há forma slash por padrão: `/nome` só existe quando a skill declara a metadata `opencode/slash: "true"`; sem isso a skill é carregada pelo nome exato. O adaptador usa uma frase que cita a skill (`use the nome skill`).
 
 ## Pi
 
@@ -170,6 +176,8 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Payloads reais:** capturados no Pi 1.0.4 em 07/10/2026 (prd-14 T01, `probe/captures/pi.jsonl`); os fixtures de reinício em `tests/fixtures/harnesses/pi/` seguem essas capturas, e o carregamento do arquivo instalado foi verificado (OI-03 fechado).
 - **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
 - **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): o Pi documenta `-p` e `--mode json`, mas os modos não interativos ignoram recursos do projeto (como `.pi/extensions/`) sob o padrão `defaultProjectTrust: ask`, então a extensão do ContextBrake não carrega. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([Skills](https://pi.dev/docs/latest/skills)). Pastas: `.pi/skills` e `.agents/skills` (do diretório de trabalho até a raiz do repositório, com confiança do projeto) e, no usuário, `~/.pi/agent/skills` e `~/.agents/skills`. Invocação manual: `/skill:nome`, que funciona mesmo com `disable-model-invocation: true`. O adaptador monta `/skill:nome`.
+- **Skills no projeto, catálogo do assistente (PRD-20):** reverificado em 13/10/2026 ([Skills](https://pi.dev/docs/latest/skills)). A página documenta `.agents/skills/` no projeto (do diretório de trabalho até a raiz do repositório) e diz que os diretórios com `SKILL.md` são descobertos recursivamente; não escreve `.pi/skills`. O catálogo lê `.pi/skills` e `.agents/skills` na raiz do projeto, em um nível, sem subir para os ancestrais (lacuna).
 
 ## Oh-My-Pi
 
@@ -191,6 +199,8 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Payloads reais:** capturados no Oh-My-Pi 18.8.1 em 07/10/2026 (prd-14 T01, `probe/captures/omp.jsonl`); os fixtures de reinício em `tests/fixtures/harnesses/oh-my-pi/` seguem essas capturas, e o carregamento da extensão instalada foi verificado (OI-04 fechado).
 - **Versão mínima:** não documentada (14/09/2026). Nenhum changelog ou nota de versão foi localizado no repositório para os eventos `tool_call`/`tool_result`.
 - **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): nenhum modo não interativo documentado. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([skills](https://github.com/can1357/oh-my-pi/blob/main/docs/skills.md), [slash-command-internals](https://github.com/can1357/oh-my-pi/blob/main/docs/slash-command-internals.md)). Pastas: `.omp/skills`, `.github/skills`, `.agents/skills` e raízes de outras ferramentas no projeto; `~/.omp/agent/skills` no usuário. `/skill:<nome>` só existe com `skills.enableSkillCommands`, cujo padrão a documentação não informa; por isso o adaptador usa uma frase que cita a skill.
+- **Skills no projeto, catálogo do assistente (PRD-20):** reverificado em 13/10/2026 ([skills](https://github.com/can1357/oh-my-pi/blob/main/docs/skills.md)). A página cita `.github/skills` e `.agents/skills` (e `.agent/skills`); `.omp/skills` vem do provedor nativo e não aparece escrito. O catálogo lê `.omp/skills`, `.github/skills` e `.agents/skills`, e não lê `.agent/skills` nem as raízes de outras ferramentas (lacuna).
 
 ## Antigravity CLI
 
@@ -209,6 +219,7 @@ Registrado em 28/09/2026, a partir das verificações das seções de cada harne
 - **Versão mínima:** não documentada (14/09/2026). Nenhuma das fontes cita changelog ou versão mínima da CLI para os hooks registrados.
 - **Modo não interativo:** verificado em 23/09/2026 (TechSpec do PRD-04, DEC-02): nenhum modo não interativo documentado. `context-brake run` recusa este harness com `RUN_HARNESS_UNSUPPORTED`.
 - **Entradas aposentadas (PRD-15):** `init` e `remove` apagam as entradas de hook do ContextBrake em eventos que o adaptador não registra mais, por exemplo `PreToolUse`; remove toda chave `context-brake` em `hooks.<evento>` (e o objeto do evento, quando fica vazio). Entradas de terceiros, inclusive no mesmo evento, ficam intactas.
+- **Skills no projeto e invocação (PRD-19):** verificado em 13/10/2026 ([codelab](https://codelabs.developers.google.com/getting-started-with-antigravity-skills)). Pastas: `<projeto>/.agents/skills`; globais em `~/.gemini/config/skills` ou `~/.gemini/antigravity-cli/skills` (o codelab não concilia os dois caminhos; lacuna). As skills são acionadas pelo agente, sem sintaxe explícita documentada (`@` ou barra); `/skills` lista as instaladas. O adaptador usa uma frase que cita a skill.
 
 ## Fora do MVP
 

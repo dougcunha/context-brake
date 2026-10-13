@@ -5,7 +5,8 @@ import type { AssistantFacts } from '../../src/cli/assistant/types.js';
 import { createStyle } from '../../src/cli/output/style.js';
 
 const FACTS: AssistantFacts = {
-  selected: ['claude-code', 'codex-cli'], excluded: ['opencode'], snapshotCommand: '/sdd-snapshot', triggerZone: 'RED', resumeCommand: '/sdd-orchestrate-flow',
+  selected: ['claude-code', 'codex-cli'], excluded: ['opencode'], snapshotCommand: 'sdd-snapshot', triggerZone: 'RED', resumeCommand: 'sdd-orchestrate-flow',
+  invocations: [{ harness: 'claude-code', command: '/sdd-snapshot', resumeCommand: '/sdd-orchestrate-flow' }, { harness: 'codex-cli', command: '$sdd-snapshot', resumeCommand: '$sdd-orchestrate-flow' }],
   restartOn: true, restartLimit: 3, restartModes: [{ harness: 'claude-code', mode: 'automatic' }, { harness: 'codex-cli', mode: 'semi-automatic' }],
   statuslineBridge: true, contextSource: 'bridge', debug: false, gitIgnore: true,
 };
@@ -20,9 +21,11 @@ const CHOICES_SUMMARY = [
   '└─',
   '',
   '┌─ Snapshot',
-  '│  Command       /sdd-snapshot',
-  '│  Trigger zone  RED',
-  '│  Resume        /sdd-orchestrate-flow',
+  '│  Command         sdd-snapshot',
+  '│  Trigger zone    RED',
+  '│  Resume          sdd-orchestrate-flow',
+  '│  In claude-code  /sdd-snapshot, resume: /sdd-orchestrate-flow',
+  '│  In codex-cli    $sdd-snapshot, resume: $sdd-orchestrate-flow',
   '└─',
   '',
   '┌─ Options',
@@ -42,7 +45,7 @@ const NOT_APPLICABLE_OPTIONS = [
 ];
 const DECLINED_ROWS = [
   '│  none  no harness selected',
-  '│  Command       /sdd-snapshot',
+  '│  Command       sdd-snapshot',
   '│  Trigger zone  RED',
   '│  Resume        none',
   '│  Restart             on, at most the default number of consecutive restarts',
@@ -69,7 +72,7 @@ describe('assistant summary (prd-16 FR-06, NFR-01, NFR-02, TC-13)', () => {
     expect(lines.at(-1)).toBe('Equivalent command: context-brake init');
   });
   it('states declined choices, no harness, and the default restart limit in words (FR-06, TC-13)', () => {
-    const facts = { ...FACTS, selected: [], excluded: [], resumeCommand: null, restartLimit: null, restartModes: [], statuslineBridge: false, debug: true, gitIgnore: false };
+    const facts = { ...FACTS, selected: [], excluded: [], resumeCommand: null, invocations: [], restartLimit: null, restartModes: [], statuslineBridge: false, debug: true, gitIgnore: false };
     const lines = renderSummary(facts, ['context-brake init']);
     expect(lines.filter((line) => line.startsWith('│'))).toEqual(DECLINED_ROWS);
   });

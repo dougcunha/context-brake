@@ -1,6 +1,7 @@
 import type { ContextBrakeConfig } from '../contracts/configuration.js';
 import type { ContextWindowReport } from '../contracts/context-window-report.js';
 import type { DiagnosticFinding, DoctorReport, SnapshotReport } from '../contracts/diagnostics.js';
+import type { SkillInvocationResolver } from '../contracts/skill-invocation.js';
 import { isDebugModeInEffect } from './debug-mode-merge.js';
 import type { BuildDoctorReportInput } from './report-service.js';
 
@@ -9,18 +10,22 @@ export type DoctorExtrasInput = {
   readonly planPresent: boolean;
   readonly contextWindow: ContextWindowReport | undefined;
   readonly sessions: DoctorReport['activeSessions'];
+  readonly invocations?: SkillInvocationResolver | undefined;
 };
 
 export function doctorReportExtras(input: DoctorExtrasInput, findings: readonly DiagnosticFinding[]): Omit<BuildDoctorReportInput, 'detections' | 'integrations'> {
   return {
     findings: [...findings, ...modFindings(input.contextWindow), ...bridgeAbsentFindings(input.contextWindow)],
-    snapshot: snapshotReport(input.config), contextWindow: input.contextWindow, activeSessions: input.sessions,
+    snapshot: snapshotReport(input.config, input.invocations), contextWindow: input.contextWindow, activeSessions: input.sessions,
     debugMode: isDebugModeInEffect(input.config),
   };
 }
-function snapshotReport(config: ContextBrakeConfig | null): SnapshotReport | undefined {
+function snapshotReport(config: ContextBrakeConfig | null, resolve: SkillInvocationResolver | undefined): SnapshotReport | undefined {
   if (config === null) return undefined;
-  return { triggerZone: config.snapshot.triggerZone, command: config.snapshot.command ?? null, resumeCommand: config.snapshot.resumeCommand ?? null };
+  const { triggerZone, command, resumeCommand } = config.snapshot;
+  const report = { triggerZone, command: command ?? null, resumeCommand: resumeCommand ?? null };
+  if (command === undefined || resolve === undefined) return report;
+  return { ...report, invocations: config.activeHarnesses.map((harness) => ({ harness, command: resolve(harness)(command), resumeCommand: resumeCommand === undefined ? null : resolve(harness)(resumeCommand) })) };
 }
 function bridgeAbsentFindings(contextWindow: ContextWindowReport | undefined): DiagnosticFinding[] {
   if (contextWindow?.bridge !== 'absent' || contextWindow.mod !== 'absent') return [];

@@ -8,6 +8,7 @@ const BENCH_SUITES = [
   'e2e-09.test.ts',
   'overhead-measurer.test.ts',
   'runtime-overhead.test.ts',
+  'skill-catalog.test.ts',
   'statusline-overhead.test.ts',
   'statusline-previous-overhead.test.ts',
 ];

@@ -1,0 +1,15 @@
+# TC-11 / static checks
+## core importing infrastructure or cli (QA-03)
+hits=1(1=none)
+## harness ids in ranking/merge (QA-05)
+rc=1(1=none)
+## sync fs in the reader (QA-06)
+rc=1(1=none)
+## any / ts-ignore / eslint-disable (QA-01/02) over slice files
+rc=1(1=none)
+## empty catch (QA-04)
+rc=1(1=none)
+## files above 100 lines in slice (QA-08)
+done
+## ancestry: core never reads fs
+rc=1(1=none)

@@ -6,8 +6,8 @@ const NONE_WORD = 'none';
 export function commandSpec(current: string | undefined): PromptSpec {
   const shown = current ?? NONE_WORD;
   return {
-    line: `Snapshot command (Enter keeps [${shown}], type none for no command): `,
-    ui: { kind: 'text', message: 'Snapshot command the agent runs before a reset (type none for no command)', placeholder: `Enter keeps ${shown}` },
+    line: `Snapshot skill name (Enter keeps [${shown}], type none for no skill): `,
+    ui: { kind: 'text', message: 'Name of the skill the agent runs before a reset, without a leading slash (type none for no skill)', placeholder: `Enter keeps ${shown}` },
   };
 }
 
@@ -21,7 +21,7 @@ export function triggerSpec(currentZone: string): PromptSpec {
 export function resumeSpec(current: string | undefined): PromptSpec {
   const shown = current ?? NONE_WORD;
   return {
-    line: `Resume command (Enter keeps [${shown}]): `,
-    ui: { kind: 'text', message: 'Command that resumes the work in the new session', placeholder: `Enter keeps ${shown}` },
+    line: `Resume skill name (Enter keeps [${shown}]): `,
+    ui: { kind: 'text', message: 'Name of the skill that resumes the work in the new session', placeholder: `Enter keeps ${shown}` },
   };
 }

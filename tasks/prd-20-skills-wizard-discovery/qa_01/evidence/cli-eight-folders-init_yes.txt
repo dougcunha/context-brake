@@ -1,0 +1,68 @@
+$ context-brake init --yes
+exit A=0 B=0
+--- stdout (B, normalized) ---
+[OK] ContextBrake init (applied)
+
+┌─ Harnesses
+│  claude-code  full support (planned)
+│               context_usage: Read from the session transcript, whose format is
+│               undocumented; falls back to an estimate. The context window comes from the
+│               mod that init installs on Claude Code 2.1.287 or later, or from the status
+│               line bridge on older versions; without either, it falls back to
+│               contextWindowCeiling.
+│               auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287
+│               or later with mods enabled. Run doctor to check that the mod loads.
+│  codex-cli    full support (planned)
+│               context_usage: Read from the token_count events of the session rollout file,
+│               whose format is undocumented; falls back to an estimate. The context window
+│               comes from the same event; without it, the window falls back to
+│               contextWindowCeiling.
+│               auto_restart: Semi-automatic restart: run /new; the new session resumes by
+│               itself.
+│  cursor       full support (planned)
+│               context_usage: Context usage reaches Cursor hooks only before compaction, so
+│               ContextBrake estimates it.
+│               auto_restart: Semi-automatic restart: start a new session; it resumes by
+│               itself.
+│  oh-my-pi     full support (planned)
+│               auto_restart: Semi-automatic restart: press Enter on the prefilled
+│               /context-brake-restart; the new session resumes by itself.
+│  opencode     partial support (planned)
+│               post_tool_telemetry: Model visibility of post-tool output modification is
+│               unconfirmed in OpenCode.
+│               session_boot: Stable boot injection is experimental in OpenCode.
+│               context_usage: No documented API exposes context usage to OpenCode plugins.
+│               auto_restart: No restart: this harness cannot inject the resume instruction.
+│  pi           full support (planned)
+└─
+
+┌─ Planned changes
+│  create  .claude/hooks/context-brake.mjs (runtime_asset)
+│  update  .claude/settings.json (harness_entry)
+│  create  .claude/settings.local.json (harness_entry)
+│  update  .codex/hooks.json (harness_entry)
+│  create  .codex/hooks/context-brake.mjs (runtime_asset)
+│  create  .context-brake/claude-mod/.claude-plugin/marketplace.json (runtime_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json (runtime_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/hooks.json (runtime_asset)
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/register.mjs (runtime_asset)
+│  create  .context-brake/manifest.json (manifest)
+│  update  .context-brake/runtime/claude-mod-install.json (harness_entry)
+│  update  .cursor/hooks.json (harness_entry)
+│  create  .cursor/hooks/context-brake.mjs (runtime_asset)
+│  create  .omp/extensions/context-brake.js (runtime_asset)
+│  create  .opencode/plugins/context-brake.js (runtime_asset)
+│  create  .pi/extensions/context-brake.js (runtime_asset)
+│  create  context-brake.config.json (config)
+│          Configure ContextBrake active harnesses and zones; no snapshot command, so
+│          only zone headers will be injected (trigger: RED)
+└─
+
+┌─ Findings
+│  [OK]  GITIGNORE_NO_GIT: This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.
+│        Remediation: Run git init, then init again, to keep the ContextBrake files
+│        out of Git.
+└─
+
+--- stderr (B, normalized) ---
+

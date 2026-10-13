@@ -1,4 +1,5 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
+import { COPILOT_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { asRecord, assetProjectRoot, characterLength, parsePayload, requireIdentifier, textValue } from '../common/runtime-support.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../runtime/process-hook-host.js';
@@ -11,7 +12,7 @@ const READ_TOOLS = ['view'];
 const WRITE_TOOLS = ['edit', 'create'];
 const SHELL_TOOLS = ['bash', 'powershell'];
 
-export const copilotDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: COPILOT_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null };
+export const copilotDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: COPILOT_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null, skillInvocation: COPILOT_SKILL_INVOCATION };
 
 function sessionOf(payload: CopilotPayload): SessionKey {
   return { harness: HARNESS, sessionId: requireIdentifier(payload.sessionId), agentId: null };

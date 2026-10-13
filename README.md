@@ -110,10 +110,10 @@ npx context-brake init --yes
 npx context-brake doctor
 ```
 
-To have the agent save its state before a reset, pass your snapshot command, and optionally the command that resumes the work in the new session:
+To have the agent save its state before a reset, pass the name of your snapshot skill, and optionally the name of the skill that resumes the work in the new session:
 
 ```bash
-npx context-brake init --yes --snapshot-command "/sdd-snapshot" --resume-command "/sdd-orchestrate-flow"
+npx context-brake init --yes --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow
 ```
 
 ### What `context-brake init` does:
@@ -135,6 +135,7 @@ npx context-brake init --interactive --dry-run
 
 - **When it starts:** only when both stdin and stdout are terminals and none of `--yes`, `--json`, or a configuration flag (`--harness`, `--exclude-harness`, any snapshot flag, `--debug`, `--statusline-bridge`, `--auto-restart`, `--max-restarts`, and their `--no-` forms) is given. Scripts, CI, and `--json` runs never see a prompt and behave exactly as before. `--interactive` without a terminal exits with code 64 and names the flags to use instead; combined with `--yes` or `--json` it is an argument error.
 - **Questions, in order:** the harnesses to configure (detected ones are marked with their support level; turning off a detected one excludes it, as `--exclude-harness` does), the snapshot command, its trigger zone and resume command (only when a command is set), restart on or off with the restart mode of each selected harness (only when one can restart), the consecutive-restart limit (only when restart is on), the Claude Code status line bridge (only when Claude Code is selected), and debug mode. Enter keeps the value shown in brackets, which is the current configuration or the default. An invalid answer prints its rule and asks again.
+- **Skill suggestions:** for the snapshot and the resume questions, the assistant looks at the skill folders of the selected harnesses in the project (for example `.claude/skills`, `.agents/skills`, `.cursor/skills`, `.github/skills`, `.opencode/skills`, `.pi/skills`, `.omp/skills`), reads only the top of each `SKILL.md` for its name and description, and lists the best matches first. A name containing `snapshot`, `handoff`, or `checkpoint` ranks first for the snapshot; `resume`, `continue`, `orchestrate`, `flow`, and the Portuguese `retomar`, `retomada`, `continuar` for the resume; the description counts less, and the skill chosen for the snapshot is never offered for the resume. The list shows the recommended skill, up to three alternatives, `type another`, and for the snapshot `none`, and says where each one was found (the resume skill can be changed here but only removed with `--no-snapshot-command`, which clears both skills). The suggestion is a hint, not a decision: nothing is chosen without your Enter, and when nothing matches (or a folder cannot be read) you get the plain text question. Only skills inside the project folders are read: not your user-level skills, plugin skills, `.claude/commands`, or folders above the project root. A run with `--yes` or any configuration flag reads no skill folder.
 - **Prompts:** on a terminal the questions use arrow keys, Space to mark, and Enter to confirm (a checkbox list for harnesses, yes or no for the switches, a list for the trigger zone and the restart limit, text fields for the commands). Set `CONTEXT_BRAKE_PLAIN_PROMPTS=1`, or run in a terminal with `TERM=dumb`, to get plain line-by-line questions instead; the questions and the resulting flags are the same.
 - **Summary and equivalent command:** before the plan, the assistant prints what you chose and the `context-brake init ...` command that reproduces it. Values with spaces or shell characters are single-quoted, and a value that contains a single quote is printed once for POSIX shells and once for PowerShell. Add `--yes` to repeat the setup without prompts; a command with no flags means nothing changes and starts the questions again on a terminal.
 - **Confirming and cancelling:** the assistant shows the usual plan and asks the usual single confirmation. Ctrl+C or the end of input at any prompt prints `Nothing was written.` and exits with code 0, like a declined confirmation. With `--dry-run` it shows the plan and writes nothing. Typed configuration flags passed together with `--interactive` are not used; only `--dry-run` is.
@@ -206,23 +207,32 @@ A configuration that still carries keys ContextBrake no longer reads (for exampl
 
 ### Snapshot and Resume Commands
 
-If your workflow saves session state with its own skill or command, as the SDD skills in this repository do, name it in the `snapshot` section:
+If your workflow saves session state with its own skill, as the SDD skills in this repository do, name it in the `snapshot` section. The value is the **bare skill name**, with no `/`, `$`, or `@`; each harness writes the invocation in its own form:
 
 ```json
 {
   "snapshot": {
     "triggerZone": "RED",
-    "command": "/sdd-snapshot",
-    "resumeCommand": "/sdd-orchestrate-flow"
+    "command": "sdd-snapshot",
+    "resumeCommand": "sdd-orchestrate-flow"
   }
 }
 ```
 
-- **`command`:** from `triggerZone` on (`RED` by default, or `YELLOW`), the telemetry action becomes `run "<command>", then end reply with [REQUEST_SESSION_RESET]`, and in `CRITICAL` it says `now`. ContextBrake never runs the command; it only passes the text to the agent, so the command can be a skill, a slash command, or a short instruction.
-- **`resumeCommand`:** after `/clear`, `/new`, or compaction, harnesses that inject context at session start add `[ContextBrake resume v1] Run "<resumeCommand>" before continuing.` A resume command requires a snapshot command.
+- **`command`:** from `triggerZone` on (`RED` by default, or `YELLOW`), the telemetry action becomes `run "<invocation>", then end reply with [REQUEST_SESSION_RESET]`, and in `CRITICAL` it says `now`. ContextBrake never runs the skill; it passes the invocation to the agent, written the way the harness that receives it invokes a skill.
+- **`resumeCommand`:** after `/clear`, `/new`, or compaction, harnesses that inject context at session start add `[ContextBrake resume v1] Run "<invocation>" before continuing.` A resume skill requires a snapshot skill.
+
+| Harness | Invocation of `sdd-snapshot` |
+| :--- | :--- |
+| Claude Code, Cursor, GitHub Copilot CLI | `/sdd-snapshot` |
+| Codex CLI | `$sdd-snapshot` |
+| Pi | `/skill:sdd-snapshot` |
+| Oh-My-Pi, OpenCode, Antigravity CLI | `use the sdd-snapshot skill` (these harnesses have no invocation form that works without extra setup) |
+
+A name is lowercase letters, digits, and single hyphens, up to 64 characters, optionally prefixed by a plugin name and a colon (`plugin:skill`). A value such as `/sdd-snapshot` is rejected with the bare name to use instead. `context-brake doctor` lists the invocation each active harness receives.
 - **Without a command:** the telemetry block only carries the generic actions in the [zone table](#-zones), with no reset request, and nothing is injected at session start.
 
-Set them with `init`: `--snapshot-command <text>`, `--resume-command <text>`, and `--snapshot-trigger <YELLOW|RED>`. `--no-snapshot-command` clears both commands and keeps the trigger zone. Each command is one line of at most 200 characters. In Git Bash on Windows, run `MSYS_NO_PATHCONV=1 npx context-brake init ...`, because Git Bash rewrites an argument that starts with `/`, such as `/sdd-snapshot`, into a Windows path. `context-brake doctor` shows the settings in effect, and `doctor --json` reports them under `snapshot`.
+Set them with `init`: `--snapshot-command <skill>`, `--resume-command <skill>`, and `--snapshot-trigger <YELLOW|RED>`. `--no-snapshot-command` clears both skills and keeps the trigger zone. `context-brake doctor` shows the settings in effect, and `doctor --json` reports them under `snapshot`, with the invocation of each active harness under `snapshot.invocations`.
 
 ### Debug Mode
 
@@ -313,7 +323,7 @@ Each hook call has an internal deadline of 1.5 seconds; the session start event 
 
 | Command | Options | Description |
 | :--- | :--- | :--- |
-| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <text>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <text>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive`, `--gitignore`, `--no-gitignore` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. In a terminal with no other option, or with `--interactive`, it asks the [setup questions](#interactive-setup). |
+| `context-brake init` | `--dry-run`, `--yes` (`-y`), `--json`, `--harness <id>`, `--exclude-harness <id>`, `--snapshot-command <skill>`, `--snapshot-trigger <YELLOW\|RED>`, `--resume-command <skill>`, `--no-snapshot-command`, `--debug`, `--no-debug`, `--statusline-bridge`, `--no-statusline-bridge`, `--auto-restart`, `--no-auto-restart`, `--max-restarts <1-10>`, `--interactive`, `--gitignore`, `--no-gitignore` | Detects harnesses, registers integrations, and creates or updates the configuration and the manifest. `--exclude-harness` turns a harness off persistently and `--harness` turns it back on. In a terminal with no other option, or with `--interactive`, it asks the [setup questions](#interactive-setup). |
 | `context-brake doctor` | `--json`, `--harness <id>` | Inspects integrations, configuration integrity, versions, support levels, missing capabilities, snapshot settings, and active sessions with their context usage, and measures overhead p95. |
 | `context-brake remove` | `--dry-run`, `--yes` (`-y`), `--json` | Uninstalls the integrations and deletes the configuration, the manifest, and the runtime files. |
 

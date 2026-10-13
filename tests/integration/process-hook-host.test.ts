@@ -1,4 +1,5 @@
 import { PassThrough } from 'node:stream';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,7 +13,7 @@ import { runtimeDirectory } from '../../src/infrastructure/runtime/runtime-paths
 
 const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentId: null };
 const POST_TOOL: RuntimeEvent = { kind: 'post_tool', session: KEY, tool: { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null }, toolUseId: null };
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 const clock: Clock = { now: () => new Date('2026-09-15T12:00:00.000Z') };
 const NEUTRAL_RESPONSE = '{"kind":"neutral"}';
 

@@ -56,4 +56,4 @@ Before finishing a code change, run lint, typecheck, and tests with coverage.
 
 ## Context protocol
 
-When tool results include a ContextBrake telemetry block, follow its `action=` text. At the trigger zone it names the snapshot command (`/sdd-snapshot` here) and asks you to end the reply with `[REQUEST_SESSION_RESET]`; after a reset, the resume text names the resume command. ContextBrake never denies a tool call.
+When tool results include a ContextBrake telemetry block, follow its `action=` text. At the trigger zone it names the snapshot skill (`sdd-snapshot` here) and asks you to end the reply with `[REQUEST_SESSION_RESET]`; after a reset, the resume text names the resume skill. ContextBrake never denies a tool call.

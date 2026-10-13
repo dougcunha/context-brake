@@ -1,4 +1,5 @@
 import type { RuntimeDecision, RuntimeDescriptor, RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
+import { ANTIGRAVITY_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { asRecord, assetProjectRoot, characterLength, parsePayload, requireIdentifier, textValue } from '../common/runtime-support.js';
 import { runProcessHook, type ProcessHarnessAdapter } from '../../runtime/process-hook-host.js';
@@ -8,7 +9,7 @@ import { antigravityPayloadSchema, type AntigravityPayload } from './schemas.js'
 const HARNESS = 'antigravity-cli';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 
-export const antigravityDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: ANTIGRAVITY_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null };
+export const antigravityDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: ANTIGRAVITY_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: null, skillInvocation: ANTIGRAVITY_SKILL_INVOCATION };
 
 function sessionOf(payload: AntigravityPayload): SessionKey {
   return { harness: HARNESS, sessionId: requireIdentifier(payload.conversationId), agentId: null };

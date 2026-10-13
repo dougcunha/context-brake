@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import { DEFAULT_CONFIG, type ContextBrakeConfig } from '../../src/core/contracts/configuration.js';
 import type { RuntimeDecision, RuntimeDescriptor, SessionKey, ToolCall } from '../../src/core/contracts/runtime.js';
 import type { LedgerLine, ResetReason, SessionLedger, ToolLine, ToolLineInput } from '../../src/core/contracts/session-ledger.js';
@@ -10,7 +11,7 @@ const KEY: SessionKey = { harness: 'claude-code', sessionId: 'session-1', agentI
 const READ: ToolCall = { name: 'Read', category: 'file_read', paths: ['src/app.ts'], command: null };
 const SIGNAL = '[REQUEST_SESSION_RESET]';
 const NOTICE = 'ContextBrake: the agent requested a session reset. Run /clear to start a new session';
-const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear' };
+const DESCRIPTOR: RuntimeDescriptor = { harness: 'claude-code', capabilities: [], estimation: { baselineTokens: 15000, tokensPerTurn: 150 }, newSessionCommand: '/clear', skillInvocation: slashInvocation };
 
 function toolLine(observedCharacters: number, turn: number, toolUseId: string | null = `toolu_${turn}`): ToolLine {
   return { v: 1, type: 'tool', at: AT, toolUseId, observedCharacters, turn, usedTokens: 0, windowTokens: 128000, estimatedTokens: 0, source: 'estimated', zone: 'GREEN' };

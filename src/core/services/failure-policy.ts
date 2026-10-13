@@ -52,7 +52,7 @@ export async function resolveFailure(input: FailureResolutionInput): Promise<Run
   return { kind: 'neutral' };
 }
 function deadlineBootDecision(input: FailureResolutionInput): RuntimeDecision {
-  const text = resumeText((input.config ?? DEFAULT_CONFIG).snapshot);
+  const text = resumeText((input.config ?? DEFAULT_CONFIG).snapshot, input.descriptor?.skillInvocation);
   return text === null ? { kind: 'neutral' } : { kind: 'context', block: text };
 }
 export type RuntimeFailureRecord = PhaseTiming & { readonly harness: HarnessId; readonly event: string; readonly code: RuntimeErrorCode; readonly detail: string };

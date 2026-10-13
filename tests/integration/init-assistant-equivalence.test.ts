@@ -4,14 +4,13 @@ import { makeProject, printedFlags, projectTree, removeProjects, replay, runAssi
 
 type Scenario = { readonly name: string; readonly seed: readonly string[]; readonly answers: readonly string[]; readonly flags: readonly string[]; readonly git?: boolean };
 
-const SPACED_SNAPSHOT_ANSWERS = ['', '/sdd snapshot', '', '', 'y', '3', '', '', 'y'];
-const STORED_RESTART = ['--snapshot-command', '/sdd-snapshot', '--auto-restart', '--max-restarts', '3'];
+const SNAPSHOT_AND_RESTART_ANSWERS = ['', 'sdd-snapshot', '', '', 'y', '3', '', '', 'y'];
+const STORED_RESTART = ['--snapshot-command', 'sdd-snapshot', '--auto-restart', '--max-restarts', '3'];
 
 const FRESH_SCENARIOS: readonly Scenario[] = [
   { name: 'every default', seed: [], answers: ['', '', '', '', '', 'y'], flags: [] },
-  { name: 'snapshot command with a space and restart limit 3', seed: [], answers: SPACED_SNAPSHOT_ANSWERS, flags: ['--snapshot-command', '/sdd snapshot', '--auto-restart', '--max-restarts', '3'] },
-  { name: 'YELLOW trigger, resume command, debug on', seed: [], answers: ['', '/s', 'YELLOW', '/resume now', 'n', '', 'y', 'y'], flags: ['--snapshot-command', '/s', '--snapshot-trigger', 'YELLOW', '--resume-command', '/resume now', '--debug'] },
-  { name: 'command and resume values that start with a dash', seed: [], answers: ['', '-x', '', '-y', 'n', '', '', 'y'], flags: ['--snapshot-command=-x', '--resume-command=-y'] },
+  { name: 'snapshot command and restart limit 3', seed: [], answers: SNAPSHOT_AND_RESTART_ANSWERS, flags: ['--snapshot-command', 'sdd-snapshot', '--auto-restart', '--max-restarts', '3'] },
+  { name: 'YELLOW trigger, resume command, debug on', seed: [], answers: ['', 'snap', 'YELLOW', 'resume', 'n', '', 'y', 'y'], flags: ['--snapshot-command', 'snap', '--snapshot-trigger', 'YELLOW', '--resume-command', 'resume', '--debug'] },
   { name: 'bridge off and debug on', seed: [], answers: ['', '', '', 'n', 'y', 'y'], flags: ['--no-statusline-bridge', '--debug'] },
   { name: 'Claude Code only with restart on', seed: [], answers: ['1', '', 'y', '', '', '', 'y'], flags: ['--harness', 'claude-code', '--exclude-harness', 'codex-cli', '--auto-restart'] },
 ];
@@ -56,7 +55,7 @@ describe('FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant ses
     const assisted = await makeProject();
     const replayed = await makeProject();
     roots.push(assisted, replayed);
-    const run = await runAssisted(assisted, SPACED_SNAPSHOT_ANSWERS.slice(0, -1), ['--dry-run']);
+    const run = await runAssisted(assisted, SNAPSHOT_AND_RESTART_ANSWERS.slice(0, -1), ['--dry-run']);
     expect(run.code).toBeLessThanOrEqual(1);
     const planned = installReportSchema.parse(JSON.parse((await replay(replayed, printedFlags(run.stdout), ['--dry-run', '--json'])).stdout));
     expect(planned.plan.changes.length).toBeGreaterThan(0);

@@ -25,7 +25,7 @@ Once per session, at the start, read `context-brake.config.json` at the reposito
 | `snapshot.command` does not name `sdd-snapshot` | The snapshot request does not follow the Write branch |
 | `snapshot.resumeCommand` does not name `sdd-orchestrate-flow` | The new session does not resume this flow |
 
-When there is a warning, suggest the command that fixes everything at once: `npx context-brake init --auto-restart --max-restarts 10 --snapshot-command "/sdd-snapshot" --resume-command "/sdd-orchestrate-flow"` (in Git Bash on Windows, prefix it with `MSYS_NO_PATHCONV=1`).
+When there is a warning, suggest the command that fixes everything at once: `npx context-brake init --auto-restart --max-restarts 10 --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow`.
 
 ## Decide without asking
 

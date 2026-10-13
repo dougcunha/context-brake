@@ -17,7 +17,8 @@ export function harnessRows(facts: AssistantFacts): CardRow[] {
 export function snapshotRows(facts: AssistantFacts): CardRow[] {
   if (facts.snapshotCommand === null) return [{ label: 'Command', value: 'none (only zone headers are injected)', tone: 'muted' }];
   const resume: CardRow = facts.resumeCommand === null ? { label: 'Resume', value: 'none', tone: 'muted' } : { label: 'Resume', value: facts.resumeCommand, tone: 'accent' };
-  return [{ label: 'Command', value: facts.snapshotCommand, tone: 'accent' }, { label: 'Trigger zone', value: facts.triggerZone }, resume];
+  const received = facts.invocations.map((fact): CardRow => ({ label: `In ${fact.harness}`, value: `${fact.command}${fact.resumeCommand === null ? '' : `, resume: ${fact.resumeCommand}`}`, tone: 'accent' }));
+  return [{ label: 'Command', value: facts.snapshotCommand, tone: 'accent' }, { label: 'Trigger zone', value: facts.triggerZone }, resume, ...received];
 }
 
 function switchRow(label: string, isOn: boolean, words: readonly [string, string]): CardRow {

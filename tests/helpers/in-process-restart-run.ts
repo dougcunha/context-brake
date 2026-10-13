@@ -16,7 +16,7 @@ export type RestartRun = {
 };
 
 export async function writeConfig(root: string, overrides: Record<string, unknown> = {}): Promise<void> {
-  const config = { ...DEFAULT_CONFIG, snapshot: { ...DEFAULT_CONFIG.snapshot, command: '/sdd-snapshot' }, autoRestart: { maxConsecutiveRestarts: 2 }, ...overrides };
+  const config = { ...DEFAULT_CONFIG, snapshot: { ...DEFAULT_CONFIG.snapshot, command: 'sdd-snapshot' }, autoRestart: { maxConsecutiveRestarts: 2 }, ...overrides };
   await writeFile(join(root, 'context-brake.config.json'), JSON.stringify(config), 'utf8');
 }
 

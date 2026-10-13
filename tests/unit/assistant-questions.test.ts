@@ -6,10 +6,10 @@ const THREE = ['claude-code', 'codex-cli', 'opencode'] as const;
 
 describe('assistant questions: order, defaults, and facts (prd-16 FR-02, FR-03, TC-06)', () => {
   it('asks every applicable question in order and builds the flags (FR-02, TC-06)', async () => {
-    const { result, asked } = await runScripted(['', '/sdd-snapshot', '', '/sdd-orchestrate-flow', 'y', '3', '', ''], BOTH);
+    const { result, asked } = await runScripted(['', 'sdd-snapshot', '', 'sdd-orchestrate-flow', 'y', '3', '', ''], BOTH);
     const titles = asked.map((question) => question.split(/[\n:?[(]/)[0]);
-    expect(titles).toEqual(['Harnesses to configure', 'Snapshot command ', 'Snapshot trigger YELLOW or RED ', 'Resume command ', 'Restart behavior of the selected harnesses', 'Consecutive-restart limit 1-10 ', 'Install the Claude Code status line bridge', 'Print context usage to the agent ']);
-    expect(result?.flags).toEqual(['--harness', 'claude-code', '--harness', 'codex-cli', '--snapshot-command', '/sdd-snapshot', '--resume-command', '/sdd-orchestrate-flow', '--auto-restart', '--max-restarts', '3']);
+    expect(titles).toEqual(['Harnesses to configure', 'Snapshot skill name ', 'Snapshot trigger YELLOW or RED ', 'Resume skill name ', 'Restart behavior of the selected harnesses', 'Consecutive-restart limit 1-10 ', 'Install the Claude Code status line bridge', 'Print context usage to the agent ']);
+    expect(result?.flags).toEqual(['--harness', 'claude-code', '--harness', 'codex-cli', '--snapshot-command', 'sdd-snapshot', '--resume-command', 'sdd-orchestrate-flow', '--auto-restart', '--max-restarts', '3']);
   });
   it('lists detected harnesses with support level and the restart mode of each selected one (FR-03, TC-06)', async () => {
     const { asked } = await runScripted(['', '', 'n', '', ''], BOTH);
@@ -21,8 +21,22 @@ describe('assistant questions: order, defaults, and facts (prd-16 FR-02, FR-03, 
   it('states the handoff carrier when restart is offered without a snapshot command (FR-03, TC-06)', async () => {
     const { asked } = await runScripted(['', 'none', 'n', 'n'], { detected: ['claude-code'] });
     expect(asked[2]).toContain('markdown handoff');
-    const withCommand = await runScripted(['', '/s', '', '', 'n', 'n', 'n']);
+    const withCommand = await runScripted(['', 's', '', '', 'n', 'n', 'n']);
     expect(withCommand.asked[4]).toContain('snapshot command');
+  });
+});
+
+describe('assistant questions: invocation forms of the selected harnesses (prd-19 FR-06, TC-07)', () => {
+  it('records the form each selected harness will receive (prd-19 FR-06, TC-07)', async () => {
+    const { result } = await runScripted(['', 'sdd-snapshot', '', 'sdd-orchestrate-flow', 'y', '3', '', ''], BOTH);
+    expect(result?.facts.invocations).toEqual([
+      { harness: 'claude-code', command: '/sdd-snapshot', resumeCommand: '/sdd-orchestrate-flow' },
+      { harness: 'codex-cli', command: '$sdd-snapshot', resumeCommand: '$sdd-orchestrate-flow' },
+    ]);
+  });
+  it('records no form without a snapshot skill (prd-19 FR-06)', async () => {
+    const { result } = await runScripted(['', 'none', 'n', 'n', 'n', 'n'], { detected: ['claude-code'] });
+    expect(result?.facts.invocations).toEqual([]);
   });
 });
 
@@ -46,7 +60,7 @@ describe('assistant questions: applicability and exclusion (prd-16 FR-02, FR-05,
 
 describe('assistant questions: context source (DEC-09, TC-15)', () => {
   it('skips the bridge question and names the mod when the install will use the mod', async () => {
-    const { result, asked } = await runScripted(['', '/sdd-snapshot', '', '/sdd-orchestrate-flow', 'y', '3', ''], { ...BOTH, contextSource: 'mod' });
+    const { result, asked } = await runScripted(['', 'sdd-snapshot', '', 'sdd-orchestrate-flow', 'y', '3', ''], { ...BOTH, contextSource: 'mod' });
     expect(asked.some((question) => question.includes('status line bridge'))).toBe(false);
     expect(result?.flags.filter((flag) => flag.includes('statusline-bridge'))).toEqual([]);
     expect(result?.facts).toMatchObject({ contextSource: 'mod', statuslineBridge: null });

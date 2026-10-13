@@ -88,7 +88,7 @@ With turn limits of `greenMaxTurn: 59` and `yellowMaxTurn: 99`, the turn shows w
 ```
 
 ### 🔴 `RED` Zone
-The session is in danger of context exhaustion. With `snapshot.command` set to `/sdd-snapshot`, the agent saves its state and requests a session reset; without it, the agent wraps up and reports what remains:
+The session is in danger of context exhaustion. With `snapshot.command` set to `sdd-snapshot` (written `/sdd-snapshot` for Claude Code), the agent saves its state and requests a session reset; without it, the agent wraps up and reports what remains:
 
 ```text
 [ContextBrake v3] turn=11 usage=68% tokens=87040/128000 source=estimated window=config zone=RED action=run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]

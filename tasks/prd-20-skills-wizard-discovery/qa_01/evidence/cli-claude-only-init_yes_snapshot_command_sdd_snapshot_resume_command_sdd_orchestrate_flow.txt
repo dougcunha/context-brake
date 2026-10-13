@@ -1,0 +1,31 @@
+$ context-brake init --yes --snapshot-command sdd-snapshot --resume-command sdd-orchestrate-flow
+exit A=0 B=0
+--- stdout (B, normalized) ---
+[OK] ContextBrake init (applied)
+
+┌─ Harnesses
+│  claude-code  full support (planned)
+│               context_usage: Read from the session transcript, whose format is
+│               undocumented; falls back to an estimate. The context window comes from the
+│               mod that init installs on Claude Code 2.1.287 or later, or from the status
+│               line bridge on older versions; without either, it falls back to
+│               contextWindowCeiling.
+│               auto_restart: Opt-in through init --auto-restart; needs Claude Code 2.1.287
+│               or later with mods enabled. Run doctor to check that the mod loads.
+└─
+
+┌─ Planned changes
+│  update  .context-brake/manifest.json (manifest)
+│  update  context-brake.config.json (config)
+│          Configure ContextBrake active harnesses and zones; snapshot command
+│          sdd-snapshot at RED, resume command sdd-orchestrate-flow
+└─
+
+┌─ Findings
+│  [OK]  GITIGNORE_NO_GIT: This folder is not inside a Git working tree, so ContextBrake did not write a .gitignore block.
+│        Remediation: Run git init, then init again, to keep the ContextBrake files
+│        out of Git.
+└─
+
+--- stderr (B, normalized) ---
+

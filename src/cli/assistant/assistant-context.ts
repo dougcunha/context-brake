@@ -1,6 +1,8 @@
 import type { ProcessRunner } from '../../core/contracts/processes.js';
 import { detectHarnesses } from '../../core/services/detection-service.js';
 import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
+import { resolveSkillInvocation } from '../../infrastructure/harnesses/skill-invocations.js';
+import { createSkillCatalogReader } from '../../infrastructure/skills/skill-catalog.js';
 import { detectContextSource } from '../../infrastructure/harnesses/claude-code/context-source.js';
 import { hasStatuslineOptOut } from '../../infrastructure/harnesses/claude-code/statusline-default.js';
 import { isInsideGitWorkingTree } from '../../infrastructure/git/git-context.js';
@@ -22,5 +24,8 @@ export async function buildAssistantContext(env: AssistantEnv, state: Pick<InitC
     hasStatuslineOptOut: await hasStatuslineOptOut(env.projectRoot),
     contextSource: await detectContextSource(buildHarnessContext(env, manifest)),
     insideGit: await isInsideGitWorkingTree(env.projectRoot),
+    invocations: resolveSkillInvocation,
+    projectRoot: env.projectRoot,
+    catalog: createSkillCatalogReader(),
   };
 }

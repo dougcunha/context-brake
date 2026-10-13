@@ -6,7 +6,7 @@ import { resolveFailure } from '../../src/core/services/failure-policy.js';
 import { DELEGATED_DESCRIPTOR, DELEGATED_KEY, delegatedConfig, MemoryLedger } from '../helpers/delegated-fixtures.js';
 
 const RESUME_BLOCK = '[ContextBrake resume v1] Run "/sdd-orchestrate-flow" before continuing.';
-const RESUME_CONFIG = delegatedConfig({ resumeCommand: '/sdd-orchestrate-flow' });
+const RESUME_CONFIG = delegatedConfig({ resumeCommand: 'sdd-orchestrate-flow' });
 const RESET: RuntimeEvent = { kind: 'session_reset', session: DELEGATED_KEY, reason: 'new' };
 const BOOT_AFTER_USAGE: RuntimeDescriptor = { ...DELEGATED_DESCRIPTOR, capabilities: [{ id: 'context_usage', state: 'supported' }, { id: 'session_boot', state: 'supported' }] };
 const NO_BOOT: RuntimeDescriptor = { ...DELEGATED_DESCRIPTOR, capabilities: [{ id: 'session_boot', state: 'unsupported' }, { id: 'context_usage', state: 'supported' }] };

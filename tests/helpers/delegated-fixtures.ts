@@ -1,5 +1,6 @@
 import { DEFAULT_CONFIG, type ContextBrakeConfig, type SnapshotConfig } from '../../src/core/contracts/configuration.js';
 import type { RuntimeDescriptor, SessionKey, ToolCall } from '../../src/core/contracts/runtime.js';
+import { slashInvocation } from '../../src/core/services/skill-invocation.js';
 import type { LedgerLine, SessionLedger, ToolLine } from '../../src/core/contracts/session-ledger.js';
 
 export const DELEGATED_AT = '2026-09-24T12:00:00.000Z';
@@ -10,8 +11,9 @@ export const DELEGATED_DESCRIPTOR: RuntimeDescriptor = {
   capabilities: [{ id: 'session_boot', state: 'supported' }],
   estimation: { baselineTokens: 15000, tokensPerTurn: 150 },
   newSessionCommand: '/clear',
+  skillInvocation: slashInvocation,
 };
-export const SNAPSHOT_SECTION: SnapshotConfig = { triggerZone: 'RED', command: '/sdd-snapshot' };
+export const SNAPSHOT_SECTION: SnapshotConfig = { triggerZone: 'RED', command: 'sdd-snapshot' };
 export function delegatedConfig(section: Partial<SnapshotConfig> = {}): ContextBrakeConfig {
   return { ...DEFAULT_CONFIG, snapshot: { ...SNAPSHOT_SECTION, ...section } };
 }

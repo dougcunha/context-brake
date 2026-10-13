@@ -19,7 +19,7 @@ const roots: string[] = [];
 
 async function writeConfig(root: string, options: SceneOptions): Promise<void> {
   const autoRestart = options.autoRestart === false ? {} : { autoRestart: { maxConsecutiveRestarts: options.max ?? 2 } };
-  const snapshot = options.handoff === true ? DEFAULT_CONFIG.snapshot : { ...DEFAULT_CONFIG.snapshot, command: '/sdd-snapshot' };
+  const snapshot = options.handoff === true ? DEFAULT_CONFIG.snapshot : { ...DEFAULT_CONFIG.snapshot, command: 'sdd-snapshot' };
   await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({ ...DEFAULT_CONFIG, snapshot, ...autoRestart }), 'utf8');
 }
 

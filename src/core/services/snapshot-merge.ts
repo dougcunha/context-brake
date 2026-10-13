@@ -10,6 +10,8 @@ export type SnapshotUpdate = { readonly kind: 'keep' } | { readonly kind: 'set';
 export type SnapshotMerge = { readonly update: SnapshotUpdate } | { readonly error: string };
 
 const SECTION_PATH = 'snapshot';
+const CONFIG_FILE = 'context-brake.config.json';
+const FLAG_BY_FIELD: Readonly<Record<string, string>> = { command: '--snapshot-command <skill>', resumeCommand: '--resume-command <skill>', triggerZone: '--snapshot-trigger <YELLOW|RED>' };
 const CLEAR_CONFLICT = '--no-snapshot-command cannot be combined with --snapshot-command or --resume-command.';
 
 export function mergeSnapshot(current: SnapshotConfig | undefined, flags: SnapshotFlags): SnapshotMerge {
@@ -20,7 +22,9 @@ export function mergeSnapshot(current: SnapshotConfig | undefined, flags: Snapsh
   if (result.success) return { update: { kind: 'set', section: result.data } };
   const issue = result.error.issues[0];
   const path = [SECTION_PATH, ...(issue?.path ?? [])].join('.');
-  return { error: `Invalid snapshot option: ${path} ${issue?.message ?? 'is invalid'}.` };
+  const flag = FLAG_BY_FIELD[String(issue?.path[0])];
+  const where = flag === undefined ? '' : ` Set it with ${flag} or in ${CONFIG_FILE}.`;
+  return { error: `Invalid snapshot option: ${path} ${issue?.message ?? 'is invalid'}.${where}` };
 }
 export function applySnapshot<T extends { snapshot?: SnapshotConfig | undefined }>(config: T, update: SnapshotUpdate): T {
   return update.kind === 'keep' ? config : { ...config, snapshot: update.section };

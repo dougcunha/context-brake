@@ -47,7 +47,7 @@ async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEv
 }
 async function telemetryDecision(options: BrakeEngineOptions, turn: number, view: ZoneReading): Promise<RuntimeDecision> {
   if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config) })) return NEUTRAL;
-  const action = zoneAction(view.zone, options.config.snapshot, restartMode(options.config));
+  const action = zoneAction(view.zone, options.config.snapshot, { mode: restartMode(options.config), invoke: options.descriptor.skillInvocation });
   return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action, debug: isDebugModeInEffect(options.config) }) };
 }
 async function handleResponseEnd(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'response_end' }): Promise<RuntimeDecision> {

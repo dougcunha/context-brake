@@ -1,4 +1,5 @@
 import type { RuntimeDescriptor, RuntimeEvent, SessionKey } from '../../../core/contracts/runtime.js';
+import { PI_SKILL_INVOCATION } from './skill-invocation.js';
 import type { RuntimeInput } from '../../../core/services/brake-engine.js';
 import { createRuntimeResolver, measuredUsageFrom, runInProcessEvent, type InProcessRuntimeResolver, type MeasuredUsageInput } from '../common/in-process-support.js';
 import { requireIdentifier, textValue } from '../common/runtime-support.js';
@@ -10,7 +11,7 @@ export { mapPiEvent, mapPiInput, renderPiToolResult } from './events.js';
 const HARNESS = 'pi';
 const ESTIMATION = { baselineTokens: 15000, tokensPerTurn: 150 };
 
-export const piDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: PI_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/new' };
+export const piDescriptor: RuntimeDescriptor = { harness: HARNESS, capabilities: PI_CAPABILITIES, estimation: ESTIMATION, newSessionCommand: '/new', skillInvocation: PI_SKILL_INVOCATION };
 
 export type PiContext = {
   readonly cwd?: string | undefined;

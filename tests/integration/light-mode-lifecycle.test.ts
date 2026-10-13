@@ -12,7 +12,7 @@ const RESPONSE_CHARACTERS = 27400;
 const GENERIC_RED = 'action=finish or pause the current unit and tell the user what remains';
 const GENERIC_CRITICAL = 'action=stop starting new work; tell the user what remains';
 const RUN_SNAPSHOT = 'action=run "/sdd-snapshot", then end reply with [REQUEST_SESSION_RESET]';
-const SNAPSHOT_FLAGS = ['--snapshot-command', '/sdd-snapshot', '--resume-command', '/sdd-resume'];
+const SNAPSHOT_FLAGS = ['--snapshot-command', 'sdd-snapshot', '--resume-command', 'sdd-resume'];
 const FORBIDDEN = /task_plan|state_checkpoint|validation|commit|blocked|sdd-|REQUEST_SESSION_RESET/;
 let root: string;
 beforeEach(async () => { root = await createLightProject('cb-e2e-snapshot-'); });
@@ -60,7 +60,7 @@ describe('snapshot flags round trip with the built CLI (prd-12 TC-05, TC-07, TC-
     expect(blocks[10]).toContain(`zone=RED ${RUN_SNAPSHOT}`);
     expect(context((await hook('SessionStart', { source: 'clear' })).stdout)).toBe('[ContextBrake resume v1] Run "/sdd-resume" before continuing.');
     const configured = JSON.parse((await runInProcessCli(['doctor', '--json'], root)).stdout) as DoctorReport;
-    expect(configured.snapshot).toEqual({ triggerZone: 'RED', command: '/sdd-snapshot', resumeCommand: '/sdd-resume' });
+    expect(configured.snapshot).toEqual({ triggerZone: 'RED', command: 'sdd-snapshot', resumeCommand: 'sdd-resume', invocations: [{ harness: 'claude-code', command: '/sdd-snapshot', resumeCommand: '/sdd-resume' }] });
     expect((await runInProcessCli(['init', '--yes', '--json', '--no-snapshot-command'], root)).code).toBe(0);
     const cleared = JSON.parse((await runInProcessCli(['doctor', '--json'], root)).stdout) as DoctorReport;
     expect(cleared.snapshot).toEqual({ triggerZone: 'RED', command: null, resumeCommand: null });

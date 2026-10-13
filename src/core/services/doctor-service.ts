@@ -12,6 +12,7 @@ import { resolveHarnessExclusion } from './harness-exclusion.js';
 import { noProjectHarnessFinding } from './no-harness-finding.js';
 import { checkConfig } from './doctor-checks.js';
 import { doctorReportExtras } from './doctor-report-extras.js';
+import type { SkillInvocationResolver } from '../contracts/skill-invocation.js';
 import { buildDoctorReport } from './report-service.js';
 
 export type DoctorInput = {
@@ -26,7 +27,7 @@ export type DoctorInput = {
   manifest: InstallationManifest | null;
   allSnapshots: readonly FileSnapshot[];
   packageVersion: string;
-  runtimeState?: RuntimeStateReading | null; contextWindow?: DoctorReport['contextWindow']; now?: Date | undefined;
+  runtimeState?: RuntimeStateReading | null; contextWindow?: DoctorReport['contextWindow']; now?: Date | undefined; invocations?: SkillInvocationResolver;
 };
 
 function deriveIntegrationState(findings: readonly DiagnosticFinding[]): 'installed' | 'missing' | 'broken' {
@@ -87,5 +88,5 @@ export async function diagnoseProject(input: DoctorInput): Promise<DoctorReport>
   }
   if (input.runtimeState) allFindings.push(...runtimeErrorFindings(input.runtimeState));
   const sessions = input.now === undefined ? [] : activeSessions(input.runtimeState?.ledgers ?? [], { now: input.now, zones: effective.telemetry.zones });
-  return buildDoctorReport({ detections, integrations, ...doctorReportExtras({ config: input.config, planPresent: false, contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, sessions }, allFindings) });
+  return buildDoctorReport({ detections, integrations, ...doctorReportExtras({ config: input.config, planPresent: false, contextWindow: targetIds.has('claude-code') ? input.contextWindow : undefined, sessions, invocations: input.invocations }, allFindings) });
 }

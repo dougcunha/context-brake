@@ -8,6 +8,7 @@ import { NodeManifestStore } from '../../infrastructure/storage/manifest-store.j
 import { NodeOverheadMeasurer } from '../../infrastructure/diagnostics/overhead-measurer.js';
 import { readPackageVersion } from '../../infrastructure/storage/package-metadata.js';
 import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
+import { resolveSkillInvocation } from '../../infrastructure/harnesses/skill-invocations.js';
 import { systemClock } from '../../infrastructure/runtime/runtime-composition.js';
 import { NodeRuntimeStateReader } from '../../infrastructure/runtime/runtime-state-reader.js';
 import { diagnoseProject } from '../../core/services/doctor-service.js';
@@ -47,7 +48,7 @@ export async function runDoctor(args: ParsedDoctorArgs, env: CommandEnv): Promis
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources,
     ...(args.harness.length > 0 ? { explicitHarnesses: args.harness } : {}), measurer,
     manifest, allSnapshots, packageVersion, contextWindow: await readClaudeContextWindow(env.projectRoot),
-    runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(), now: systemClock.now(),
+    runtimeState: await new NodeRuntimeStateReader(env.projectRoot, systemClock).read(), now: systemClock.now(), invocations: resolveSkillInvocation,
   });
   const installed = adapters.filter((adapter) => !reportsRestart(diagnosed.findings, adapter.id) && diagnosed.integrations.some((integration) => integration.harness === adapter.id && integration.state === 'installed'));
   const report = { ...diagnosed, findings: [...diagnosed.findings, ...await doctorRestartFindings(env.projectRoot, config, installed)] };

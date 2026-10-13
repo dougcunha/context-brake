@@ -37,7 +37,7 @@ describe('FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC
     expect(report.integrations.map((integration) => integration.harness)).toEqual(['claude-code']);
     expect(report.findings.filter((finding) => finding.harness === 'codex-cli')).toEqual([]);
     expect(doctor.stdout + doctor.stderr).toContain(EXCLUDED_LINE);
-    expect(init.stdout + init.stderr).toContain(EXCLUDED_LINE);
+    expect(init.stdout + init.stderr).toMatch(/codex-cli\s+excluded by configuration/);
   });
   it('remove deletes the configuration, exclusion included, and leaves no artifact (FR-08, TC-16)', async () => {
     expect((await runInProcessCli(['remove', '--yes'], root)).code).toBe(0);

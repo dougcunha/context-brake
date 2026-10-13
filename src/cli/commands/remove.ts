@@ -12,7 +12,7 @@ import { getAllAdapters } from '../../infrastructure/harnesses/registry.js';
 import { planRemoval } from '../../core/services/removal-service.js';
 import { buildInstallReport } from '../../core/services/report-service.js';
 import { renderJsonOutput } from '../output/json.js';
-import { renderInstallText } from '../output/text.js';
+import { renderInstallText } from '../output/install-text.js';
 import { collectProjectSnapshots } from '../snapshot-helper.js';
 import { buildHarnessContext } from '../detection-collector.js';
 import { authorizeWrite } from '../confirmation.js';

@@ -21,7 +21,7 @@ describe('built CLI init smoke (prd-13 FR-04, DEC-03)', () => {
   it('installs Claude Code non-interactively and changes nothing on a second run', async () => {
     const first = await runBuiltCli(['init', '--yes'], root);
     expect(first.code).toBe(0);
-    expect(first.stdout).toContain('claude-code: full support');
+    expect(first.stdout).toMatch(/claude-code\s+full support/);
     const settings = JSON.parse(await readFile(join(root, '.claude/settings.json'), 'utf8')) as { hooks: Record<string, unknown> };
     expect(Object.keys(settings.hooks)).toContain('PostToolUse');
     const installed = await readOwned();

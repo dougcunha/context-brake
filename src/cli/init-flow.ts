@@ -12,7 +12,7 @@ import { NodeProcessRunner } from '../infrastructure/process/node-process-runner
 import { planInstallation, type InstallationResult } from '../core/services/installation-service.js';
 import { buildInstallReport } from '../core/services/report-service.js';
 import { renderJsonOutput } from './output/json.js';
-import { renderInstallText } from './output/text.js';
+import { renderInstallText } from './output/install-text.js';
 import { collectProjectSnapshots, collectRestartLogSnapshots } from './snapshot-helper.js';
 import { buildHarnessContext, collectHarnessSources } from './detection-collector.js';
 import { authorizeWrite } from './confirmation.js';

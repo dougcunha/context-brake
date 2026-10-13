@@ -1,38 +1,28 @@
+import { PLAIN_STYLE, type Style } from '../output/style.js';
+import { renderCard } from '../output/card.js';
+import { harnessRows, optionRows, snapshotRows } from './summary-rows.js';
 import type { AssistantFacts } from './types.js';
 
-function snapshotLine(facts: AssistantFacts): string {
-  if (facts.snapshotCommand === null) return 'Snapshot command: none (only zone headers are injected)';
-  const resume = facts.resumeCommand === null ? '' : `, resume ${facts.resumeCommand}`;
-  return `Snapshot command: ${facts.snapshotCommand} (trigger ${facts.triggerZone}${resume})`;
+const SUMMARY_TITLE = 'Summary of your choices:';
+const COMMAND_LABEL = 'Equivalent command:';
+const COMMAND_INDENT = '  ';
+
+function commandLines(command: readonly string[], style: Style): string[] {
+  const label = style.paint('muted', COMMAND_LABEL);
+  if (command.length === 1) return [`${label} ${style.paint('accent', command[0] ?? '')}`];
+  return [label, ...command.map((line) => `${COMMAND_INDENT}${style.paint('accent', line)}`)];
 }
 
-function restartLines(facts: AssistantFacts): string[] {
-  const state = facts.restartOn ? `on, at most ${facts.restartLimit ?? 'the default number of'} consecutive restarts` : 'off';
-  return [`Restart: ${state}`, ...facts.restartModes.map((fact) => `  ${fact.harness}: ${fact.mode}`)];
-}
-
-function bridgeLine(facts: AssistantFacts): string {
-  if (facts.contextSource === 'mod') return 'Context source: mod (your status line is left alone)';
-  if (facts.statuslineBridge === null) return 'Status line bridge: not applicable (Claude Code not selected)';
-  return `Status line bridge: ${facts.statuslineBridge ? 'yes' : 'no'}`;
-}
-
-function gitIgnoreLine(facts: AssistantFacts): string {
-  if (facts.gitIgnore === null) return 'Git ignore: not applicable (not a Git repository)';
-  return `Git ignore: ${facts.gitIgnore ? 'yes' : 'no'}`;
-}
-
-export function renderSummary(facts: AssistantFacts, command: readonly string[]): string[] {
-  const excluded = facts.excluded.length === 0 ? '' : ` (turned off: ${facts.excluded.join(', ')})`;
-  const equivalent = command.length === 1 ? [`Equivalent command: ${command[0]}`] : ['Equivalent command:', ...command.map((line) => `  ${line}`)];
+export function renderSummary(facts: AssistantFacts, command: readonly string[], style: Style = PLAIN_STYLE): string[] {
   return [
-    'Summary of your choices:',
-    `  Harnesses: ${facts.selected.length === 0 ? 'none' : facts.selected.join(', ')}${excluded}`,
-    `  ${snapshotLine(facts)}`,
-    ...restartLines(facts).map((line) => `  ${line}`),
-    `  ${bridgeLine(facts)}`,
-    `  Debug mode: ${facts.debug ? 'on' : 'off'}`,
-    `  ${gitIgnoreLine(facts)}`,
-    ...equivalent,
+    style.paint('title', SUMMARY_TITLE),
+    '',
+    ...renderCard('Harnesses', harnessRows(facts), style),
+    '',
+    ...renderCard('Snapshot', snapshotRows(facts), style),
+    '',
+    ...renderCard('Options', optionRows(facts), style),
+    '',
+    ...commandLines(command, style),
   ];
 }

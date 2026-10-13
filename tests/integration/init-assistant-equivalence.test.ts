@@ -60,6 +60,6 @@ describe('FR-06, OBJ-01, OBJ-02 the printed command reproduces the assistant ses
     expect(run.code).toBeLessThanOrEqual(1);
     const planned = installReportSchema.parse(JSON.parse((await replay(replayed, printedFlags(run.stdout), ['--dry-run', '--json'])).stdout));
     expect(planned.plan.changes.length).toBeGreaterThan(0);
-    for (const change of planned.plan.changes) expect(run.stdout).toContain(`[${change.kind}] ${change.path}`);
+    for (const change of planned.plan.changes) expect(run.stdout.replace(/ +/g, ' ')).toContain(`${change.kind} ${change.path} (`);
   });
 });

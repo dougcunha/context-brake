@@ -1,5 +1,6 @@
 import { parseInit, type ParsedInitArgs } from '../init-arguments.js';
 import { loadInitConfigState } from '../init-config-state.js';
+import { detectStyle } from '../output/style.js';
 import { buildAssistantContext, type AssistantEnv } from './assistant-context.js';
 import { runQuestions } from './assistant-questions.js';
 import { formatEquivalentCommand } from './equivalent-command.js';
@@ -17,7 +18,8 @@ async function askForFlags(env: AssistantEnv, prompts: PromptPort): Promise<read
   const state = await loadInitConfigState(env.projectRoot, { include: [], exclude: [] });
   const result = await runQuestions(await buildAssistantContext(env, state), prompts);
   if (result === null) return null;
-  process.stdout.write(`${renderSummary(result.facts, formatEquivalentCommand(result.flags)).join('\n')}\n`);
+  const style = detectStyle({ env: process.env, platform: process.platform, isTty: process.stdout.isTTY === true });
+  process.stdout.write(`${renderSummary(result.facts, formatEquivalentCommand(result.flags), style).join('\n')}\n`);
   return result.flags;
 }
 

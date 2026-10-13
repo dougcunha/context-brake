@@ -29,8 +29,9 @@ describe('E2E support limitations: Copilot and Cursor (TC-03, FR-03, FR-04)', ()
   it('prints the context usage limitations in init and in doctor with full support and no limitation finding', async () => {
     const init = await runInProcessCli(['init', '--yes'], tempDir);
     expect(init.code).toBe(0);
-    expect(init.stdout).toContain(COPILOT_CONTEXT);
-    expect(init.stdout).toContain(CURSOR_CONTEXT);
+    const unwrapped = init.stdout.replace(/\n[│|] +/g, ' ');
+    expect(unwrapped).toContain(COPILOT_CONTEXT);
+    expect(unwrapped).toContain(CURSOR_CONTEXT);
     const report = doctorReportSchema.parse(JSON.parse((await runInProcessCli(['doctor', '--json'], tempDir)).stdout));
     expect(supportOf(report, 'github-copilot-cli')).toMatchObject({ supportLevel: 'full', limitations: expect.arrayContaining([{ capability: 'context_usage', impact: COPILOT_CONTEXT }]) });
     expect(supportOf(report, 'cursor')).toMatchObject({ supportLevel: 'full', limitations: expect.arrayContaining([{ capability: 'context_usage', impact: CURSOR_CONTEXT }]) });

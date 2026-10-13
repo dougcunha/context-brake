@@ -28,7 +28,7 @@ describe('FR-07 one confirmation and dry run (prd-16, TC-11)', () => {
   it('asks the confirmation exactly once after the summary (FR-07, TC-11)', async () => {
     const run = await runAssisted(project(), [...DEFAULT_ANSWERS, 'y']);
     expect(run.asked.filter((question) => question.includes(CONFIRMATION_QUESTION))).toHaveLength(1);
-    expect(run.stdout.indexOf('Summary of your choices:')).toBeLessThan(run.stdout.indexOf('Planned changes:'));
+    expect(run.stdout.indexOf('Summary of your choices:')).toBeLessThan(run.stdout.indexOf('Planned changes'));
     expect(await snapshotTree(project())).toHaveProperty(['context-brake.config.json']);
   });
 
@@ -36,7 +36,7 @@ describe('FR-07 one confirmation and dry run (prd-16, TC-11)', () => {
     const before = await snapshotTree(project());
     const run = await runAssisted(project(), DEFAULT_ANSWERS, ['--dry-run']);
     expect(run.code).toBeLessThanOrEqual(1);
-    expect(run.stdout).toContain('Planned changes:');
+    expect(run.stdout).toContain('Planned changes');
     expect(run.stdout).not.toContain(NOTHING_WRITTEN);
     expect(run.asked.some((question) => question.includes(CONFIRMATION_QUESTION))).toBe(false);
     expect(await snapshotTree(project())).toEqual(before);

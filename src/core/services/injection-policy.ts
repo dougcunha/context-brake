@@ -6,9 +6,10 @@ export type InjectionInput = {
   readonly zone: Zone;
   readonly usagePercentage: number;
   readonly debug: boolean;
+  readonly resetDue?: boolean | undefined;
 };
 
 export function decideInjection(input: InjectionInput): boolean {
-  if (input.debug || input.telemetry.injectionMode === 'always') return true;
+  if (input.debug || input.resetDue === true || input.telemetry.injectionMode === 'always') return true;
   return input.zone !== 'GREEN' || input.usagePercentage >= input.telemetry.activationThresholdPercentage;
 }

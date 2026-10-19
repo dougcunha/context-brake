@@ -11,6 +11,7 @@ const FRESH_SCENARIOS: readonly Scenario[] = [
   { name: 'every default', seed: [], answers: ['', '', '', '', '', 'y'], flags: [] },
   { name: 'snapshot command and restart limit 3', seed: [], answers: SNAPSHOT_AND_RESTART_ANSWERS, flags: ['--snapshot-command', 'sdd-snapshot', '--auto-restart', '--max-restarts', '3'] },
   { name: 'YELLOW trigger, resume command, debug on', seed: [], answers: ['', 'snap', 'YELLOW', 'resume', 'n', '', 'y', 'y'], flags: ['--snapshot-command', 'snap', '--snapshot-trigger', 'YELLOW', '--resume-command', 'resume', '--debug'] },
+  { name: 'snapshot trigger percentage', seed: [], answers: ['', 'snap', '70', '', 'n', '', 'n', 'y'], flags: ['--snapshot-command', 'snap', '--snapshot-trigger-percentage', '70'] },
   { name: 'bridge off and debug on', seed: [], answers: ['', '', '', 'n', 'y', 'y'], flags: ['--no-statusline-bridge', '--debug'] },
   { name: 'Claude Code only with restart on', seed: [], answers: ['1', '', 'y', '', '', '', 'y'], flags: ['--harness', 'claude-code', '--exclude-harness', 'codex-cli', '--auto-restart'] },
 ];

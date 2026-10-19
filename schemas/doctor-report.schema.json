@@ -427,6 +427,11 @@
             "RED"
           ]
         },
+        "triggerPercentage": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
         "command": {
           "type": [
             "string",

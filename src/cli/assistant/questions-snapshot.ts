@@ -2,13 +2,13 @@ import type { SnapshotConfig } from '../../core/contracts/configuration.js';
 import type { HarnessId } from '../../core/contracts/harness.js';
 import type { SkillCandidate } from '../../core/services/skill-candidates.js';
 import { mergeSnapshot, type SnapshotFlags } from '../../core/services/snapshot-merge.js';
-import { askValidated } from './ask.js';
 import { askSkill, loadCandidates } from './questions-skill.js';
-import { commandSpec, resumeSpec, triggerSpec } from './snapshot-specs.js';
+import { askTrigger } from './questions-trigger.js';
+import { commandSpec, resumeSpec } from './snapshot-specs.js';
 import type { PromptPort } from './prompt-port.js';
 import type { AssistantContext, Validation } from './types.js';
 
-export type SnapshotChoice = { readonly command: string | null; readonly triggerZone: string; readonly resumeCommand: string | null; readonly flags: readonly string[] };
+export type SnapshotChoice = { readonly command: string | null; readonly triggerZone: string; readonly triggerPercentage: number | null; readonly resumeCommand: string | null; readonly flags: readonly string[] };
 
 const NONE_WORD = 'none';
 const RESUME_NONE_MESSAGE = 'Enter keeps the current resume skill; to remove it use --no-snapshot-command, which clears both skills.';
@@ -28,14 +28,6 @@ function validateCommand(current: string | undefined): (answer: string) => Valid
   };
 }
 
-function validateTrigger(current: string): (answer: string) => Validation<string> {
-  return (answer) => {
-    if (answer === '') return { value: current };
-    const error = checked({ triggerZone: answer });
-    return error === null ? { value: answer } : { error };
-  };
-}
-
 function validateResume(current: string | undefined): (answer: string) => Validation<string | null> {
   return (answer) => {
     if (answer === '') return { value: current ?? null };
@@ -50,18 +42,17 @@ type CommandOptionsInput = { readonly current: SnapshotConfig | undefined; reado
 
 async function askCommandOptions(input: CommandOptionsInput, prompts: PromptPort): Promise<SnapshotChoice | null> {
   const { current, command, pool } = input;
-  const currentZone = current?.triggerZone ?? DEFAULT_ZONE;
-  const zone = await askValidated(prompts, triggerSpec(currentZone), validateTrigger(currentZone));
-  if (zone === null) return null;
+  const trigger = await askTrigger({ zone: current?.triggerZone ?? DEFAULT_ZONE, percentage: current?.triggerPercentage ?? null }, prompts);
+  if (trigger === null) return null;
   const typed = { spec: resumeSpec(current?.resumeCommand), validate: validateResume(current?.resumeCommand) };
   const resume = await askSkill({ role: 'resume', current: current?.resumeCommand, exclude: command, ...pool, typed }, prompts);
   if (resume === null) return null;
   const flags = [
     ...(command === current?.command ? [] : ['--snapshot-command', command]),
-    ...(zone.value === currentZone ? [] : ['--snapshot-trigger', zone.value]),
+    ...trigger.flags,
     ...(resume.value === null || resume.value === current?.resumeCommand ? [] : ['--resume-command', resume.value]),
   ];
-  return { command, triggerZone: zone.value, resumeCommand: resume.value, flags };
+  return { command, triggerZone: trigger.zone, triggerPercentage: trigger.percentage, resumeCommand: resume.value, flags };
 }
 
 export async function askSnapshot(context: AssistantContext, selected: readonly HarnessId[], prompts: PromptPort): Promise<SnapshotChoice | null> {
@@ -72,5 +63,5 @@ export async function askSnapshot(context: AssistantContext, selected: readonly 
   if (command === null) return null;
   if (command.value !== null) return askCommandOptions({ current, command: command.value, pool }, prompts);
   const flags = current?.command === undefined ? [] : ['--no-snapshot-command'];
-  return { command: null, triggerZone: current?.triggerZone ?? DEFAULT_ZONE, resumeCommand: null, flags };
+  return { command: null, triggerZone: current?.triggerZone ?? DEFAULT_ZONE, triggerPercentage: current?.triggerPercentage ?? null, resumeCommand: null, flags };
 }

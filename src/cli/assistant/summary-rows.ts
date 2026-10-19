@@ -1,4 +1,5 @@
 import type { HarnessId } from '../../core/contracts/harness.js';
+import { describeTrigger } from '../../core/services/trigger-text.js';
 import type { CardRow } from '../output/card.js';
 import type { AssistantFacts } from './types.js';
 
@@ -14,11 +15,16 @@ export function harnessRows(facts: AssistantFacts): CardRow[] {
   return [{ label: 'none', value: 'no harness selected', tone: 'warn' }, ...excluded];
 }
 
+function triggerRow(facts: AssistantFacts): CardRow {
+  if (facts.triggerPercentage === null) return { label: 'Trigger zone', value: facts.triggerZone };
+  return { label: 'Trigger', value: describeTrigger(facts) };
+}
+
 export function snapshotRows(facts: AssistantFacts): CardRow[] {
   if (facts.snapshotCommand === null) return [{ label: 'Command', value: 'none (only zone headers are injected)', tone: 'muted' }];
   const resume: CardRow = facts.resumeCommand === null ? { label: 'Resume', value: 'none', tone: 'muted' } : { label: 'Resume', value: facts.resumeCommand, tone: 'accent' };
   const received = facts.invocations.map((fact): CardRow => ({ label: `In ${fact.harness}`, value: `${fact.command}${fact.resumeCommand === null ? '' : `, resume: ${fact.resumeCommand}`}`, tone: 'accent' }));
-  return [{ label: 'Command', value: facts.snapshotCommand, tone: 'accent' }, { label: 'Trigger zone', value: facts.triggerZone }, resume, ...received];
+  return [{ label: 'Command', value: facts.snapshotCommand, tone: 'accent' }, triggerRow(facts), resume, ...received];
 }
 
 function switchRow(label: string, isOn: boolean, words: readonly [string, string]): CardRow {

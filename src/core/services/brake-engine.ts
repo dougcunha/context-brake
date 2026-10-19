@@ -12,7 +12,7 @@ import { nextTurn, summarizeLedger, type SessionSummary } from './session-counte
 import { readZone, type MeasuredUsage, type ZoneReading } from './session-zone.js';
 import { renderTelemetryBlock } from './telemetry-block.js';
 import { redStartTurn } from './zone-classifier.js';
-import { zoneAction } from './zone-guidance.js';
+import { isResetDue, zoneAction } from './zone-guidance.js';
 import { handleSessionReset } from './session-reset-handler.js';
 
 export type { MeasuredUsage } from './session-zone.js';
@@ -46,8 +46,9 @@ async function handlePreInvocation(options: BrakeEngineOptions, event: RuntimeEv
   return telemetryDecision(options, summary.turns, readZone(options, { summary, turns: summary.turns, observedCharacters: 0, measured: input.measured }));
 }
 async function telemetryDecision(options: BrakeEngineOptions, turn: number, view: ZoneReading): Promise<RuntimeDecision> {
-  if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config) })) return NEUTRAL;
-  const action = zoneAction(view.zone, options.config.snapshot, { mode: restartMode(options.config), invoke: options.descriptor.skillInvocation });
+  const resetDue = isResetDue({ zone: view.zone, usagePercentage: view.percentage }, options.config.snapshot);
+  if (!decideInjection({ telemetry: options.config.telemetry, zone: view.zone, usagePercentage: view.percentage, debug: isDebugModeInEffect(options.config), resetDue })) return NEUTRAL;
+  const action = zoneAction(view.zone, options.config.snapshot, { mode: restartMode(options.config), invoke: options.descriptor.skillInvocation, usagePercentage: view.percentage });
   return { kind: 'context', block: renderTelemetryBlock({ turn, turnCeiling: redStartTurn(options.config.telemetry.zones), usagePercentage: view.percentage, usage: view.reading, zone: view.zone, action, debug: isDebugModeInEffect(options.config) }) };
 }
 async function handleResponseEnd(options: BrakeEngineOptions, event: RuntimeEvent & { kind: 'response_end' }): Promise<RuntimeDecision> {

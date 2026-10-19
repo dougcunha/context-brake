@@ -19,7 +19,7 @@ function uniqueCheck<T>(message: string): (ctx: z.core.ParsePayload<T[]>) => voi
 }
 
 const RESUME_REQUIRES_COMMAND_RULE = 'requires snapshot.command';
-export const snapshotSchema = z.strictObject({ triggerZone: z._default(z.enum(SNAPSHOT_TRIGGER_ZONES), 'RED'), command: z.optional(skillNameSchema), resumeCommand: z.optional(skillNameSchema) }).check((ctx) => {
+export const snapshotSchema = z.strictObject({ triggerZone: z._default(z.enum(SNAPSHOT_TRIGGER_ZONES), 'RED'), triggerPercentage: z.optional(z.int().check(z.minimum(1), z.maximum(100))), command: z.optional(skillNameSchema), resumeCommand: z.optional(skillNameSchema) }).check((ctx) => {
   if (ctx.value.resumeCommand !== undefined && ctx.value.command === undefined) addIssue(ctx, { code: 'custom', path: ['resumeCommand'], input: ctx.value.resumeCommand, message: RESUME_REQUIRES_COMMAND_RULE });
 });
 export type SnapshotConfig = z.infer<typeof snapshotSchema>;

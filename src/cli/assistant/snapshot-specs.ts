@@ -11,10 +11,24 @@ export function commandSpec(current: string | undefined): PromptSpec {
   };
 }
 
-export function triggerSpec(currentZone: string): PromptSpec {
+export const PERCENTAGE_OPTION = 'percentage';
+
+export type TriggerState = { readonly zone: string; readonly percentage: number | null };
+
+export function triggerSpec(current: TriggerState): PromptSpec {
+  const shown = current.percentage === null ? current.zone : `${current.percentage}%`;
+  const options = [...SNAPSHOT_TRIGGER_ZONES.map((zone) => ({ value: zone, label: zone })), { value: PERCENTAGE_OPTION, label: 'Percentage of the context window' }];
   return {
-    line: `Snapshot trigger ${SNAPSHOT_TRIGGER_ZONES.join(' or ')} [${currentZone}]: `,
-    ui: { kind: 'select', message: 'Zone where the snapshot is requested', options: SNAPSHOT_TRIGGER_ZONES.map((zone) => ({ value: zone, label: zone })), initial: currentZone },
+    line: `Snapshot trigger ${SNAPSHOT_TRIGGER_ZONES.join(', ')} or a percentage 1-100 [${shown}]: `,
+    ui: { kind: 'select', message: 'Where the snapshot is requested: a zone or a percentage of the context window', options, initial: current.percentage === null ? current.zone : PERCENTAGE_OPTION },
+  };
+}
+
+export function percentageSpec(current: number | null): PromptSpec {
+  const shown = current === null ? 'none' : `${current}%`;
+  return {
+    line: `Trigger percentage 1-100 [${shown}]: `,
+    ui: { kind: 'text', message: 'Percentage of the context window that requests the snapshot (1-100)', placeholder: `Enter keeps ${shown}` },
   };
 }
 

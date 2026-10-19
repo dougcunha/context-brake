@@ -5,7 +5,7 @@ import type { AssistantFacts } from '../../src/cli/assistant/types.js';
 import { createStyle } from '../../src/cli/output/style.js';
 
 const FACTS: AssistantFacts = {
-  selected: ['claude-code', 'codex-cli'], excluded: ['opencode'], snapshotCommand: 'sdd-snapshot', triggerZone: 'RED', resumeCommand: 'sdd-orchestrate-flow',
+  selected: ['claude-code', 'codex-cli'], excluded: ['opencode'], snapshotCommand: 'sdd-snapshot', triggerZone: 'RED', triggerPercentage: null, resumeCommand: 'sdd-orchestrate-flow',
   invocations: [{ harness: 'claude-code', command: '/sdd-snapshot', resumeCommand: '/sdd-orchestrate-flow' }, { harness: 'codex-cli', command: '$sdd-snapshot', resumeCommand: '$sdd-orchestrate-flow' }],
   restartOn: true, restartLimit: 3, restartModes: [{ harness: 'claude-code', mode: 'automatic' }, { harness: 'codex-cli', mode: 'semi-automatic' }],
   statuslineBridge: true, contextSource: 'bridge', debug: false, gitIgnore: true,

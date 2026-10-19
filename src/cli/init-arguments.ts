@@ -4,7 +4,7 @@ import type { HarnessDetection, HarnessId } from '../core/contracts/harness.js';
 import { hasRestartMode } from '../core/services/restart-install-extras.js';
 import type { SnapshotFlags } from '../core/services/snapshot-merge.js';
 import { CliArgumentError, validateHarnessIds, validateInclusionExclusion } from './argument-validator.js';
-import { assertGitIgnoreCompatible, assertInteractiveCompatible, assertMaxRestartsCompatible, parseMaxRestarts } from './init-option-rules.js';
+import { assertGitIgnoreCompatible, assertInteractiveCompatible, assertMaxRestartsCompatible, assertTriggerCompatible, parseMaxRestarts, parseTriggerPercentage } from './init-option-rules.js';
 
 export type ParsedInitArgs = {
   command: 'init'; dryRun: boolean; yes: boolean; json: boolean;
@@ -21,7 +21,7 @@ const INIT_OPTIONS = {
   'dry-run': { type: 'boolean', default: false }, yes: { type: 'boolean', short: 'y', default: false },
   'json': { type: 'boolean', default: false }, harness: { type: 'string', multiple: true, default: [] as string[] },
   'exclude-harness': { type: 'string', multiple: true, default: [] as string[] },
-  'snapshot-command': { type: 'string' }, 'snapshot-trigger': { type: 'string' }, 'resume-command': { type: 'string' },
+  'snapshot-command': { type: 'string' }, 'snapshot-trigger': { type: 'string' }, 'snapshot-trigger-percentage': { type: 'string' }, 'resume-command': { type: 'string' },
   'no-snapshot-command': { type: 'boolean', default: false },
   debug: { type: 'boolean', default: false }, 'no-debug': { type: 'boolean', default: false },
   'statusline-bridge': { type: 'boolean', default: false }, 'no-statusline-bridge': { type: 'boolean', default: false },
@@ -38,6 +38,7 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
   validateInclusionExclusion(harness, excludeHarness);
   const maxRestarts = parseMaxRestarts(values['max-restarts']);
   assertMaxRestartsCompatible(maxRestarts, values['no-auto-restart']);
+  assertTriggerCompatible({ zone: values['snapshot-trigger'], percentage: parseTriggerPercentage(values['snapshot-trigger-percentage']) });
   assertGitIgnoreCompatible({ gitignore: values.gitignore, noGitignore: values['no-gitignore'] });
   assertInteractiveCompatible({ interactive: values.interactive, yes: values.yes, json: values.json });
   return {
@@ -50,12 +51,12 @@ export function parseInit(args: readonly string[]): ParsedInitArgs {
 }
 export function hasConfigurationFlag(args: ParsedInitArgs): boolean {
   const snapshot = args.snapshot;
-  const hasSnapshotFlag = snapshot !== undefined && (snapshot.clearCommand || [snapshot.command, snapshot.triggerZone, snapshot.resumeCommand].some((value) => value !== undefined));
+  const hasSnapshotFlag = snapshot !== undefined && (snapshot.clearCommand || [snapshot.command, snapshot.triggerZone, snapshot.triggerPercentage, snapshot.resumeCommand].some((value) => value !== undefined));
   const flags = [args.debug, args.noDebug, args.autoRestart, args.noAutoRestart, args.gitignore, args.noGitignore, hasSnapshotFlag];
   return args.harness.length > 0 || args.excludeHarness.length > 0 || args.statuslineBridge !== undefined || args.maxRestarts !== undefined || flags.some(Boolean);
 }
 function snapshotFlags(values: InitValues): SnapshotFlags {
-  return { command: values['snapshot-command'], triggerZone: values['snapshot-trigger'], resumeCommand: values['resume-command'], clearCommand: values['no-snapshot-command'] };
+  return { command: values['snapshot-command'], triggerZone: values['snapshot-trigger'], triggerPercentage: parseTriggerPercentage(values['snapshot-trigger-percentage']), resumeCommand: values['resume-command'], clearCommand: values['no-snapshot-command'] };
 }
 const STATUSLINE_TARGET_ERROR = '--statusline-bridge and --no-statusline-bridge require claude-code among the target harnesses.';
 type HarnessTargets = { readonly harness: readonly HarnessId[]; readonly excludeHarness: readonly HarnessId[] };

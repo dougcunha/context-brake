@@ -25,6 +25,7 @@ export type AssistantFacts = {
   readonly excluded: readonly HarnessId[];
   readonly snapshotCommand: string | null;
   readonly triggerZone: string;
+  readonly triggerPercentage: number | null;
   readonly resumeCommand: string | null;
   readonly invocations: readonly HarnessInvocationFact[];
   readonly restartOn: boolean;

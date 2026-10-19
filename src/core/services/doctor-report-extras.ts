@@ -22,8 +22,9 @@ export function doctorReportExtras(input: DoctorExtrasInput, findings: readonly 
 }
 function snapshotReport(config: ContextBrakeConfig | null, resolve: SkillInvocationResolver | undefined): SnapshotReport | undefined {
   if (config === null) return undefined;
-  const { triggerZone, command, resumeCommand } = config.snapshot;
-  const report = { triggerZone, command: command ?? null, resumeCommand: resumeCommand ?? null };
+  const { triggerZone, triggerPercentage, command, resumeCommand } = config.snapshot;
+  const trigger = triggerPercentage === undefined ? {} : { triggerPercentage };
+  const report = { triggerZone, ...trigger, command: command ?? null, resumeCommand: resumeCommand ?? null };
   if (command === undefined || resolve === undefined) return report;
   return { ...report, invocations: config.activeHarnesses.map((harness) => ({ harness, command: resolve(harness)(command), resumeCommand: resumeCommand === undefined ? null : resolve(harness)(resumeCommand) })) };
 }

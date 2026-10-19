@@ -14,10 +14,15 @@ const GENERIC_ACTIONS: Readonly<Record<Zone, string>> = {
   CRITICAL: 'stop starting new work; tell the user what remains',
 };
 
-export type GuidanceOptions = { readonly mode?: RestartMode | undefined; readonly invoke?: SkillInvocationFormat | undefined };
+export type GuidanceOptions = { readonly mode?: RestartMode | undefined; readonly invoke?: SkillInvocationFormat | undefined; readonly usagePercentage?: number | undefined };
+export type ZoneUsage = { readonly zone: Zone; readonly usagePercentage: number };
 
+export function isResetDue(reading: ZoneUsage, snapshot: SnapshotConfig): boolean {
+  if (snapshot.triggerPercentage !== undefined) return reading.usagePercentage >= snapshot.triggerPercentage;
+  return reading.zone !== 'GREEN' && isAtOrAbove(reading.zone, snapshot.triggerZone);
+}
 export function zoneAction(zone: Zone, snapshot: SnapshotConfig, options: GuidanceOptions = {}): string {
-  if (zone === 'GREEN' || !isAtOrAbove(zone, snapshot.triggerZone)) return GENERIC_ACTIONS[zone];
+  if (!isResetDue({ zone, usagePercentage: options.usagePercentage ?? 0 }, snapshot)) return GENERIC_ACTIONS[zone];
   if (snapshot.command !== undefined) return snapshotAction(zone, (options.invoke ?? sentenceInvocation)(snapshot.command));
   if ((options.mode ?? 'off') !== 'handoff') return GENERIC_ACTIONS[zone];
   return `save handoff to ${HANDOFF_PATH}, end reply with ${SESSION_RESET_SIGNAL}`;

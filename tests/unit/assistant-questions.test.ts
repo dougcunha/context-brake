@@ -8,7 +8,7 @@ describe('assistant questions: order, defaults, and facts (prd-16 FR-02, FR-03, 
   it('asks every applicable question in order and builds the flags (FR-02, TC-06)', async () => {
     const { result, asked } = await runScripted(['', 'sdd-snapshot', '', 'sdd-orchestrate-flow', 'y', '3', '', ''], BOTH);
     const titles = asked.map((question) => question.split(/[\n:?[(]/)[0]);
-    expect(titles).toEqual(['Harnesses to configure', 'Snapshot skill name ', 'Snapshot trigger YELLOW or RED ', 'Resume skill name ', 'Restart behavior of the selected harnesses', 'Consecutive-restart limit 1-10 ', 'Install the Claude Code status line bridge', 'Print context usage to the agent ']);
+    expect(titles).toEqual(['Harnesses to configure', 'Snapshot skill name ', 'Snapshot trigger YELLOW, RED or a percentage 1-100 ', 'Resume skill name ', 'Restart behavior of the selected harnesses', 'Consecutive-restart limit 1-10 ', 'Install the Claude Code status line bridge', 'Print context usage to the agent ']);
     expect(result?.flags).toEqual(['--harness', 'claude-code', '--harness', 'codex-cli', '--snapshot-command', 'sdd-snapshot', '--resume-command', 'sdd-orchestrate-flow', '--auto-restart', '--max-restarts', '3']);
   });
   it('lists detected harnesses with support level and the restart mode of each selected one (FR-03, TC-06)', async () => {

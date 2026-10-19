@@ -44,6 +44,8 @@ With `snapshot.command` set, from `snapshot.triggerZone` (`RED` by default, or `
 | `YELLOW` or `RED` at or above the trigger | `run "<command>", then end reply with [REQUEST_SESSION_RESET]` |
 | `CRITICAL` | `run "<command>" now, then end reply with [REQUEST_SESSION_RESET]` |
 
+When `snapshot.triggerPercentage` is set, it replaces the zone rule: the same actions start once the usage reaches that percentage in any zone, `GREEN` included, and the block is injected from there even below the activation threshold.
+
 ContextBrake never runs the command; it only passes the text to the agent, so the command can be a skill, a slash command, or a short instruction. The longest block, with any action variant and a typical command, stays within 60 tokens.
 
 ### Versioning Rule

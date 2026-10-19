@@ -8,6 +8,7 @@ import { applyGitIgnore, type GitIgnoreUpdate } from './gitignore-merge.js';
 import { normalizeTurnLimits } from './config-legacy-checks.js';
 import type { DroppedKey } from '../validation/configuration-sanitizer.js';
 import { applyExclusion } from './harness-exclusion.js';
+import { describeTrigger } from './trigger-text.js';
 
 const KEEP = { kind: 'keep' } as const;
 const CONFIG_KEY_ORDER = Object.keys(configurationSchema.shape);
@@ -85,7 +86,7 @@ function configSummary(updates: SummaryUpdates): string {
   return [CONFIG_SUMMARY, snapshotSummary(snapshot), ...debugPart, ...gitIgnorePart, ...autoRestartPart, ...droppedPart].join('; ');
 }
 function snapshotSummary(section: SnapshotConfig): string {
-  if (section.command === undefined) return `no snapshot command, so only zone headers will be injected (trigger: ${section.triggerZone})`;
+  if (section.command === undefined) return `no snapshot command, so only zone headers will be injected (trigger: ${describeTrigger(section)})`;
   const resume = section.resumeCommand === undefined ? '' : `, resume command ${section.resumeCommand}`;
-  return `snapshot command ${section.command} at ${section.triggerZone}${resume}`;
+  return `snapshot command ${section.command} at ${describeTrigger(section)}${resume}`;
 }

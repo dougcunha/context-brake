@@ -18,7 +18,7 @@ export async function runQuestions(context: AssistantContext, prompts: PromptPor
   return {
     flags: [...harness.flags, ...snapshot.flags, ...restart.flags, ...misc.flags],
     facts: {
-      selected: harness.selected, excluded: harness.excluded, snapshotCommand: snapshot.command, triggerZone: snapshot.triggerZone,
+      selected: harness.selected, excluded: harness.excluded, snapshotCommand: snapshot.command, triggerZone: snapshot.triggerZone, triggerPercentage: snapshot.triggerPercentage,
       resumeCommand: snapshot.resumeCommand, invocations: invocationFacts(context.invocations, harness.selected, snapshot), restartOn: restart.on, restartLimit: restart.limit, restartModes: restart.modes,
       statuslineBridge: misc.statuslineBridge, contextSource: misc.contextSource, debug: misc.debug, gitIgnore: misc.gitIgnore,
     },

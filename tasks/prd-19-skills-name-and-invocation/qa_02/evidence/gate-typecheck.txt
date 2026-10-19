@@ -1,5 +1,0 @@
-
-> context-brake@1.0.0 typecheck
-> tsc -p tsconfig.check.json --noEmit
-
-exit 0

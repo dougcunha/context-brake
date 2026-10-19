@@ -1,6 +1,0 @@
-# folder with Deny List-Folder ACL (icacls /deny Admin:(RD)), temp fixture
-claude-code {"skills":[],"warnings":[".claude/skills: EPERM"]}
-codex-cli {"skills":[{"name":"sdd-snapshot","description":"x","folder":".agents/skills"}],"warnings":[]}
-# after ACL removed
-claude-code {"skills":[{"name":"sdd-snapshot","description":"x","folder":".claude/skills"}],"warnings":[]}
-codex-cli {"skills":[{"name":"sdd-snapshot","description":"x","folder":".agents/skills"}],"warnings":[]}

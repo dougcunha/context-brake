@@ -1,7 +1,0 @@
-$ context-brake init
-exit=2
---- stdout ---
-
---- stderr ---
-[ERROR] CONFIRMATION_REQUIRED: Confirmation required for write operations. Use --yes in non-interactive environments.
-

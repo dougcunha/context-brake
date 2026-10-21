@@ -1,2 +1,0 @@
-changed .claude/hooks/context-brake.mjs
-changed .context-brake/manifest.json

@@ -1,8 +1,0 @@
-$ context-brake fix --force
-cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s04-Vw7s3H
-PATH kind: noClaude
-exit: 64
---- stdout ---
-
---- stderr ---
-[ERROR] INVALID_ARGUMENTS: --force needs --yes or --dry-run. On a terminal, fix asks each decision instead.

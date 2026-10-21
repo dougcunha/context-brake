@@ -1,0 +1,37 @@
+$ context-brake doctor
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s08-HJV3ba
+PATH kind: withClaude
+exit: 1
+--- stdout ---
+ContextBrake doctor: WARN (0 errors, 2 warnings)
+
+┌─ Problems
+│  WARN  AUTO_RESTART_NOT_LOADED  claude-code  .context-brake/runtime/restart/claude-code
+│        Automatic restart is on, but no Claude Code session has loaded the mod yet.
+│        Impact: Claude Code does not clear the session when ContextBrake asks for a
+│        reset.
+│        Fix: Start Claude Code in this project and trust the folder. Mods stay off
+│        under disableAllHooks, --safe-mode, --bare, an organization managed policy,
+│        and in Desktop WSL sessions; check those settings.
+│  WARN  STATUSLINE_LOCAL_TRACKED  claude-code  .claude/settings.local.json
+│        .claude/settings.local.json is not ignored by Git.
+│        Impact: The machine-specific status line command can be committed.
+│        Fix: Add .claude/settings.local.json to .gitignore.
+└─
+
+┌─ Harnesses
+│  claude-code  installed, full support, overhead 221 ms / 100 ms WARN
+└─
+
+┌─ Context
+│  window    contextWindowCeiling (mod installed, bridge installed, last window unknown)
+│  snapshot  not configured (zone headers only, trigger RED)
+└─
+
+┌─ Checks passed
+│  OK  AUTO_RESTART_HANDOFF
+└─
+
+Run context-brake doctor --verbose to see 2 capability limitations and the passed-check messages.
+
+--- stderr ---

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import type { AdapterPlan, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { PlannedChange } from '../../../core/contracts/changes.js';
-import type { ManagedEntry } from '../../../core/contracts/manifest.js';
+import type { ManagedAsset, ManagedEntry } from '../../../core/contracts/manifest.js';
 import { validateJsonDocument } from '../../storage/json-validator.js';
 import { resolveChangeTarget } from '../common/change-target.js';
 import { validateRemovalConfig } from '../common/removal-config-validator.js';
@@ -22,6 +22,11 @@ export function buildClaudeEntries(): ManagedEntry[] {
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `SessionStart|startup|resume|clear|compact|${CLAUDE_HOOK_FILE}` },
     { harness: 'claude-code', path: CLAUDE_CONFIG_FILE, identity: `Stop|*|${CLAUDE_HOOK_FILE}` },
   ];
+}
+
+function keptBridgeAssets(context: HarnessContext): ManagedAsset[] {
+  if (context.statuslineBridge !== 'keep') return [];
+  return (context.manifest?.assets ?? []).filter((asset) => asset.path === STATUSLINE_BRIDGE_FILE);
 }
 
 function invalidConfigPlan(detail: string): AdapterPlan {
@@ -53,7 +58,7 @@ export async function planClaudeInstall(context: HarnessContext, source: Context
     ...statusline.changes,
   ];
   const autoRestart = await planAutoRestart(context, changes, { forModFirst: source === 'mod' });
-  return { harness: 'claude-code', changes: [...autoRestart.changes], conflicts: [...statusline.conflicts, ...autoRestart.conflicts], entries: buildClaudeEntries(), findings: statusline.findings };
+  return { harness: 'claude-code', changes: [...autoRestart.changes], conflicts: [...statusline.conflicts, ...autoRestart.conflicts], entries: buildClaudeEntries(), findings: statusline.findings, assets: keptBridgeAssets(context) };
 }
 
 export async function planClaudeRemove(projectRoot: string): Promise<AdapterPlan> {

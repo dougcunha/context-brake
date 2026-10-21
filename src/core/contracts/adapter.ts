@@ -1,5 +1,6 @@
 import type { PlannedChange, PlanConflict } from './changes.js';
 import type { DiagnosticFinding } from './diagnostics.js';
+import type { FixGroupMap } from './fix.js';
 import type {
   CapabilityProfile,
   DetectionEvidence,
@@ -9,7 +10,7 @@ import type {
 import type { ConfigOrigin, InstallationManifest, ManagedAsset, ManagedEntry } from './manifest.js';
 import type { ProcessRunner } from './processes.js';
 
-export type StatuslineBridgeRequest = 'install' | 'remove' | 'default';
+export type StatuslineBridgeRequest = 'install' | 'remove' | 'default' | 'keep';
 
 export type HarnessContext = {
   readonly projectRoot: string;
@@ -42,6 +43,7 @@ export type BenchmarkFixture = {
 export interface HarnessAdapter {
   readonly id: HarnessId;
   readonly executionModel: 'process' | 'in_process';
+  readonly fixGroups?: FixGroupMap;
   capabilityProfile(version?: VersionProbe): CapabilityProfile;
   detect(context: HarnessContext): Promise<readonly DetectionEvidence[]>;
   probeVersion(context: HarnessContext): Promise<VersionProbe>;

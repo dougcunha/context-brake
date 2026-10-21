@@ -1,0 +1,25 @@
+$ context-brake fix --dry-run
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s03-5UqZjX
+PATH kind: noClaude
+exit: 1
+--- stdout ---
+ContextBrake fix: 1 fixable, 0 need a decision, 1 manual
+
+┌─ Plan
+│  create  .claude/hooks/context-brake.mjs  ASSET_OUTDATED
+│          Install ContextBrake hook script
+│  update  .context-brake/manifest.json
+│          Record installation manifest with managed assets and entries
+└─
+
+┌─ Result
+│  PLANNED  ASSET_OUTDATED  claude-code  .claude/hooks/context-brake.mjs
+│  MANUAL   STATUSLINE_LOCAL_TRACKED  claude-code  .claude/settings.local.json
+│           Add .claude/settings.local.json to .gitignore.
+└─
+
+Dry run: no file was changed.
+
+ContextBrake doctor: WARN (0 errors, 2 warnings, 1 fixable)
+
+--- stderr ---

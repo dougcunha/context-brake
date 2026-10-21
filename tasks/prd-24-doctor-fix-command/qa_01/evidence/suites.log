@@ -1,0 +1,49 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/fix-outcomes.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/schemas.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/fix-arguments.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/fix-groups.test.ts [2m([22m[2m31 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/fix-text.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/asset-currency.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/doctor-fix-groups.test.ts [2m([22m[2m2 tests[22m[2m)[22m[33m 964[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor fix groups (FR-01, TC-05)[2m > [22mmarks an outdated asset as automatic and leaves ok findings without a fix group [33m 533[2mms[22m[39m
+   [33m[2m✓[22m[39m doctor fix groups (FR-01, TC-05)[2m > [22mpoints a modified asset to context-brake fix in the text output (FR-02) [33m 428[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/statusline-keep.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 1425[2mms[22m[39m
+   [33m[2m✓[22m[39m status line request keep (DEC-05, TC-07)[2m > [22mplans no status line change on the bridge source [33m 518[2mms[22m[39m
+   [33m[2m✓[22m[39m status line request keep (DEC-05, TC-07)[2m > [22mplans no status line change on the mod source [33m 465[2mms[22m[39m
+   [33m[2m✓[22m[39m status line request keep (DEC-05, TC-07)[2m > [22mreinstalls the bridge over the user status line with the default request [33m 440[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/doctor-fix-pointer.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/fix-stops.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 2715[2mms[22m[39m
+   [33m[2m✓[22m[39m fix that writes nothing (FR-07, FR-08, TC-14, TC-15)[2m > [22mstops with CONFIRMATION_REQUIRED without a terminal and without --yes [33m 729[2mms[22m[39m
+   [33m[2m✓[22m[39m fix that writes nothing (FR-07, FR-08, TC-14, TC-15)[2m > [22mshows planned and skipped outcomes in a dry run and changes no file [33m 661[2mms[22m[39m
+   [33m[2m✓[22m[39m fix stops (FR-11, FR-12, TC-18, TC-19, TC-25)[2m > [22mlists the manual findings when nothing can be fixed [33m 345[2mms[22m[39m
+   [33m[2m✓[22m[39m fix stops (FR-11, FR-12, TC-18, TC-19, TC-25)[2m > [22mchanges nothing when the configuration cannot be read [33m 311[2mms[22m[39m
+   [33m[2m✓[22m[39m fix exit codes (FR-13, TC-20)[2m > [22mexits 2 when a planned change fails [33m 498[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/fix-interactive.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 5020[2mms[22m[39m
+   [33m[2m✓[22m[39m fix confirmation on a terminal (FR-04, OBJ-02, TC-11)[2m > [22mshows the plan and writes nothing when the user answers no [33m 763[2mms[22m[39m
+   [33m[2m✓[22m[39m fix confirmation on a terminal (FR-04, OBJ-02, TC-11)[2m > [22masks nothing with --yes on a terminal [33m 830[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions on a terminal (FR-05, NFR-02, TC-12)[2m > [22manswer y replaces the modified file [33m 624[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions on a terminal (FR-05, NFR-02, TC-12)[2m > [22manswer n keeps the modified file [33m 561[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions on a terminal (FR-05, NFR-02, TC-12)[2m > [22manswer r to the inactive bridge decides the status line [33m 527[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions on a terminal (FR-05, NFR-02, TC-12)[2m > [22manswer f to the inactive bridge decides the status line [33m 480[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions on a terminal (FR-05, NFR-02, TC-12)[2m > [22manswer s keeps every owned file and needs no confirmation (codereview_01 CR-01, codereview_02 OI-02) [33m 498[2mms[22m[39m
+   [33m[2m✓[22m[39m fix harness decision on a terminal (FR-05, TC-12)[2m > [22manswer "claude-code" to the missing harness decides the install [33m 376[2mms[22m[39m
+   [33m[2m✓[22m[39m fix harness decision on a terminal (FR-05, TC-12)[2m > [22manswer "" to the missing harness decides the install [33m 358[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/fix-command.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 5252[2mms[22m[39m
+   [33m[2m✓[22m[39m fix with --yes (FR-03, FR-09, FR-13, OBJ-01, TC-10, TC-16, TC-20)[2m > [22mfixes an outdated asset, leaves doctor healthy, and writes nothing on a second run [33m 1412[2mms[22m[39m
+   [33m[2m✓[22m[39m fix with --yes (FR-03, FR-09, FR-13, OBJ-01, TC-10, TC-16, TC-20)[2m > [22mkeeps automatic restart on and reinstalls the missing mod files (FR-03, FR-10) [33m 817[2mms[22m[39m
+   [33m[2m✓[22m[39m fix with --yes (FR-03, FR-09, FR-13, OBJ-01, TC-10, TC-16, TC-20)[2m > [22mreports fixed, skipped, and manual outcomes and exits with the remaining warning [33m 559[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions without a terminal (FR-06, NFR-02, TC-13)[2m > [22mkeeps a modified file with --yes and replaces it with --yes --force [33m 854[2mms[22m[39m
+   [33m[2m✓[22m[39m fix decisions without a terminal (FR-06, NFR-02, TC-13)[2m > [22minstalls the harness that --harness names when no harness is active [33m 727[2mms[22m[39m
+   [33m[2m✓[22m[39m fix skip of the inactive bridge (codereview_01 CR-01, DEC-05)[2m > [22mkeeps the manifest and the .gitignore block byte for byte [33m 414[2mms[22m[39m
+   [33m[2m✓[22m[39m fix skip of the inactive bridge (codereview_01 CR-01, DEC-05)[2m > [22mreinstalls the bridge with --yes --force (FR-06, codereview_02 OI-03) [33m 467[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/e2e/e2e-fix.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 4233[2mms[22m[39m
+   [33m[2m✓[22m[39m built CLI fix smoke (prd-24 FR-14, TC-21)[2m > [22mplans the fix of an outdated hook as a schema-valid report and changes no file [33m 4232[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m94 passed[39m[22m[90m (94)[39m
+[2m   Start at [22m 16:00:20
+[2m   Duration [22m 14.00s[2m (transform 2.78s, setup 0ms, collect 19.91s, tests 19.72s, environment 4ms, prepare 2.18s)[22m
+

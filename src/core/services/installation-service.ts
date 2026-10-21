@@ -40,6 +40,7 @@ export type InstallationInput = {
   autoRestart?: AutoRestartUpdate | undefined;
   dropped?: readonly DroppedKey[] | undefined;
   insideGit?: boolean | undefined;
+  overwritePaths?: ReadonlySet<string> | undefined;
 };
 
 export type InstallationResult = {
@@ -73,7 +74,7 @@ export async function planInstallation(input: InstallationInput): Promise<Instal
   const cfg = planConfigChange({ root: input.projectRoot, current: input.config, active: activeIds, snapshot: input.allSnapshots.find((s) => s.path === 'context-brake.config.json'), snapshotUpdate: input.snapshotUpdate, debug: input.debug, gitIgnore: input.gitIgnore, autoRestart: input.autoRestart, dropped: input.dropped, excluded: input.excluded, retained: [...removals.conflictedHarnesses] });
   const ap = await planAdapters(input.adapters, active, input.context);
   const extras = planRestartExtras({ wanted: input.context.autoRestart === true, adapters: input.adapters, active, snapshot: input.allSnapshots.find((s) => s.path === HANDOFF_IGNORE_PATH), logs: input.allSnapshots.filter((s) => s.path.startsWith(`${RESTART_LOG_RELATIVE_DIR}/`)), previousManifest: input.previousManifest ?? null });
-  const protection = protectModifiedAssets(ap.changes, input.previousManifest ?? null, input.allSnapshots);
+  const protection = protectModifiedAssets(ap.changes, { manifest: input.previousManifest ?? null, snapshots: input.allSnapshots, overwritePaths: input.overwritePaths });
   const modifiedPaths = new Set(protection.conflicts.map((c) => c.path));
   const preservedAssets = (input.previousManifest?.assets ?? []).filter((a) => modifiedPaths.has(a.path));
   const adapterAssets = [...ap.assets.filter((a) => !modifiedPaths.has(a.path)), ...preservedAssets, ...extras.assets];

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "s06b",
+    "obligation": "FR-01",
+    "name": "NO_PROJECT_HARNESS is in group decision",
+    "ok": true,
+    "detail": "non-ok: ASSET_MISSING:error:automatic, INTEGRATION_MISSING:error:automatic, NO_PROJECT_HARNESS:warning:decision, STATUSLINE_BRIDGE_INACTIVE:warning:decision, STATUSLINE_BRIDGE_MISSING_SCRIPT:warning:automatic, STATUSLINE_LOCAL_TRACKED:warning:manual, VERSION_FLOOR_UNVERIFIED:warning:manual"
+  },
+  {
+    "id": "s06b",
+    "obligation": "FR-06",
+    "name": "--yes: NO_PROJECT_HARNESS skipped, nothing installed",
+    "ok": true,
+    "detail": "detail: Needs a harness. Pass --harness <id>."
+  },
+  {
+    "id": "s06b",
+    "obligation": "FR-06",
+    "name": "--yes --force without --harness: NO_PROJECT_HARNESS stays skipped",
+    "ok": true,
+    "detail": "detail: Needs a harness. Pass --harness <id>."
+  },
+  {
+    "id": "s06b",
+    "obligation": "FR-06",
+    "name": "--yes --force --harness claude-code installs claude-code",
+    "ok": true,
+    "detail": "exit 1; outcomes: ASSET_MISSING=fixed, INTEGRATION_MISSING=fixed, NO_PROJECT_HARNESS=fixed, STATUSLINE_BRIDGE_INACTIVE=fixed, STATUSLINE_BRIDGE_MISSING_SCRIPT=fixed, STATUSLINE_LOCAL_TRACKED=manual, VERSION_FLOOR_UNVERIFIED=manual"
+  }
+]

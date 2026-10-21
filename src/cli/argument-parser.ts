@@ -1,23 +1,25 @@
 import { parseArgs } from 'node:util';
 import type { HarnessId } from '../core/contracts/harness.js';
 import { CliArgumentError, validateHarnessIds } from './argument-validator.js';
+import { parseFix, type ParsedFixArgs } from './fix-arguments.js';
 import { parseInit, type ParsedInitArgs } from './init-arguments.js';
 
 export { CliArgumentError } from './argument-validator.js';
 export type { ParsedInitArgs } from './init-arguments.js';
+export type { ParsedFixArgs } from './fix-arguments.js';
 
-export type ParsedDoctorArgs = { command: 'doctor'; json: boolean; harness: readonly HarnessId[] };
+export type ParsedDoctorArgs = { command: 'doctor'; json: boolean; verbose: boolean; harness: readonly HarnessId[] };
 export type ParsedRemoveArgs = { command: 'remove'; dryRun: boolean; yes: boolean; json: boolean };
 export type ParsedHelpArgs = { command: 'help' };
-export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedHelpArgs;
+export type ParsedCliArgs = ParsedInitArgs | ParsedDoctorArgs | ParsedRemoveArgs | ParsedFixArgs | ParsedHelpArgs;
 
 function parseDoctor(args: readonly string[]): ParsedDoctorArgs {
   const { values } = parseArgs({
     args: [...args],
-    options: { json: { type: 'boolean', default: false }, harness: { type: 'string', multiple: true, default: [] } },
+    options: { json: { type: 'boolean', default: false }, verbose: { type: 'boolean', default: false }, harness: { type: 'string', multiple: true, default: [] } },
     strict: true,
   });
-  return { command: 'doctor', json: Boolean(values.json), harness: validateHarnessIds(values.harness as string[]) };
+  return { command: 'doctor', json: Boolean(values.json), verbose: Boolean(values.verbose), harness: validateHarnessIds(values.harness as string[]) };
 }
 
 function parseRemove(args: readonly string[]): ParsedRemoveArgs {
@@ -42,7 +44,8 @@ export function parseCliArgs(args: readonly string[]): ParsedCliArgs {
     if (cmd === 'init') return parseInit(rest);
     if (cmd === 'doctor') return parseDoctor(rest);
     if (cmd === 'remove') return parseRemove(rest);
-    throw new CliArgumentError(`Unknown command '${cmd}'. Allowed commands: init, doctor, remove.`);
+    if (cmd === 'fix') return parseFix(rest);
+    throw new CliArgumentError(`Unknown command '${cmd}'. Allowed commands: init, doctor, remove, fix.`);
   } catch (error) {
     if (error instanceof CliArgumentError) throw error;
     throw new CliArgumentError(error instanceof Error ? error.message : String(error));

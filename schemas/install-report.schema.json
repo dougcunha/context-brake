@@ -427,6 +427,23 @@
               "string",
               "null"
             ]
+          },
+          "fix": {
+            "type": "object",
+            "properties": {
+              "group": {
+                "type": "string",
+                "enum": [
+                  "automatic",
+                  "decision",
+                  "manual"
+                ]
+              }
+            },
+            "required": [
+              "group"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [

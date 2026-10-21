@@ -1,39 +1,5 @@
-import type { CliErrorDocument, DiagnosticFinding, DoctorReport } from '../../core/contracts/diagnostics.js';
-import { excludedDetectionLines } from './detection-text.js';
-import { renderModeLines } from './doctor-mode-text.js';
-import { renderActiveSessionsText } from './doctor-sessions-text.js';
-
-export function renderFinding(f: DiagnosticFinding): string {
-  const label = f.severity === 'error' ? '[ERROR]' : f.severity === 'warning' ? '[WARN]' : '[OK]';
-  const lines = [`  ${label} ${f.code}: ${f.message}`];
-  if (f.impact) lines.push(`    Impact: ${f.impact}`);
-  if (f.remediation) lines.push(`    Remediation: ${f.remediation}`);
-  return lines.join('\n');
-}
-
-export function renderDoctorText(report: DoctorReport): void {
-  const stream = report.status === 'errors' ? process.stderr : process.stdout;
-  const label = report.status === 'errors' ? '[ERROR]' : report.status === 'warnings' ? '[WARN]' : '[OK]';
-  stream.write(`${label} ContextBrake doctor: ${report.status}\n`);
-  for (const integ of report.integrations) {
-    let line = `  - ${integ.harness}: ${integ.state} (support: ${integ.support.supportLevel}`;
-    if (integ.version) line += `, version: ${integ.version}`;
-    if (integ.overhead?.p95Milliseconds !== null && integ.overhead?.p95Milliseconds !== undefined) {
-      line += `, overhead: ${integ.overhead.p95Milliseconds}ms/${integ.overhead.targetMilliseconds}ms (${integ.overhead.status})`;
-    }
-    line += ')';
-    stream.write(`${line}\n`);
-    for (const lim of integ.support.limitations) stream.write(`    * ${lim.capability}: ${lim.impact}\n`);
-  }
-  for (const line of excludedDetectionLines(report.detections)) stream.write(line);
-  const window = report.contextWindow;
-  if (window) stream.write(`  - context window: ${window.source} (mod: ${window.mod}, bridge: ${window.bridge}, last window: ${window.lastWindowTokens ?? 'unknown'})\n`);
-  stream.write(renderModeLines(report));
-  stream.write(renderActiveSessionsText(report.activeSessions, new Date()));
-  for (const f of report.findings) stream.write(`${renderFinding(f)}\n`);
-}
+import type { CliErrorDocument } from '../../core/contracts/diagnostics.js';
 
 export function renderCliErrorText(doc: CliErrorDocument): void {
   process.stderr.write(`[ERROR] ${doc.error.code}: ${doc.error.message}\n`);
 }
-

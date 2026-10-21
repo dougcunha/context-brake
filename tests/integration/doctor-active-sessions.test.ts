@@ -7,7 +7,7 @@ import { removeProject, runCli } from '../helpers/delegated-world.js';
 import { createLightProject, LIGHT_INIT } from '../helpers/light-world.js';
 
 const RED_READING: ToolLineInput = { toolUseId: 'toolu_1', observedCharacters: 10, turn: 1, usedTokens: 86000, windowTokens: 128000, estimatedTokens: 86000, source: 'estimated', zone: 'RED' };
-const SESSIONS_TEXT = / {2}- active sessions:\n {4}\* claude-code latest: 67% \(86000\/128000, RED, estimated\), last activity [12] min ago\n {4}\* claude-code cleared: usage unknown since last reset, last activity [23] min ago\n {4}\* claude-code recent: 67% /;
+const SESSIONS_TEXT = /Sessions\n[│|] {2}latest {3}claude-code {2}67% {2}86,000 \/ 128,000 {2}RED {2}estimated {2}[12] min ago\n[│|] {2}cleared {2}claude-code {2}usage unknown since last reset {2}[23] min ago\n[│|] {2}recent {3}claude-code {2}67% /;
 let root: string;
 beforeEach(async () => {
   root = await createLightProject('cb-doctor-sessions-');
@@ -47,6 +47,6 @@ describe('doctor lists active sessions with their usage (TC-17, FR-14, OBJ-05, c
     await seedReading('old', 45);
     expect('activeSessions' in (await doctorJson())).toBe(false);
     const text = await runCli(root, ['doctor']);
-    expect(text.stdout + text.stderr).not.toContain('active sessions');
+    expect(text.stdout + text.stderr).not.toContain('Sessions');
   });
 });

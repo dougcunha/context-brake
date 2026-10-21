@@ -2,11 +2,12 @@ import { z } from 'zod';
 import { CHANGE_OWNERS } from './changes.js';
 import { configurationSchema, SNAPSHOT_TRIGGER_ZONES } from './configuration.js';
 import { contextWindowReportSchema } from './context-window-report.js';
+import { fixFieldSchema } from './fix.js';
 import { CAPABILITY_IDS, CAPABILITY_STATES, DETECTION_ORIGINS, DETECTION_STATES, HARNESS_IDS, SUPPORT_LEVELS } from './harness.js';
 import { USAGE_SOURCES, ZONES } from './zones.js';
 
 const severity = z.enum(['ok', 'warning', 'error']);
-const finding = z.object({ code: z.string().regex(/^[A-Z0-9_]+$/), severity, scope: z.enum(['project', 'harness', 'file', 'performance']), harness: z.enum(HARNESS_IDS).nullable(), path: z.string().nullable(), message: z.string(), impact: z.string().nullable(), remediation: z.string().nullable() }).strict();
+const finding = z.object({ code: z.string().regex(/^[A-Z0-9_]+$/), severity, scope: z.enum(['project', 'harness', 'file', 'performance']), harness: z.enum(HARNESS_IDS).nullable(), path: z.string().nullable(), message: z.string(), impact: z.string().nullable(), remediation: z.string().nullable(), fix: fixFieldSchema.optional() }).strict();
 export const diagnosticFindingSchema = finding;
 const detection = z.object({ harness: z.enum(HARNESS_IDS), state: z.enum(DETECTION_STATES), evidence: z.array(z.object({ origin: z.enum(DETECTION_ORIGINS), kind: z.string(), value: z.string() }).strict()), selectedExplicitly: z.boolean(), version: z.string().nullable(), versionSource: z.enum(['executable', 'config']).nullable() }).strict();
 const capability = z.object({ id: z.enum(CAPABILITY_IDS), state: z.enum(CAPABILITY_STATES) }).strict();
@@ -26,7 +27,7 @@ const snapshotReport = z.object({ triggerZone: z.enum(SNAPSHOT_TRIGGER_ZONES), t
 const sessionUsage = z.object({ percentage: z.number().int().nonnegative(), usedTokens: z.number().int().nonnegative(), windowTokens: z.number().int().positive(), zone: z.enum(ZONES), source: z.enum(USAGE_SOURCES), at: z.string() }).strict();
 const activeSession = z.object({ harness: z.enum(HARNESS_IDS), sessionId: z.string().nullable(), lastActivityAt: z.string(), usage: sessionUsage.nullable() }).strict();
 export const doctorReportSchema = z.object({ schemaVersion: z.literal(1), command: z.literal('doctor'), status: z.enum(['healthy', 'warnings', 'errors']), exitCode: z.union([z.literal(0), z.literal(1), z.literal(2)]), detections: z.array(detection), integrations: z.array(integration), findings: z.array(finding), snapshot: snapshotReport.optional(), contextWindow: contextWindowReportSchema.optional(), activeSessions: z.array(activeSession).optional(), debugMode: z.optional(z.literal(true)) }).strict();
-export const CLI_ERROR_COMMANDS = ['init', 'remove', 'doctor'] as const;
+export const CLI_ERROR_COMMANDS = ['init', 'remove', 'doctor', 'fix'] as const;
 export const CLI_ERROR_CODES = ['INVALID_CONTEXTBRAKE_CONFIG', 'CONFIRMATION_REQUIRED', 'UNEXPECTED_ERROR'] as const;
 const cliErrorBase = { schemaVersion: z.literal(1), command: z.enum(CLI_ERROR_COMMANDS), status: z.literal('error'), error: z.object({ message: z.string() }).strict() };
 export const cliErrorSchema = z.union([

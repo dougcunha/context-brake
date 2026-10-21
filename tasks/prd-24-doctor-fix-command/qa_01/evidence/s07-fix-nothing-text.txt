@@ -1,0 +1,17 @@
+$ context-brake fix --yes
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s07-LPkbvJ
+PATH kind: noClaude
+exit: 1
+--- stdout ---
+ContextBrake fix: nothing can be fixed automatically
+
+┌─ Result
+│  MANUAL  RUNTIME_ERRORS_RECORDED  .context-brake/runtime/errors.jsonl
+│          Inspect .context-brake/runtime/errors.jsonl and fix the reported failures.
+│  MANUAL  STATUSLINE_LOCAL_TRACKED  claude-code  .claude/settings.local.json
+│          Add .claude/settings.local.json to .gitignore.
+└─
+
+ContextBrake doctor: WARN (0 errors, 2 warnings)
+
+--- stderr ---

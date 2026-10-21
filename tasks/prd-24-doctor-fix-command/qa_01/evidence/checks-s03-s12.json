@@ -1,0 +1,44 @@
+[
+  {
+    "id": "s03",
+    "obligation": "FR-07",
+    "name": "no TTY, no --yes: exit 2 CONFIRMATION_REQUIRED, no change",
+    "ok": true,
+    "detail": "exit 2; [ERROR] CONFIRMATION_REQUIRED: Confirmation required for write operations. Use --yes in non-interactive environments."
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-08",
+    "name": "dry run text: plan + Dry run line, no change",
+    "ok": true,
+    "detail": "exit 1"
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-14",
+    "name": "dry run JSON: schema-valid, mode dry_run, exit = exitCode, ASSET_OUTDATED planned",
+    "ok": true,
+    "detail": "exit 1; plan changes 2"
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-08",
+    "name": "hashes equal after all stop runs",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-14",
+    "name": "--force --dry-run --json is accepted (no prompt)",
+    "ok": true,
+    "detail": "exit 1"
+  },
+  {
+    "id": "s12",
+    "obligation": "OBJ-01",
+    "name": "only automatic findings: fix --yes exit 0 and doctor exit 0",
+    "ok": true,
+    "detail": "init 0; doctor before 0; findings ASSET_OUTDATED:warning:automatic; fix 0; doctor after 0"
+  }
+]

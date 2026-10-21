@@ -2,11 +2,13 @@ import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { configurationSchema } from '../src/core/contracts/configuration.js';
 import { doctorReportSchema, installReportSchema } from '../src/core/contracts/diagnostics.js';
+import { fixReportSchema } from '../src/core/contracts/fix-report.js';
 
 const outputs = {
   'context-brake.config.schema.json': configurationSchema,
   'doctor-report.schema.json': doctorReportSchema,
   'install-report.schema.json': installReportSchema,
+  'fix-report.schema.json': fixReportSchema,
 } as const;
 const INPUT_SCHEMAS: ReadonlySet<string> = new Set(['context-brake.config.schema.json']);
 for (const [name, schema] of Object.entries(outputs)) {

@@ -13,7 +13,7 @@ import type { CommandEnv } from './commands/init.js';
 function handleParseError(err: CliArgumentError, argsList: readonly string[]): number {
   const isJson = argsList.includes('--json');
   const first = argsList[0];
-  const cmd = first === 'doctor' || first === 'remove' ? first : 'init';
+  const cmd = first === 'doctor' || first === 'remove' || first === 'fix' ? first : 'init';
   const doc = buildCliErrorDocument({ command: cmd, code: 'INVALID_ARGUMENTS', message: err.message });
   if (isJson) {
     renderJsonOutput(doc);

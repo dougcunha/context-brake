@@ -15,6 +15,7 @@ const REQUIRED_FILES: readonly string[] = [
   'schemas/context-brake.config.schema.json',
   'schemas/doctor-report.schema.json',
   'schemas/install-report.schema.json',
+  'schemas/fix-report.schema.json',
   'docs/telemetry-block.md',
   'dist/assets/runtime/context-brake-runtime.mjs',
   'dist/assets/runtime/claude-code-hook.mjs',

@@ -26,10 +26,14 @@ export function activeSessions(ledgers: readonly HarnessLedger[], input: ActiveS
 function datedSession(ledger: HarnessLedger, zones: ZoneLimits): DatedSession[] {
   const stamps = ledger.lines.map((line) => Date.parse(line.at)).filter((stamp) => !Number.isNaN(stamp));
   if (stamps.length === 0) return [];
-  const lastActivity = Math.max(...stamps);
   const summary = summarizeLedger(ledger.lines);
+  if (isSubagentLedger(summary)) return [];
+  const lastActivity = Math.max(...stamps);
   const session = { harness: ledger.harness, sessionId: summary.sessionLine?.sessionId ?? null, lastActivityAt: new Date(lastActivity).toISOString(), usage: currentUsage(summary, zones) };
   return [{ session, lastActivity }];
+}
+function isSubagentLedger(summary: SessionSummary): boolean {
+  return typeof summary.sessionLine?.agentId === 'string';
 }
 function currentUsage(summary: SessionSummary, zones: ZoneLimits): SessionUsage {
   const tool = summary.lastReading;

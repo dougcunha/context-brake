@@ -58,31 +58,26 @@ export async function assetCurrencyFindings(adapter: HarnessAdapter, input: Asse
   return findings;
 }
 
-export function protectModifiedAssets(
-  changes: readonly PlannedChange[],
-  previousManifest: InstallationManifest | null,
-  allSnapshots: readonly FileSnapshot[],
-): { changes: PlannedChange[]; conflicts: PlanConflict[] } {
-  if (!previousManifest) return { changes: [...changes], conflicts: [] };
-  const conflicts: PlanConflict[] = [];
-  const kept: PlannedChange[] = [];
-  for (const change of changes) {
-    if (change.owner !== 'runtime_asset' || change.content === null || (change.kind !== 'create' && change.kind !== 'update')) {
-      kept.push(change);
-      continue;
-    }
-    const manifestAsset = previousManifest.assets.find((a) => a.path === change.path);
-    const snap = allSnapshots.find((s) => s.path === change.path);
-    if (!manifestAsset || !snap?.exists || !snap.sha256) {
-      kept.push(change);
-      continue;
-    }
-    const outcome = classifyAssetCurrency(snap.sha256, manifestAsset.sha256, hashString(change.content));
-    if (outcome === 'modified') {
-      conflicts.push({ path: change.path, code: 'MODIFIED_OWNED_ASSET', detail: 'Asset was modified since installation and will not be overwritten' });
-      continue;
-    }
-    kept.push(change);
-  }
-  return { changes: kept, conflicts };
+export type AssetProtection = {
+  readonly manifest: InstallationManifest | null;
+  readonly snapshots: readonly FileSnapshot[];
+  readonly overwritePaths?: ReadonlySet<string> | undefined;
+};
+
+function isModifiedAsset(change: PlannedChange, protection: AssetProtection): boolean {
+  if (change.owner !== 'runtime_asset' || change.content === null || (change.kind !== 'create' && change.kind !== 'update')) return false;
+  if (protection.overwritePaths?.has(change.path) === true) return false;
+  const manifestAsset = protection.manifest?.assets.find((a) => a.path === change.path);
+  const snap = protection.snapshots.find((s) => s.path === change.path);
+  if (!manifestAsset || !snap?.exists || !snap.sha256) return false;
+  return classifyAssetCurrency(snap.sha256, manifestAsset.sha256, hashString(change.content)) === 'modified';
+}
+
+export function protectModifiedAssets(changes: readonly PlannedChange[], protection: AssetProtection): { changes: PlannedChange[]; conflicts: PlanConflict[] } {
+  if (!protection.manifest) return { changes: [...changes], conflicts: [] };
+  const modified = changes.filter((change) => isModifiedAsset(change, protection));
+  return {
+    changes: changes.filter((change) => !modified.includes(change)),
+    conflicts: modified.map((change) => ({ path: change.path, code: 'MODIFIED_OWNED_ASSET', detail: 'Asset was modified since installation and will not be overwritten' })),
+  };
 }

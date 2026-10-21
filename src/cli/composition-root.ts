@@ -4,6 +4,7 @@ import type { CommandEnv } from './commands/init.js';
 import { runInit } from './commands/init.js';
 import { runDoctor } from './commands/doctor.js';
 import { runRemove } from './commands/remove.js';
+import { runFix } from './commands/fix.js';
 import { CLI_ERROR_CODES } from '../core/contracts/diagnostics.js';
 import { buildCliErrorDocument, type BuildCliErrorInput } from '../core/services/report-service.js';
 import { renderJsonOutput } from './output/json.js';
@@ -17,11 +18,13 @@ function renderHelp(): void {
     '  context-brake init [options]',
     '  context-brake doctor [options]',
     '  context-brake remove [options]',
+    '  context-brake fix [options]',
     '',
     'Commands:',
     '  init     Detect harnesses, register integrations, and initialize ContextBrake',
     '  doctor   Diagnose integrations, configurations, versions, and overhead',
     '  remove   Remove ContextBrake integrations and managed files',
+    '  fix      Correct the problems that doctor finds and ContextBrake can fix',
     '',
   ].join('\n'));
 }
@@ -56,6 +59,7 @@ export async function dispatchCommand(args: ParsedCliArgs, env: CommandEnv): Pro
     if (args.command === 'init') return await runInit(args, canonicalEnv);
     if (args.command === 'doctor') return await runDoctor(args, canonicalEnv);
     if (args.command === 'remove') return await runRemove(args, canonicalEnv);
+    if (args.command === 'fix') return await runFix(args, canonicalEnv);
     return 0;
   } catch (err) {
     return handleCommandError(err, args.command, args.json);

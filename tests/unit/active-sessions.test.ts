@@ -41,6 +41,11 @@ describe('active session usage (TC-16, FR-14)', () => {
     const [session] = sessions([ledger('a', [toolLine(minutesAgo(4)), { v: 1, type: 'reset', at: minutesAgo(2), reason: 'clear' }])]);
     expect(session?.usage).toBeNull();
   });
+  it('lists only the main agent of a session with subagents and keeps a bridge-only ledger (FR-09, TC-09)', () => {
+    const subagents = ['a1', 'a2', 'a3'].map((agentId): HarnessLedger => ({ harness: 'claude-code', lines: [{ ...sessionLine('main', minutesAgo(1)), agentId }, toolLine(minutesAgo(1))] }));
+    const result = sessions([ledger('main', [toolLine(minutesAgo(2))]), ...subagents, { harness: 'claude-code', lines: [statusLine(minutesAgo(3), 100000)] }]);
+    expect(result.map((session) => session.sessionId)).toEqual(['main', null]);
+  });
   it('reports a null session id for a bridge-only ledger', () => {
     const [session] = sessions([{ harness: 'claude-code', lines: [statusLine(minutesAgo(1), 100000)] }]);
     expect(session).toMatchObject({ sessionId: null, usage: { percentage: 10, zone: 'GREEN', source: 'measured' } });

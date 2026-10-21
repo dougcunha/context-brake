@@ -1,0 +1,89 @@
+ M .gitignore
+ M README.md
+ M docs/research/harness-integrations.md
+ M schemas/doctor-report.schema.json
+ M schemas/install-report.schema.json
+ M scripts/check-package.ts
+ M scripts/check-schemas.ts
+ M scripts/generate-schemas.ts
+ M src/cli/argument-parser.ts
+ M src/cli/commands/doctor.ts
+ M src/cli/composition-root.ts
+ M src/cli/init-config-updates.ts
+ M src/cli/init-flow.ts
+ M src/cli/main.ts
+ D src/cli/output/detection-text.ts
+ M src/cli/output/doctor-mode-text.ts
+ M src/cli/output/doctor-sessions-text.ts
+ M src/cli/output/text.ts
+ M src/core/contracts/adapter.ts
+ M src/core/contracts/diagnostics.ts
+ M src/core/services/active-sessions.ts
+ M src/core/services/asset-currency.ts
+ M src/core/services/installation-service.ts
+ M src/infrastructure/harnesses/claude-code/adapter.ts
+ M src/infrastructure/harnesses/claude-code/capabilities.ts
+ M src/infrastructure/harnesses/claude-code/planner.ts
+ M src/infrastructure/harnesses/claude-code/statusline-planner.ts
+ M src/infrastructure/harnesses/oh-my-pi/adapter.ts
+ M src/infrastructure/harnesses/pi/adapter.ts
+ M tasks/triage-log.jsonl
+ M tests/bench/e2e-09.test.ts
+ M tests/integration/adapter-version-probes.test.ts
+ M tests/integration/config-repair-errors.test.ts
+ M tests/integration/debug-mode-lifecycle.test.ts
+ M tests/integration/doctor-active-sessions.test.ts
+ M tests/integration/doctor-exclusion.test.ts
+ M tests/integration/init-remove-footprint.test.ts
+ M tests/integration/linked-project-root-lifecycle.test.ts
+ M tests/integration/package-contents.test.ts
+ M tests/unit/active-sessions.test.ts
+ M tests/unit/asset-currency.test.ts
+ M tests/unit/cli-output-text.test.ts
+ M tests/unit/doctor-mode-text.test.ts
+ M tests/unit/e2e-smoke-set.test.ts
+ M tests/unit/schemas.test.ts
+ M tests/unit/snapshot-trigger-percentage-merge.test.ts
+?? schemas/fix-report.schema.json
+?? src/cli/commands/fix-interactive.ts
+?? src/cli/commands/fix.ts
+?? src/cli/doctor-diagnosis.ts
+?? src/cli/fix-arguments.ts
+?? src/cli/fix-decisions.ts
+?? src/cli/fix-prompts.ts
+?? src/cli/fix-steps.ts
+?? src/cli/init-plan.ts
+?? src/cli/output/doctor-rows.ts
+?? src/cli/output/doctor-text.ts
+?? src/cli/output/fix-rows.ts
+?? src/cli/output/fix-text.ts
+?? src/cli/output/harness-labels.ts
+?? src/cli/output/token-format.ts
+?? src/core/contracts/fix-report.ts
+?? src/core/contracts/fix.ts
+?? src/core/services/fix-groups.ts
+?? src/core/services/fix-outcomes.ts
+?? src/infrastructure/harnesses/claude-code/fix-groups.ts
+?? src/infrastructure/harnesses/common/restart-fix-groups.ts
+?? tasks/prd-21-manual-handoff-command/
+?? tasks/prd-22-claude-code-version-floor/
+?? tasks/prd-23-doctor-readable-output/
+?? tasks/prd-24-doctor-fix-command/
+?? tests/e2e/e2e-fix.test.ts
+?? tests/helpers/doctor-fixtures.ts
+?? tests/helpers/fix-world.ts
+?? tests/integration/doctor-fix-groups.test.ts
+?? tests/integration/doctor-verbose.test.ts
+?? tests/integration/fix-command.test.ts
+?? tests/integration/fix-interactive.test.ts
+?? tests/integration/fix-stops.test.ts
+?? tests/integration/statusline-keep.test.ts
+?? tests/unit/doctor-arguments.test.ts
+?? tests/unit/doctor-fix-pointer.test.ts
+?? tests/unit/doctor-rows.test.ts
+?? tests/unit/doctor-sessions-text.test.ts
+?? tests/unit/doctor-text.test.ts
+?? tests/unit/fix-arguments.test.ts
+?? tests/unit/fix-groups.test.ts
+?? tests/unit/fix-outcomes.test.ts
+?? tests/unit/fix-text.test.ts

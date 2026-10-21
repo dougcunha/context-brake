@@ -21,6 +21,7 @@ const EMPTY_PLAN: StatuslinePlan = { changes: [], conflicts: [], findings: [] };
 type Origin = Omit<StatuslineState, 'v' | 'installedCommand'> & { readonly options: StatuslineObject; readonly findings: readonly DiagnosticFinding[] };
 
 export async function planStatuslineInstall(context: HarnessContext, source: ContextSource): Promise<StatuslinePlan> {
+  if (context.statuslineBridge === 'keep') return EMPTY_PLAN;
   if (source === 'mod') return planModFirstStatusline(context);
   const plan = context.statuslineBridge === 'remove' ? await planStatuslineOptOut(context.projectRoot) : await requestedEntry(context);
   return { ...plan, changes: [await bridgeAssetChange(context.projectRoot), ...plan.changes] };

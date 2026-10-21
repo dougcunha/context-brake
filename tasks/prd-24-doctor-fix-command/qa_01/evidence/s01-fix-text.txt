@@ -1,0 +1,8 @@
+$ context-brake fix
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s01-aSomVD
+PATH kind: noClaude
+exit: 2
+--- stdout ---
+ContextBrake fix: ContextBrake is not installed in this project. Run context-brake init first.
+
+--- stderr ---

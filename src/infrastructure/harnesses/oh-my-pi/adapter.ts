@@ -10,6 +10,7 @@ import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { detectOmp, OMP_EXECUTABLES } from './detector.js';
 import { OMP_CAPABILITIES } from './capabilities.js';
+import { RESTART_FIX_GROUPS } from '../common/restart-fix-groups.js';
 import { diagnoseInProcessRestart } from '../common/restart-diagnostics.js';
 import { harnessRestartMode } from '../../../core/services/restart-install-extras.js';
 import { OMP_EXTENSION_FILE, OMP_RESTART_FILE, planOmpInstall, planOmpRemove } from './planner.js';
@@ -17,6 +18,7 @@ import { OMP_EXTENSION_FILE, OMP_RESTART_FILE, planOmpInstall, planOmpRemove } f
 export class OhMyPiAdapter implements HarnessAdapter {
   readonly id = 'oh-my-pi';
   readonly executionModel = 'in_process' as const;
+  readonly fixGroups = RESTART_FIX_GROUPS;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
     return deriveSupportProfile({ harness: this.id, capabilities: OMP_CAPABILITIES, version });

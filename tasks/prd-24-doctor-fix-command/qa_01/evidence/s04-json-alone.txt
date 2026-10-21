@@ -1,0 +1,17 @@
+$ context-brake fix --json
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s04-Vw7s3H
+PATH kind: noClaude
+exit: 64
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "fix",
+  "status": "error",
+  "error": {
+    "code": "INVALID_ARGUMENTS",
+    "message": "--json needs --yes or --dry-run, because fix --json never asks questions."
+  },
+  "exitCode": 64
+}
+
+--- stderr ---

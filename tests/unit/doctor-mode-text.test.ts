@@ -1,23 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { renderModeLines } from '../../src/cli/output/doctor-mode-text.js';
+import { contextRows, describeSnapshot } from '../../src/cli/output/doctor-mode-text.js';
 import type { SnapshotReport } from '../../src/core/contracts/diagnostics.js';
 
-const DEBUG_LINE = '  - debug mode: on\n';
 const NO_COMMAND: SnapshotReport = { triggerZone: 'RED', command: null, resumeCommand: null };
 const WITH_COMMAND: SnapshotReport = { triggerZone: 'YELLOW', command: 'sdd-snapshot', resumeCommand: 'resume' };
 const WITH_FORMS: SnapshotReport = { ...WITH_COMMAND, invocations: [{ harness: 'claude-code', command: '/sdd-snapshot', resumeCommand: '/resume' }, { harness: 'opencode', command: 'use the sdd-snapshot skill', resumeCommand: null }] };
 
-describe('doctor snapshot and debug lines (prd-12 FR-09, TC-13)', () => {
-  it('prints nothing without a snapshot report or the debug mode', () => {
-    expect(renderModeLines({})).toBe('');
+describe('doctor context rows (FR-07, NFR-03, TC-05)', () => {
+  it('prints nothing without context, snapshot, or debug mode', () => {
+    expect(contextRows({})).toEqual([]);
   });
   it('says when no snapshot command is configured', () => {
-    expect(renderModeLines({ snapshot: NO_COMMAND })).toBe('  - snapshot: not configured (zone headers only, trigger: RED)\n');
+    expect(describeSnapshot(NO_COMMAND)).toBe('not configured (zone headers only, trigger RED)');
   });
-  it('prints the snapshot command, trigger, and resume command before the debug line', () => {
-    expect(renderModeLines({ snapshot: WITH_COMMAND, debugMode: true })).toBe(`  - snapshot: sdd-snapshot at YELLOW, resume: resume\n${DEBUG_LINE}`);
+  it('lists the window, the snapshot with each harness invocation, and the debug mode in this order', () => {
+    const rows = contextRows({ contextWindow: { bridge: 'installed', mod: 'reporting', source: 'mod', lastWindowTokens: 1000000 }, snapshot: WITH_FORMS, debugMode: true });
+    expect(rows).toEqual([
+      { label: 'window', value: 'mod (mod reporting, bridge installed, last window 1,000,000)' },
+      { label: 'snapshot', value: 'sdd-snapshot at YELLOW, resume resume', notes: ['claude-code: /sdd-snapshot, resume /resume', 'opencode: use the sdd-snapshot skill'] },
+      { label: 'debug mode', value: 'on', tone: 'warn' },
+    ]);
   });
-  it('prints the form each active harness will receive under the snapshot line (prd-19 FR-07, TC-08)', () => {
-    expect(renderModeLines({ snapshot: WITH_FORMS })).toBe('  - snapshot: sdd-snapshot at YELLOW, resume: resume\n    - claude-code: /sdd-snapshot, resume: /resume\n    - opencode: use the sdd-snapshot skill\n');
+  it('prints an unknown last window', () => {
+    const [row] = contextRows({ contextWindow: { bridge: 'installed', mod: 'absent', source: 'statusline', lastWindowTokens: null } });
+    expect(row?.value).toBe('statusline (mod absent, bridge installed, last window unknown)');
   });
 });

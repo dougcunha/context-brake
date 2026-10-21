@@ -10,6 +10,8 @@ export type ConfigUpdates = { readonly snapshot: SnapshotUpdate; readonly debug:
 
 const KEEP = { kind: 'keep' } as const;
 
+export const KEEP_UPDATES: ConfigUpdates = { snapshot: KEEP, debug: KEEP, gitIgnore: KEEP, autoRestart: KEEP };
+
 export function planConfigUpdates(config: ContextBrakeConfig | null, args: ParsedInitArgs): ConfigUpdates {
   return { snapshot: snapshotUpdate(config, args.snapshot), debug: debugUpdate(config, args), gitIgnore: gitIgnoreUpdate(config, args), autoRestart: autoRestartUpdate(config, args) };
 }

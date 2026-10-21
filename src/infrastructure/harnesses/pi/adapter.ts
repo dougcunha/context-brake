@@ -10,6 +10,7 @@ import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { detectPi, PI_EXECUTABLES } from './detector.js';
 import { PI_CAPABILITIES } from './capabilities.js';
+import { RESTART_FIX_GROUPS } from '../common/restart-fix-groups.js';
 import { diagnoseInProcessRestart } from '../common/restart-diagnostics.js';
 import { harnessRestartMode } from '../../../core/services/restart-install-extras.js';
 import { PI_EXTENSION_FILE, PI_RESTART_FILE, planPiInstall, planPiRemove } from './planner.js';
@@ -17,6 +18,7 @@ import { PI_EXTENSION_FILE, PI_RESTART_FILE, planPiInstall, planPiRemove } from 
 export class PiAdapter implements HarnessAdapter {
   readonly id = 'pi';
   readonly executionModel = 'in_process' as const;
+  readonly fixGroups = RESTART_FIX_GROUPS;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
     return deriveSupportProfile({ harness: this.id, capabilities: PI_CAPABILITIES, version });

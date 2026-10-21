@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderModeLines } from '../../src/cli/output/doctor-mode-text.js';
+import { describeSnapshot } from '../../src/cli/output/doctor-mode-text.js';
 import { mergeSnapshot } from '../../src/core/services/snapshot-merge.js';
 import { describeTrigger } from '../../src/core/services/trigger-text.js';
 
@@ -27,8 +27,8 @@ describe('texts that name the trigger', () => {
     expect(describeTrigger({ triggerZone: 'RED', triggerPercentage: 65 })).toBe('65% of the context window');
     expect(describeTrigger({ triggerZone: 'YELLOW', triggerPercentage: null })).toBe('YELLOW');
   });
-  it('shows the percentage in the doctor mode line', () => {
+  it('shows the percentage in the doctor snapshot value', () => {
     const snapshot = { triggerZone: 'RED', triggerPercentage: 65, command: 'sdd-snapshot', resumeCommand: null } as const;
-    expect(renderModeLines({ snapshot })).toContain('sdd-snapshot at 65% of the context window');
+    expect(describeSnapshot(snapshot)).toBe('sdd-snapshot at 65% of the context window');
   });
 });

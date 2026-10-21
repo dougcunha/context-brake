@@ -1,0 +1,23 @@
+$ context-brake fix --yes --force
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s07-LPkbvJ
+PATH kind: noClaude
+exit: 1
+--- stdout ---
+ContextBrake fix: 0 fixable, 1 needs a decision, 2 manual
+
+┌─ Plan
+│  create  .claude/hooks/context-brake-statusline.mjs  ASSET_MODIFIED
+│          Install the status line bridge script
+└─
+
+┌─ Result
+│  FIXED   ASSET_MODIFIED  claude-code  .claude/hooks/context-brake-statusline.mjs
+│  MANUAL  RUNTIME_ERRORS_RECORDED  .context-brake/runtime/errors.jsonl
+│          Inspect .context-brake/runtime/errors.jsonl and fix the reported failures.
+│  MANUAL  STATUSLINE_LOCAL_TRACKED  claude-code  .claude/settings.local.json
+│          Add .claude/settings.local.json to .gitignore.
+└─
+
+ContextBrake doctor: WARN (0 errors, 2 warnings)
+
+--- stderr ---

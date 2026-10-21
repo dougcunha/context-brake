@@ -1,0 +1,186 @@
+$ context-brake fix --yes --json
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s01-aSomVD
+PATH kind: noClaude
+exit: 2
+--- stdout ---
+{
+  "schemaVersion": 1,
+  "command": "fix",
+  "mode": "applied",
+  "stopped": "not_installed",
+  "status": "errors",
+  "exitCode": 2,
+  "plan": {
+    "changes": [],
+    "conflicts": []
+  },
+  "outcomes": [
+    {
+      "code": "ASSET_MISSING",
+      "harness": "claude-code",
+      "path": ".claude/hooks/context-brake.mjs",
+      "group": "automatic",
+      "outcome": "skipped",
+      "detail": "ContextBrake is not installed in this project. Run context-brake init first."
+    },
+    {
+      "code": "INTEGRATION_MISSING",
+      "harness": "claude-code",
+      "path": ".claude/settings.json",
+      "group": "automatic",
+      "outcome": "skipped",
+      "detail": "ContextBrake is not installed in this project. Run context-brake init first."
+    },
+    {
+      "code": "CONFIG_MISSING",
+      "harness": null,
+      "path": "context-brake.config.json",
+      "group": "automatic",
+      "outcome": "skipped",
+      "detail": "ContextBrake is not installed in this project. Run context-brake init first."
+    },
+    {
+      "code": "STATUSLINE_BRIDGE_ABSENT",
+      "harness": "claude-code",
+      "path": null,
+      "group": "automatic",
+      "outcome": "skipped",
+      "detail": "ContextBrake is not installed in this project. Run context-brake init first."
+    }
+  ],
+  "doctor": {
+    "schemaVersion": 1,
+    "command": "doctor",
+    "status": "errors",
+    "exitCode": 2,
+    "detections": [
+      {
+        "harness": "claude-code",
+        "state": "project",
+        "evidence": [
+          {
+            "origin": "project",
+            "kind": "config",
+            "value": "CLAUDE.md"
+          }
+        ],
+        "selectedExplicitly": false,
+        "version": null,
+        "versionSource": null
+      }
+    ],
+    "integrations": [
+      {
+        "harness": "claude-code",
+        "state": "missing",
+        "version": null,
+        "support": {
+          "harness": "claude-code",
+          "supportLevel": "full",
+          "minimumVersion": "2.1.97",
+          "capabilities": [
+            {
+              "id": "post_tool_telemetry",
+              "state": "supported"
+            },
+            {
+              "id": "session_boot",
+              "state": "supported"
+            },
+            {
+              "id": "context_usage",
+              "state": "unknown"
+            },
+            {
+              "id": "auto_restart",
+              "state": "unknown"
+            }
+          ],
+          "limitations": [
+            {
+              "capability": "context_usage",
+              "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the mod that init installs on Claude Code 2.1.287 or later, or from the status line bridge on older versions; without either, it falls back to contextWindowCeiling."
+            },
+            {
+              "capability": "auto_restart",
+              "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+            }
+          ]
+        },
+        "overhead": null
+      }
+    ],
+    "findings": [
+      {
+        "code": "ASSET_MISSING",
+        "severity": "error",
+        "scope": "harness",
+        "harness": "claude-code",
+        "path": ".claude/hooks/context-brake.mjs",
+        "message": "The runtime asset .claude/hooks/context-brake.mjs for claude-code is missing.",
+        "impact": "The harness cannot execute the ContextBrake hook or plugin.",
+        "remediation": "Run context-brake init --harness claude-code --yes.",
+        "fix": {
+          "group": "automatic"
+        }
+      },
+      {
+        "code": "INTEGRATION_MISSING",
+        "severity": "error",
+        "scope": "harness",
+        "harness": "claude-code",
+        "path": ".claude/settings.json",
+        "message": "The claude-code integration is missing from .claude/settings.json.",
+        "impact": "ContextBrake cannot stop or annotate tool calls in this harness.",
+        "remediation": "Run context-brake init --harness claude-code --yes.",
+        "fix": {
+          "group": "automatic"
+        }
+      },
+      {
+        "code": "CONFIG_MISSING",
+        "severity": "warning",
+        "scope": "project",
+        "harness": null,
+        "path": "context-brake.config.json",
+        "message": "Configuration file context-brake.config.json is missing.",
+        "impact": "Default configuration values are used for diagnostics.",
+        "remediation": "Run context-brake init --yes.",
+        "fix": {
+          "group": "automatic"
+        }
+      },
+      {
+        "code": "STATUSLINE_BRIDGE_ABSENT",
+        "severity": "warning",
+        "scope": "harness",
+        "harness": "claude-code",
+        "path": null,
+        "message": "The Claude Code status line bridge is not installed, so Claude Code telemetry is estimated.",
+        "impact": "The context window falls back to contextWindowCeiling, so zones can differ from the real usage.",
+        "remediation": "Run context-brake init. After --no-statusline-bridge, run context-brake init --statusline-bridge.",
+        "fix": {
+          "group": "automatic"
+        }
+      },
+      {
+        "code": "AUTO_RESTART_OFF",
+        "severity": "ok",
+        "scope": "harness",
+        "harness": "claude-code",
+        "path": null,
+        "message": "Automatic restart is off.",
+        "impact": null,
+        "remediation": "Run context-brake init --auto-restart to turn it on."
+      }
+    ],
+    "contextWindow": {
+      "bridge": "absent",
+      "mod": "absent",
+      "source": "contextWindowCeiling",
+      "lastWindowTokens": null
+    }
+  }
+}
+
+--- stderr ---

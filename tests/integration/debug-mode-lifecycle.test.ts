@@ -40,7 +40,7 @@ describe('debug mode with the built CLI and Claude Code hook (TC-11, TC-12, FR-0
     expect(debug.report.debugMode).toBe(true);
     expect(health(debug)).toEqual(health(baseline));
     const text = await runInProcessCli(['doctor'], root);
-    expect(`${text.stdout}${text.stderr}`).toContain('  - debug mode: on\n');
+    expect(`${text.stdout}${text.stderr}`).toMatch(/debug mode {2}on\n/);
     expect(text.code).toBe(baseline.code);
     expect(await postToolContext('toolu_on')).toContain(TELEMETRY_HEADER);
     expect((await runInProcessCli(['remove', '--yes'], root)).code).toBe(0);

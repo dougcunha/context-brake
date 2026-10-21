@@ -1,0 +1,121 @@
+[
+  {
+    "id": "s01",
+    "obligation": "FR-11",
+    "name": "text names context-brake init",
+    "ok": true,
+    "detail": "exit 2"
+  },
+  {
+    "id": "s01",
+    "obligation": "FR-11",
+    "name": "json stopped not_installed and schema-valid",
+    "ok": true,
+    "detail": "stopped=not_installed exit=2 exitCode=2"
+  },
+  {
+    "id": "s01",
+    "obligation": "FR-11",
+    "name": "no file created or changed",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s02",
+    "obligation": "FR-01",
+    "name": "ASSET_OUTDATED has fix.group automatic",
+    "ok": true,
+    "detail": "non-ok: ASSET_OUTDATED:warning:automatic, STATUSLINE_LOCAL_TRACKED:warning:manual"
+  },
+  {
+    "id": "s02",
+    "obligation": "FR-01",
+    "name": "ok findings have no fix; every warning/error has fix",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s02",
+    "obligation": "FR-15",
+    "name": "doctor JSON with fix validates (schemaVersion 1)",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s02",
+    "obligation": "FR-02",
+    "name": "header counts 1 fixable and 1 pointer lines",
+    "ok": true,
+    "detail": "pointer lines=1; first line: ContextBrake doctor: WARN (0 errors, 2 warnings, 1 fixable)"
+  },
+  {
+    "id": "s02",
+    "obligation": "FR-02",
+    "name": "manual problems keep their remediation text",
+    "ok": true,
+    "detail": "manual: STATUSLINE_LOCAL_TRACKED"
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-07",
+    "name": "no TTY, no --yes: exit 2 CONFIRMATION_REQUIRED, no change",
+    "ok": true,
+    "detail": "exit 2; [ERROR] CONFIRMATION_REQUIRED: Confirmation required for write operations. Use --yes in non-interactive environments."
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-08",
+    "name": "dry run text: plan + Dry run line, no change",
+    "ok": true,
+    "detail": "exit 1"
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-14",
+    "name": "dry run JSON: schema-valid, mode dry_run, exit = exitCode, ASSET_OUTDATED planned",
+    "ok": true,
+    "detail": "exit 1; plan changes 2"
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-08",
+    "name": "hashes equal after all stop runs",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s03",
+    "obligation": "FR-14",
+    "name": "--force --dry-run --json is accepted (no prompt)",
+    "ok": true,
+    "detail": "exit 1"
+  },
+  {
+    "id": "s04",
+    "obligation": "FR-13",
+    "name": "fix --json exits 64",
+    "ok": true,
+    "detail": "exit 64; {\n  \"schemaVersion\": 1,\n  \"command\": \"fix\",\n  \"status\": \"error\",\n  \"error\": {\n    \"code\": \"INVALID_ARGUMENTS\",\n    \"message\": \"--json needs --yes or --dry-run, "
+  },
+  {
+    "id": "s04",
+    "obligation": "FR-13",
+    "name": "fix --force exits 64",
+    "ok": true,
+    "detail": "exit 64; [ERROR] INVALID_ARGUMENTS: --force needs --yes or --dry-run. On a terminal, fix asks each decision instead."
+  },
+  {
+    "id": "s04",
+    "obligation": "FR-13",
+    "name": "fix --yes --harness nope exits 64",
+    "ok": true,
+    "detail": "exit 64; [ERROR] INVALID_ARGUMENTS: Unknown harness 'nope'."
+  },
+  {
+    "id": "s04",
+    "obligation": "FR-13",
+    "name": "fix --bogus exits 64",
+    "ok": true,
+    "detail": "exit 64; [ERROR] INVALID_ARGUMENTS: Unknown option '--bogus'"
+  }
+]

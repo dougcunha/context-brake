@@ -1,0 +1,149 @@
+[
+  {
+    "id": "s05",
+    "obligation": "FR-06",
+    "name": "--yes: ASSET_MODIFIED skipped with reason, file kept",
+    "ok": true,
+    "detail": "exit 1; detail: Needs a decision. Run context-brake fix on a terminal, or pass --yes --force."
+  },
+  {
+    "id": "s05",
+    "obligation": "FR-06",
+    "name": "--yes --force: ASSET_MODIFIED fixed, file replaced",
+    "ok": true,
+    "detail": "exit 1; outcomes: ASSET_MODIFIED=fixed, STATUSLINE_LOCAL_TRACKED=manual"
+  },
+  {
+    "id": "s06",
+    "obligation": "FR-01",
+    "name": "NO_PROJECT_HARNESS is in group decision",
+    "ok": false,
+    "detail": "non-ok: ASSET_MISSING:error:automatic, INTEGRATION_MISSING:error:automatic, STATUSLINE_BRIDGE_INACTIVE:warning:decision, STATUSLINE_BRIDGE_MISSING_SCRIPT:warning:automatic, STATUSLINE_LOCAL_TRACKED:warning:manual"
+  },
+  {
+    "id": "s06",
+    "obligation": "FR-06",
+    "name": "--yes: NO_PROJECT_HARNESS skipped, nothing installed",
+    "ok": false,
+    "detail": "detail: undefined"
+  },
+  {
+    "id": "s06",
+    "obligation": "FR-06",
+    "name": "--yes --force without --harness: NO_PROJECT_HARNESS stays skipped",
+    "ok": false,
+    "detail": "detail: undefined"
+  },
+  {
+    "id": "s06",
+    "obligation": "FR-06",
+    "name": "--yes --force --harness claude-code installs claude-code",
+    "ok": false,
+    "detail": "exit 1; outcomes: STATUSLINE_LOCAL_TRACKED=manual"
+  },
+  {
+    "id": "s07",
+    "obligation": "FR-09",
+    "name": "text Result shows FIXED, SKIPPED, MANUAL labels",
+    "ok": true,
+    "detail": "exit 1"
+  },
+  {
+    "id": "s07",
+    "obligation": "NFR-02",
+    "name": "modified bridge script kept after --yes",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s07",
+    "obligation": "NFR-01",
+    "name": "CLAUDE.md byte-identical",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s07",
+    "obligation": "NFR-01",
+    "name": "user PreToolUse hook preserved in .claude/settings.json",
+    "ok": true,
+    "detail": ""
+  },
+  {
+    "id": "s07",
+    "obligation": "NFR-01",
+    "name": ".gitignore user lines kept, changes only inside marked block",
+    "ok": true,
+    "detail": "same as before fix: true"
+  },
+  {
+    "id": "s07",
+    "obligation": "FR-03",
+    "name": "changed files are only ContextBrake-owned",
+    "ok": true,
+    "detail": "changed .claude/hooks/context-brake.mjs; changed .context-brake/manifest.json"
+  },
+  {
+    "id": "s07",
+    "obligation": "FR-09",
+    "name": "json outcomes after first run: decision skipped, manual manual",
+    "ok": true,
+    "detail": "outcomes: ASSET_MODIFIED=skipped, RUNTIME_ERRORS_RECORDED=manual, STATUSLINE_LOCAL_TRACKED=manual"
+  },
+  {
+    "id": "s07",
+    "obligation": "FR-12",
+    "name": "nothing to fix: stopped nothing_to_fix, manual listed, no change",
+    "ok": true,
+    "detail": "text exit 1; json exit 1; first line: ContextBrake fix: nothing can be fixed automatically"
+  },
+  {
+    "id": "s07",
+    "obligation": "FR-13",
+    "name": "remaining warning gives exit 1",
+    "ok": true,
+    "detail": "exit 1"
+  },
+  {
+    "id": "s08",
+    "obligation": "FR-03",
+    "name": "config unchanged (autoRestart kept) and mod reinstalled",
+    "ok": true,
+    "detail": "initial non-ok: AUTO_RESTART_NOT_LOADED:warning:manual, STATUSLINE_LOCAL_TRACKED:warning:manual | before fix: ASSET_OUTDATED:warning:automatic, AUTO_RESTART_OUTDATED_MOD:warning:automatic, STATUSLINE_LOCAL_TRACKED:warning:manual"
+  },
+  {
+    "id": "s08",
+    "obligation": "OBJ-01",
+    "name": "doctor after fix --yes exits with the initial doctor status (0 if no manual finding)",
+    "ok": true,
+    "detail": "doctor after exit 1; initial exitCode 1; fix exit 1; after-fix dry run stopped=nothing_to_fix"
+  },
+  {
+    "id": "s09",
+    "obligation": "FR-13",
+    "name": "invalid config: no plan, ASSET_OUTDATED skipped with config reason, exit 2",
+    "ok": true,
+    "detail": "exit 2; detail context-brake.config.json cannot be read. Fix it first."
+  },
+  {
+    "id": "s10",
+    "obligation": "FR-13",
+    "name": "read-only target: exit 2 with failed outcome, or the applier replaced it (recorded)",
+    "ok": true,
+    "detail": "exit 2; outcome failed; detail EPERM: operation not permitted, rename 'C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa-s10-oo0DQ3\\.claude\\hooks\\.cb-0c76e5bf-ad0e-4d01-878a-0f703d370152.tmp' -> 'C:\\Users\\Admin\\AppData\\Local\\Temp\\cb-qa-s10-oo0DQ3\\.claude\\hooks\\context-brake.mjs'"
+  },
+  {
+    "id": "s11",
+    "obligation": "FR-13",
+    "name": "full fix: exit equals final doctor exitCode, ASSET_OUTDATED fixed",
+    "ok": true,
+    "detail": "exit 1; initial doctor non-ok: STATUSLINE_LOCAL_TRACKED:warning:manual; final: STATUSLINE_LOCAL_TRACKED:warning:manual"
+  },
+  {
+    "id": "s11",
+    "obligation": "FR-12",
+    "name": "second fix --yes reaches nothing_to_fix",
+    "ok": true,
+    "detail": "exit 1"
+  }
+]

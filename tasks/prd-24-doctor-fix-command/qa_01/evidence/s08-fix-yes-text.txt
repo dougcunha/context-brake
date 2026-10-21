@@ -1,0 +1,33 @@
+$ context-brake fix --yes
+cwd: C:\Users\Admin\AppData\Local\Temp\cb-qa-s08-HJV3ba
+PATH kind: withClaude
+exit: 1
+--- stdout ---
+ContextBrake fix: 2 fixable, 0 need a decision, 1 manual
+
+┌─ Plan
+│  create  .claude/hooks/context-brake.mjs  ASSET_OUTDATED
+│          Install ContextBrake hook script
+│  create  .context-brake/claude-mod/.claude-plugin/marketplace.json
+│          Install the ContextBrake mod
+│  create  .context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json
+│          Install the ContextBrake mod
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/hooks.json
+│          Install the ContextBrake mod
+│  create  .context-brake/claude-mod/context-brake-restart/hooks/register.mjs
+│          Install the ContextBrake mod
+│  update  .context-brake/manifest.json
+│          Record installation manifest with managed assets and entries
+└─
+
+┌─ Result
+│  FIXED   ASSET_OUTDATED  claude-code  .claude/hooks/context-brake.mjs
+│  FIXED   AUTO_RESTART_OUTDATED_MOD  claude-code  .claude/settings.local.json
+│          Restart Claude Code to load the new mod.
+│  MANUAL  STATUSLINE_LOCAL_TRACKED  claude-code  .claude/settings.local.json
+│          Add .claude/settings.local.json to .gitignore.
+└─
+
+ContextBrake doctor: WARN (0 errors, 2 warnings)
+
+--- stderr ---

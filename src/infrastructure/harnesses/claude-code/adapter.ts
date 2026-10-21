@@ -14,12 +14,14 @@ import { CLAUDE_CAPABILITIES, CLAUDE_MINIMUM_VERSION } from './capabilities.js';
 import { isTargetGroup } from './claude-merger.js';
 import { detectContextSource } from './context-source.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
+import { CLAUDE_FIX_GROUPS } from './fix-groups.js';
 import { CLAUDE_CONFIG_FILE, CLAUDE_HOOK_FILE, planClaudeInstall, planClaudeRemove } from './planner.js';
 import { diagnoseStatusline } from './statusline-diagnostics.js';
 
 export class ClaudeAdapter implements HarnessAdapter {
   readonly id = 'claude-code';
   readonly executionModel = 'process' as const;
+  readonly fixGroups = CLAUDE_FIX_GROUPS;
 
   capabilityProfile(version?: VersionProbe): CapabilityProfile {
     return deriveSupportProfile({ harness: this.id, capabilities: CLAUDE_CAPABILITIES, version });

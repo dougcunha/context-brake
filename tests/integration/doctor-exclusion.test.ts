@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { doctorReportSchema, type DoctorReport } from '../../src/core/contracts/diagnostics.js';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
-const EXCLUDED_LINE = '- codex-cli: excluded by configuration';
+const EXCLUDED_ROW = /codex-cli\s+excluded by configuration/;
 
 async function exists(path: string): Promise<boolean> {
   return stat(path).then(() => true).catch(() => false);
@@ -36,8 +36,8 @@ describe('FR-06 and FR-08 doctor and remove with an excluded harness (prd-15, TC
     expect(report.detections.find((item) => item.harness === 'codex-cli')?.state).toBe('excluded');
     expect(report.integrations.map((integration) => integration.harness)).toEqual(['claude-code']);
     expect(report.findings.filter((finding) => finding.harness === 'codex-cli')).toEqual([]);
-    expect(doctor.stdout + doctor.stderr).toContain(EXCLUDED_LINE);
-    expect(init.stdout + init.stderr).toMatch(/codex-cli\s+excluded by configuration/);
+    expect(doctor.stdout + doctor.stderr).toMatch(EXCLUDED_ROW);
+    expect(init.stdout + init.stderr).toMatch(EXCLUDED_ROW);
   });
   it('remove deletes the configuration, exclusion included, and leaves no artifact (FR-08, TC-16)', async () => {
     expect((await runInProcessCli(['remove', '--yes'], root)).code).toBe(0);

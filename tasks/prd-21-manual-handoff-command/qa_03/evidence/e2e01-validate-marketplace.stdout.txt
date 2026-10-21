@@ -1,0 +1,3 @@
+Validating marketplace manifest: C:\Users\Admin\AppData\Local\Temp\claude\D--MyProjects-ContextBrake\6dfc9257-899c-4dea-ba41-561e09c1db04\scratchpad\qa3-repo\.context-brake\claude-mod\.claude-plugin\marketplace.json
+
+✔ Validation passed

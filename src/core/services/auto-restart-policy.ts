@@ -12,7 +12,7 @@ export type RestartFacts = {
 };
 export type RestartDecision = { readonly kind: 'restart' } | { readonly kind: 'skip'; readonly code: RestartReasonCode };
 
-function standDownCode(facts: StandDownFacts): RestartReasonCode | undefined {
+export function standDownCode(facts: StandDownFacts): RestartReasonCode | undefined {
   if (facts.disabledByEnv) return 'SKIP_DISABLED_ENV';
   return facts.interactive ? undefined : 'SKIP_NON_INTERACTIVE';
 }

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "generation": 29,
+  "feature": "21-manual-handoff-command",
+  "workspace": "D:/MyProjects/ContextBrake",
+  "phase": "acceptance",
+  "status": "awaiting-hil",
+  "safe_to_stop": true,
+  "owner_session": "0e38b42d-5575-4686-b1cc-ee3527b25fcb",
+  "mode": "auto",
+  "decision_log": "autonomous-decisions.md",
+  "objective": "Add the /handoff [focus] slash command to the Claude Code mod: it submits a prompt that asks the agent to run the snapshot skill (or write the markdown handoff) and end with [REQUEST_SESSION_RESET]; the existing restart flow clears and seeds.",
+  "constraints": [
+    "Mode A only (H-01): no model fork, no handoff written by the mod, no /clear from the command",
+    "No new reason code, seed text, or handoff format (FR-12)",
+    "Only documented mod API members (NFR-01); prompt text built by a pure core function (NFR-03)",
+    "No commit, push, or release without a human request (H-02)"
+  ],
+  "sources": {
+    "workflow": "workflow.md",
+    "prd": "prd.md",
+    "techspec": "techspec.md",
+    "tasks": "tasks.md",
+    "review": "codereview_03/codereview.md",
+    "qa": "qa_03/qa.md",
+    "snapshot": "context-snapshot.md"
+  },
+  "review_status": "APPROVED WITH RESERVATIONS",
+  "qa_status": "BLOCKED",
+  "approved_sources": [
+    {
+      "path": "prd.md",
+      "sha256": "4ed9669bd28f85e3b7713ef23c73728652c05125b90435390f3ff5f044c418de",
+      "decision_id": "A-01"
+    },
+    {
+      "path": "techspec.md",
+      "sha256": "715550dc54504d8553f892a8cd719f8db1026cf7bdbe6bc92ab18a1262492d7b",
+      "decision_id": "R-09"
+    },
+    {
+      "path": "tasks.md",
+      "sha256": "c31a48365e0934877e529e859725a55954f7c91a2839050ca97d3b1e070ac58a",
+      "decision_id": "R-04"
+    }
+  ],
+  "decisions_to_read": [
+    "A-02",
+    "A-03",
+    "H-10"
+  ],
+  "git_base": "c17fd0a23ed18791ed995e3babaac77314267334",
+  "worktree_evidence": "workflow.md#git-base",
+  "active_work": [],
+  "pending_hil": {
+    "gate": "HIL 3",
+    "question": "MA-01..MA-05 passed (H-07..H-10). Accept the delivery with the open items (FR-13 release bump, AUTO-06/AUTO-08 improvements, .gitignore diff out of the feature commit, P-04/P-05, Linux and macOS not run)?",
+    "affected": [
+      "OBJ-04",
+      "FR-13"
+    ]
+  },
+  "blockers": [],
+  "correction_round": 2,
+  "rounds_without_progress": 0,
+  "next_action": {
+    "kind": "await-decision",
+    "instruction": "Wait for HIL 3 acceptance; on acceptance mark completed and close the snapshot",
+    "read": [
+      {
+        "path": "tasks/prd-21-manual-handoff-command/workflow.md",
+        "section": "H-10"
+      },
+      {
+        "path": "tasks/prd-21-manual-handoff-command/context-snapshot.md",
+        "section": "Open threads"
+      }
+    ]
+  }
+}

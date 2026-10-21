@@ -1,0 +1,176 @@
+// QA prd-21: drive the INSTALLED mod bundle (written by the built `init`) with the repository host fake.
+// Usage: npx tsx drive-installed-mod.ts <repo root> <installed repo root> <scratch base>
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+
+const [repo, installed, base] = process.argv.slice(2);
+const fixtures = (name: string) => pathToFileURL(join(repo, 'tests/fixtures', name)).href;
+const { createHost, createHostState, flush } = await import(fixtures('claude-mod-host.ts'));
+const { MOD_LOG_DIR } = await import(pathToFileURL(join(repo, 'src/infrastructure/harnesses/claude-code/mod/mod-info.ts')).href);
+const { renderRestartNotice } = await import(pathToFileURL(join(repo, 'src/core/services/auto-restart-notices.ts')).href);
+const { zoneAction } = await import(pathToFileURL(join(repo, 'src/core/services/zone-guidance.ts')).href);
+const { CLAUDE_SKILL_INVOCATION } = await import(pathToFileURL(join(repo, 'src/infrastructure/harnesses/claude-code/skill-invocation.ts')).href);
+const { register } = await import(pathToFileURL(join(installed, '.context-brake/claude-mod/context-brake-restart/hooks/register.mjs')).href);
+
+const SIGNAL = '[REQUEST_SESSION_RESET]';
+const LEAD = 'ContextBrake: the user typed /handoff to continue this work in a new session. Do this now:';
+const SNAPSHOT_PROMPT = `${LEAD} run "/sdd-snapshot", then end reply with ${SIGNAL}.`;
+const HANDOFF_PROMPT = `${LEAD} save handoff to .context-brake/handoff.md, end reply with ${SIGNAL}.`;
+const ACCEPTED = 'ContextBrake: asking the agent to save its state; the session restarts when the reply ends.';
+const OFF = 'ContextBrake: /handoff needs automatic restart. Run npx context-brake init --auto-restart and start a new session.';
+const FAILED = 'ContextBrake: /handoff failed with an internal error. This session keeps running.';
+const SPEC = { name: 'handoff', description: 'Save the session state and restart in a new session', argumentHint: '[focus]' };
+const BUSY = { consecutive: 2, toolCallsSinceSeed: 0 };
+const IDLE = { consecutive: 0, toolCallsSinceSeed: null };
+
+const initConfig = JSON.parse(await readFile(join(installed, 'context-brake.config.json'), 'utf8'));
+const results: { scenario: string; ok: boolean; detail: unknown }[] = [];
+
+type Opts = { autoRestart?: boolean; snapshot?: boolean; max?: number; raw?: string };
+async function scene(opts: Opts) {
+  const root = await mkdtemp(join(base, 'drive-'));
+  const config = structuredClone(initConfig);
+  if (opts.autoRestart === false) delete config.autoRestart;
+  if (opts.max !== undefined) config.autoRestart = { ...config.autoRestart, maxConsecutiveRestarts: opts.max };
+  if (opts.snapshot === true) config.snapshot = { ...config.snapshot, command: 'sdd-snapshot' };
+  await writeFile(join(root, 'context-brake.config.json'), opts.raw ?? JSON.stringify(config, null, 2), 'utf8');
+  await mkdir(join(root, '.context-brake'), { recursive: true });
+  const state = createHostState(Date.now() - 60_000);
+  const host = createHost(root, state);
+  const handlers = new Map<string, Function>();
+  register((event: string, a: unknown, b?: unknown) => {
+    const filtered = typeof a !== 'function';
+    handlers.set(filtered ? `${event}:${(a as { command: string }).command}` : event, (filtered ? b : a) as Function);
+  });
+  const fire = async (event: string, input: unknown) => {
+    const cmd = (input as { command?: string })?.command;
+    const h = (cmd !== undefined ? handlers.get(`${event}:${cmd}`) : undefined) ?? handlers.get(event);
+    return h?.(host, input, async (v: unknown) => v);
+  };
+  const key = `contextbrake:autorestart:${root}`;
+  const handoff = async (args = '') => { const r = await fire('command.run', { command: 'handoff', args, origin: { kind: 'composer' } }); await flush(); return r; };
+  const turn = async (answer: string) => {
+    await fire('turn.start', { text: 'go', turnId: 't' });
+    await fire('turn.complete', { answer, reason: 'answer', isAborted: false, durationMs: 1, turnId: 't' });
+    await flush();
+    state.clear?.settle('resolve');
+    await flush(); await flush();
+  };
+  const log = () => readFile(join(root, MOD_LOG_DIR, 'session-1.json'), 'utf8').catch(() => '');
+  const codes = async () => { const t = await log(); return t === '' ? [] : JSON.parse(t).records.map((r: { code: string }) => r.code); };
+  return { root, state, fire, handoff, turn, log, codes, handlers, setGuard: (v: unknown) => state.store.set(key, v), guard: () => state.store.get(key) };
+}
+
+function check(scenario: string, ok: boolean, detail: unknown) { results.push({ scenario, ok, detail }); }
+const eq = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
+// FR-01, FR-11, NFR-01: registration with and without autoRestart; filtered command.run hook
+for (const autoRestart of [true, false]) {
+  const s = await scene({ autoRestart });
+  await s.fire('session.start', { cwd: s.root });
+  check(`FR-01/FR-11 register autoRestart=${autoRestart}`, eq(s.state.registered, [SPEC]) && !('immediate' in (s.state.registered[0] ?? {})), { registered: s.state.registered, hooks: [...s.handlers.keys()] });
+}
+{ const s = await scene({}); s.state.registerFailure = true; const r = await s.fire('session.start', { cwd: s.root });
+  check('FR-01/DEC-04 refused registration', !(r instanceof Error) && eq(s.state.logs, ['ContextBrake: /handoff is not available in this session; automatic restart still works.']), { logs: s.state.logs }); }
+
+// FR-03, FR-04, FR-10: accepted path in snapshot mode and in handoff mode (init config has no snapshot command)
+for (const [mode, snapshot, prompt] of [['snapshot', true, SNAPSHOT_PROMPT], ['handoff', false, HANDOFF_PROMPT]] as const) {
+  const s = await scene({ snapshot, max: 3 }); s.setGuard(BUSY);
+  const r = await s.handoff();
+  const ok = eq(r, { text: ACCEPTED }) && eq(s.state.seeds, [prompt]) && eq(s.guard(), IDLE) && s.state.clears.length === 0 && !s.state.accessed.some((p: string) => p.endsWith('handoff.md')) && !prompt.startsWith('/');
+  check(`FR-03/FR-04/FR-10 accepted ${mode} mode`, ok, { answer: r, seeds: s.state.seeds, guard: s.guard(), clears: s.state.clears, logs: s.state.logs });
+  const snap = snapshot ? { ...initConfig.snapshot, command: 'sdd-snapshot' } : initConfig.snapshot;
+  const zone = zoneAction(snap.triggerZone, snap, { mode, invoke: CLAUDE_SKILL_INVOCATION, usagePercentage: 99 });
+  check(`FR-04 prompt contains trigger-zone text (${mode}, zone ${snap.triggerZone})`, prompt.includes(`Do this now: ${zone}.`), { zoneActionOutput: zone });
+}
+
+// FR-07: focus normalization in the built bundle
+{
+  const cases: [string, string | undefined][] = [['  a\nb  ', 'a b'], ['', undefined], ['   ', undefined], ['x'.repeat(600), 'x'.repeat(500)], ['line1\r\n  line2', 'line1 line2']];
+  for (const [raw, want] of cases) {
+    const s = await scene({ snapshot: true }); await s.handoff(raw);
+    const expected = want === undefined ? SNAPSHOT_PROMPT : `${SNAPSHOT_PROMPT} In the snapshot, stress this focus for the next session: "${want}".`;
+    check(`FR-07 focus ${JSON.stringify(raw.length > 20 ? `${raw.length} chars` : raw)}`, eq(s.state.seeds, [expected]), { seeds: s.state.seeds.map((t: string) => t.length > 200 ? `${t.slice(0, 160)}…(${t.length})` : t) });
+  }
+  const s = await scene({}); await s.handoff('fix the parser');
+  check('FR-07 focus in handoff mode', eq(s.state.seeds, [`${HANDOFF_PROMPT} In the handoff, stress this focus for the next session: "fix the parser".`]), { seeds: s.state.seeds });
+}
+
+// FR-05: no autoRestart block; config that does not parse
+for (const [label, opts] of [['no autoRestart', { autoRestart: false }], ['bad config', { raw: '{ not json' }]] as const) {
+  const s = await scene(opts); s.setGuard(BUSY);
+  const r = await s.handoff();
+  check(`FR-05 ${label}`, eq(r, { text: OFF }) && s.state.seeds.length === 0 && eq(s.guard(), BUSY) && (await s.codes()).length === 0, { answer: r, seeds: s.state.seeds, guard: s.guard(), codes: await s.codes() });
+}
+
+// FR-06, FR-10: stand-down facts
+for (const [label, arrange, code] of [
+  ['CONTEXT_BRAKE_AUTO_RESTART=0', (st: any) => st.env.set('CONTEXT_BRAKE_AUTO_RESTART', '0'), 'SKIP_DISABLED_ENV'],
+  ['DISABLE_AUTO_COMPACT=1', (st: any) => st.env.set('DISABLE_AUTO_COMPACT', '1'), 'SKIP_DISABLED_ENV'],
+  ['surfaces []', (st: any) => { st.surfaces = []; }, 'SKIP_NON_INTERACTIVE'],
+] as const) {
+  const s = await scene({}); s.setGuard(BUSY); arrange(s.state);
+  const r = await s.handoff();
+  check(`FR-06 ${label}`, eq(r, { text: renderRestartNotice(code) }) && eq(await s.codes(), [code]) && s.state.logs.length === 0 && s.state.seeds.length === 0 && eq(s.guard(), BUSY), { answer: r, codes: await s.codes(), uiLogs: s.state.logs, seeds: s.state.seeds, guard: s.guard() });
+}
+
+// FR-08: reply without the signal, then with it; NFR-02: focus never in the log
+{
+  const focus = 'QA-PRIVATE-FOCUS-7731';
+  const s = await scene({ snapshot: true }); s.state.switchAtTick = 3;
+  await s.handoff(focus);
+  await s.turn('Saved, but no signal.');
+  const noClear = s.state.clears.length === 0;
+  await s.turn(`Saved.\n${SIGNAL}`);
+  const logText = await s.log();
+  check('FR-08 no signal -> no clear; signal -> clear + seed', noClear && eq(s.state.clears, ['clear']) && s.state.seeds.length === 2, { clears: s.state.clears, seeds: s.state.seeds.map((t: string) => t.slice(0, 90)), codes: await s.codes() });
+  check('FR-12 manual restart logs RESTARTED', (await s.codes()).includes('RESTARTED'), { codes: await s.codes() });
+  check('NFR-02 log holds no focus or prompt text', !logText.includes(focus) && !logText.includes('/handoff') && !logText.includes('Do this now'), { logBytes: logText.length });
+}
+
+// FR-08: aborted turn with the signal restarts nothing
+{
+  const s = await scene({ snapshot: true }); await s.handoff();
+  await s.fire('turn.start', { text: 'go', turnId: 't' });
+  await s.fire('turn.complete', { answer: `x\n${SIGNAL}`, reason: 'aborted', isAborted: true, durationMs: 1, turnId: 't' });
+  await flush();
+  check('FR-08 aborted turn -> no clear', s.state.clears.length === 0, { clears: s.state.clears });
+}
+
+// FR-09: handoff mode, stale file then file written during the prompted turn
+{
+  const s = await scene({}); const file = join(s.root, '.context-brake/handoff.md');
+  await writeFile(file, '# old\n', 'utf8');
+  await s.handoff();
+  s.state.now = Date.now() + 1_000;
+  await s.fire('turn.start', { text: 'go', turnId: 't' });
+  await s.fire('turn.complete', { answer: `x\n${SIGNAL}`, reason: 'answer', isAborted: false, durationMs: 1, turnId: 't' });
+  await flush();
+  const staleCodes = await s.codes();
+  await s.handoff();
+  s.state.now = Date.now() - 1_000; await s.fire('turn.start', { text: 'go', turnId: 't2' });
+  await writeFile(file, '# new handoff\n', 'utf8');
+  await s.fire('turn.complete', { answer: `x\n${SIGNAL}`, reason: 'answer', isAborted: false, durationMs: 1, turnId: 't2' });
+  await flush(); s.state.clear?.settle('resolve'); await flush(); await flush();
+  check('FR-09 stale -> SKIP_HANDOFF_STALE; fresh -> RESTARTED', staleCodes.includes('SKIP_HANDOFF_STALE') && (await s.codes()).includes('RESTARTED'), { staleCodes, codes: await s.codes() });
+}
+
+// FR-10: consecutive at the limit, /handoff, signal -> RESTARTED
+{
+  const s = await scene({ snapshot: true, max: 2 }); s.setGuard({ consecutive: 2, toolCallsSinceSeed: 5 });
+  await s.handoff(); await s.turn(`Saved.\n${SIGNAL}`);
+  check('FR-10 at limit -> RESTARTED', (await s.codes()).includes('RESTARTED') && eq(s.state.clears, ['clear']), { codes: await s.codes(), clears: s.state.clears });
+}
+
+// NFR-05: store write failure
+{
+  const s = await scene({}); s.setGuard(BUSY); s.state.storeWriteFailure = true;
+  const r = await s.handoff();
+  check('NFR-05 store write failure', eq(r, { text: FAILED }) && eq(await s.codes(), ['ERROR_INTERNAL']) && s.state.seeds.length === 0, { answer: r, codes: await s.codes(), seeds: s.state.seeds });
+}
+
+for (const r of results) console.log(`${r.ok ? 'PASSED' : 'FAILED'}  ${r.scenario}  ${JSON.stringify(r.detail)}`);
+const failed = results.filter((r) => !r.ok).length;
+console.log(`\n${results.length - failed} passed, ${failed} failed`);
+process.exitCode = failed === 0 ? 0 : 1;

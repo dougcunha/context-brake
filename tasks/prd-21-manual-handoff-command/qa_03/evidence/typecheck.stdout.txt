@@ -1,0 +1,4 @@
+
+> context-brake@1.2.0 typecheck
+> tsc -p tsconfig.check.json --noEmit
+

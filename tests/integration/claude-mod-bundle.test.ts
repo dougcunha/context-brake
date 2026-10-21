@@ -9,7 +9,8 @@ const MOD_ENTRY = 'assets/runtime/claude-code-mod.ts';
 const OBSERVED = 'tests/fixtures/harnesses/claude-code/mod/observed-events.json';
 const FORBIDDEN = /node:|readFileSync|writeFileSync|existsSync|spawnSync|execSync|process\.stdout|process\.env/;
 
-type Observed = { 'turn.complete': { keys: string[] }; 'prompt.submit': { origins: { typed: { kind: string } } }; classicEvents: { interactive: string } };
+type Observed = { 'turn.complete': { keys: string[] }; 'prompt.submit': { origins: { typed: { kind: string } } }; classicEvents: { interactive: string }; documented: { events: string[]; commandRun: { keys: string[] } } };
+const OBSERVED_EVENTS = ['session.start', 'turn.start', 'tool.call', 'turn.complete', 'prompt.submit'];
 
 function registeredEvents(): string[] {
   const events: string[] = [];
@@ -30,11 +31,12 @@ describe('bundled mod (NFR-01, DEC-11, TC-15)', () => {
   });
 });
 
-describe('contract with the observed Claude Code behavior (DEC-13, TC-16)', () => {
-  it('registers only delivered events and reads only the turn.complete fields and prompt origins the fixture shows', async () => {
+describe('contract with the observed and documented Claude Code behavior (DEC-13, TC-16, prd-21 DEC-11)', () => {
+  it('registers only delivered or documented events and reads only the fields and prompt origins the fixture shows', async () => {
     const observed = JSON.parse(await readFile(OBSERVED, 'utf8')) as Observed;
     expect(observed.classicEvents.interactive).toBe('not delivered');
-    expect(registeredEvents()).toEqual(['session.start', 'turn.start', 'tool.call', 'turn.complete', 'prompt.submit']);
+    expect(registeredEvents()).toEqual([...OBSERVED_EVENTS, ...observed.documented.events]);
+    expect(observed.documented.commandRun.keys).toContain('args');
     expect(observed['turn.complete'].keys).toEqual(expect.arrayContaining(['answer', 'reason', 'isAborted']));
     expect(PERSON_PROMPT_ORIGINS).toContain(observed['prompt.submit'].origins.typed.kind);
   });

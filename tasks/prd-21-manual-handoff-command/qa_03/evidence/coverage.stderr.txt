@@ -1,0 +1,29 @@
+[ERROR] INVALID_ARGUMENTS: Unknown command 'invalid-cmd'. Allowed commands: init, doctor, remove, fix.
+[ERROR] INVALID_ARGUMENTS: Unknown option '--unknown'
+[ERROR] INVALID_ARGUMENTS: Unknown command 'plan'. Allowed commands: init, doctor, remove, fix.
+[ERROR] INVALID_ARGUMENTS: Unknown command 'run'. Allowed commands: init, doctor, remove, fix.
+[ERROR] INVALID_ARGUMENTS: Unknown command 'wrap'. Allowed commands: init, doctor, remove, fix.
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m [30m[45m serial [49m[39m tests/integration/node-process-runner.test.ts[2m > [22mNode executable discovery and tree termination (IT-13, CA-16)[2m > [22mreturns a timed-out probe and stops descendants when the parent times out
+[31m[1mAssertionError[22m: promise resolved "undefined" instead of rejecting[39m
+
+[32m- Expected:[39m 
+Error {
+  "message": "rejected promise",
+}
+
+[31m+ Received:[39m 
+undefined
+
+[36m [2m❯[22m tests/integration/node-process-runner.test.ts:[2m54:38[22m[39m
+    [90m 52| [39m      [35mawait[39m [34mexpect[39m([34maccess[39m(readyPath))[33m.[39mresolves[33m.[39m[34mtoBeUndefined[39m()[33m;[39m
+    [90m 53| [39m      [35mawait[39m [34mdelay[39m([34m800[39m)[33m;[39m
+    [90m 54| [39m      await expect(access(markerPath)).rejects.toMatchObject({ code: '…
+    [90m   | [39m                                     [31m^[39m
+    [90m 55| [39m    } [35mfinally[39m {
+    [90m 56| [39m      [35mawait[39m [34mrm[39m(directory[33m,[39m { recursive[33m:[39m [35mtrue[39m[33m,[39m force[33m:[39m [35mtrue[39m })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+

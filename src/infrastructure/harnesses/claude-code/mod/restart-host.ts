@@ -6,6 +6,7 @@ import type { ModConfig } from './mod-config.js';
 import { modGuardStore } from './mod-guards.js';
 import { recordDecision } from './mod-log.js';
 import { standDownFacts } from './restart-facts.js';
+import { waitForSessionSwitch } from './session-switch.js';
 import { turnSnapshot } from './turn-state.js';
 
 type ModReporter = Pick<RestartHost, 'log' | 'notify'>;
@@ -27,8 +28,18 @@ async function submitSeed($: ModHost, seed: string): Promise<void> {
   }
 }
 
+async function seedAfterSwitch($: ModHost, endedId: string | undefined, request: OpenSessionRequest): Promise<void> {
+  await waitForSessionSwitch($, endedId);
+  await Promise.all([request.onOpened(), submitSeed($, request.seed)]);
+}
+
+async function clearAndSeed($: ModHost, request: OpenSessionRequest): Promise<void> {
+  const endedId = await $.session.id().then((id) => id, () => undefined);
+  await $.command.run({ command: 'clear' }).then(() => seedAfterSwitch($, endedId, request), () => request.onRejected());
+}
+
 function openAfterClear($: ModHost, request: OpenSessionRequest): void {
-  $.command.run({ command: 'clear' }).then(() => Promise.all([request.onOpened(), submitSeed($, request.seed)]), () => request.onRejected());
+  clearAndSeed($, request).catch(() => request.onRejected());
 }
 
 export function createModRestartHost($: ModHost, config: ModConfig): RestartHost {

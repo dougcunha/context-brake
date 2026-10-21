@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "command": "doctor",
+  "status": "warnings",
+  "exitCode": 1,
+  "detections": [
+    {
+      "harness": "claude-code",
+      "state": "project",
+      "evidence": [
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": ".claude/settings.local.json"
+        },
+        {
+          "origin": "project",
+          "kind": "config",
+          "value": "CLAUDE.md"
+        },
+        {
+          "origin": "project",
+          "kind": "directory",
+          "value": ".claude"
+        }
+      ],
+      "selectedExplicitly": false,
+      "version": null,
+      "versionSource": null
+    }
+  ],
+  "integrations": [
+    {
+      "harness": "claude-code",
+      "state": "installed",
+      "version": null,
+      "support": {
+        "harness": "claude-code",
+        "supportLevel": "full",
+        "minimumVersion": "2.1.97",
+        "capabilities": [
+          {
+            "id": "post_tool_telemetry",
+            "state": "supported"
+          },
+          {
+            "id": "session_boot",
+            "state": "supported"
+          },
+          {
+            "id": "context_usage",
+            "state": "unknown"
+          },
+          {
+            "id": "auto_restart",
+            "state": "unknown"
+          }
+        ],
+        "limitations": [
+          {
+            "capability": "context_usage",
+            "impact": "Read from the session transcript, whose format is undocumented; falls back to an estimate. The context window comes from the mod that init installs on Claude Code 2.1.287 or later, or from the status line bridge on older versions; without either, it falls back to contextWindowCeiling."
+          },
+          {
+            "capability": "auto_restart",
+            "impact": "Opt-in through init --auto-restart; needs Claude Code 2.1.287 or later with mods enabled. Run doctor to check that the mod loads."
+          }
+        ]
+      },
+      "overhead": {
+        "harness": "claude-code",
+        "executionModel": "process",
+        "sampleCount": 20,
+        "p95Milliseconds": 824.2,
+        "targetMilliseconds": 100,
+        "status": "fail"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "code": "AUTO_RESTART_NOT_LOADED",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": ".context-brake/runtime/restart/claude-code",
+      "message": "Automatic restart is on, but no Claude Code session has loaded the mod yet.",
+      "impact": "Claude Code does not clear the session when ContextBrake asks for a reset.",
+      "remediation": "Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions; check those settings.",
+      "fix": {
+        "group": "manual"
+      }
+    },
+    {
+      "code": "CONTEXT_MOD_SILENT",
+      "severity": "warning",
+      "scope": "harness",
+      "harness": "claude-code",
+      "path": null,
+      "message": "The ContextBrake mod is installed, but no Claude Code session has reported the context yet.",
+      "impact": "The context window falls back to contextWindowCeiling and usage to the transcript or an estimate.",
+      "remediation": "Start Claude Code in this project and trust the folder. Mods stay off under disableAllHooks, --safe-mode, --bare, an organization managed policy, and in Desktop WSL sessions. Claude Code also keeps one marketplace named context-brake-local per user, so the mod of another repository can be the one that loads; run context-brake init in that repository too, or use the status line bridge with context-brake init --statusline-bridge.",
+      "fix": {
+        "group": "manual"
+      }
+    },
+    {
+      "code": "AUTO_RESTART_HANDOFF",
+      "severity": "ok",
+      "scope": "project",
+      "harness": null,
+      "path": null,
+      "message": "Restart carries the work forward through a markdown handoff in .context-brake/handoff.md. No handoff is pending.",
+      "impact": null,
+      "remediation": null
+    }
+  ],
+  "snapshot": {
+    "triggerZone": "RED",
+    "command": null,
+    "resumeCommand": null
+  },
+  "contextWindow": {
+    "bridge": "absent",
+    "mod": "installed",
+    "source": "contextWindowCeiling",
+    "lastWindowTokens": null
+  }
+}

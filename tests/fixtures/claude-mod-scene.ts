@@ -5,7 +5,7 @@ import type { RestartReasonCode } from '../../src/core/contracts/auto-restart.js
 import { restartLogSchema } from '../../src/core/contracts/restart-log.js';
 import { DEFAULT_CONFIG } from '../../src/core/contracts/configuration.js';
 import { SESSION_RESET_SIGNAL } from '../../src/core/services/reset-notice.js';
-import type { HookHandler, HookRegistrar, ModHost } from '../../src/infrastructure/harnesses/claude-code/mod/host.js';
+import type { HookFilter, HookHandler, HookRegistrar, ModHost } from '../../src/infrastructure/harnesses/claude-code/mod/host.js';
 import { MOD_LOG_DIR } from '../../src/infrastructure/harnesses/claude-code/mod/mod-info.js';
 import { register } from '../../src/infrastructure/harnesses/claude-code/mod/register.js';
 import { createHost, createHostState, flush, type HostState } from './claude-mod-host.js';
@@ -23,13 +23,30 @@ async function writeConfig(root: string, options: SceneOptions): Promise<void> {
   await writeFile(join(root, 'context-brake.config.json'), JSON.stringify({ ...DEFAULT_CONFIG, snapshot, ...autoRestart }), 'utf8');
 }
 
-function driver(host: ModHost): Pick<Scene, 'fire'> {
+function handlerKey(event: string, filter: HookFilter | undefined): string {
+  return filter?.command === undefined ? event : `${event}:${filter.command}`;
+}
+
+function commandOf(input: unknown): HookFilter | undefined {
+  return typeof input === 'object' && input !== null && 'command' in input && typeof input.command === 'string' ? { command: input.command } : undefined;
+}
+
+function driver(host: ModHost, state: HostState): Pick<Scene, 'fire'> {
   const handlers = new Map<string, HookHandler<unknown>>();
-  function on<E>(event: string, handler: HookHandler<E>): unknown {
-    return handlers.set(event, handler as HookHandler<unknown>);
+  function on<E>(event: string, filterOrHandler: HookFilter | HookHandler<E>, handler?: HookHandler<E>): unknown {
+    const isFiltered = typeof filterOrHandler !== 'function';
+    return handlers.set(handlerKey(event, isFiltered ? filterOrHandler : undefined), (isFiltered ? handler : filterOrHandler) as HookHandler<unknown>);
   }
   register(on satisfies HookRegistrar);
-  return { async fire(event, input) { return handlers.get(event)?.(host, input, async (value) => value); } };
+  async function fire(event: string, input: unknown): Promise<unknown> {
+    state.isCommandHookRunning = event === 'command.run';
+    try {
+      return await (handlers.get(handlerKey(event, commandOf(input))) ?? handlers.get(event))?.(host, input, async (value) => value);
+    } finally {
+      state.isCommandHookRunning = false;
+    }
+  }
+  return { fire };
 }
 
 export async function startScene(options: SceneOptions): Promise<Scene> {
@@ -40,7 +57,7 @@ export async function startScene(options: SceneOptions): Promise<Scene> {
   await mkdir(join(root, '.context-brake'), { recursive: true });
   const state = createHostState(startedAt);
   const host = createHost(root, state);
-  return { root, state, host, ...driver(host) };
+  return { root, state, host, ...driver(host, state) };
 }
 
 export type TurnOptions = { readonly extra?: Record<string, unknown>; readonly tools?: number };

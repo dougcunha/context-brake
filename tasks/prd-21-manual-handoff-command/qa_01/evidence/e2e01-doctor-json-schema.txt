@@ -1,0 +1,5 @@
+$ node -e (parse e2e01-doctor-json.stdout.txt; list codes)
+parsed: yes; schemaVersion 1
+codes: "code":"AUTO_RESTART_NOT_LOADED" "code":"CONTEXT_MOD_SILENT" "code":"AUTO_RESTART_HANDOFF"
+exit=0
+note: ajv load from the scratchpad script failed (MODULE_NOT_FOUND / ESM error); strict JSON Schema validation not run.

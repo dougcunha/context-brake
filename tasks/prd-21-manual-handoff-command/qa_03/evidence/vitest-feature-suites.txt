@@ -1,0 +1,26 @@
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/MyProjects/ContextBrake[39m
+
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-bundle.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 380[2mms[22m[39m
+   [33m[2m✓[22m[39m bundled mod (NFR-01, DEC-11, TC-15)[2m > [22mis built from the mod entry, exports register, and holds no Node module import or synchronous file or process API [33m 366[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-handoff-command.test.ts [2m([22m[2m10 tests[22m[2m)[22m[33m 600[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-seed-switch.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 685[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-restart.test.ts [2m([22m[2m8 tests[22m[2m)[22m[33m 792[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-handoff-restart.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 818[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-guards.test.ts [2m([22m[2m7 tests[22m[2m)[22m[33m 958[2mms[22m[39m
+   [33m[2m✓[22m[39m loop guard (FR-04, DEC-06, TC-04)[2m > [22mrefuses the third consecutive restart and resumes after a typed prompt [33m 347[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/manual-handoff.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/zone-guidance.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/unit/auto-restart-policy.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-reading.test.ts [2m([22m[2m9 tests[22m[2m)[22m[33m 410[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-gates.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 113[2mms[22m[39m
+ [32m✓[39m [30m[46m parallel [49m[39m tests/integration/claude-mod-handoff.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 253[2mms[22m[39m
+ [32m✓[39m [30m[43m process [49m[39m tests/integration/mod-reading-git-status.test.ts [2m([22m[2m1 test[22m[2m)[22m[33m 391[2mms[22m[39m
+   [33m[2m✓[22m[39m the mod reading file stays out of Git (TechSpec risk, CR-02)[2m > [22mshows no reading file in git status after init and a publish [33m 389[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m13 passed[39m[22m[90m (13)[39m
+[2m      Tests [22m [1m[32m102 passed[39m[22m[90m (102)[39m
+[2m   Start at [22m 19:22:19
+[2m   Duration [22m 7.95s[2m (transform 2.77s, setup 0ms, collect 10.64s, tests 5.46s, environment 7ms, prepare 3.77s)[22m
+
+exit 0

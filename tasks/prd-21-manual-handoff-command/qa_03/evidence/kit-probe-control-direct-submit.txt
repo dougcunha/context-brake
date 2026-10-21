@@ -1,0 +1,40 @@
+Negative control: same probe on a copy of the bundle where submitAfterCommand calls submitPrompt directly (pre-T06 behavior).
+patched lines:
+function submitAfterCommand($, text) {
+  submitPrompt($, text);
+}
+command: claude plugin test .   (Claude Code 2.1.306)
+
+[P1] {"result":{"text":"ContextBrake: asking the agent to save its state; the session restarts when the reply ends."},"submits":[],"logs":["ContextBrake: automatic restart skipped: an internal error occurred. This session keeps running."],"writes":["D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\.gitignore","D:\\repo\\.context-brake\\runtime\\context-readings\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json"],"guardSets":[{"consecutive":0,"toolCallsSinceSeed":null}],"atReturn":0,"at50":0}
+[P2] {"result":{"text":"ContextBrake: asking the agent to save its state; the session restarts when the reply ends."},"submits":[],"logs":["ContextBrake: automatic restart skipped: an internal error occurred. This session keeps running."],"writes":["D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\.gitignore","D:\\repo\\.context-brake\\runtime\\context-readings\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json"],"guardSets":[{"consecutive":0,"toolCallsSinceSeed":null}]}
+[P3] {"result":{"text":"ContextBrake: asking the agent to save its state; the session restarts when the reply ends."},"submits":[],"logs":["ContextBrake: automatic restart skipped: an internal error occurred. This session keeps running."],"writes":["D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\.gitignore","D:\\repo\\.context-brake\\runtime\\context-readings\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json"],"guardSets":[{"consecutive":0,"toolCallsSinceSeed":null}]}
+[P4] {"result":{"text":"ContextBrake: /handoff needs automatic restart. Run npx context-brake init --auto-restart and start a new session."},"submits":[],"logs":[],"writes":["D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\.gitignore","D:\\repo\\.context-brake\\runtime\\context-readings\\claude-code\\session-1.json"],"guardSets":[]}
+[P5] {"result":{"text":"ContextBrake: automatic restart skipped: switched off by CONTEXT_BRAKE_AUTO_RESTART=0 or a harness setting."},"submits":[],"logs":[],"writes":["D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\.gitignore","D:\\repo\\.context-brake\\runtime\\context-readings\\claude-code\\session-1.json","D:\\repo\\.context-brake\\runtime\\restart\\claude-code\\session-1.json"],"guardSets":[],"logText":["{\n  \"v\": 2,\n  \"harness\": \"claude-code\",\n  \"componentVersion\": \"1.2.0\",\n  \"harnessVersion\": \"2.1.306\",\n  \"records\": []\n}\n","{\n  \"v\": 2,\n  \"harness\": \"claude-code\",\n  \"componentVersion\": \"1.2.0\",\n  \"harnessVersion\": \"2.1.306\",\n  \"records\": [\n    {\n      \"at\": \"1970-01-01T00:00:01.000Z\",\n      \"code\": \"SKIP_DISABLED_ENV\"\n    }\n  ]\n}\n"]}
+
+tests\handoff.test.ts:
+(fail) P1 snapshot mode: accepted line, prompt reaches prompt.submit only after the hook returns [2247.55ms]
+  AssertionError: expect(received).toEqual()
+  
+  Expected: [
+    "ContextBrake: the user typed /handoff to continue this work in a new session. Do this now: run \"/sdd-snapshot\", then end reply with [REQUEST_SESSION_RESET]."
+  ]
+  Received: []
+(fail) P2 focus: normalized focus in the prompt, never in a written file [2312.63ms]
+  AssertionError: expect(received).toEqual()
+  
+  Expected: [
+    "ContextBrake: the user typed /handoff to continue this work in a new session. Do this now: run \"/sdd-snapshot\", then end reply with [REQUEST_SESSION_RESET]. In the snapshot, stress this focus for the next session: \"the parser bug QA3MARK\"."
+  ]
+  Received: []
+(fail) P3 handoff mode: markdown handoff prompt [2269.20ms]
+  AssertionError: expect(received).toBe()
+  
+  Expected: "ContextBrake: the user typed /handoff to continue this work in a new session. Do this now: save handoff to .context-brake/handoff.md, end reply with [REQUEST_SESSION_RESET]. In the handoff, stress this focus for the next session: \"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"."
+  Received: undefined
+(pass) P4 no autoRestart: off line, no prompt, counter unchanged [1699.39ms]
+(pass) P5 kill switch: SKIP_DISABLED_ENV notice, code logged, no prompt, counter unchanged [1155.18ms]
+
+ 2 pass
+ 3 fail
+Ran 5 tests across 1 file. [11.05s]
+exit 1

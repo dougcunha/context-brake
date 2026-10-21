@@ -23,13 +23,13 @@ export function isResetDue(reading: ZoneUsage, snapshot: SnapshotConfig): boolea
 }
 export function zoneAction(zone: Zone, snapshot: SnapshotConfig, options: GuidanceOptions = {}): string {
   if (!isResetDue({ zone, usagePercentage: options.usagePercentage ?? 0 }, snapshot)) return GENERIC_ACTIONS[zone];
-  if (snapshot.command !== undefined) return snapshotAction(zone, (options.invoke ?? sentenceInvocation)(snapshot.command));
-  if ((options.mode ?? 'off') !== 'handoff') return GENERIC_ACTIONS[zone];
-  return `save handoff to ${HANDOFF_PATH}, end reply with ${SESSION_RESET_SIGNAL}`;
+  if (snapshot.command === undefined && (options.mode ?? 'off') !== 'handoff') return GENERIC_ACTIONS[zone];
+  return resetAction(snapshot, options.invoke ?? sentenceInvocation, zone === 'CRITICAL');
 }
-function snapshotAction(zone: Zone, invocation: string): string {
-  const now = zone === 'CRITICAL' ? ' now' : '';
-  return `run "${invocation}"${now}, then end reply with ${SESSION_RESET_SIGNAL}`;
+export function resetAction(snapshot: SnapshotConfig, invoke: SkillInvocationFormat, isUrgent = false): string {
+  if (snapshot.command === undefined) return `save handoff to ${HANDOFF_PATH}, end reply with ${SESSION_RESET_SIGNAL}`;
+  const now = isUrgent ? ' now' : '';
+  return `run "${invoke(snapshot.command)}"${now}, then end reply with ${SESSION_RESET_SIGNAL}`;
 }
 export function handoffResumeText(archivedPath: string): string {
   return `${RESUME_PREFIX} Read "${archivedPath}" and continue the previous work from it.`;

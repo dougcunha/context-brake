@@ -91,5 +91,31 @@
       "Stop",
       "SessionEnd"
     ]
+  },
+  "documented": {
+    "source": "https://code.claude.com/docs/en/plugins/mods/api#add-a-command and type declarations written by Claude Code 2.1.301",
+    "verifiedOn": "2026-10-21",
+    "note": "Documented, not captured live; MA-01..MA-03 of PRD-21 check it in a live session.",
+    "events": [
+      "command.run"
+    ],
+    "commandRun": {
+      "keys": [
+        "command",
+        "args",
+        "origin",
+        "presentation"
+      ],
+      "answer": "{ text } printed as the command output"
+    },
+    "commandRegister": {
+      "keys": [
+        "name",
+        "description",
+        "argumentHint",
+        "immediate"
+      ],
+      "refusedForBuiltInName": true
+    }
   }
 }

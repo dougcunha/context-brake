@@ -1,5 +1,7 @@
 export type ModUsageContext = { readonly tokens?: number | undefined; readonly window?: number | undefined; readonly percent?: number | undefined };
 export type ModUsage = { readonly context: ModUsageContext };
+export type CommandSpec = { readonly name: string; readonly description: string; readonly argumentHint?: string; readonly immediate?: true };
+export type ModTimer = { cancel(): void };
 
 export type ModHost = {
   readonly fs: {
@@ -21,15 +23,25 @@ export type ModHost = {
     version(): Promise<{ readonly version: string }>;
     usage(): Promise<ModUsage>;
   };
-  readonly command: { run(input: { readonly command: string }): Promise<unknown> };
+  readonly command: {
+    run(input: { readonly command: string }): Promise<unknown>;
+    register(spec: CommandSpec): Promise<unknown>;
+  };
   readonly prompt: { submit(input: { readonly text: string }): Promise<unknown> };
   readonly ui: { log(text: string): void };
-  readonly clock: { now(): Promise<number> };
+  readonly clock: {
+    now(): Promise<number>;
+    after(ms: number, fn: () => void): ModTimer;
+  };
 };
 
 export type HookNext<E> = (event: E) => Promise<unknown>;
 export type HookHandler<E> = (host: ModHost, event: E, next: HookNext<E>) => Promise<unknown>;
-export type HookRegistrar = <E>(event: string, handler: HookHandler<E>) => unknown;
+export type HookFilter = { readonly command?: string };
+export type HookRegistrar = {
+  <E>(event: string, handler: HookHandler<E>): unknown;
+  <E>(event: string, filter: HookFilter, handler: HookHandler<E>): unknown;
+};
 
 export type TurnCompleteEvent = {
   readonly answer?: string;
@@ -38,3 +50,5 @@ export type TurnCompleteEvent = {
   readonly agentId?: string;
 };
 export type PromptSubmitEvent = { readonly origin?: { readonly kind?: string } };
+export type CommandRunEvent = { readonly command: string; readonly args?: string; readonly origin?: { readonly kind?: string } };
+export type CommandRunResult = { readonly text?: string };

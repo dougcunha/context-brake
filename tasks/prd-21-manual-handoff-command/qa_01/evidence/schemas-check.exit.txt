@@ -1,0 +1,2 @@
+$ npm run schemas:check
+exit=0

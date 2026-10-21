@@ -1,0 +1,62 @@
+## installed vs dist
+1b884d13c2116a5d815a5ebf500f503d66cdf508106031e5c31804359070a9c6 *C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/6dfc9257-899c-4dea-ba41-561e09c1db04/scratchpad/qa3-repo/.context-brake/claude-mod/context-brake-restart/hooks/register.mjs
+1b884d13c2116a5d815a5ebf500f503d66cdf508106031e5c31804359070a9c6 *D:/MyProjects/ContextBrake/dist/assets/runtime/claude-code-mod.mjs
+cmp: byte-equal
+## CLAUDE.md after
+85f7a2dc032f13c4faa66fa5b7b68c942f6576c8165fd10ff58459df8b5acb9f *C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/6dfc9257-899c-4dea-ba41-561e09c1db04/scratchpad/qa3-repo/CLAUDE.md
+## preimage
+85f7a2dc032f13c4faa66fa5b7b68c942f6576c8165fd10ff58459df8b5acb9f *C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/6dfc9257-899c-4dea-ba41-561e09c1db04/scratchpad/qa3-repo/CLAUDE.md
+295aa1f18923880afebb2e08aa70a8c4f285cc52baea238b8d2864d10e45d825 *C:/Users/Admin/AppData/Local/Temp/claude/D--MyProjects-ContextBrake/6dfc9257-899c-4dea-ba41-561e09c1db04/scratchpad/qa3-repo/.gitignore
+## forbidden API hits in bundle (node:, sync fs, spawnSync, process.env, process.stdout)
+0
+## immediate occurrences
+0
+## handoff command spec in bundle
+## HANDOFF_SUBMIT_DELAY / prompt.submit context
+18705:var HANDOFF_COMMAND = { name: HANDOFF_COMMAND_NAME, description: "Save the session state and restart in a new session", argumentHint: "[focus]" };
+## plugin.json
+{
+  "name": "context-brake-restart",
+  "version": "1.2.0",
+  "description": "Restarts the Claude Code session when ContextBrake asks for a reset.",
+  "author": {
+    "name": "ContextBrake"
+  }
+}
+
+## hooks.json
+{
+  "modules": [
+    "./register.mjs"
+  ]
+}
+
+## files
+./.claude/hooks/context-brake.mjs
+./.claude/settings.json
+./.claude/settings.local.json
+./.context-brake/.gitignore
+./.context-brake/claude-mod/.claude-plugin/marketplace.json
+./.context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json
+./.context-brake/claude-mod/context-brake-restart/hooks/hooks.json
+./.context-brake/claude-mod/context-brake-restart/hooks/register.mjs
+./.context-brake/manifest.json
+./.context-brake/runtime/claude-mod-install.json
+./.gitignore
+./CLAUDE.md
+./context-brake.config.json
+## .gitignore after
+node_modules/
+*.log
+
+# >>> context-brake (managed by `context-brake init`; do not edit) >>>
+/.claude/hooks/context-brake.mjs
+/.context-brake/.gitignore
+/.context-brake/claude-mod/.claude-plugin/marketplace.json
+/.context-brake/claude-mod/context-brake-restart/.claude-plugin/plugin.json
+/.context-brake/claude-mod/context-brake-restart/hooks/hooks.json
+/.context-brake/claude-mod/context-brake-restart/hooks/register.mjs
+/.context-brake/manifest.json
+/.context-brake/runtime/claude-mod-install.json
+/context-brake.config.json
+# <<< context-brake <<<

@@ -1,5 +1,0 @@
-[ERROR] INVALID_ARGUMENTS: Unknown command 'invalid-cmd'. Allowed commands: init, doctor, remove, fix.
-[ERROR] INVALID_ARGUMENTS: Unknown option '--unknown'
-[ERROR] INVALID_ARGUMENTS: Unknown command 'plan'. Allowed commands: init, doctor, remove, fix.
-[ERROR] INVALID_ARGUMENTS: Unknown command 'run'. Allowed commands: init, doctor, remove, fix.
-[ERROR] INVALID_ARGUMENTS: Unknown command 'wrap'. Allowed commands: init, doctor, remove, fix.

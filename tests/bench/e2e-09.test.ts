@@ -26,20 +26,20 @@ async function testQuickStartWorkflow(tempDir: string): Promise<void> {
   expect(performance.now() - startTime).toBeLessThan(MAX_CORE_COMMAND_MS);
 
   const doctorResult = await runBuiltCli(['doctor', '--json'], tempDir);
-  expect(doctorResult.code).toBe(1);
   expect(performance.now() - startTime).toBeLessThan(MAX_USER_WORKFLOW_MS);
 
   const report = doctorReportSchema.parse(JSON.parse(doctorResult.stdout));
   expect(report.command).toBe('doctor');
-  expect(report.status).toBe('warnings');
-  expect(report.exitCode).toBe(1);
+  expect(report.status).not.toBe('errors');
+  expect(doctorResult.code).toBe(report.exitCode);
   expect(report.findings.filter((f) => f.severity === 'error')).toHaveLength(0);
-  expect(report.findings.some((f) => f.code === 'VERSION_FLOOR_UNVERIFIED' && f.severity === 'warning')).toBe(true);
+  expect(report.findings.some((f) => f.code === 'VERSION_FLOOR_UNVERIFIED' && f.harness === 'claude-code')).toBe(false);
   expect(report.integrations[0]?.state).toBe('installed');
+  expect(report.integrations[0]?.support.minimumVersion).toBe('2.1.97');
 
   const textResult = await runBuiltCli(['doctor'], tempDir);
-  expect(textResult.code).toBe(1);
-  expect(textResult.stdout).toContain('[WARN] VERSION_FLOOR_UNVERIFIED');
+  expect(textResult.code).toBe(report.exitCode);
+  expect(textResult.stdout).not.toContain('VERSION_FLOOR_UNVERIFIED');
   expect(performance.now() - startTime).toBeLessThan(MAX_USER_WORKFLOW_MS);
 }
 
@@ -58,7 +58,7 @@ describe('E2E-09: Quick-start workflow meets user-time target (CA-19)', () => {
     await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   });
 
-  it('completes quick-start workflow under two minutes with error-free diagnosis', async () => {
+  it('completes quick-start workflow under two minutes with error-free diagnosis and the Claude Code floor (TC-06)', async () => {
     await testQuickStartWorkflow(tempDir);
   }, WORKFLOW_TEST_TIMEOUT_MS);
 

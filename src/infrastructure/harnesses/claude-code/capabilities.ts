@@ -1,5 +1,8 @@
 import type { CapabilityDefinition } from '../../../core/contracts/harness.js';
 
+// Highest changelog version among the registered mechanisms (statusLine refreshInterval); see docs/research/harness-integrations.md.
+export const CLAUDE_MINIMUM_VERSION = '2.1.97';
+
 export const CLAUDE_CAPABILITIES: readonly CapabilityDefinition[] = [
   { id: 'post_tool_telemetry', state: 'supported' },
   { id: 'session_boot', state: 'supported' },

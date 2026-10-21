@@ -10,7 +10,7 @@ import { applyConfigOrigin, attachConfigOrigin } from '../common/config-origin.j
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { diagnoseAutoRestart } from './auto-restart-diagnostics.js';
-import { CLAUDE_CAPABILITIES } from './capabilities.js';
+import { CLAUDE_CAPABILITIES, CLAUDE_MINIMUM_VERSION } from './capabilities.js';
 import { isTargetGroup } from './claude-merger.js';
 import { detectContextSource } from './context-source.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
@@ -30,7 +30,7 @@ export class ClaudeAdapter implements HarnessAdapter {
   }
 
   probeVersion(context: HarnessContext): Promise<VersionProbe> {
-    return probeExecutableVersion(context.runner, CLAUDE_EXECUTABLES);
+    return probeExecutableVersion(context.runner, CLAUDE_EXECUTABLES, CLAUDE_MINIMUM_VERSION);
   }
 
   async planInstall(context: HarnessContext) {

@@ -21,9 +21,9 @@ async function readOwnedFiles(realRoot: string): Promise<string[]> {
 
 async function assertDoctorAndRemove(linkRoot: string): Promise<void> {
   const doctor = await runInProcessCli(['doctor'], linkRoot);
-  expect(doctor.code).toBe(1);
+  expect(doctor.code).toBe(0);
   expect(doctor.stderr).not.toContain('UNEXPECTED_ERROR');
-  expect(doctor.stdout).toContain('VERSION_FLOOR_UNVERIFIED');
+  expect(doctor.stdout).not.toContain('VERSION_FLOOR_UNVERIFIED');
   const removeDry = await runInProcessCli(['remove', '--dry-run'], linkRoot);
   expect(removeDry.code).toBe(0);
   expect(removeDry.stderr).not.toContain('UNEXPECTED_ERROR');
@@ -45,7 +45,7 @@ describe('linked project root lifecycle (T11.4, CR-01)', () => {
     await rm(tempParent, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }).catch(() => {});
   });
 
-  it('installs through the linked root into the real root, reruns byte-identically, and keeps doctor and remove --dry-run working', async (ctx) => {
+  it('installs through the linked root into the real root, reruns byte-identically, and keeps doctor and remove --dry-run working (TC-05)', async (ctx) => {
     await requireLink(ctx, await attemptLink(realRoot, linkRoot), linkRoot);
     const first = await runInProcessCli(['init', '--yes'], linkRoot);
     expect(first.code).toBe(0);

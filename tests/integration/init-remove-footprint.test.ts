@@ -55,19 +55,20 @@ describe('E2E-08: Doctor JSON validates schema (CA-14, CA-15, CA-16, CA-17, CA-1
   beforeEach(async () => { tempDir = await mkdtemp(join(tmpdir(), 'cb-e2e-08-')); });
   afterEach(async () => { await rm(tempDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
-  it('validates against published schema', async () => {
+  it('validates against published schema and reports the Claude Code floor without a warning (TC-04)', async () => {
     await mkdir(join(tempDir, '.claude'), { recursive: true });
     await writeFile(join(tempDir, '.claude/settings.json'), '{\n  "hooks": {}\n}\n', 'utf8');
     await runInProcessCli(['init', '--yes'], tempDir);
     const docResult = await runInProcessCli(['doctor', '--json'], tempDir);
-    expect(docResult.code).toBe(1);
+    expect(docResult.code).toBe(0);
     const parsed = JSON.parse(docResult.stdout) as unknown;
     const validated = doctorReportSchema.parse(parsed);
     expect(validated.command).toBe('doctor');
     expect(validated.schemaVersion).toBe(1);
-    expect(validated.status).toBe('warnings');
-    expect(validated.findings.some((f) => f.code === 'VERSION_FLOOR_UNVERIFIED')).toBe(true);
+    expect(validated.status).toBe('healthy');
+    expect(validated.findings.some((f) => f.code === 'VERSION_FLOOR_UNVERIFIED')).toBe(false);
     expect(validated.integrations.length).toBeGreaterThan(0);
     expect(validated.integrations[0]?.harness).toBe('claude-code');
+    expect(validated.integrations[0]?.support.minimumVersion).toBe('2.1.97');
   });
 });

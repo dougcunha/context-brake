@@ -1,4 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 
 export type ShellRun = { readonly code: number | null; readonly stdout: Buffer };
 
@@ -20,7 +22,7 @@ export function runInShell(shell: string, command: string, stdin: string): Promi
 
 export type ShellCandidate = { readonly label: 'sh' | 'git-bash' | 'powershell'; readonly executable: string; readonly args: (command: string) => readonly string[]; readonly environment: NodeJS.ProcessEnv };
 
-const GIT_BASH_CANDIDATES = [process.env['CLAUDE_CODE_GIT_BASH_PATH'], process.env['EXEPATH'] === undefined ? undefined : `${process.env['EXEPATH']}\bash.exe`, 'C:/Program Files/Git/bin/bash.exe'];
+const GIT_BASH_CANDIDATES = [process.env['CLAUDE_CODE_GIT_BASH_PATH'], process.env['EXEPATH'] === undefined ? undefined : `${process.env['EXEPATH']}\bash.exe`, 'C:/Program Files/Git/bin/bash.exe', join(homedir(), 'scoop', 'apps', 'git', 'current', 'bin', 'bash.exe')];
 const POWERSHELL_EXECUTABLES = ['pwsh.exe', 'powershell.exe'];
 
 const GIT_BASH_MARKERS = new Set(['MSYSTEM', 'EXEPATH', 'SHELL']);

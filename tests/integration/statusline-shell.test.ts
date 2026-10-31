@@ -65,8 +65,12 @@ describe('installed status line command in every shell (FR-01, FR-02, NFR-01, DE
   it('prints one fallback line and exits 0 when the previous command fails (FR-03, TC-04)', async (ctx) => {
     requireShells((reason) => ctx.skip(reason));
     await usePrevious(FAILING_PREVIOUS);
-    const bridged = await runInShellCandidate(shells[0]!, installed, payload);
-    expect(bridged.stdout.toString()).toMatch(/^ContextBrake .*previous status line failed \(exit 3\) · run context-brake doctor\n$/);
-    expect(bridged.code).toBe(0);
+    for (const shell of shells) {
+      // PowerShell -EncodedCommand reports a failed native command as exit 1, not the command's own code.
+      const expectedExit = shell.label === 'powershell' ? 1 : 3;
+      const bridged = await runInShellCandidate(shell, installed, payload);
+      expect(bridged.stdout.toString()).toMatch(new RegExp(`^ContextBrake .*previous status line failed \\(exit ${expectedExit}\\) · run context-brake doctor\\n$`));
+      expect(bridged.code).toBe(0);
+    }
   }, FLOW_TIMEOUT_MILLISECONDS);
 });

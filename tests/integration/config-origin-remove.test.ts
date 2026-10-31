@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
 const HARNESS_DIRS = ['.claude', '.codex', '.cursor'] as const;
-const CONFIGS = ['.claude/settings.json', '.codex/hooks.json', '.cursor/hooks.json'] as const;
+// Modo padrão (gitIgnore): o init cria o arquivo local do Claude Code, não o settings.json.
+const CONFIGS = ['.claude/settings.local.json', '.codex/hooks.json', '.cursor/hooks.json'] as const;
 const USER_CONFIGS: Record<string, string> = {
   '.claude/settings.json': '{\n  "model": "opus"\n}\n',
   '.codex/hooks.json': '{"hooks":{}}',
@@ -62,6 +63,7 @@ describe('remove gives back the user config files init extended (RF6, CA-05, RF1
     await run(['init', '--yes']);
     await run(['remove', '--yes']);
     expect(await Promise.all(Object.keys(USER_CONFIGS).map(readOrNull))).toEqual(Object.values(USER_CONFIGS));
+    expect(await readOrNull('.claude/settings.local.json')).toBeNull();
   });
 
   it('keeps the hooks key for an install recorded before config origins existed', async () => {

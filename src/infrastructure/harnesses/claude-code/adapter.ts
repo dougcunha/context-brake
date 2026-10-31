@@ -1,21 +1,20 @@
-import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { BenchmarkFixture, HarnessAdapter, HarnessContext } from '../../../core/contracts/adapter.js';
 import type { DiagnosticFinding } from '../../../core/contracts/diagnostics.js';
 import { type CapabilityProfile, type DetectionEvidence, type VersionProbe } from '../../../core/contracts/harness.js';
 import { deriveSupportProfile } from '../../../core/services/support-service.js';
-import { validateJsonDocument } from '../../storage/json-validator.js';
-import { createAssetMissingFinding, createIntegrationMissingFinding, createInvalidConfigFinding } from '../common/diagnostic-helpers.js';
-import { applyConfigOrigin, attachConfigOrigin } from '../common/config-origin.js';
+import { createAssetMissingFinding } from '../common/diagnostic-helpers.js';
+import { attachConfigOrigin } from '../common/config-origin.js';
 import { pathExists } from '../common/path-helpers.js';
 import { probeExecutableVersion } from '../common/version-probes.js';
 import { diagnoseAutoRestart } from './auto-restart-diagnostics.js';
 import { CLAUDE_CAPABILITIES, CLAUDE_MINIMUM_VERSION } from './capabilities.js';
-import { isTargetGroup } from './claude-merger.js';
 import { detectContextSource } from './context-source.js';
 import { CLAUDE_EXECUTABLES, detectClaude } from './detector.js';
 import { CLAUDE_FIX_GROUPS } from './fix-groups.js';
-import { CLAUDE_CONFIG_FILE, CLAUDE_HOOK_FILE, planClaudeInstall, planClaudeRemove } from './planner.js';
+import { claudeHooksFile } from './hooks-file.js';
+import { diagnoseHooks } from './hooks-diagnostics.js';
+import { CLAUDE_HOOK_FILE, planClaudeInstall, planClaudeRemove } from './planner.js';
 import { diagnoseStatusline } from './statusline-diagnostics.js';
 
 export class ClaudeAdapter implements HarnessAdapter {
@@ -36,44 +35,22 @@ export class ClaudeAdapter implements HarnessAdapter {
   }
 
   async planInstall(context: HarnessContext) {
-    return attachConfigOrigin(await planClaudeInstall(context, await detectContextSource(context)), { path: CLAUDE_CONFIG_FILE, manifest: context.manifest });
+    return attachConfigOrigin(await planClaudeInstall(context, await detectContextSource(context)), { path: claudeHooksFile(context), manifest: context.manifest });
   }
 
-  async planRemove(context: HarnessContext) {
-    return applyConfigOrigin(await planClaudeRemove(context.projectRoot), { path: CLAUDE_CONFIG_FILE, manifest: context.manifest });
+  planRemove(context: HarnessContext) {
+    return planClaudeRemove(context.projectRoot, context.manifest ?? null);
   }
 
   async diagnose(context: HarnessContext): Promise<readonly DiagnosticFinding[]> {
-    const findings: DiagnosticFinding[] = [];
-    const configPath = resolve(context.projectRoot, CLAUDE_CONFIG_FILE);
+    const findings: DiagnosticFinding[] = [...await diagnoseHooks(context, this.id)];
     const hookPath = resolve(context.projectRoot, CLAUDE_HOOK_FILE);
-    if (!(await pathExists(configPath))) {
-      findings.push(createIntegrationMissingFinding(this.id, CLAUDE_CONFIG_FILE));
-    } else {
-      try {
-        const raw = await readFile(configPath, 'utf8');
-        const validation = validateJsonDocument(raw);
-        if (!validation.valid) {
-          findings.push(createInvalidConfigFinding(this.id, CLAUDE_CONFIG_FILE, validation.errors.join('; ')));
-        } else {
-          const obj = JSON.parse(raw) as { hooks?: Record<string, unknown> };
-          const post = obj.hooks?.PostToolUse;
-          if (!Array.isArray(post) || !post.some((g) => isTargetGroup(g, 'PostToolUse'))) {
-            findings.push(createIntegrationMissingFinding(this.id, CLAUDE_CONFIG_FILE));
-          }
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        findings.push(createInvalidConfigFinding(this.id, CLAUDE_CONFIG_FILE, msg));
-      }
-    }
     if (!(await pathExists(hookPath))) findings.push(createAssetMissingFinding(this.id, CLAUDE_HOOK_FILE));
     findings.push(...await diagnoseStatusline(context));
     const wanted = context.autoRestart === true;
     findings.push(...await diagnoseAutoRestart({ projectRoot: context.projectRoot, wanted, version: wanted ? await this.probeVersion(context) : null }));
     return findings;
   }
-
   benchmarkFixture(): BenchmarkFixture {
     return {
       harness: this.id,

@@ -12,6 +12,7 @@ import { resolveSkillInvocation } from '../infrastructure/harnesses/skill-invoca
 import { systemClock } from '../infrastructure/runtime/runtime-composition.js';
 import { NodeRuntimeStateReader } from '../infrastructure/runtime/runtime-state-reader.js';
 import { diagnoseProject } from '../core/services/doctor-service.js';
+import { isGitIgnoreEnabled } from '../core/services/gitignore-merge.js';
 import { assignFixGroups } from '../core/services/fix-groups.js';
 import { readClaudeContextWindow } from '../infrastructure/harnesses/claude-code/statusline-context-window.js';
 import { collectProjectSnapshots } from './snapshot-helper.js';
@@ -40,7 +41,7 @@ export async function diagnoseDoctor(env: CommandEnv, harness: readonly HarnessI
   const { config, configError } = await readConfigSafely(env.projectRoot);
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const adapters = getAllAdapters();
-  const ctx = buildHarnessContext(env, manifest, { autoRestart: config?.autoRestart !== undefined });
+  const ctx = buildHarnessContext(env, manifest, { autoRestart: config?.autoRestart !== undefined, gitIgnore: isGitIgnoreEnabled(config) });
   const now = systemClock.now();
   const diagnosed = await diagnoseProject({
     projectRoot: env.projectRoot, config, configError, adapters, context: ctx, sources: await collectHarnessSources(adapters, ctx),

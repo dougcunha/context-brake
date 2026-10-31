@@ -85,7 +85,8 @@ describe('switch-off removes the local settings the install created (FR-09, FR-0
     ['opt-out of both', [...INIT, '--no-auto-restart', '--no-statusline-bridge']],
   ])('leaves no local settings file after %s', async (_name, argv) => {
     expect(await readWorldFile(world, LOCAL_PATH)).toBeNull();
-    await runJson(world, [...INIT, '--auto-restart']);
+    // --no-gitignore: no modo padrão o arquivo local guarda os hooks e não fica vazio.
+    await runJson(world, [...INIT, '--auto-restart', '--no-gitignore']);
     await runJson(world, argv);
     expect(await readWorldFile(world, LOCAL_PATH)).toBeNull();
     expect(await readWorldFile(world, MOD_OWNERSHIP_FILE)).toBeNull();

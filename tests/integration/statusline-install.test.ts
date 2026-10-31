@@ -18,7 +18,8 @@ afterEach(async () => { await removeStatuslineWorld(world); });
 describe('status line bridge install and restore (FR-01, FR-02, FR-08, DEC-11, TC-12)', () => {
   it('wraps the local status line, stays unchanged on reruns, and restores the file byte for byte', async () => {
     await writeFile(join(world.root, LOCAL_PATH), LOCAL_WITH_STATUSLINE, 'utf8');
-    expect((await run(INSTALL)).exitCode).toBe(0);
+    // --no-gitignore: o arquivo local não recebe os hooks, então volta byte a byte ao original sem a ponte.
+    expect((await run([...INSTALL, '--no-gitignore'])).exitCode).toBe(0);
     expect(localStatusline(await read(LOCAL_PATH))).toEqual({ type: 'command', command: `node "${world.root.replace(/\\/g, '/')}/${BRIDGE_PATH}"`, padding: 2 });
     expect(JSON.parse((await read(STATE_PATH)) ?? '{}')).toMatchObject({ previousCommand: '~/.claude/statusline.sh' });
     expect(await exists(BRIDGE_PATH)).toBe(true);

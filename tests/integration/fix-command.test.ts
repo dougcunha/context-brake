@@ -66,7 +66,7 @@ describe('fix decisions without a terminal (FR-06, NFR-02, TC-13)', () => {
     expect(outcomeOf(await fixJson(['--yes', '--force']), 'NO_PROJECT_HARNESS')?.[0]).toBe('skipped');
     const report = await fixJson(['--yes', '--force', '--harness', 'claude-code']);
     expect(outcomeOf(report, 'NO_PROJECT_HARNESS')?.[0]).toBe('fixed');
-    expect(await readText(root, '.claude/settings.json')).toContain('context-brake');
+    expect(await readText(root, '.claude/settings.local.json')).toContain('context-brake');
   });
 });
 

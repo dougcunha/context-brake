@@ -1,4 +1,4 @@
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runInProcessCliWith, type InProcessRunResult } from '../helpers/in-process-cli.js';
@@ -7,12 +7,18 @@ import { BRIDGE_SCRIPT, CLAUDE_HOOK, CONFIG_FILE, createFixWorld, EDITED_HOOK_CO
 
 const TERMINAL = { stdinIsTty: true, stdoutIsTty: true };
 const LOCAL_SETTINGS = '.claude/settings.local.json';
-const USER_STATUSLINE = '{\n  "statusLine": { "type": "command", "command": "personal.sh" }\n}\n';
+const USER_STATUSLINE = { type: 'command', command: 'personal.sh' };
 const WATCHED = [CLAUDE_HOOK, BRIDGE_SCRIPT, CONFIG_FILE, '.context-brake/manifest.json', LOCAL_SETTINGS];
 let root: string;
 
 function fixOnTerminal(prompts: ScriptedPrompts, args: readonly string[] = []): Promise<InProcessRunResult> {
   return runInProcessCliWith(['fix', ...args], { cwd: root, overrides: { terminal: TERMINAL, prompts } });
+}
+
+// O arquivo local já guarda os hooks do modo padrão: o usuário acrescenta a status line sem apagá-los.
+async function addUserStatusline(): Promise<void> {
+  const local = JSON.parse(await readFile(join(root, LOCAL_SETTINGS), 'utf8').catch(() => '{}')) as Record<string, unknown>;
+  await writeFile(join(root, LOCAL_SETTINGS), `${JSON.stringify({ ...local, statusLine: USER_STATUSLINE }, null, 2)}\n`, 'utf8');
 }
 
 beforeEach(async () => { root = await createFixWorld('cb-fix-tty-'); });
@@ -50,7 +56,7 @@ describe('fix decisions on a terminal (FR-05, NFR-02, TC-12)', () => {
 
   it.each([['r', true], ['f', false]])('answer %s to the inactive bridge decides the status line', async (answer, hasBridge) => {
     await installClaude(root);
-    await writeFile(join(root, LOCAL_SETTINGS), USER_STATUSLINE, 'utf8');
+    await addUserStatusline();
     const prompts = new ScriptedPrompts([answer, 'y']);
     await fixOnTerminal(prompts);
     expect(prompts.asked[0]).toContain('The status line bridge is inactive.');
@@ -60,7 +66,7 @@ describe('fix decisions on a terminal (FR-05, NFR-02, TC-12)', () => {
   it('answer s keeps every owned file and needs no confirmation (codereview_01 CR-01, codereview_02 OI-02)', async () => {
     await mkdir(join(root, '.git'), { recursive: true });
     await installClaude(root);
-    await writeFile(join(root, LOCAL_SETTINGS), USER_STATUSLINE, 'utf8');
+    await addUserStatusline();
     const owned = [...WATCHED, '.gitignore'];
     const hashes = await fileHashes(root, owned);
     const prompts = new ScriptedPrompts(['s']);
@@ -78,6 +84,6 @@ describe('fix harness decision on a terminal (FR-05, TC-12)', () => {
     const prompts = new ScriptedPrompts([answer, 's', 'y']);
     await fixOnTerminal(prompts);
     expect(prompts.asked[0]).toContain('No harness is active.');
-    expect(await readText(root, '.claude/settings.json').then(() => true, () => false)).toBe(isInstalled);
+    expect(await readText(root, '.claude/settings.local.json').then(() => true, () => false)).toBe(isInstalled);
   });
 });

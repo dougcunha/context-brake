@@ -8,4 +8,5 @@ export const CLAUDE_FIX_GROUPS: FixGroupMap = {
   STATUSLINE_BRIDGE_ABSENT: 'automatic',
   AUTO_RESTART_OUTDATED_MOD: 'automatic',
   STATUSLINE_BRIDGE_INACTIVE: 'decision',
+  HOOKS_IN_VERSIONED_SETTINGS: 'automatic',
 };

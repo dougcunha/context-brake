@@ -6,6 +6,9 @@ import { installReportSchema } from '../../src/core/contracts/diagnostics.js';
 import { attemptLink, requireLink } from '../helpers/link-capability.js';
 import { runInProcessCli } from '../helpers/in-process-cli.js';
 
+// Estes testes limpam os eventos aposentados do settings.json versionado: o modo --no-gitignore mantém os hooks lá.
+const SHARED_SETTINGS = ['--no-gitignore'];
+
 type ClaudeHooks = { hooks: Record<string, unknown[]> };
 
 function ownedHandler(event: string) {
@@ -50,7 +53,7 @@ async function assertOnlyCurrentOwnedEvents(root: string): Promise<void> {
 }
 
 async function plannedSettingsChanges(root: string): Promise<unknown[]> {
-  const result = await runInProcessCli(['init', '--dry-run', '--json'], root);
+  const result = await runInProcessCli(['init', '--dry-run', '--json', ...SHARED_SETTINGS], root);
   return installReportSchema.parse(JSON.parse(result.stdout)).plan.changes.filter((change) => change.path === '.claude/settings.json');
 }
 
@@ -64,7 +67,7 @@ describe.each(EOLS)('FR-03 and FR-04 retired Claude Code events with %s endings 
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
   it('init keeps only current owned events, a second init plans nothing, and remove restores the foreign content byte for byte (FR-03, FR-04, NFR-01, TC-06)', async () => {
-    expect((await runInProcessCli(['init', '--yes'], root)).code).toBeLessThanOrEqual(1);
+    expect((await runInProcessCli(['init', '--yes', ...SHARED_SETTINGS], root)).code).toBeLessThanOrEqual(1);
     await assertOnlyCurrentOwnedEvents(root);
     expect(await plannedSettingsChanges(root)).toEqual([]);
     expect((await runInProcessCli(['remove', '--yes'], root)).code).toBe(0);
@@ -85,7 +88,7 @@ describe('FR-03 retired Claude Code events through a symbolic link (prd-15, TC-0
     await mkdir(join(root, '.agents'), { recursive: true });
     await writeFile(join(root, '.agents/settings.json'), claudeSettings({ owned: true, eol: '\n' }), 'utf8');
     await requireLink(ctx, await attemptLink(join(root, '.agents'), join(root, '.claude')), join(root, '.claude'));
-    expect((await runInProcessCli(['init', '--yes'], root)).code).toBeLessThanOrEqual(1);
+    expect((await runInProcessCli(['init', '--yes', ...SHARED_SETTINGS], root)).code).toBeLessThanOrEqual(1);
     const target = JSON.parse(await readFile(join(root, '.agents/settings.json'), 'utf8')) as { hooks: Record<string, unknown> };
     expect(target.hooks.PostCompact).toBeUndefined();
     expect((await lstat(join(root, '.claude'))).isSymbolicLink()).toBe(true);

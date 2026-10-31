@@ -5,7 +5,9 @@ import { STATUSLINE_OPT_OUT_FILE } from '../../src/infrastructure/harnesses/clau
 import { createStatuslineWorld, INSTALL, LOCAL_PATH, localStatusline, readWorldFile, removeStatuslineWorld, runJson, STATE_PATH, type StatuslineWorld } from '../helpers/statusline-world.js';
 
 const PLAIN = ['init', '--yes', '--json'];
-const OPT_OUT = [...PLAIN, '--no-statusline-bridge'];
+// No modo padrão o arquivo local guarda os hooks; sem a ponte ele só some com --no-gitignore.
+const SHARED_PLAIN = [...PLAIN, '--no-gitignore'];
+const OPT_OUT = [...SHARED_PLAIN, '--no-statusline-bridge'];
 let world: StatuslineWorld;
 beforeEach(async () => { world = await createStatuslineWorld(); });
 afterEach(async () => { await removeStatuslineWorld(world); });
@@ -27,8 +29,8 @@ describe('default bridge with unparseable local settings (prd-09 DEC-08, TC-09, 
   const MALFORMED = '{ "statusLine": ';
   beforeEach(async () => { await writeFile(join(world.root, LOCAL_PATH), MALFORMED); });
   it('warns instead of failing a plain init, installs the hooks, and leaves the file untouched', async () => {
-    const report = await runJson(world, PLAIN);
-    expect([report.exitCode, report.findings.map((finding) => finding.code)]).toEqual([1, ['STATUSLINE_SETTINGS_INVALID', 'GITIGNORE_NO_GIT']]);
+    const report = await runJson(world, SHARED_PLAIN);
+    expect([report.exitCode, report.findings.map((finding) => finding.code)]).toEqual([1, ['STATUSLINE_SETTINGS_INVALID']]);
     expect(await readWorldFile(world, '.claude/settings.json')).toContain('context-brake');
     expect(await readWorldFile(world, LOCAL_PATH)).toBe(MALFORMED);
     expect(await exists(STATE_PATH)).toBe(false);
@@ -37,11 +39,11 @@ describe('default bridge with unparseable local settings (prd-09 DEC-08, TC-09, 
 
 describe('status line bridge opt-out memory (prd-09 FR-04, DEC-09, TC-09)', () => {
   it('remembers --no-statusline-bridge on later plain inits until --statusline-bridge', async () => {
-    await runJson(world, PLAIN);
+    await runJson(world, SHARED_PLAIN);
     expect((await runJson(world, OPT_OUT)).exitCode).toBe(0);
     expect(await exists(LOCAL_PATH)).toBe(false);
     expect(await exists(STATUSLINE_OPT_OUT_FILE)).toBe(true);
-    await runJson(world, PLAIN);
+    await runJson(world, SHARED_PLAIN);
     expect(await exists(LOCAL_PATH)).toBe(false);
     expect((await runJson(world, INSTALL)).exitCode).toBe(0);
     expect(await exists(LOCAL_PATH)).toBe(true);

@@ -32,16 +32,19 @@ describe('E2E symlinked harness install and idempotency (T10.5, CR-01)', () => {
     expect(first.stderr).not.toContain('UNEXPECTED_ERROR');
     expect((await lstat(join(tempDir, '.claude'))).isSymbolicLink()).toBe(true);
     const settingsPath = join(tempDir, '.agents/settings.json');
-    const contentAfterFirst = await readFile(settingsPath, 'utf8');
+    const localPath = join(tempDir, '.agents/settings.local.json');
+    // Modo padrão: os hooks vão para o settings.local.json do destino do link e o settings.json do usuário não muda.
+    expect(await readFile(settingsPath, 'utf8')).toBe(USER_SETTINGS);
+    const contentAfterFirst = await readFile(localPath, 'utf8');
     const parsed = JSON.parse(contentAfterFirst) as { hooks: Record<string, unknown> };
-    expect(parsed.hooks.UserHook).toBe('node custom.js');
     expect(parsed.hooks.PostToolUse).toBeDefined();
     expect(parsed.hooks.PreToolUse).toBeUndefined();
     const second = await runInProcessCli(['init', '--yes'], tempDir);
     expect(second.code).toBe(0);
-    expect(await readFile(settingsPath, 'utf8')).toBe(contentAfterFirst);
+    expect(await readFile(localPath, 'utf8')).toBe(contentAfterFirst);
     expect((await runInProcessCli(['remove', '--yes'], tempDir)).code).toBe(0);
     expect(await readFile(settingsPath, 'utf8')).toBe(USER_SETTINGS);
+    await expect(readFile(localPath, 'utf8')).rejects.toThrow();
   });
 });
 

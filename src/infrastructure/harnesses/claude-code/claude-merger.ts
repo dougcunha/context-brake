@@ -1,4 +1,4 @@
-import { CLAUDE_HOOK_FILE } from './planner.js';
+import { CLAUDE_HOOK_SCRIPT as CLAUDE_HOOK_FILE } from './hook-script.js';
 
 export type ClaudeHookEntry = { type: string; command: string; args: string[] };
 export type ClaudeHookGroup = { matcher: string; hooks: ClaudeHookEntry[] };

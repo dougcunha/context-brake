@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runBuiltCli } from './cli-runner.js';
 
-const OWNED_FILES = ['.claude/settings.json', 'context-brake.config.json', '.context-brake/manifest.json', '.claude/hooks/context-brake.mjs'];
+const OWNED_FILES = ['.claude/settings.json', '.claude/settings.local.json', 'context-brake.config.json', '.context-brake/manifest.json', '.claude/hooks/context-brake.mjs'];
 let root: string;
 beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), 'cb-smoke-init-'));
@@ -22,7 +22,7 @@ describe('built CLI init smoke (prd-13 FR-04, DEC-03)', () => {
     const first = await runBuiltCli(['init', '--yes'], root);
     expect(first.code).toBe(0);
     expect(first.stdout).toMatch(/claude-code\s+full support/);
-    const settings = JSON.parse(await readFile(join(root, '.claude/settings.json'), 'utf8')) as { hooks: Record<string, unknown> };
+    const settings = JSON.parse(await readFile(join(root, '.claude/settings.local.json'), 'utf8')) as { hooks: Record<string, unknown> };
     expect(Object.keys(settings.hooks)).toContain('PostToolUse');
     const installed = await readOwned();
     expect((await runBuiltCli(['init', '--yes'], root)).code).toBe(0);

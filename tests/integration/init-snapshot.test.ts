@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PROTOCOL_PATH, readConfig, removeProject, USER_CLAUDE } from '../helpers/delegated-world.js';
 import { changedPaths, createLightProject, jsonReport, PLAIN_INIT, runCli, snapshotTree, USER_AGENTS } from '../helpers/light-world.js';
 
-const OWNED_PATHS = ['.claude/hooks/context-brake-statusline.mjs', '.claude/hooks/context-brake.mjs', '.claude/settings.json', '.claude/settings.local.json', '.context-brake/manifest.json', '.context-brake/runtime/claude-statusline.json', 'context-brake.config.json'];
+const OWNED_PATHS = ['.claude/hooks/context-brake-statusline.mjs', '.claude/hooks/context-brake.mjs', '.claude/settings.local.json', '.context-brake/manifest.json', '.context-brake/runtime/claude-statusline.json', 'context-brake.config.json'];
 const COMMANDS = ['--snapshot-command', 'sdd-snapshot', '--resume-command', 'sdd-resume'];
 const CLEAR_CONFLICT = '--no-snapshot-command cannot be combined';
 let root: string;

@@ -21,9 +21,9 @@ describe('status line bridge with unparseable settings (DEC-09, TC-14)', () => {
     expect(await exists(STATE_PATH)).toBe(false);
   });
 
-  it('writes no local settings when the project settings do not parse', async () => {
+  it('writes no local settings when the project settings do not parse and hold the hooks (--no-gitignore)', async () => {
     await writeFile(join(world.root, '.claude', 'settings.json'), '{ broken', 'utf8');
-    await run(INSTALL);
+    await run([...INSTALL, '--no-gitignore']);
     expect(await exists(LOCAL_PATH)).toBe(false);
   });
 

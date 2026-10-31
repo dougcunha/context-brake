@@ -4,7 +4,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { MOD_OWNERSHIP_FILE } from '../../src/infrastructure/harnesses/claude-code/auto-restart-ownership.js';
 import { createStatuslineWorld, LOCAL_PATH, readWorldFile, removeStatuslineWorld, runJson, type StatuslineWorld } from '../helpers/statusline-world.js';
 
-const INIT = ['init', '--yes', '--json'];
+// Com o modo gitIgnore os hooks ficam no arquivo local e ele nunca fica vazio; este arquivo testa o arquivo do usuário sem os hooks.
+const INIT = ['init', '--yes', '--json', '--no-gitignore'];
 const USER_FILES = [['an empty object', '{}\n'], ['a comment only', '{\n  // mine\n}\n']] as const;
 const BRIDGE_FLAGS = [['on', []], ['off', ['--no-statusline-bridge']]] as const;
 const SWITCH_OFFS = [['remove', ['remove', '--yes', '--json']], ['opt-out of both', [...INIT, '--no-auto-restart', '--no-statusline-bridge']]] as const;

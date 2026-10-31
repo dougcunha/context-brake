@@ -14,7 +14,8 @@ type Family = { readonly config: string; readonly install: Planner; readonly rem
 
 const FIXTURES = 'tests/fixtures/harnesses';
 const OWNED_HOOK = /context-brake\.mjs/g;
-const USER_FILES = [['.codex/hooks.json', 'codex-cli/user-hooks-trailing.json', 3], ['.cursor/hooks.json', 'cursor/user-hooks-trailing.json', 3], ['.claude/settings.json', 'claude-code/user-settings.json', 3], ['.agents/hooks.json', 'antigravity-cli/user-hooks.json', 2]] as const;
+// O modo padrão (gitIgnore) registra os hooks do Claude Code no settings.local.json, então o arquivo do usuário é o local.
+const USER_FILES = [['.codex/hooks.json', 'codex-cli/user-hooks-trailing.json', 3], ['.cursor/hooks.json', 'cursor/user-hooks-trailing.json', 3], ['.claude/settings.local.json', 'claude-code/user-settings.json', 3], ['.agents/hooks.json', 'antigravity-cli/user-hooks.json', 2]] as const;
 const CLAUDE: Family = { config: '.claude/settings.json', install: (root) => planClaudeInstall({ projectRoot: root }), remove: planClaudeRemove };
 const CODEX: Family = { config: '.codex/hooks.json', install: planCodexInstall, remove: planCodexRemove };
 const CURSOR: Family = { config: '.cursor/hooks.json', install: planCursorInstall, remove: planCursorRemove };

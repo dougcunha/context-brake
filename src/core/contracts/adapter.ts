@@ -19,6 +19,8 @@ export type HarnessContext = {
   readonly manifest?: InstallationManifest | null;
   readonly statuslineBridge?: StatuslineBridgeRequest;
   readonly autoRestart?: boolean;
+  // Verdadeiro quando o init lista os arquivos do ContextBrake no .gitignore: os hooks do Claude Code vão para o arquivo local.
+  readonly gitIgnore?: boolean;
 };
 
 export type AdapterPlan = {

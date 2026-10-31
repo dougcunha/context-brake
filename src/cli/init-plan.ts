@@ -3,6 +3,7 @@ import type { ContextBrakeConfig } from '../core/contracts/configuration.js';
 import type { DiagnosticFinding } from '../core/contracts/diagnostics.js';
 import type { HarnessId } from '../core/contracts/harness.js';
 import { isAutoRestartWanted } from '../core/services/auto-restart-merge.js';
+import { applyGitIgnore, isGitIgnoreEnabled } from '../core/services/gitignore-merge.js';
 import { planInstallation, type InstallationResult } from '../core/services/installation-service.js';
 import { NodeManifestStore } from '../infrastructure/storage/manifest-store.js';
 import { readPackageVersion } from '../infrastructure/storage/package-metadata.js';
@@ -40,7 +41,7 @@ export async function planInit(env: CommandEnv, request: InitPlanRequest): Promi
   const manifest = await new NodeManifestStore(env.projectRoot).load();
   const allSnapshots = [...await collectProjectSnapshots(env.projectRoot), ...(request.noAutoRestart ? await collectRestartLogSnapshots(env.projectRoot) : [])];
   const adapters = getAllAdapters();
-  const ctx = buildHarnessContext(env, manifest, { statuslineBridge: request.statuslineBridge, autoRestart: isAutoRestartWanted(config?.autoRestart, updates.autoRestart) });
+  const ctx = buildHarnessContext(env, manifest, { statuslineBridge: request.statuslineBridge, autoRestart: isAutoRestartWanted(config?.autoRestart, updates.autoRestart), gitIgnore: isGitIgnoreEnabled(applyGitIgnore({ gitIgnore: config?.gitIgnore }, updates.gitIgnore)) });
   const result = await planInstallation({
     projectRoot: env.projectRoot, config, adapters, context: ctx, sources: await collectHarnessSources(adapters, ctx), selection, excluded,
     allSnapshots, previousManifest: manifest, insideGit: await isInsideGitWorkingTree(env.projectRoot),

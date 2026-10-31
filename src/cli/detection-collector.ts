@@ -24,7 +24,7 @@ export async function collectHarnessSources(adapters: readonly HarnessAdapter[],
   return sources as Partial<DetectionSources>;
 }
 
-export type HarnessOptions = { readonly statuslineBridge?: StatuslineBridgeRequest; readonly autoRestart?: boolean };
+export type HarnessOptions = { readonly statuslineBridge?: StatuslineBridgeRequest; readonly autoRestart?: boolean; readonly gitIgnore?: boolean };
 
 export function buildHarnessContext(env: { projectRoot: string; runner?: ProcessRunner; userHome?: string }, manifest?: InstallationManifest | null, options: HarnessOptions = {}): HarnessContext {
   return {
@@ -34,5 +34,6 @@ export function buildHarnessContext(env: { projectRoot: string; runner?: Process
     ...(manifest !== undefined ? { manifest } : {}),
     ...(options.statuslineBridge !== undefined ? { statuslineBridge: options.statuslineBridge } : {}),
     ...(options.autoRestart !== undefined ? { autoRestart: options.autoRestart } : {}),
+    ...(options.gitIgnore !== undefined ? { gitIgnore: options.gitIgnore } : {}),
   };
 }

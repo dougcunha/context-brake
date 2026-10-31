@@ -1,3 +1,4 @@
+import { parse } from 'jsonc-parser';
 import { removeJsonProperty, setJsonProperty } from '../../storage/json-document-editor.js';
 import { removeOwnedFromOtherEvents } from '../common/hook-event-cleanup.js';
 import { isClaudeOwnedHandler, mergeHookGroups, removeHookGroups, type ClaudeHookGroup } from './claude-merger.js';
@@ -6,13 +7,11 @@ const HOOK_EVENTS = [['PostToolUse', '*'], ['SessionStart', 'startup|resume|clea
 type HookTransform = (existing: unknown, event: string, matcher: string) => ClaudeHookGroup[];
 type EventPlan = { readonly hooks: Record<string, unknown>; readonly event: string; readonly matcher: string };
 
-function parseHooks(content: string): Record<string, unknown> {
-  try {
-    const obj = JSON.parse(content) as Record<string, unknown>;
-    return (obj.hooks as Record<string, unknown>) ?? {};
-  } catch {
-    return {};
-  }
+// jsonc-parser lê os comentários que o Claude Code aceita nos arquivos de configuração; JSON.parse falharia neles.
+export function parseHooks(content: string): Record<string, unknown> {
+  const root = parse(content, [], { allowTrailingComma: true }) as { hooks?: unknown } | null;
+  const hooks = root?.hooks;
+  return hooks !== null && typeof hooks === 'object' && !Array.isArray(hooks) ? hooks as Record<string, unknown> : {};
 }
 
 function applyEvent(text: string, plan: EventPlan, fn: HookTransform): string {

@@ -20,11 +20,13 @@ export async function verifyClaudeInstalled(dir: string): Promise<void> {
   expect(config.isFile()).toBe(true);
   const hook = await stat(join(dir, '.claude/hooks/context-brake.mjs'));
   expect(hook.isFile()).toBe(true);
-  const content = await readFile(join(dir, '.claude/settings.json'), 'utf8');
-  const settings = JSON.parse(content) as { hooks: Record<string, unknown> };
-  expect(settings.hooks.UserHook).toBe('node custom.js');
-  expect(settings.hooks.PostToolUse).toBeDefined();
-  expect(settings.hooks.PreToolUse).toBeUndefined();
+  const shared = JSON.parse(await readFile(join(dir, '.claude/settings.json'), 'utf8')) as { hooks: Record<string, unknown> };
+  expect(shared.hooks.UserHook).toBe('node custom.js');
+  expect(shared.hooks.PostToolUse).toBeUndefined();
+  // Modo padrão (gitIgnore): os hooks ficam no arquivo local, que o Git não versiona.
+  const local = JSON.parse(await readFile(join(dir, '.claude/settings.local.json'), 'utf8')) as { hooks: Record<string, unknown> };
+  expect(local.hooks.PostToolUse).toBeDefined();
+  expect(local.hooks.PreToolUse).toBeUndefined();
 }
 
 export async function verifySymlinkScenario(dir: string): Promise<void> {

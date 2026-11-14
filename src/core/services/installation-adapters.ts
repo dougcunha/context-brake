@@ -13,6 +13,7 @@ export async function planAdapters(adapters: readonly HarnessAdapter[], active: 
   const configOrigins: ConfigOrigin[] = [];
   const harnesses: HarnessInstallPlan[] = [];
   const findings: DiagnosticFinding[] = [];
+  const localPaths: string[] = [];
   for (const d of active) {
     const adapter = adapters.find((a) => a.id === d.harness);
     if (!adapter) continue;
@@ -22,11 +23,12 @@ export async function planAdapters(adapters: readonly HarnessAdapter[], active: 
     findings.push(...(aPlan.findings ?? []));
     entries.push(...aPlan.entries);
     configOrigins.push(...(aPlan.configOrigins ?? []));
+    localPaths.push(...(aPlan.localPaths ?? []));
     for (const c of aPlan.changes) if (c.owner === 'runtime_asset' && c.content) assets.push({ path: c.path, kind: 'runtime_asset', sha256: hashString(c.content) });
     if (aPlan.assets) assets.push(...aPlan.assets);
     const outcome = aPlan.conflicts.length > 0 ? 'conflict' : aPlan.changes.length > 0 ? 'planned' : 'skipped';
     const profile = adapter.capabilityProfile();
     harnesses.push({ harness: d.harness, outcome, supportLevel: profile.supportLevel, limitations: [...profile.limitations] });
   }
-  return { changes, conflicts, entries, assets, configOrigins, harnesses, findings };
+  return { changes, conflicts, entries, assets, configOrigins, harnesses, findings, localPaths };
 }

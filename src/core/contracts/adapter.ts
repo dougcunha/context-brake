@@ -32,6 +32,7 @@ export type AdapterPlan = {
   readonly assetPaths?: readonly string[];
   readonly configOrigins?: readonly ConfigOrigin[];
   readonly findings?: readonly DiagnosticFinding[];
+  readonly localPaths?: readonly string[];
 };
 
 export type BenchmarkFixture = {

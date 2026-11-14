@@ -6,7 +6,7 @@ paths:
 
 # Changes to User Files
 
-ContextBrake edits files it does not own: harness configuration files such as `.claude/settings.json` and `.codex/hooks.json`. It never edits instruction files such as `CLAUDE.md` and `AGENTS.md`. The one change it makes to the project `.gitignore` is its own marked block, which lists the files it owns in full; everything outside the markers stays byte for byte (prd-17). These rules apply to every code path that creates, changes, or removes files.
+ContextBrake edits files it does not own: harness configuration files such as `.claude/settings.json` and `.codex/hooks.json`. It never edits instruction files such as `CLAUDE.md` and `AGENTS.md`. The one change it makes to the project `.gitignore` is its own marked block, which lists the files it owns in full plus the local, per-machine harness settings that hold its entries (`.claude/settings.local.json`); everything outside the markers stays byte for byte (prd-17). These rules apply to every code path that creates, changes, or removes files.
 
 ## Plan Before Writing
 

@@ -4,14 +4,14 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { attemptLink, requireLink } from '../helpers/link-capability.js';
 import { blockLines, makeGitProject, planOf, readIgnore, removeProject, runInit } from '../helpers/gitignore-world.js';
 
-const OWNED_LINES = ['/.claude/hooks/context-brake-statusline.mjs', '/.claude/hooks/context-brake.mjs', '/.context-brake/manifest.json', '/.context-brake/runtime/claude-statusline.json', '/context-brake.config.json'];
+const OWNED_LINES = ['/.claude/hooks/context-brake-statusline.mjs', '/.claude/hooks/context-brake.mjs', '/.claude/settings.local.json', '/.context-brake/manifest.json', '/.context-brake/runtime/claude-statusline.json', '/context-brake.config.json'];
 
 describe('FR-01, FR-03, FR-04, NFR-01 init writes the .gitignore block (prd-17, TC-04, TC-05)', () => {
   let root = '';
   beforeEach(async () => { root = await makeGitProject(); });
   afterEach(async () => { await removeProject(root); });
 
-  it('plans the block as a create and lists exactly the files ContextBrake owns, anchored, and none of the harness files it edits (FR-01, FR-03, FR-04, TC-04)', async () => {
+  it('plans the block as a create and lists exactly the files ContextBrake owns plus the local Claude Code settings that hold its hooks, anchored, and not the versioned settings.json (FR-01, FR-03, FR-04, TC-04)', async () => {
     expect((await planOf(root, [])).plan.changes.find((change) => change.path === '.gitignore')).toMatchObject({ kind: 'create', owner: 'gitignore' });
     expect((await runInit(root, ['--yes'])).code).toBeLessThanOrEqual(1);
     expect(blockLines(await readIgnore(root))).toEqual(OWNED_LINES);

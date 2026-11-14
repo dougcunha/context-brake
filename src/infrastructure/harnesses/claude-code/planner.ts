@@ -86,7 +86,7 @@ export async function planClaudeInstall(context: HarnessContext, source: Context
   const registered = target === CLAUDE_LOCAL_SETTINGS_FILE ? await upsertLocalChange(projectRoot, base, { transform: (text) => applyHooks(text, true), summary: 'Register Claude Code hooks' }) : base;
   const changes = await moveHooksOut(context, registered, otherHooksFile(target));
   const autoRestart = await planAutoRestart(context, changes, { forModFirst: source === 'mod' });
-  return { harness: 'claude-code', changes: [...autoRestart.changes], conflicts: [...statusline.conflicts, ...autoRestart.conflicts], entries: buildClaudeEntries(target), findings: statusline.findings, assets: keptBridgeAssets(context) };
+  return { harness: 'claude-code', changes: [...autoRestart.changes], conflicts: [...statusline.conflicts, ...autoRestart.conflicts], entries: buildClaudeEntries(target), findings: statusline.findings, assets: keptBridgeAssets(context), localPaths: [CLAUDE_LOCAL_SETTINGS_FILE] };
 }
 
 export async function planClaudeRemove(projectRoot: string, manifest: InstallationManifest | null = null): Promise<AdapterPlan> {

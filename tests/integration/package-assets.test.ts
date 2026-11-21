@@ -61,11 +61,13 @@ describe('built process hook execution (RF5, RF22)', () => {
 });
 
 describe('runtime in-process extension loading (RF5)', () => {
-  it('loads in-process plugins and extensions as callable functions', async () => {
+  it('loads in-process plugins and extensions with valid entrypoints', async () => {
     const opencode = await import(resolve('dist/assets/runtime/opencode-plugin.js'));
     const pi = await import(resolve('dist/assets/runtime/pi-extension.js'));
     const omp = await import(resolve('dist/assets/runtime/omp-extension.js'));
-    expect(typeof opencode.default).toBe('function');
+    expect(opencode.default.id).toBe('context-brake');
+    expect(typeof opencode.default.setup).toBe('function');
+    expect(typeof opencode.default.server).toBe('function');
     expect(typeof pi.default).toBe('function');
     expect(typeof omp.default).toBe('function');
   });

@@ -7,6 +7,8 @@ import type { ToolLine } from '../../src/core/contracts/session-ledger.js';
 import { loadHarnessPayload } from '../helpers/harness-payloads.js';
 import { fixedClock, writeRuntimeConfig } from '../helpers/runtime-seed.js';
 import { createOpenCodePlugin, mapOpenCodeSessionEvent, mapOpenCodeToolResult, openCodeObservedCharacters } from '../../src/infrastructure/harnesses/opencode/runtime.js';
+import { mapOpenCodeV2SessionEvent, mapOpenCodeV2ToolResult, openCodeV2ObservedCharacters } from '../../src/infrastructure/harnesses/opencode/events.js';
+import { setupOpenCodeV2Plugin } from '../../src/infrastructure/harnesses/opencode/runtime-v2.js';
 import { NodeSessionLedger } from '../../src/infrastructure/runtime/node-session-ledger.js';
 
 const SESSION = { harness: 'opencode', sessionId: 'opencode-session-1', agentId: null } as const;
@@ -28,6 +30,15 @@ describe('OpenCode runtime event mapping (RF1, RF3, RF14, TC-33)', () => {
     expect(mapOpenCodeSessionEvent(await loadHarnessPayload('opencode', 'session-compacted.json'))).toEqual({ type: 'session.compacted', sessionId: 'opencode-session-1' });
     expect(mapOpenCodeSessionEvent({ event: { type: 'session.idle' } })).toBeNull();
     expect(mapOpenCodeSessionEvent({})).toBeNull();
+  });
+
+  it('maps V2 execute.after and session events', () => {
+    const tool = mapOpenCodeV2ToolResult({ tool: 'shell', sessionID: 's', callID: 'c1', input: { command: 'npm test' } }, SESSION);
+    expect(tool).toEqual({ kind: 'post_tool', session: SESSION, tool: { name: 'shell', category: 'shell', paths: [], command: 'npm test' }, toolUseId: 'c1' });
+    expect(openCodeV2ObservedCharacters({ input: { command: 'npm test' } })).toBe(22);
+    expect(mapOpenCodeV2SessionEvent({ type: 'session.created', data: { sessionID: 's1' } })).toEqual({ type: 'session.created', sessionId: 's1' });
+    expect(mapOpenCodeV2SessionEvent({ type: 'session.compaction.ended', data: { sessionID: 's1' } })).toEqual({ type: 'session.compacted', sessionId: 's1' });
+    expect(mapOpenCodeV2SessionEvent({ type: 'session.idle', data: { sessionID: 's1' } })).toBeNull();
   });
 });
 
@@ -56,6 +67,28 @@ async function checkOpenCodeLifecycle(root: string): Promise<void> {
   expect(await toolLines(root)).toHaveLength(3);
 }
 
+async function checkOpenCodeV2Lifecycle(root: string): Promise<void> {
+  const hooks = new Map<string, (event: unknown) => Promise<void> | void>();
+  let aborted = false;
+  const cleanup = await setupOpenCodeV2Plugin({
+    location: { directory: root },
+    tool: { hook: (name, cb) => { hooks.set(name, cb); } },
+    event: {
+      subscribe: async function* (opts) {
+        opts?.signal?.addEventListener('abort', () => { aborted = true; });
+        yield { type: 'session.compaction.ended', data: { sessionID: LIFECYCLE_KEY.sessionId } };
+        yield INVALID_PAYLOAD;
+      },
+    },
+  });
+  expect(hooks.has('execute.before')).toBe(false);
+  await hooks.get('execute.after')!({ tool: 'read', sessionID: LIFECYCLE_KEY.sessionId, callID: 'c-v2', input: { filePath: 'src/a.ts' } });
+  await expect(hooks.get('execute.after')!(INVALID_PAYLOAD)).resolves.toBeUndefined();
+  cleanup();
+  expect(aborted).toBe(true);
+  expect(await toolLines(root)).toHaveLength(1);
+}
+
 describe('OpenCode plugin lifecycle (RF1, RF3, DEC-13, prd-12 FR-07, TC-09)', () => {
   let root: string;
   beforeEach(async () => {
@@ -65,4 +98,5 @@ describe('OpenCode plugin lifecycle (RF1, RF3, DEC-13, prd-12 FR-07, TC-09)', ()
   afterEach(async () => { await rm(root, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); });
 
   it('registers no pre-tool hook, counts one turn per completed call, resets on session.compacted and session.created, and ignores invalid payloads', async () => { await checkOpenCodeLifecycle(root); });
+  it('registers V2 execute.after and event subscription, ignores invalid payloads, and aborts on cleanup', async () => { await checkOpenCodeV2Lifecycle(root); });
 });

@@ -20,9 +20,33 @@ async function loadExtension(asset: string): Promise<Map<string, Handler>> {
   return handlers;
 }
 
+type OpenCodeV2Module = { readonly default: { readonly id: string; readonly setup: (ctx: unknown) => Promise<() => void>; readonly server: (context?: unknown) => HookObject } };
+
 async function loadOpenCode(context: unknown): Promise<HookObject> {
-  const module = (await import(pathToFileURL(resolve(RUNTIME_ASSETS, 'opencode-plugin.js')).href)) as { default: (context?: unknown) => HookObject };
-  return module.default(context);
+  const module = (await import(pathToFileURL(resolve(RUNTIME_ASSETS, 'opencode-plugin.js')).href)) as OpenCodeV2Module;
+  return module.default.server(context);
+}
+
+async function checkOpenCodeV2(root: string): Promise<void> {
+  const module = (await import(pathToFileURL(resolve(RUNTIME_ASSETS, 'opencode-plugin.js')).href)) as OpenCodeV2Module;
+  const hooks = new Map<string, (event: unknown) => Promise<void> | void>();
+  let release!: () => void;
+  const gate = new Promise<void>((resolveGate) => { release = resolveGate; });
+  let consumed!: () => void;
+  const done = new Promise<void>((resolveDone) => { consumed = resolveDone; });
+  const cleanup = await module.default.setup({
+    location: { directory: root },
+    tool: { hook: (name: string, cb: (event: unknown) => Promise<void> | void) => { hooks.set(name, cb); } },
+    event: { subscribe: async function* () { await gate; yield { type: 'session.compaction.ended', data: { sessionID: 'opencode-v2-1' } }; consumed(); } },
+  });
+  expect(hooks.has('execute.before')).toBe(false);
+  await hooks.get('execute.after')!({ tool: 'shell', sessionID: 'opencode-v2-1', callID: 'call_v2_1', input: { command: 'npm test' } });
+  release();
+  await done;
+  await new Promise((r) => setTimeout(r, 20));
+  cleanup();
+  const lines = await new NodeSessionLedger(root, fixedClock).readLines({ harness: 'opencode', sessionId: 'opencode-v2-1', agentId: null });
+  expect(lines.map((line) => line.type)).toEqual(['session', 'tool', 'reset']);
 }
 
 function piContext(root: string, sessionId: string, usage: unknown): unknown {
@@ -74,4 +98,5 @@ describe('built in-process extensions and plugin (RF5, RF12, RF17, RF21; prd-13 
   it('runs the built Pi extension: measured block appended, /new notice, and no pre-tool handler', async () => { await checkPi(root); });
   it('runs the built Oh-My-Pi extension with the session_stop notice', async () => { await checkOmp(root); });
   it('runs the built OpenCode plugin: no pre-tool hook, the tool call and the compaction reach the ledger', async () => { await checkOpenCode(root); });
+  it('runs the built OpenCode V2 plugin via setup(ctx): execute.after and event.subscribe reach the ledger', async () => { await checkOpenCodeV2(root); });
 });

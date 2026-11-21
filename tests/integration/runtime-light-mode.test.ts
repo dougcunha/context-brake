@@ -21,8 +21,10 @@ afterEach(async () => { await rm(projectRoot, { recursive: true, force: true, ma
 
 describe('the built OpenCode plugin above the critical ceiling (FR-07, TC-09)', () => {
   it('registers no pre-tool hook and records a post-tool call above the critical ceiling', async () => {
-    const module = (await import(pathToFileURL(OPENCODE_ASSET).href)) as { default: (context?: unknown) => Record<string, Handler> };
-    const hooks = module.default({ directory: projectRoot });
+    const module = (await import(pathToFileURL(OPENCODE_ASSET).href)) as {
+      default: { server: (context?: unknown) => Record<string, Handler> };
+    };
+    const hooks = module.default.server({ directory: projectRoot });
     const after = await loadHarnessPayload('opencode', 'tool-execute-after.json') as { input: Record<string, unknown>; output: unknown };
     await seedCriticalSession(projectRoot, KEY);
     await hooks['tool.execute.after']!({ ...after.input, sessionID: KEY.sessionId }, after.output);

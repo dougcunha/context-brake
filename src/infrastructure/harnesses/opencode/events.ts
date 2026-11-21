@@ -1,8 +1,14 @@
 import type { RuntimeEvent, SessionKey, ToolCall } from '../../../core/contracts/runtime.js';
 import { asRecord, characterLength, parsePayload, textValue } from '../common/runtime-support.js';
-import { opencodeEventPayloadSchema, opencodeToolAfterOutputSchema, opencodeToolExecuteInputSchema } from './schemas.js';
+import {
+  opencodeEventPayloadSchema,
+  opencodeToolAfterOutputSchema,
+  opencodeToolExecuteInputSchema,
+  opencodeV2SessionEventSchema,
+  opencodeV2ToolAfterEventSchema,
+} from './schemas.js';
 
-const SHELL_TOOLS = ['bash'];
+const SHELL_TOOLS = ['bash', 'shell'];
 const WRITE_TOOLS = ['write', 'edit'];
 const READ_TOOLS = ['read'];
 
@@ -36,4 +42,22 @@ export function mapOpenCodeSessionEvent(payload: unknown): OpenCodeSessionEvent 
   const properties = data.event?.properties;
   const sessionId = textValue(properties?.sessionID) ?? textValue(properties?.sessionId) ?? textValue(properties?.info?.id) ?? textValue(properties?.id);
   return { type, sessionId };
+}
+
+export function mapOpenCodeV2ToolResult(payload: unknown, session: SessionKey): RuntimeEvent {
+  const data = parsePayload(opencodeV2ToolAfterEventSchema, payload);
+  return { kind: 'post_tool', session, tool: toolOf(data.tool, data.input), toolUseId: data.callID ?? data.id ?? null };
+}
+
+export function openCodeV2ObservedCharacters(payload: unknown): number {
+  return characterLength(parsePayload(opencodeV2ToolAfterEventSchema, payload).input);
+}
+
+export function mapOpenCodeV2SessionEvent(payload: unknown): OpenCodeSessionEvent | null {
+  const parsed = parsePayload(opencodeV2SessionEventSchema, payload);
+  const type = parsed.type;
+  if (type !== 'session.created' && type !== 'session.compaction.ended') return null;
+  const props = parsed.data ?? parsed.properties;
+  const sessionId = textValue(props?.sessionID) ?? textValue(props?.sessionId) ?? textValue(props?.info?.id) ?? textValue(props?.id);
+  return { type: type === 'session.created' ? 'session.created' : 'session.compacted', sessionId };
 }
